@@ -36,13 +36,13 @@ C:\Users\Administrator\.codex\skills\project-ops-workflow\scripts\ops\ReleaseDry
 
 ## Validate Sequence
 
-lint, typecheck, build, test, structureCheck, docsCheck
+lint, typecheck, test, build
 
 ## Dev Server
 
-Start command: ``
-Health URL: ``
-Ready text: ``
+Start command: `pnpm --filter @room-axioms/web dev -- --host 127.0.0.1 --port 5173 --strictPort`
+Health URL: `http://127.0.0.1:5173/RoomAxioms/`
+Ready text: `Local:`
 Timeout seconds: 30
 
 ## Safety Policy

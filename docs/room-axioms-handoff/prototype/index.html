@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>房间公理 · UI 原型</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-mobile-panel="board">
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="brand-mark" aria-hidden="true">RA</div>
+      <div>
+        <div class="brand">房间公理 <span>Room Axioms</span></div>
+        <div class="case-name">案卷 04 · 客房清扫记录</div>
+      </div>
+    </div>
+    <div class="top-stats" aria-label="关卡进度">
+      <div><span class="stat-label">访客标记</span><strong id="flagCount">0 / 2</strong></div>
+      <div><span class="stat-label">已调查</span><strong id="revealCount">3 / 16</strong></div>
+      <div class="dev-stat" id="topCandidateStat" hidden><span class="stat-label">候选布局</span><strong id="topCandidateCount">15</strong></div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost-button" id="hintButton">解释一步</button>
+      <label class="dev-toggle">
+        <input type="checkbox" id="devToggle" />
+        <span>验证层</span>
+      </label>
+      <button class="icon-button" id="resetButton" aria-label="重置关卡" title="重置关卡">↺</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="panel rules-panel" data-panel="rules" aria-labelledby="rulesHeading">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">全部规则已公开</span>
+          <h1 id="rulesHeading">房间公理</h1>
+        </div>
+        <button class="small-button" id="neighborhoodButton">邻域定义</button>
+      </div>
+      <p class="contract">调查只会揭示房间中早已存在的物件。规则不会新增、修改或追溯生效。</p>
+      <div class="rule-list" id="ruleList">
+        <button class="rule-card" data-rule="R1">
+          <span class="rule-index">R1</span>
+          <span class="rule-copy"><b>清扫容器</b><em>房间中恰有 1 个垃圾桶。</em></span>
+          <span class="rule-chip">全局 · =1</span>
+        </button>
+        <button class="rule-card" data-rule="R2">
+          <span class="rule-index">R2</span>
+          <span class="rule-copy"><b>未登记住客</b><em>房间中恰有 2 名访客。</em></span>
+          <span class="rule-chip">全局 · =2</span>
+        </button>
+        <button class="rule-card" data-rule="R3">
+          <span class="rule-index">R3</span>
+          <span class="rule-copy"><b>酒瓶清扫</b><em>每个酒瓶的正交邻域中，恰好有 1 个垃圾桶。</em></span>
+          <span class="rule-chip">瓶 → 正交 · =1 桶</span>
+        </button>
+        <button class="rule-card" data-rule="R4">
+          <span class="rule-index">R4</span>
+          <span class="rule-copy"><b>清扫安全区</b><em>每个垃圾桶的邻接域中，没有访客。</em></span>
+          <span class="rule-chip">桶 → 邻接 · =0 客</span>
+        </button>
+        <button class="rule-card" data-rule="R5">
+          <span class="rule-index">R5</span>
+          <span class="rule-copy"><b>镜面登记</b><em>每面镜子的邻接域中，恰好有 1 名访客。</em></span>
+          <span class="rule-chip">镜 → 邻接 · =1 客</span>
+        </button>
+        <button class="rule-card" data-rule="R6">
+          <span class="rule-index">R6</span>
+          <span class="rule-copy"><b>酒瓶禁区</b><em>每个酒瓶的正交邻域中，没有访客。</em></span>
+          <span class="rule-chip">瓶 → 正交 · =0 客</span>
+        </button>
+      </div>
+      <div class="direction-note">
+        <span class="direction-arrow">主体 → 目标</span>
+        <p>规则是单向约束。例如“镜子附近恰有一名访客”不代表每名访客附近都有镜子。</p>
+      </div>
+    </aside>
+
+    <section class="board-panel" data-panel="board" aria-labelledby="boardHeading">
+      <div class="board-heading">
+        <div>
+          <span class="eyebrow">固定世界 · 客观揭示</span>
+          <h2 id="boardHeading">客房调查区域</h2>
+        </div>
+        <div class="mode-badge" id="modeBadge">当前工具：调查</div>
+      </div>
+
+      <div class="board-stage">
+        <div class="board-coordinates" id="boardGrid" role="grid" aria-label="4乘4调查棋盘"></div>
+        <div class="board-caption" id="boardCaption">选择一条规则可查看其作用范围。右键格子可循环访客/安全笔记。</div>
+      </div>
+
+      <div class="tool-row" role="toolbar" aria-label="调查工具">
+        <button class="tool-button active" data-tool="inspect"><span class="tool-icon">⌕</span><span>调查</span><small>揭示客观物件</small></button>
+        <button class="tool-button" data-tool="guest"><span class="tool-icon">⚑</span><span>标访客</span><small>可撤销的判断</small></button>
+        <button class="tool-button" data-tool="safe"><span class="tool-icon">○</span><span>标安全</span><small>铅笔式笔记</small></button>
+      </div>
+
+      <div class="status-strip" id="statusStrip" role="status" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="statusText">从公开规则与三只酒瓶开始推理。没有倒计时。</span>
+      </div>
+    </section>
+
+    <aside class="panel evidence-panel" data-panel="evidence" aria-labelledby="evidenceHeading">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">只记录已知事实</span>
+          <h2 id="evidenceHeading">证据与笔记</h2>
+        </div>
+      </div>
+
+      <section class="evidence-section">
+        <h3>已揭示物证</h3>
+        <ol class="evidence-log" id="evidenceLog"></ol>
+      </section>
+
+      <section class="evidence-section notes-section">
+        <h3>玩家笔记</h3>
+        <div class="note-group"><span class="note-symbol guest-note">⚑</span><div><b>访客</b><p id="guestMarks">尚未标记</p></div></div>
+        <div class="note-group"><span class="note-symbol safe-note">○</span><div><b>安全</b><p id="safeMarks">尚未标记</p></div></div>
+      </section>
+
+      <section class="developer-panel" id="developerPanel" hidden>
+        <div class="developer-title"><span>DEV</span><b>关卡验证层</b></div>
+        <p class="dev-warning">以下信息不属于玩家可见线索。</p>
+        <dl class="dev-grid">
+          <div><dt>候选危险布局</dt><dd id="candidateCount">15</dd></div>
+          <div><dt>垃圾桶候选</dt><dd id="binCandidates">B2</dd></div>
+          <div><dt>强制安全</dt><dd id="forcedSafe">—</dd></div>
+          <div><dt>强制访客</dt><dd id="forcedGuests">—</dd></div>
+          <div><dt>危险布局唯一</dt><dd id="uniqueLayout">否</dd></div>
+          <div><dt>查询耗时</dt><dd id="analysisTime">0.0 ms</dd></div>
+        </dl>
+        <label class="target-toggle"><input type="checkbox" id="targetToggle" /> 显示目标棋盘（剧透）</label>
+        <div class="dev-legend"><span><i class="legend-safe">S</i> 强制安全</span><span><i class="legend-guest">G</i> 强制访客</span></div>
+      </section>
+
+      <button class="primary-button submit-button" id="submitButton">提交访客结论</button>
+    </aside>
+  </main>
+
+  <nav class="mobile-tabs" aria-label="移动端面板">
+    <button data-mobile="rules">规则</button>
+    <button class="active" data-mobile="board">棋盘</button>
+    <button data-mobile="evidence">证据</button>
+  </nav>
+
+  <dialog id="neighborhoodDialog" class="dialog-card">
+    <form method="dialog">
+      <div class="dialog-header"><div><span class="eyebrow">机械定义</span><h2>邻域只包含棋盘内格子</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <p>棋盘外不是格子，不参与计数，也不会被补成“虚拟空位”。</p>
+      <div class="neighborhood-columns">
+        <section><h3>正交邻域</h3><p>共享一条边。角落 2、边缘 3、内部 4。</p><div class="mini-grid orthogonal-demo" aria-label="正交邻域示意"></div></section>
+        <section><h3>邻接域</h3><p>共享边或角。角落 3、边缘 5、内部 8。</p><div class="mini-grid adjacent-demo" aria-label="邻接域示意"></div></section>
+      </div>
+      <div class="dialog-actions"><button class="primary-button" value="ok">我明白了</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="hintDialog" class="dialog-card hint-dialog">
+    <form method="dialog">
+      <div class="dialog-header"><div><span class="eyebrow">可解释提示</span><h2 id="hintTitle">一个必然结论</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <div id="hintBody" class="hint-body"></div>
+      <div class="dialog-actions"><button class="primary-button" value="ok">返回棋盘</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="resultDialog" class="dialog-card result-dialog">
+    <form method="dialog">
+      <div class="result-mark" id="resultMark">✓</div>
+      <span class="eyebrow" id="resultEyebrow">调查完成</span>
+      <h2 id="resultTitle">两名访客已经定位</h2>
+      <p id="resultBody"></p>
+      <div class="result-stats" id="resultStats"></div>
+      <div class="dialog-actions two-actions"><button class="ghost-button" value="cancel">关闭</button><button class="primary-button" id="resultReset" value="cancel">重新调查</button></div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

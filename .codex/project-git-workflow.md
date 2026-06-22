@@ -41,7 +41,13 @@ git -c safe.directory=D:/WebProjects/RoomAxioms status --short --branch
 
 Run these before commit or push, in order:
 
-No validation commands were configured. Ask before committing or pushing if validation matters for this repo.
+```
+powershell
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 ## Staging Policy
 
 ask each time

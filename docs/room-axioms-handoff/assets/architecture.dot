@@ -1,0 +1,32 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.75", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fontname="Noto Sans CJK SC", fontsize=11, color="#73847c", fontcolor="#17201c", fillcolor="#edf2ef", margin="0.14,0.09"];
+  edge [color="#72827a", fontname="Noto Sans CJK SC", fontcolor="#8a651d", fontsize=9, arrowsize=0.7];
+  player [label="玩家"];
+  designer [label="关卡设计者"];
+  web [label="React / Vite Web App", fillcolor="#dbe7e0"];
+  ui [label="UI + Game Reducer"];
+  worker [label="Solver Web Worker"];
+  exact [label="精确 CSP 求解器"];
+  proof [label="人类推理器 / 证明 DAG"];
+  content [label="已验证关卡内容"];
+  cli [label="Puzzle CLI"];
+  generator [label="关卡生成与最小化"];
+  schema [label="Rule DSL + Schema", fillcolor="#f4e7c8", color="#bd8c2c"];
+  save [label="本地事件存档"];
+  player -> web;
+  web -> ui;
+  ui -> worker [label="知识状态"];
+  worker -> exact;
+  worker -> proof;
+  content -> web;
+  ui -> save;
+  designer -> cli;
+  cli -> schema;
+  cli -> exact;
+  cli -> proof;
+  generator -> exact;
+  generator -> proof;
+  generator -> content;
+  schema -> content;
+}

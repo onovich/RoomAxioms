@@ -7,40 +7,39 @@
     "validateSequence":  [
                              "lint",
                              "typecheck",
-                             "build",
                              "test",
-                             "structureCheck",
-                             "docsCheck"
+                             "build"
                          ],
     "operations":  {
                        "envCheck":  {
                                         "commands":  [
-
+                                                         "node -v",
+                                                         "pnpm -v"
                                                      ]
                                     },
                        "restoreDeps":  {
                                            "commands":  [
-
+                                                            "pnpm install --frozen-lockfile"
                                                         ]
                                        },
                        "installDeps":  {
                                            "commands":  [
-
+                                                            "pnpm install"
                                                         ]
                                        },
                        "build":  {
                                      "commands":  [
-
+                                                      "pnpm build"
                                                   ]
                                  },
                        "test":  {
                                     "commands":  [
-
+                                                     "pnpm test"
                                                  ]
                                 },
                        "lint":  {
                                     "commands":  [
-
+                                                     "pnpm lint"
                                                  ]
                                 },
                        "format":  {
@@ -50,12 +49,11 @@
                                   },
                        "typecheck":  {
                                          "commands":  [
-
+                                                          "pnpm typecheck"
                                                       ]
                                      },
                        "structureCheck":  {
                                               "commands":  [
-
                                                            ]
                                           },
                        "codegen":  {
@@ -65,15 +63,15 @@
                                    },
                        "docsCheck":  {
                                          "commands":  [
-
                                                       ]
                                      },
                        "smoke":  {
                                      "urls":  [
-
+                                                  "http://127.0.0.1:5173/RoomAxioms/"
                                               ],
                                      "commands":  [
-
+                                                      "powershell -NoProfile -ExecutionPolicy Bypass -File .\\StartLocalTest.ps1 -DryRun",
+                                                      "powershell -NoProfile -ExecutionPolicy Bypass -File .\\OpenOnlineTest.ps1 -DryRun"
                                                   ]
                                  },
                        "package":  {
@@ -88,9 +86,9 @@
                                          }
                    },
     "devServer":  {
-                      "startCommand":  "",
-                      "healthUrl":  "",
-                      "readyText":  "",
+                      "startCommand":  "pnpm --filter @room-axioms/web dev -- --host 127.0.0.1 --port 5173 --strictPort",
+                      "healthUrl":  "http://127.0.0.1:5173/RoomAxioms/",
+                      "readyText":  "Local:",
                       "startupTimeoutSeconds":  30,
                       "pidFile":  ".codex/project-ops-devserver.pid"
                   },

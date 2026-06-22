@@ -1,0 +1,25 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="white", pad="0.2", nodesep="0.35", ranksep="0.45", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fontname="Noto Sans CJK SC", fontsize=11, color="#73847c", fontcolor="#17201c", fillcolor="#edf2ef", margin="0.16,0.1"];
+  edge [color="#72827a", fontname="Noto Sans CJK SC", fontcolor="#8a651d", fontsize=9, arrowsize=0.7];
+  start [label="初始规则 + 初始揭示", fillcolor="#f4e7c8", color="#bd8c2c"];
+  solve [label="精确求解：候选世界是否非空？"];
+  unique [shape=diamond, label="访客布局已唯一？", fillcolor="#dbe7e0"];
+  human [label="人类推理器生成可解释动作"];
+  action [shape=diamond, label="有安全调查或危险标记？", fillcolor="#dbe7e0"];
+  compare [label="用精确求解器验证每个结论"];
+  reveal [label="按目标棋盘加入真实揭示\n候选集合只能缩小"];
+  pass [label="通过：零猜测 + 最终唯一", fillcolor="#dcefe4", color="#5b9575"];
+  fail1 [label="失败：矛盾关卡", fillcolor="#f4dddd", color="#b85b57"];
+  fail2 [label="失败：猜测点 / 解释缺口", fillcolor="#f4dddd", color="#b85b57"];
+  start -> solve;
+  solve -> fail1 [label="无模型"];
+  solve -> unique [label="有模型"];
+  unique -> pass [label="是"];
+  unique -> human [label="否"];
+  human -> action;
+  action -> fail2 [label="否"];
+  action -> compare [label="是"];
+  compare -> reveal;
+  reveal -> solve;
+}

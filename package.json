@@ -1,0 +1,16 @@
+{
+  "name": "room-axioms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.8.0",
+  "scripts": {
+    "dev": "pnpm --filter @room-axioms/web dev",
+    "build": "pnpm --filter @room-axioms/web build",
+    "typecheck": "pnpm --filter @room-axioms/web typecheck",
+    "test": "pnpm --filter @room-axioms/web test",
+    "lint": "pnpm --filter @room-axioms/web lint",
+    "preview": "pnpm --filter @room-axioms/web preview"
+  }
+}
+
