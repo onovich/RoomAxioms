@@ -9,7 +9,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - React + TypeScript + Vite app in `apps/web`
 - Data-driven recreation of the handoff prototype for `case-004`
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
-- GitHub Pages workflow for `https://onovich.github.io/RoomAxioms/`
+- GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
 
 ## Commands
@@ -34,4 +34,3 @@ For manual testing on Windows, double-click `StartLocalTest.cmd`. To open the ho
 - Candidate, forced-cell, and target overlays are developer information unless surfaced through a hint.
 
 The full handoff, architecture notes, DSL specification, prototype screenshots, and backlog live in `docs/room-axioms-handoff`.
-

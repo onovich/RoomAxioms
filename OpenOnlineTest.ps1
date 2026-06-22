@@ -1,5 +1,5 @@
 param(
-    [string] $Url = "https://onovich.github.io/RoomAxioms/",
+    [string] $Url = "http://blog.onovich.com/RoomAxioms/",
     [switch] $DryRun
 )
 
@@ -11,4 +11,3 @@ if ($DryRun) {
 }
 
 Start-Process $Url
-
