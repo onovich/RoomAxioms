@@ -1,0 +1,17 @@
+﻿{
+    "schemaVersion":  1,
+    "initializedMarker":  "codex-project-git-workflow: initialized",
+    "initializedAt":  "2026-06-23 03:49:55 +08:00",
+    "projectName":  "RoomAxioms",
+    "repoRoot":  "D:/WebProjects/RoomAxioms",
+    "safeDirectory":  "D:/WebProjects/RoomAxioms",
+    "statusCommand":  "git -c safe.directory=D:/WebProjects/RoomAxioms status --short --branch",
+    "validationCommands":  [
+
+                           ],
+    "stagingPolicy":  "ask each time",
+    "commitCommand":  "",
+    "pushCommand":  "git -c safe.directory=D:/WebProjects/RoomAxioms push -u origin HEAD",
+    "docsRequirement":  "",
+    "forbiddenCommands":  ""
+}
