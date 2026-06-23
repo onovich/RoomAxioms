@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
+import case001Fixture from '../../../../content/cases/case-001.json' with { type: 'json' }
+import case002Fixture from '../../../../content/cases/case-002.json' with { type: 'json' }
+import case003Fixture from '../../../../content/cases/case-003.json' with { type: 'json' }
 import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
 import { verifyCaseFixture } from './caseVerification'
 
 const caseFixtures = [
+  { id: 'case-001', fixture: case001Fixture },
+  { id: 'case-002', fixture: case002Fixture },
+  { id: 'case-003', fixture: case003Fixture },
   { id: 'case-004', fixture: case004Fixture },
 ] as const
 

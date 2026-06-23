@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "case-002",
+  "title": "Room 02: Clear Hallway",
+  "caseName": "Case 02 - Clear Hallway",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "One unregistered guest",
+        "flavor": "Exactly one guest is in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle clearance",
+        "flavor": "Every bottle has no guest in its orthogonal neighborhood."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2",
+    "A3",
+    "B3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 1,
+    "tags": [
+      "tutorial",
+      "orthogonal"
+    ],
+    "author": "internal",
+    "status": "validated"
+  }
+}
