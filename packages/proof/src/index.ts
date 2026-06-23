@@ -34,6 +34,9 @@ export {
   isGlobalCountRule,
 } from './reasoner.js';
 export {
+  renderProofText,
+} from './renderer.js';
+export {
   findExplanationGaps,
   verifyDeduction,
 } from './validation.js';
