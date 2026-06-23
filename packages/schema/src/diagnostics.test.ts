@@ -71,6 +71,10 @@ describe('parsePuzzleDefinition', () => {
     expect(issueCodes({ ...validPuzzle, initialReveals: ['D4'] })).toContain('INITIAL_REVEAL_OUT_OF_BOARD')
   })
 
+  it('reports duplicate initial reveals', () => {
+    expect(issueCodes({ ...validPuzzle, initialReveals: ['A1', 'A1'] })).toContain('INITIAL_REVEAL_DUPLICATE')
+  })
+
   it('reports duplicate rule ids', () => {
     expect(issueCodes({ ...validPuzzle, rules: [{ ...validPuzzle.rules[0] }, { ...validPuzzle.rules[0] }] })).toContain(
       'RULE_ID_DUPLICATE',
@@ -95,6 +99,46 @@ describe('parsePuzzleDefinition', () => {
 
   it('reports rule references outside allowedKinds', () => {
     expect(issueCodes({ ...validPuzzle, allowedKinds: ['empty', 'guest'] })).toContain('RULE_KIND_NOT_ALLOWED')
+  })
+
+  it('reports puzzles with no guest-related rules', () => {
+    const rules = [
+      {
+        id: 'R3',
+        type: 'globalCount',
+        target: 'bottle',
+        count: { op: 'eq', value: 1 },
+        presentation: { title: 'One bottle' },
+      },
+    ]
+
+    expect(issueCodes({ ...validPuzzle, rules })).toContain('GUEST_RULE_MISSING')
+  })
+
+  it('reports invalid comparator shapes through structured diagnostics', () => {
+    const rules = [{ ...validPuzzle.rules[0], count: { op: 'eq', value: -1 } }]
+
+    expect(issueCodes({ ...validPuzzle, rules })).toContain('COMPARATOR_INVALID')
+  })
+
+  it('reports invalid local scopes through structured diagnostics', () => {
+    const rules = [
+      {
+        id: 'R3',
+        type: 'forEachCount',
+        subject: 'guest',
+        scope: { kind: 'global' },
+        target: 'empty',
+        count: { op: 'eq', value: 1 },
+        presentation: { title: 'Invalid local scope' },
+      },
+    ]
+
+    expect(issueCodes({ ...validPuzzle, rules })).toContain('SCOPE_INVALID')
+  })
+
+  it('reports unknown object fields through structured diagnostics', () => {
+    expect(issueCodes({ ...validPuzzle, extra: true })).toContain('SCHEMA_UNKNOWN_KEY')
   })
 
   it('reports invalid initial guest reveals', () => {
