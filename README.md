@@ -11,6 +11,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Zod-backed puzzle schema and diagnostics in `packages/schema` as `@room-axioms/schema`
 - Small-fixture brute-force oracle in `packages/oracle` as `@room-axioms/oracle`
 - Exact CSP solver queries in `packages/solver` as `@room-axioms/solver`
+- Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Canonical content fixture in `content/cases/case-004.json`
 - Data-driven recreation of the handoff prototype for `case-004`
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
@@ -23,14 +24,15 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - `@room-axioms/schema` owns Puzzle Schema v1 parsing, static semantic diagnostics, and JSON content validation; it may depend on `@room-axioms/domain`.
 - `@room-axioms/oracle` owns small-scale brute-force verification fixtures and stays out of product runtime.
 - `@room-axioms/solver` owns exact CSP queries, forced-cell analysis, guest-layout uniqueness, and bounded guest-layout counting.
+- `@room-axioms/proof` owns human deductions, proof graphs, proof rendering, and no-guess verification.
 - `apps/web` imports the domain public API and keeps React state, presentation text, labels, and UI-only tool modes in the app layer.
 - The domain package does not depend on React, Vite, browser APIs, Zod, oracle/solver/proof packages, or Node filesystem APIs.
 
 ## Active Goal Guide
 
-- Phase 5: Human Reasoning And Proofs
-- Guide: `docs/phase-5-human-reasoning-proofs-goal-mode-execution-guide.md`
-- Budget: 10 executor rounds
+- Phase 6: Web Runtime Integration
+- Guide: `docs/phase-6-web-runtime-integration-goal-mode-execution-guide.md`
+- Budget: 8 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands

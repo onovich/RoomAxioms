@@ -26,10 +26,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 4 - Solver Core And Queries, PASS, final commit `d12edff`.
-- Current active phase: Phase 5 - Human Reasoning And Proofs.
-- Active guide: `docs/phase-5-human-reasoning-proofs-goal-mode-execution-guide.md`.
-- Executor budget: 10 rounds.
+- Recently accepted: Phase 5 - Human Reasoning And Proofs, PASS, final commit `e8ff167`.
+- Current active phase: Phase 6 - Web Runtime Integration.
+- Active guide: `docs/phase-6-web-runtime-integration-goal-mode-execution-guide.md`.
+- Executor budget: 8 rounds.
 - Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
