@@ -37,6 +37,13 @@ export interface Deduction {
   readonly proofNodeIds: readonly string[];
 }
 
+export interface DeductionInput {
+  readonly conclusion: DeductionConclusion;
+  readonly ruleIds?: readonly string[];
+  readonly premises?: readonly ProofPremise[];
+  readonly technique: TechniqueId;
+}
+
 export interface ProofNode {
   readonly id: string;
   readonly kind: 'fact' | 'rule' | 'derived';
