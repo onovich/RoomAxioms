@@ -16,7 +16,7 @@ The app is built with `base: '/RoomAxioms/'` for GitHub Pages.
 
 ## Structure
 
-- `src/data`: handoff puzzle data and labels
+- `src/data`: handoff puzzle data and labels, checked against `content/cases/case-004.json`
 - `src/logic`: candidate layout analysis and hint text
 - `src/hooks`: game session state
 - `src/view`: screen and component composition

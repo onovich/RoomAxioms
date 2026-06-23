@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "case-004",
+  "title": "\u5ba2\u623f 04\uff1a\u6e05\u626b\u8bb0\u5f55",
+  "caseName": "\u6848\u5377 04 \u00b7 \u5ba2\u623f\u6e05\u626b\u8bb0\u5f55",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u6e05\u626b\u5bb9\u5668",
+        "flavor": "\u623f\u95f4\u4e2d\u6070\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "\u672a\u767b\u8bb0\u4f4f\u5ba2",
+        "flavor": "\u623f\u95f4\u4e2d\u6070\u6709 2 \u540d\u8bbf\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u9152\u74f6\u6e05\u626b",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u6b63\u4ea4\u90bb\u57df\u4e2d\uff0c\u6070\u597d\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "\u6e05\u626b\u5b89\u5168\u533a",
+        "flavor": "\u6bcf\u4e2a\u5783\u573e\u6876\u7684\u90bb\u63a5\u57df\u4e2d\uff0c\u6ca1\u6709\u8bbf\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u955c\u9762\u767b\u8bb0",
+        "flavor": "\u6bcf\u9762\u955c\u5b50\u7684\u90bb\u63a5\u57df\u4e2d\uff0c\u6070\u597d\u6709 1 \u540d\u8bbf\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "\u9152\u74f6\u7981\u533a",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u6b63\u4ea4\u90bb\u57df\u4e2d\uff0c\u6ca1\u6709\u8bbf\u5ba2\u3002"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "A2",
+    "C2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "guest",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "bottle",
+    "D2": "empty",
+    "A3": "mirror",
+    "B3": "empty",
+    "C3": "mirror",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty"
+  },
+  "metadata": {
+    "difficulty": 2,
+    "tags": [
+      "intersection",
+      "local-count",
+      "tutorial-candidate"
+    ],
+    "status": "draft"
+  }
+}
