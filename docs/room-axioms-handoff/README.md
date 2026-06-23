@@ -52,10 +52,10 @@
 
 ## 当前执行指南
 
-- 最近验收：**Phase 2 - Schema And Content Contract PASS**
-- 当前阶段：**Phase 3 - Oracle And Verification Harness**
-- 执行指南：`../../phase-3-oracle-verification-goal-mode-execution-guide.md`
-- 预算：7 个执行者会话轮
+- 最近验收：**Phase 3 - Oracle And Verification Harness PASS**
+- 当前阶段：**Phase 4 - Solver Core And Queries**
+- 执行指南：`../../phase-4-solver-core-goal-mode-execution-guide.md`
+- 预算：10 个执行者会话轮
 
 ## MVP 完成定义
 

@@ -24,9 +24,9 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Active Goal Guide
 
-- Phase 3: Oracle And Verification Harness
-- Guide: `docs/phase-3-oracle-verification-goal-mode-execution-guide.md`
-- Budget: 7 executor rounds
+- Phase 4: Solver Core And Queries
+- Guide: `docs/phase-4-solver-core-goal-mode-execution-guide.md`
+- Budget: 10 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands

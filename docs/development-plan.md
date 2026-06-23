@@ -26,10 +26,10 @@
 
 ## 当前执行状态
 
-- 最近验收：Phase 2 - Schema And Content Contract，PASS，最终提交 `d4c218f`
-- 当前 active phase：Phase 3 - Oracle And Verification Harness
-- 执行指南：`docs/phase-3-oracle-verification-goal-mode-execution-guide.md`
-- 执行者预算：7 轮
+- 最近验收：Phase 3 - Oracle And Verification Harness，PASS，最终提交 `3202e01`
+- 当前 active phase：Phase 4 - Solver Core And Queries
+- 执行指南：`docs/phase-4-solver-core-goal-mode-execution-guide.md`
+- 执行者预算：10 轮
 - 派发状态：待派发给执行者线程 `019ef271-256c-7be2-9663-e658e2378564`
 
 ## 总预算

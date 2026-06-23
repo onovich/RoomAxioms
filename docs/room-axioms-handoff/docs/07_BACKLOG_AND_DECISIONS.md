@@ -31,9 +31,9 @@
 
 ## 2. P0：开始编码前或首轮必须完成
 
-最近验收：`RA-003 Schema v1 / Schema And Content Contract` 已 PASS，最终提交 `d4c218f`。
+最近验收：`RA-004 小规模 oracle / Oracle And Verification Harness` 已 PASS，最终提交 `3202e01`。
 
-当前执行阶段：`RA-004 小规模 oracle / Oracle And Verification Harness`。执行指南见 `../../phase-3-oracle-verification-goal-mode-execution-guide.md`，预算 7 个执行者会话轮。
+当前执行阶段：`RA-005 CSP 内核 + RA-006 强制格/唯一性 / Solver Core And Queries`。执行指南见 `../../phase-4-solver-core-goal-mode-execution-guide.md`，预算 10 个执行者会话轮。
 
 | ID | 事项 | 交付物 | 验收 |
 |---|---|---|---|
