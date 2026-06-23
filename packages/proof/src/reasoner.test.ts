@@ -1,6 +1,6 @@
 import { findForcedCells, isSatisfiable } from '@room-axioms/solver';
 import { describe, expect, it } from 'vitest';
-import type { CellKind, Comparator, Observation, RuleDefinition } from '@room-axioms/domain';
+import type { BoardSize, CellKind, Comparator, Observation, RuleDefinition } from '@room-axioms/domain';
 
 import { buildProofGraph, deriveHumanDeductions } from './index.js';
 import type { Deduction, KnowledgeState } from './index.js';
@@ -73,12 +73,108 @@ describe('global count human techniques', () => {
       [{ kind: 'cellIsNot', cellId: 'B2', value: 'bin' }],
     );
 
-    expect(deductions.map((deduction) => deduction.conclusion)).toEqual([
+    expect(conclusionsFor(deductions, 'GLOBAL_COUNT_ALL_REMAINING')).toEqual([
       { kind: 'object', cellId: 'B2', object: 'bin' },
+    ]);
+    expect(conclusionsFor(deductions, 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT')).toEqual([
+      { kind: 'safe', cellId: 'B2' },
     ]);
     expect(deductions[0]?.premises.map((premise) => premise.kind)).toEqual(['count', 'rule']);
     expect(result.satisfiable).toBe(false);
     expect(result.stats.truncated).toBe(false);
+  });
+});
+
+describe('local count human techniques', () => {
+  it('derives safe cells when a local guest count is saturated', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bottle', 'guest'],
+      rules: [
+        forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 0 }),
+      ],
+      observations: [{ cellId: 'B2', kind: 'bottle' }],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle: state.puzzle, observations: state.observations });
+
+    expect(conclusionsFor(deductions, 'LOCAL_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'C2' },
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(forced.safe).toEqual(['B1', 'A2', 'C2', 'B3']);
+  });
+
+  it('derives guests when a local rule requires all remaining scoped cells', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'mirror', 'guest'],
+      rules: [
+        forEachCountRule('R1', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 1 }),
+      ],
+      observations: [
+        { cellId: 'B2', kind: 'mirror' },
+        { cellId: 'A1', kind: 'empty' },
+        { cellId: 'B1', kind: 'empty' },
+        { cellId: 'C1', kind: 'empty' },
+        { cellId: 'A2', kind: 'empty' },
+        { cellId: 'C2', kind: 'empty' },
+        { cellId: 'A3', kind: 'empty' },
+        { cellId: 'B3', kind: 'empty' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const result = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIsNot', cellId: 'C3', value: 'guest' }],
+    );
+
+    expect(conclusionsFor(deductions, 'LOCAL_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'C3' },
+    ]);
+    expect(result.satisfiable).toBe(false);
+    expect(result.stats.truncated).toBe(false);
+  });
+
+  it('derives concrete local objects and then safe cells from those objects', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bottle', 'bin', 'guest'],
+      rules: [
+        forEachCountRule('R1', 'bottle', 'orthogonal', 'bin', { op: 'eq', value: 1 }),
+      ],
+      observations: [
+        { cellId: 'B2', kind: 'bottle' },
+        { cellId: 'B1', kind: 'empty' },
+        { cellId: 'A2', kind: 'empty' },
+        { cellId: 'C2', kind: 'empty' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const objectResult = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIsNot', cellId: 'B3', value: 'bin' }],
+    );
+    const safeResult = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIs', cellId: 'B3', value: 'guest' }],
+    );
+    const graph = buildProofGraph(state, deductions);
+    const objectDeduction = deductions.find((deduction) => deduction.conclusion.kind === 'object');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT');
+
+    expect(conclusionsFor(deductions, 'LOCAL_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'object', cellId: 'B3', object: 'bin' },
+    ]);
+    expect(conclusionsFor(deductions, 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT')).toEqual([
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(objectResult.satisfiable).toBe(false);
+    expect(safeResult.satisfiable).toBe(false);
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(objectDeduction?.proofNodeIds[0]);
   });
 });
 
@@ -87,6 +183,7 @@ function allDeductionsHavePremises(deductions: readonly Deduction[]): boolean {
 }
 
 function makeState(input: {
+  readonly board?: BoardSize;
   readonly allowedKinds: readonly CellKind[];
   readonly rules: readonly RuleDefinition[];
   readonly observations: readonly Observation[];
@@ -96,7 +193,7 @@ function makeState(input: {
       schemaVersion: 1,
       id: 'proof-reasoner-test',
       title: 'Proof Reasoner Test',
-      board: { width: 2, height: 2 },
+      board: input.board ?? { width: 2, height: 2 },
       allowedKinds: input.allowedKinds,
       rules: input.rules,
       initialReveals: [],
@@ -119,4 +216,28 @@ function globalCountRule(id: string, target: CellKind, count: Comparator): RuleD
     count,
     presentation: { title: `${target} count` },
   };
+}
+
+function forEachCountRule(
+  id: string,
+  subject: CellKind,
+  scope: 'orthogonal' | 'adjacent',
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'forEachCount',
+    subject,
+    scope: { kind: scope },
+    target,
+    count,
+    presentation: { title: `${subject} ${target} count` },
+  };
+}
+
+function conclusionsFor(deductions: readonly Deduction[], technique: Deduction['technique']): readonly Deduction['conclusion'][] {
+  return deductions
+    .filter((deduction) => deduction.technique === technique)
+    .map((deduction) => deduction.conclusion);
 }

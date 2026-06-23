@@ -111,6 +111,8 @@ function parentNodeIds(state: KnowledgeState, deduction: Deduction): readonly st
         const observation = observationsByCell.get(cellId);
         if (observation !== undefined) parents.add(factNodeId(observation.cellId, observation.kind));
       }
+    } else if (premise.kind === 'derived' && premise.label.startsWith('deduction:')) {
+      parents.add(derivedNodeId({ id: premise.label }));
     }
   }
 

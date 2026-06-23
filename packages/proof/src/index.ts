@@ -27,6 +27,9 @@ export {
 export {
   deriveGlobalCountDeductions,
   deriveHumanDeductions,
+  deriveKnownSafeFromObjectDeductions,
+  deriveLocalCountDeductions,
+  isForEachCountRule,
   isGlobalCountRule,
 } from './reasoner.js';
 export type {
