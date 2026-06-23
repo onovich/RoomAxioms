@@ -1,5 +1,7 @@
 export const ORACLE_PACKAGE_NAME = '@room-axioms/oracle' as const;
 
+export { evaluateRule, satisfiesRules } from './rules.js';
+
 export type {
   CellAssignment,
   OracleModel,
