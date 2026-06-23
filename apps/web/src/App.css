@@ -452,10 +452,13 @@ h3 {
 }
 
 .board-coordinates {
+  --board-cell-max: 94px;
+  --board-cell-min: 74px;
+  --board-coordinate-size: 34px;
   display: grid;
   gap: 7px;
-  grid-template-columns: 34px repeat(4, minmax(74px, 94px));
-  grid-template-rows: 34px repeat(4, minmax(74px, 94px));
+  grid-template-columns: var(--board-coordinate-size) repeat(var(--board-width), minmax(var(--board-cell-min), var(--board-cell-max)));
+  grid-template-rows: var(--board-coordinate-size) repeat(var(--board-height), minmax(var(--board-cell-min), var(--board-cell-max)));
 }
 
 .coordinate-label {
@@ -1154,8 +1157,9 @@ h3 {
   }
 
   .board-coordinates {
-    grid-template-columns: 30px repeat(4, minmax(68px, 82px));
-    grid-template-rows: 30px repeat(4, minmax(68px, 82px));
+    --board-cell-max: 82px;
+    --board-cell-min: 68px;
+    --board-coordinate-size: 30px;
   }
 }
 
@@ -1169,8 +1173,9 @@ h3 {
   }
 
   .board-coordinates {
-    grid-template-columns: 30px repeat(4, minmax(68px, 82px));
-    grid-template-rows: 30px repeat(4, minmax(68px, 82px));
+    --board-cell-max: 82px;
+    --board-cell-min: 68px;
+    --board-coordinate-size: 30px;
   }
 
   .tool-button {
@@ -1269,9 +1274,10 @@ h3 {
   }
 
   .board-coordinates {
+    --board-cell-max: 1fr;
+    --board-cell-min: 0;
+    --board-coordinate-size: 25px;
     gap: 5px;
-    grid-template-columns: 25px repeat(4, minmax(0, 1fr));
-    grid-template-rows: 25px repeat(4, minmax(60px, 1fr));
     width: 100%;
   }
 

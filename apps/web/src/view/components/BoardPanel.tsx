@@ -1,7 +1,9 @@
 import { Circle, Flag, Search } from 'lucide-react'
-import { columnsForWidth } from '@room-axioms/domain'
+import { columnsForWidth, parseCellId } from '@room-axioms/domain'
 import { cellLabels, toolLabels } from '../../data/case004'
-import type { CellId } from '@room-axioms/domain'
+import { nextCellForArrowKey } from '../keyboardNavigation'
+import type { CSSProperties, KeyboardEvent } from 'react'
+import type { BoardSize, CellId } from '@room-axioms/domain'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 import type { Tool } from '../types'
 import { ObjectIcon } from './ObjectIcon'
@@ -12,6 +14,10 @@ interface BoardPanelProps {
 
 export function BoardPanel({ game }: BoardPanelProps) {
   const columns = columnsForWidth(game.puzzle.board.width)
+  const boardStyle = {
+    '--board-width': String(game.puzzle.board.width),
+    '--board-height': String(game.puzzle.board.height),
+  } as CSSProperties
 
   return (
     <section className="board-panel" data-panel="board" aria-labelledby="boardHeading">
@@ -24,10 +30,17 @@ export function BoardPanel({ game }: BoardPanelProps) {
       </div>
 
       <div className="board-stage">
-        <div className="board-coordinates" role="grid" aria-label="4乘4调查棋盘">
-          <div className="coordinate-label" aria-hidden="true" />
+        <div
+          className="board-coordinates"
+          role="grid"
+          aria-label={`${game.puzzle.board.width} by ${game.puzzle.board.height} investigation board`}
+          aria-rowcount={game.puzzle.board.height}
+          aria-colcount={game.puzzle.board.width}
+          style={boardStyle}
+        >
+          <div className="coordinate-label" role="presentation" aria-hidden="true" />
           {columns.map((column) => (
-            <div className="coordinate-label" key={column} aria-hidden="true">
+            <div className="coordinate-label" key={column} role="presentation" aria-hidden="true">
               {column}
             </div>
           ))}
@@ -63,7 +76,7 @@ function BoardRow({
 }) {
   return (
     <>
-      <div className="coordinate-label" aria-hidden="true">
+      <div className="coordinate-label" role="presentation" aria-hidden="true">
         {row}
       </div>
       {columns.map((column) => {
@@ -80,6 +93,7 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
   const targetKind = game.developerTargetKind(cellId)
   const mark = game.marks.get(cellId)
   const classes = ['cell', ...game.highlightedCells(cellId)]
+  const coord = parseCellId(cellId, game.puzzle.board)
 
   if (revealed) classes.push('revealed')
   if (mark === 'guest') classes.push('mark-guest')
@@ -94,12 +108,16 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
       type="button"
       role="gridcell"
       onClick={() => game.handleCell(cellId)}
+      onKeyDown={(event) => focusNextCellForKey(event, cellId, game.puzzle.board)}
       onContextMenu={(event) => {
         event.preventDefault()
         game.cycleMark(cellId)
       }}
       onMouseEnter={() => game.setHoveredCell(cellId)}
       onMouseLeave={() => game.setHoveredCell(null)}
+      data-cell-id={cellId}
+      aria-rowindex={coord.y + 1}
+      aria-colindex={coord.x + 1}
       aria-label={cellAria(cellId, revealed, kind, mark)}
     >
       <span className="coord">{cellId}</span>
@@ -192,4 +210,16 @@ function cellAria(
   if (mark === 'guest') return `${cellId}，未知，玩家标记为访客`
   if (mark === 'safe') return `${cellId}，未知，玩家标记为安全`
   return `${cellId}，未知，未标记`
+}
+
+function focusNextCellForKey(
+  event: KeyboardEvent<HTMLButtonElement>,
+  cellId: CellId,
+  board: BoardSize,
+): void {
+  const nextCell = nextCellForArrowKey(cellId, event.key, board)
+  if (nextCell === null) return
+
+  event.preventDefault()
+  document.querySelector<HTMLButtonElement>(`[data-cell-id="${nextCell}"]`)?.focus()
 }
