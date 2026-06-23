@@ -35,6 +35,11 @@ type StatusKind = 'normal' | 'success' | 'error'
 type ResultKind = 'success' | 'failure'
 type MobilePanel = 'rules' | 'board' | 'evidence'
 
+export type GuestConclusionEvaluation =
+  | { readonly kind: 'incomplete'; readonly required: number; readonly marked: number }
+  | { readonly kind: 'incorrect' }
+  | { readonly kind: 'correct' }
+
 interface StatusMessage {
   readonly text: string
   readonly kind: StatusKind
@@ -111,7 +116,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   const [hintCount, setHintCount] = useState(0)
   const [inspectCount, setInspectCount] = useState(0)
   const [status, setStatus] = useState<StatusMessage>({
-    text: '从公开规则与三只酒瓶开始推理。没有倒计时。',
+    text: initialStatusText(),
     kind: 'normal',
   })
   const [hint, setHint] = useState<Hint | null>(null)
@@ -321,12 +326,14 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       .filter(([, value]) => value === 'guest')
       .map(([id]) => id)
       .sort()
-    if (guestMarks.length !== targetGuests.length) {
-      setStatusMessage(`需要标记恰好 ${targetGuests.length} 名访客；当前为 ${guestMarks.length}。`, 'error')
+    const conclusion = evaluateGuestConclusion(targetGuests, guestMarks)
+
+    if (conclusion.kind === 'incomplete') {
+      setStatusMessage(`需要标记恰好 ${conclusion.required} 名访客；当前为 ${conclusion.marked}。`, 'error')
       return
     }
 
-    if (guestMarks.join(',') !== targetGuests.join(',')) {
+    if (conclusion.kind === 'incorrect') {
       setStatusMessage('当前结论不成立。系统不会指出哪一格错误，你可以继续修正。', 'error')
       return
     }
@@ -334,8 +341,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setResult({
       kind: 'success',
       eyebrow: '调查完成',
-      title: '两名访客已经定位',
-      body: '规则从未改变。你通过逐步揭示客观物证，把候选危险布局收缩为唯一答案：D1 与 B4。',
+      title: `${targetGuests.length} 名访客已经定位`,
+      body: `规则从未改变。你通过公开规则与客观物证，把候选危险布局收缩为唯一答案：${guestMarks.join('、')}。`,
       stats: [
         { label: '已揭示格', value: revealed.size },
         { label: '提示次数', value: hintCount },
@@ -357,7 +364,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setInspectCount(0)
     setHint(null)
     setResult(null)
-    setStatusMessage('从公开规则与三只酒瓶开始推理。没有倒计时。')
+    setStatusMessage(initialStatusText())
   }, [puzzle, setStatusMessage])
 
   useEffect(() => {
@@ -549,4 +556,25 @@ export function ruleById(
 ): RuleDefinition | null {
   if (!ruleId) return null
   return rules.find((rule) => rule.id === ruleId) ?? null
+}
+
+export function evaluateGuestConclusion(
+  targetGuestCells: readonly CellId[],
+  markedGuestCells: readonly CellId[],
+): GuestConclusionEvaluation {
+  if (markedGuestCells.length !== targetGuestCells.length) {
+    return {
+      kind: 'incomplete',
+      required: targetGuestCells.length,
+      marked: markedGuestCells.length,
+    }
+  }
+
+  return markedGuestCells.join(',') === targetGuestCells.join(',')
+    ? { kind: 'correct' }
+    : { kind: 'incorrect' }
+}
+
+function initialStatusText(): string {
+  return '从公开规则与已揭示物件开始推理。没有倒计时。'
 }
