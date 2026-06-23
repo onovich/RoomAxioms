@@ -26,10 +26,10 @@
 
 ## 当前执行状态
 
-- 最近验收：Phase 1 - Domain Core Package，PASS，最终提交 `2c098a4`
-- 当前 active phase：Phase 2 - Schema And Content Contract
-- 执行指南：`docs/phase-2-schema-content-goal-mode-execution-guide.md`
-- 执行者预算：6 轮
+- 最近验收：Phase 2 - Schema And Content Contract，PASS，最终提交 `d4c218f`
+- 当前 active phase：Phase 3 - Oracle And Verification Harness
+- 执行指南：`docs/phase-3-oracle-verification-goal-mode-execution-guide.md`
+- 执行者预算：7 轮
 - 派发状态：待派发给执行者线程 `019ef271-256c-7be2-9663-e658e2378564`
 
 ## 总预算
