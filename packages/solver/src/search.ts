@@ -24,39 +24,68 @@ import type {
 interface SearchContext {
   readonly input: SolveInput;
   readonly maxNodes: number;
+  readonly maxModels: number;
   nodeCount: number;
+  modelCount: number;
   truncated: boolean;
+  stopped: boolean;
 }
+
+export interface ModelVisitResult {
+  readonly modelCount: number;
+  readonly stats: SolverStats;
+}
+
+type ModelVisitor = (model: SolverModel) => boolean;
 
 export function searchFirstModel(
   input: SolveInput,
   assumptions: readonly SolverAssumption[] = [],
   options: SolverOptions = {},
 ): SolveResult {
+  let firstModel: SolverModel | null = null;
+  const result = visitModels(input, assumptions, options, (model) => {
+    firstModel = model;
+    return false;
+  });
+
+  return {
+    satisfiable: firstModel !== null,
+    model: firstModel,
+    stats: result.stats,
+  };
+}
+
+export function visitModels(
+  input: SolveInput,
+  assumptions: readonly SolverAssumption[] = [],
+  options: SolverOptions = {},
+  visitor: ModelVisitor,
+): ModelVisitResult {
   const state = createSolverState(input);
   const trail = createTrail();
   const context: SearchContext = {
     input,
     maxNodes: normalizeLimit(options.maxNodes),
+    maxModels: normalizeLimit(options.maxModels),
     nodeCount: 0,
+    modelCount: 0,
     truncated: false,
+    stopped: false,
   };
   const constraints = compileConstraints(input.puzzle);
 
   const assumptionFailure = applyAssumptions(state, trail, assumptions);
   if (assumptionFailure !== null) {
     return {
-      satisfiable: false,
-      model: null,
+      modelCount: 0,
       stats: toStats(context, state),
     };
   }
 
-  const model = search(state, trail, context, constraints);
-
+  search(state, trail, context, constraints, visitor);
   return {
-    satisfiable: model !== null,
-    model,
+    modelCount: context.modelCount,
     stats: toStats(context, state),
   };
 }
@@ -83,36 +112,47 @@ function search(
   trail: Trail,
   context: SearchContext,
   constraints: ReturnType<typeof compileConstraints>,
-): SolverModel | null {
+  visitor: ModelVisitor,
+): void {
+  if (context.stopped) return;
+
   if (context.nodeCount >= context.maxNodes) {
     context.truncated = true;
-    return null;
+    context.stopped = true;
+    return;
   }
 
   context.nodeCount += 1;
 
   const propagation = propagate(state, constraints, trail);
-  if (!propagation.ok) return null;
+  if (!propagation.ok) return;
 
-  if (isComplete(state)) return modelFromState(state);
+  if (isComplete(state)) {
+    if (context.modelCount >= context.maxModels) {
+      context.truncated = true;
+      context.stopped = true;
+      return;
+    }
+
+    context.modelCount += 1;
+    context.stopped = !visitor(modelFromState(state));
+    return;
+  }
 
   const cellId = selectMrvCell(state);
-  if (cellId === null) return null;
+  if (cellId === null) return;
 
   for (const kind of kindsInMask(state.domains[cellId], context.input.puzzle.allowedKinds)) {
     const branch = checkpoint(trail);
     const assigned = assignCellKind(state, trail, cellId, kind);
 
     if (assigned.contradiction === null) {
-      const model = search(state, trail, context, constraints);
-      if (model !== null) return model;
+      search(state, trail, context, constraints, visitor);
     }
 
     rollback(state, trail, branch);
-    if (context.truncated) return null;
+    if (context.stopped) return;
   }
-
-  return null;
 }
 
 function isComplete(state: SolverState): boolean {

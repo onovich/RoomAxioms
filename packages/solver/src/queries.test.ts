@@ -2,7 +2,7 @@ import { enumerateModels } from '@room-axioms/oracle';
 import { describe, expect, it } from 'vitest';
 import type { CellKind, Comparator, Observation, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
-import { findForcedCells } from './queries.js';
+import { countGuestLayouts, findForcedCells, isGuestLayoutUnique } from './queries.js';
 
 describe('forced-cell queries', () => {
   it('finds forced safe cells when a guest is already observed', () => {
@@ -62,6 +62,72 @@ describe('forced-cell queries', () => {
     expect(oracleGuestSets).toEqual([['A1']]);
     expect(solver.safe).toEqual(['B1', 'A2', 'B2']);
     expect(solver.guests).toEqual([]);
+  });
+});
+
+describe('guest-layout uniqueness and counting', () => {
+  it('treats safe-object differences as the same unique guest layout', () => {
+    const puzzle = makePuzzle({
+      width: 2,
+      height: 2,
+      allowedKinds: ['empty', 'bottle', 'guest'],
+      rules: [globalCountRule('one-guest', 'guest', { op: 'eq', value: 1 })],
+    });
+    const input = {
+      puzzle,
+      observations: [{ cellId: 'A1', kind: 'guest' }],
+    } as const;
+
+    expect(isGuestLayoutUnique(input)).toMatchObject({
+      unique: true,
+      guestCells: ['A1'],
+      stats: { truncated: false },
+    });
+    expect(countGuestLayouts(input, 10)).toMatchObject({
+      count: 1,
+      stats: { truncated: false },
+    });
+  });
+
+  it('detects multiple guest layouts', () => {
+    const input = { puzzle: oneGuestPuzzle() };
+
+    expect(isGuestLayoutUnique(input)).toMatchObject({
+      unique: false,
+      guestCells: null,
+      stats: { truncated: false },
+    });
+    expect(countGuestLayouts(input, 10)).toMatchObject({
+      count: 4,
+      stats: { truncated: false },
+    });
+  });
+
+  it('reports guest-layout count caps with greaterThan instead of pretending exactness', () => {
+    const result = countGuestLayouts({ puzzle: oneGuestPuzzle() }, 2);
+
+    expect(result).toMatchObject({
+      count: 2,
+      greaterThan: 2,
+      stats: { truncated: false },
+    });
+  });
+
+  it('honors maxGuestLayouts as an additional count budget', () => {
+    const result = countGuestLayouts({ puzzle: oneGuestPuzzle() }, 10, { maxGuestLayouts: 1 });
+
+    expect(result).toMatchObject({
+      count: 1,
+      greaterThan: 1,
+      stats: { truncated: false },
+    });
+  });
+
+  it('marks layout queries truncated when node budget is exhausted', () => {
+    const result = countGuestLayouts({ puzzle: oneGuestPuzzle() }, 10, { maxNodes: 1 });
+
+    expect(result.count).toBe(0);
+    expect(result.stats.truncated).toBe(true);
   });
 });
 

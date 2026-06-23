@@ -9,7 +9,7 @@ import type {
   SolverOptions,
   UniqueLayoutResult,
 } from './types.js';
-import { searchFirstModel } from './search.js';
+import { searchFirstModel, visitModels } from './search.js';
 
 export function isSatisfiable(
   input: SolveInput,
@@ -62,16 +62,36 @@ export function findForcedCells(input: SolveInput, options: SolverOptions = {}):
   return { safe, guests, stats };
 }
 
-export function isGuestLayoutUnique(_input: SolveInput, _options: SolverOptions = {}): UniqueLayoutResult {
-  throw new Error('Solver guest-layout uniqueness is implemented in Phase 4 Round 6.');
+export function isGuestLayoutUnique(input: SolveInput, options: SolverOptions = {}): UniqueLayoutResult {
+  const summary = collectGuestLayouts(input, 1, options);
+  const unique = !summary.stats.truncated && summary.count === 1 && summary.greaterThan === undefined;
+
+  return {
+    unique,
+    guestCells: unique ? summary.layouts[0] ?? null : null,
+    stats: summary.stats,
+  };
 }
 
 export function countGuestLayouts(
-  _input: SolveInput,
-  _cap: number,
-  _options: SolverOptions = {},
+  input: SolveInput,
+  cap: number,
+  options: SolverOptions = {},
 ): GuestLayoutCountResult {
-  throw new Error('Solver guest-layout counting is implemented in Phase 4 Round 6.');
+  const summary = collectGuestLayouts(input, cap, options);
+
+  return {
+    count: summary.count,
+    ...(summary.greaterThan === undefined ? {} : { greaterThan: summary.greaterThan }),
+    stats: summary.stats,
+  };
+}
+
+interface GuestLayoutSummary {
+  readonly count: number;
+  readonly greaterThan?: number;
+  readonly layouts: readonly (readonly string[])[];
+  readonly stats: SolveResult['stats'];
 }
 
 function combineStats(left: SolveResult['stats'], right: SolveResult['stats']): SolveResult['stats'] {
@@ -79,5 +99,36 @@ function combineStats(left: SolveResult['stats'], right: SolveResult['stats']): 
     nodeCount: left.nodeCount + right.nodeCount,
     propagationCount: left.propagationCount + right.propagationCount,
     truncated: left.truncated || right.truncated,
+  };
+}
+
+function collectGuestLayouts(input: SolveInput, cap: number, options: SolverOptions): GuestLayoutSummary {
+  const optionCap = options.maxGuestLayouts ?? cap;
+  const effectiveCap = Math.max(0, Math.floor(Math.min(cap, optionCap)));
+  const cells = allCells(input.puzzle.board);
+  const layouts = new Map<string, readonly string[]>();
+  let greaterThan: number | undefined;
+
+  const result = visitModels(input, [], options, (model) => {
+    const guestCells = cells.filter((cellId) => model.cells[cellId] === 'guest');
+    const key = guestCells.join('|');
+
+    if (!layouts.has(key)) {
+      if (layouts.size >= effectiveCap) {
+        greaterThan = effectiveCap;
+        return false;
+      }
+
+      layouts.set(key, guestCells);
+    }
+
+    return true;
+  });
+
+  return {
+    count: layouts.size,
+    ...(greaterThan === undefined ? {} : { greaterThan }),
+    layouts: [...layouts.values()],
+    stats: result.stats,
   };
 }
