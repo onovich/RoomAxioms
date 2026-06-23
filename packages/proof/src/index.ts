@@ -13,6 +13,22 @@ export {
   createDeduction,
   normalizeProofPremises,
 } from './graph.js';
+export {
+  comparatorBounds,
+  countPremise,
+  createKnowledgeIndex,
+  rulePremise,
+  scopeCellsForRule,
+  scopePremise,
+  summarizeCountInCells,
+  summarizeForEachScope,
+  summarizeGlobalCount,
+} from './reasoning.js';
+export type {
+  CountBounds,
+  CountSummary,
+  KnowledgeIndex,
+} from './reasoning.js';
 
 export type {
   Deduction,
