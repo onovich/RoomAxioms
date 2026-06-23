@@ -119,6 +119,6 @@ export const case004 = {
   metadata: {
     difficulty: 2,
     tags: ['intersection', 'local-count', 'tutorial-candidate'],
-    status: 'draft',
+    status: 'validated',
   },
 } as const satisfies PuzzleDefinition
