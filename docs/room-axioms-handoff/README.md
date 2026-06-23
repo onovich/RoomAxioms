@@ -52,10 +52,10 @@
 
 ## 当前执行指南
 
-- 最近验收：**Phase 6 - Web Runtime Integration PASS**，最终提交 `e3c10b8`
-- 当前阶段：**Phase 7 - MVP Content And UX Hardening**
-- 执行指南：`../phase-7-mvp-content-ux-hardening-goal-mode-execution-guide.md`
-- 预算：10 个执行者会话轮
+- 最近验收：**Phase 7 - MVP Content And UX Hardening PASS**，最终提交 `10c62ed`
+- 当前阶段：**Phase 8 - Release QA And Playtest Loop**
+- 执行指南：`../phase-8-release-qa-playtest-loop-goal-mode-execution-guide.md`
+- 预算：6 个执行者会话轮
 
 ## MVP 完成定义
 

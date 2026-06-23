@@ -12,8 +12,8 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Small-fixture brute-force oracle in `packages/oracle` as `@room-axioms/oracle`
 - Exact CSP solver queries in `packages/solver` as `@room-axioms/solver`
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
-- Canonical content fixture in `content/cases/case-004.json`
-- Data-driven recreation of the handoff prototype for `case-004`
+- Ten validated MVP cases in `content/cases/case-001.json` through `case-010.json`
+- Data-driven content loading with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
@@ -30,9 +30,9 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Active Goal Guide
 
-- Phase 7: MVP Content And UX Hardening
-- Guide: `docs/phase-7-mvp-content-ux-hardening-goal-mode-execution-guide.md`
-- Budget: 10 executor rounds
+- Phase 8: Release QA And Playtest Loop
+- Guide: `docs/phase-8-release-qa-playtest-loop-goal-mode-execution-guide.md`
+- Budget: 6 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands
