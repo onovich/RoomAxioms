@@ -25,7 +25,7 @@ export function TopBar({ game }: TopBarProps) {
       <div className="top-stats" aria-label="关卡进度">
         <ProgressStat label="访客标记" value={`${guestMarks} / ${game.targetGuestCount}`} />
         <ProgressStat label="已调查" value={`${game.revealed.size} / ${game.cells.length}`} />
-        {game.devMode ? <ProgressStat label="候选布局" value={game.analysis.layouts.length} /> : null}
+        {game.devMode ? <ProgressStat label="候选布局" value={game.analysisLayoutCountText} /> : null}
       </div>
 
       <div className="top-actions">

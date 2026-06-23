@@ -97,7 +97,7 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
         <DevStat label="Runtime" value={runtimeStatusText(game)} />
         <DevStat label="Warnings" value={runtimeWarningsText(game)} />
         {game.analysisError ? <DevStat label="Error" value={game.analysisError.message} /> : null}
-        <DevStat label="候选危险布局" value={game.analysis.layouts.length} />
+        <DevStat label="候选危险布局" value={game.analysisLayoutCountText} />
         <DevStat label="垃圾桶候选" value={game.analysis.binCandidates.join('、') || '无'} />
         <DevStat label="强制安全" value={game.analysis.forcedSafe.join('、') || '-'} />
         <DevStat label="强制访客" value={game.analysis.forcedGuests.join('、') || '-'} />

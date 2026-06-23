@@ -15,6 +15,7 @@ import type {
   AnalysisStatus,
   RuntimeAnalysis,
   RuntimeAnalysisError,
+  RuntimeHint,
   RuntimeAnalysisWarning,
   RuntimeWorkerResponse,
 } from '../runtime/contracts'
@@ -63,6 +64,7 @@ export interface RoomAxiomsGame {
   readonly hintCount: number
   readonly inspectCount: number
   readonly analysis: AnalysisResult
+  readonly analysisLayoutCountText: string
   readonly analysisStatus: AnalysisStatus
   readonly analysisError: RuntimeAnalysisError | null
   readonly analysisWarnings: readonly RuntimeAnalysisWarning[]
@@ -128,6 +130,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
           if (response.status === 'ready') {
             setRuntimeAnalysis(response.analysis)
             setAnalysis(analysisResultFromRuntime(response.analysis))
+          } else {
+            setRuntimeAnalysis(null)
           }
         },
       }),
@@ -215,6 +219,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
       const { kind } = observationForTargetCell(puzzle, cellId)
       setInspectCount((value) => value + 1)
+      setHint(null)
       setRevealed((current) => new Set(current).add(cellId))
       setActionLog((current) => [
         ...current,
@@ -308,8 +313,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
   const requestHint = useCallback(() => {
     setHintCount((value) => value + 1)
-    setHint(createHint(puzzle, runtimeAnalysis?.hint ?? null))
-  }, [puzzle, runtimeAnalysis?.hint])
+    setHint(createHint(puzzle, currentRuntimeHint(analysisSnapshot.status, runtimeAnalysis)))
+  }, [analysisSnapshot.status, puzzle, runtimeAnalysis])
 
   const submitConclusion = useCallback(() => {
     const guestMarks = [...marks.entries()]
@@ -334,10 +339,10 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       stats: [
         { label: '已揭示格', value: revealed.size },
         { label: '提示次数', value: hintCount },
-        { label: '剩余候选布局', value: analysis.layouts.length },
+        { label: '剩余候选布局', value: layoutCountText(analysis) },
       ],
     })
-  }, [analysis.layouts.length, hintCount, marks, revealed.size, setStatusMessage, targetGuests])
+  }, [analysis, hintCount, marks, revealed.size, setStatusMessage, targetGuests])
 
   const reset = useCallback(() => {
     setRevealed(new Set(puzzle.initialReveals))
@@ -390,6 +395,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     hintCount,
     inspectCount,
     analysis,
+    analysisLayoutCountText: layoutCountText(analysis),
     analysisStatus: analysisSnapshot.status,
     analysisError: analysisSnapshot.error,
     analysisWarnings: runtimeAnalysis?.warnings ?? [],
@@ -421,6 +427,27 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
 function observationsFromMap(observations: ReadonlyMap<CellId, CellKind>): readonly Observation[] {
   return [...observations.entries()].map(([cellId, kind]) => ({ cellId, kind }))
+}
+
+function currentRuntimeHint(
+  status: AnalysisStatus,
+  runtimeAnalysis: RuntimeAnalysis | null,
+): RuntimeHint | null {
+  if (status !== 'ready' || runtimeAnalysis === null) return null
+  if (
+    runtimeAnalysis.warnings.some(
+      (warning) => warning.code === 'SOLVER_TRUNCATED' || warning.code === 'STATE_UNSAT',
+    )
+  ) {
+    return null
+  }
+
+  return runtimeAnalysis.hint
+}
+
+function layoutCountText(analysis: AnalysisResult): string {
+  const prefix = analysis.layoutCountGreaterThan === undefined ? '' : '>'
+  return `${prefix}${analysis.layoutCount}`
 }
 
 function analysisResultFromRuntime(runtimeAnalysis: RuntimeAnalysis): AnalysisResult {
