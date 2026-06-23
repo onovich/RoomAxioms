@@ -1,1 +1,2 @@
-export const PUZZLE_SCHEMA_VERSION = 1 as const
+export * from './constants.js'
+export * from './puzzleSchema.js'
