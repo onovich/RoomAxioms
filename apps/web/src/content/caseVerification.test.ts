@@ -1,27 +1,27 @@
 import { describe, expect, it } from 'vitest'
 
-import case001Fixture from '../../../../content/cases/case-001.json' with { type: 'json' }
-import case002Fixture from '../../../../content/cases/case-002.json' with { type: 'json' }
-import case003Fixture from '../../../../content/cases/case-003.json' with { type: 'json' }
-import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
-import case005Fixture from '../../../../content/cases/case-005.json' with { type: 'json' }
-import case006Fixture from '../../../../content/cases/case-006.json' with { type: 'json' }
-import case007Fixture from '../../../../content/cases/case-007.json' with { type: 'json' }
+import { contentCases, DEFAULT_CASE_ID, getCaseById } from './cases'
 import { verifyCaseFixture } from './caseVerification'
 
-const caseFixtures = [
-  { id: 'case-001', fixture: case001Fixture },
-  { id: 'case-002', fixture: case002Fixture },
-  { id: 'case-003', fixture: case003Fixture },
-  { id: 'case-004', fixture: case004Fixture },
-  { id: 'case-005', fixture: case005Fixture },
-  { id: 'case-006', fixture: case006Fixture },
-  { id: 'case-007', fixture: case007Fixture },
-] as const
-
 describe('case content verification harness', () => {
-  it.each(caseFixtures)('passes all public verification checks for $id', ({ fixture }) => {
-    const report = verifyCaseFixture(fixture)
+  it('loads exactly the ten MVP cases in stable order', () => {
+    expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
+      'case-001',
+      'case-002',
+      'case-003',
+      'case-004',
+      'case-005',
+      'case-006',
+      'case-007',
+      'case-008',
+      'case-009',
+      'case-010',
+    ])
+    expect(DEFAULT_CASE_ID).toBe('case-004')
+  })
+
+  it.each(contentCases)('passes all public verification checks for $id', (puzzle) => {
+    const report = verifyCaseFixture(puzzle)
 
     expect(report.passed).toBe(true)
     expect(report.issues).toEqual([])
@@ -41,7 +41,7 @@ describe('case content verification harness', () => {
   })
 
   it('records the stable case-004 report shape for future MVP cases', () => {
-    const report = verifyCaseFixture(case004Fixture)
+    const report = verifyCaseFixture(getCaseById('case-004'))
 
     expect(report).toMatchObject({
       id: 'case-004',

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "case-008",
+  "title": "Room 08: Two Keys",
+  "caseName": "Case 08 - Two Keys",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Two unregistered guests",
+        "flavor": "Exactly two guests are in this room."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "C2",
+    "A3",
+    "B3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "guest",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 1,
+    "tags": [
+      "tutorial",
+      "two-guests"
+    ],
+    "author": "internal",
+    "status": "validated"
+  }
+}

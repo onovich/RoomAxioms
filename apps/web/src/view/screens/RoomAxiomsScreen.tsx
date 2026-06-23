@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { case004 } from '../../data/case004'
+import { getDefaultCase } from '../../content/cases'
 import { useRoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 import { BoardPanel } from '../components/BoardPanel'
 import { Dialogs } from '../components/Dialogs'
@@ -9,7 +9,7 @@ import { RulePanel } from '../components/RulePanel'
 import { TopBar } from '../components/TopBar'
 
 export function RoomAxiomsScreen() {
-  const game = useRoomAxiomsGame(case004)
+  const game = useRoomAxiomsGame(getDefaultCase())
   const [neighborhoodOpen, setNeighborhoodOpen] = useState(false)
 
   return (
@@ -29,4 +29,3 @@ export function RoomAxiomsScreen() {
     </div>
   )
 }
-

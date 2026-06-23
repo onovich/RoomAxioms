@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "case-009",
+  "title": "Room 09: Bottle Corner",
+  "caseName": "Case 09 - Bottle Corner",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Two unregistered guests",
+        "flavor": "Exactly two guests are in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle clearance",
+        "flavor": "Every bottle has no guest in its orthogonal neighborhood."
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2",
+    "A3",
+    "B3"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 1,
+    "tags": [
+      "tutorial",
+      "orthogonal",
+      "two-guests"
+    ],
+    "author": "internal",
+    "status": "validated"
+  }
+}
