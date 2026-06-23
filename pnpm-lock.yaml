@@ -10,6 +10,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@room-axioms/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       lucide-react:
         specifier: ^0.561.0
         version: 0.561.0(react@19.2.7)

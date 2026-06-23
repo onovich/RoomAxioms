@@ -1,5 +1,5 @@
 import { Circle, Flag, Search } from 'lucide-react'
-import { columnsForWidth } from '../../domain/coordinates'
+import { columnsForWidth } from '@room-axioms/domain'
 import { cellLabels, toolLabels } from '../../data/case004'
 import type { CellId, Tool } from '../../domain/types'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
@@ -188,4 +188,3 @@ function cellAria(
   if (mark === 'safe') return `${cellId}，未知，玩家标记为安全`
   return `${cellId}，未知，未标记`
 }
-

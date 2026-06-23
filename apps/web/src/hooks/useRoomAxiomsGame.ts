@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { allCells, neighbors } from '../domain/coordinates'
+import { allCells, neighbors } from '@room-axioms/domain'
 import { cellLabels } from '../data/case004'
 import { analyzePuzzle, type AnalysisResult } from '../logic/analysis'
 import { createHint, kindIsInspectable, type Hint } from '../logic/hints'
@@ -361,4 +361,3 @@ export function ruleById(
   if (!ruleId) return null
   return rules.find((rule) => rule.id === ruleId) ?? null
 }
-

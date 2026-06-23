@@ -1,4 +1,4 @@
-import { allCells, neighbors, sortCellIds } from '../domain/coordinates'
+import { allCells, neighbors, sortCellIds } from '@room-axioms/domain'
 import type { CellId, CellKind, Comparator, ForEachCountRule, PuzzleDefinition } from '../domain/types'
 
 export interface AnalysisResult {

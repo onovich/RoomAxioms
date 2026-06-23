@@ -12,6 +12,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@room-axioms/domain": "workspace:*",
     "lucide-react": "^0.561.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

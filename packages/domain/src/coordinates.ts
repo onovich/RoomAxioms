@@ -1,6 +1,8 @@
-import type { BoardSize, CellId, Coord, ScopeKind } from './types'
+import type { BoardSize, CellId, Coord, ScopeKind } from './types.js'
 
 export function columnsForWidth(width: number): readonly string[] {
+  assertPositiveInteger(width, 'width')
+
   return Array.from({ length: width }, (_, index) => {
     let n = index
     let label = ''
@@ -15,6 +17,8 @@ export function columnsForWidth(width: number): readonly string[] {
 }
 
 export function formatCellId(coord: Coord, size: BoardSize): CellId {
+  assertBoardSize(size)
+
   if (!isInside(coord, size)) {
     throw new Error(`Cell coordinate is outside the board: ${coord.x},${coord.y}`)
   }
@@ -23,6 +27,8 @@ export function formatCellId(coord: Coord, size: BoardSize): CellId {
 }
 
 export function parseCellId(id: CellId, size: BoardSize): Coord {
+  assertBoardSize(size)
+
   const match = /^([A-Za-z]+)([1-9][0-9]*)$/.exec(id.trim())
   if (!match) throw new Error(`Invalid cell id: ${id}`)
 
@@ -42,6 +48,8 @@ export function isInside(coord: Coord, size: BoardSize): boolean {
 }
 
 export function allCells(size: BoardSize): readonly CellId[] {
+  assertBoardSize(size)
+
   const cells: CellId[] = []
   for (let y = 0; y < size.height; y += 1) {
     for (let x = 0; x < size.width; x += 1) {
@@ -80,3 +88,13 @@ export function sortCellIds(ids: Iterable<CellId>, size: BoardSize): readonly Ce
   })
 }
 
+function assertBoardSize(size: BoardSize): void {
+  assertPositiveInteger(size.width, 'width')
+  assertPositiveInteger(size.height, 'height')
+}
+
+function assertPositiveInteger(value: number, name: string): void {
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`Board ${name} must be a positive integer: ${value}`)
+  }
+}
