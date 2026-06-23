@@ -76,7 +76,8 @@ function BoardRow({
 
 function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly cellId: CellId }) {
   const revealed = game.revealed.has(cellId)
-  const kind = game.puzzle.target[cellId]
+  const kind = game.observedKind(cellId)
+  const targetKind = game.developerTargetKind(cellId)
   const mark = game.marks.get(cellId)
   const classes = ['cell', ...game.highlightedCells(cellId)]
 
@@ -85,7 +86,7 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
   if (mark === 'safe') classes.push('mark-safe')
   if (game.devMode && !revealed && game.analysis.forcedSafe.includes(cellId)) classes.push('dev-safe')
   if (game.devMode && !revealed && game.analysis.forcedGuests.includes(cellId)) classes.push('dev-guest')
-  if (game.devMode && game.showTarget && !revealed) classes.push('target-spoiler')
+  if (targetKind !== null) classes.push('target-spoiler')
 
   return (
     <button
@@ -102,7 +103,7 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
       aria-label={cellAria(cellId, revealed, kind, mark)}
     >
       <span className="coord">{cellId}</span>
-      {revealed ? (
+      {revealed && kind !== null ? (
         <span className="object">
           <ObjectIcon kind={kind} />
           <span>{cellLabels[kind]}</span>
@@ -110,8 +111,8 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
       ) : (
         <CellUnknown mark={mark} />
       )}
-      {game.devMode && game.showTarget && !revealed ? (
-        <span className="target-tag">{cellLabels[kind]}</span>
+      {targetKind !== null ? (
+        <span className="target-tag">{cellLabels[targetKind]}</span>
       ) : null}
     </button>
   )
@@ -164,8 +165,11 @@ function ToolButton({
 function captionFor(game: RoomAxiomsGame): string {
   if (game.hoveredCell) {
     const mark = game.marks.get(game.hoveredCell)
+    const observedKind = game.observedKind(game.hoveredCell)
     const stateText = game.revealed.has(game.hoveredCell)
-      ? cellLabels[game.puzzle.target[game.hoveredCell]]
+      ? observedKind === null
+        ? '已揭示'
+        : cellLabels[observedKind]
       : mark === 'guest'
         ? '玩家标记：访客？'
         : mark === 'safe'
@@ -181,10 +185,10 @@ function captionFor(game: RoomAxiomsGame): string {
 function cellAria(
   cellId: CellId,
   revealed: boolean,
-  kind: string,
+  kind: keyof typeof cellLabels | null,
   mark: 'guest' | 'safe' | undefined,
 ): string {
-  if (revealed) return `${cellId}，已揭示，${cellLabels[kind as keyof typeof cellLabels]}`
+  if (revealed) return `${cellId}，已揭示，${kind === null ? '未知' : cellLabels[kind]}`
   if (mark === 'guest') return `${cellId}，未知，玩家标记为访客`
   if (mark === 'safe') return `${cellId}，未知，玩家标记为安全`
   return `${cellId}，未知，未标记`

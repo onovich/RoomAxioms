@@ -10,19 +10,19 @@ const CASE004_BUDGET = { maxNodes: 200_000, maxModels: 200_000, maxGuestLayouts:
 describe('runtime analyzer', () => {
   it('returns solver/proof-backed case-004 initial analysis', () => {
     const puzzle = loadCase004()
-  const analysis = analyzeRuntimeState(
-    {
-      requestId: 1,
-      kind: 'ANALYZE_STATE',
-      puzzle,
-      observations: initialObservations(puzzle),
-      mode: 'player',
-      options: {
-        solver: CASE004_BUDGET,
+    const analysis = analyzeRuntimeState(
+      {
+        requestId: 1,
+        kind: 'ANALYZE_STATE',
+        puzzle,
+        observations: initialObservations(puzzle),
+        mode: 'player',
+        options: {
+          solver: CASE004_BUDGET,
+        },
       },
-    },
-    { now: constantClock(10) },
-  )
+      { now: constantClock(10) },
+    )
 
     expect(analysis).toMatchObject({
       requestId: 1,
@@ -31,6 +31,7 @@ describe('runtime analyzer', () => {
       candidateGuestLayouts: 15,
       guestLayoutUnique: false,
       uniqueGuestCells: null,
+      binCandidates: ['B2'],
       forcedSafe: ['A1', 'C1', 'B2', 'D2', 'A3', 'B3', 'C3'],
       forcedGuests: [],
       warnings: [],

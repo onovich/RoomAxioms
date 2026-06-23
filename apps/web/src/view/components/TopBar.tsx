@@ -7,7 +7,6 @@ interface TopBarProps {
 
 export function TopBar({ game }: TopBarProps) {
   const guestMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
-  const guestTotal = Object.values(game.puzzle.target).filter((kind) => kind === 'guest').length
 
   return (
     <header className="topbar">
@@ -24,7 +23,7 @@ export function TopBar({ game }: TopBarProps) {
       </div>
 
       <div className="top-stats" aria-label="关卡进度">
-        <ProgressStat label="访客标记" value={`${guestMarks} / ${guestTotal}`} />
+        <ProgressStat label="访客标记" value={`${guestMarks} / ${game.targetGuestCount}`} />
         <ProgressStat label="已调查" value={`${game.revealed.size} / ${game.cells.length}`} />
         {game.devMode ? <ProgressStat label="候选布局" value={game.analysis.layouts.length} /> : null}
       </div>
@@ -58,4 +57,3 @@ function ProgressStat({ label, value }: { readonly label: string; readonly value
     </div>
   )
 }
-

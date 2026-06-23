@@ -1,3 +1,4 @@
+import { allCells, sortCellIds } from '@room-axioms/domain'
 import {
   buildProofGraph,
   deriveHumanDeductions,
@@ -11,9 +12,9 @@ import {
   isGuestLayoutUnique,
   isSatisfiable,
 } from '@room-axioms/solver'
-import type { Observation } from '@room-axioms/domain'
+import type { CellId, CellKind, Observation, PuzzleDefinition } from '@room-axioms/domain'
 import type { Deduction, VerificationIssue } from '@room-axioms/proof'
-import type { SolverStats } from '@room-axioms/solver'
+import type { SolverOptions, SolverStats } from '@room-axioms/solver'
 
 import type {
   RuntimeAnalysis,
@@ -52,6 +53,7 @@ export function analyzeRuntimeState(
   const candidateLayouts = countGuestLayouts(input, candidateLayoutCap, solverOptions)
   const forced = findForcedCells(input, solverOptions)
   const unique = isGuestLayoutUnique(input, solverOptions)
+  const binCandidates = findKindCandidates(request.puzzle, input.observations, 'bin', solverOptions)
   const deductions = deriveHumanDeductions(input)
   const proofGraph = buildProofGraph(input, deductions)
   const proofLines = renderProofText(proofGraph)
@@ -66,6 +68,7 @@ export function analyzeRuntimeState(
     candidateLayouts.stats,
     forced.stats,
     unique.stats,
+    binCandidates.stats,
     gapReport.stats,
   ])
 
@@ -96,6 +99,7 @@ export function analyzeRuntimeState(
       : { candidateGuestLayoutsGreaterThan: candidateLayouts.greaterThan }),
     guestLayoutUnique: unique.unique,
     uniqueGuestCells: unique.guestCells,
+    binCandidates: binCandidates.candidates,
     forcedSafe: forced.safe,
     forcedGuests: forced.guests,
     hint,
@@ -119,6 +123,7 @@ export function analyzeRuntimeState(
         candidateLayouts.stats,
         forced.stats,
         unique.stats,
+        binCandidates.stats,
         gapReport.stats,
         ...(noGuess === null ? [] : noGuess.waves.map((wave) => wave.solverStats)),
       ],
@@ -176,6 +181,35 @@ function collectSolverWarnings(
       code: 'SOLVER_TRUNCATED',
       message: 'At least one runtime analysis query reached a solver budget before completion.',
     })
+  }
+}
+
+function findKindCandidates(
+  puzzle: PuzzleDefinition,
+  observations: readonly Observation[],
+  kind: CellKind,
+  options: SolverOptions,
+): {
+  readonly candidates: readonly CellId[]
+  readonly stats: SolverStats
+} {
+  const observed = new Map(observations.map((observation) => [observation.cellId, observation.kind]))
+  const input = { puzzle, observations }
+  const candidates: CellId[] = []
+  let stats = zeroStats()
+
+  for (const cellId of allCells(puzzle.board)) {
+    const observedKind = observed.get(cellId)
+    if (observedKind !== undefined && observedKind !== kind) continue
+
+    const result = isSatisfiable(input, [{ kind: 'cellIs', cellId, value: kind }], options)
+    stats = combineStats(stats, result.stats)
+    if (!result.stats.truncated && result.satisfiable) candidates.push(cellId)
+  }
+
+  return {
+    candidates: sortCellIds(candidates, puzzle.board),
+    stats,
   }
 }
 

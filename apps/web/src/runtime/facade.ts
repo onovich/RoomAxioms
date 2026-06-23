@@ -107,6 +107,9 @@ export class RuntimeAnalysisFacade {
 
   private async runRequest(request: RuntimeAnalysisRequest): Promise<void> {
     try {
+      await Promise.resolve()
+      if (this.isStale(request.requestId)) return
+
       const analysis = await this.analyze(request)
       this.handleResponse({
         requestId: request.requestId,

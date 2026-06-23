@@ -118,6 +118,7 @@ function fakeAnalysis(requestId: number): RuntimeAnalysis {
     candidateGuestLayouts: 0,
     guestLayoutUnique: false,
     uniqueGuestCells: null,
+    binCandidates: [],
     forcedSafe: [],
     forcedGuests: [],
     hint: null,

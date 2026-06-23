@@ -1,16 +1,33 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { allCells, neighbors } from '@room-axioms/domain'
 import { cellLabels } from '../data/case004'
-import { analyzePuzzle, type AnalysisResult } from '../logic/analysis'
+import type { AnalysisResult } from '../logic/analysis'
 import { createHint, kindIsInspectable, type Hint } from '../logic/hints'
+import {
+  initialActionLogForTarget,
+  observationForTargetCell,
+  observationMapForRevealed,
+  targetGuestCells,
+  targetKindForDeveloperOverlay,
+} from '../logic/targetAccess'
+import { createRuntimeAnalysisFacade, type RuntimeFacadeSnapshot } from '../runtime/facade'
+import type {
+  AnalysisStatus,
+  RuntimeAnalysis,
+  RuntimeAnalysisError,
+  RuntimeAnalysisWarning,
+  RuntimeWorkerResponse,
+} from '../runtime/contracts'
 import type {
   CellId,
   CellKind,
+  Observation,
   ObservationEntry,
   PlayerMark,
   PuzzleDefinition,
   RuleDefinition,
 } from '@room-axioms/domain'
+import type { SolverStats } from '@room-axioms/solver'
 import type { Tool } from '../view/types'
 
 type StatusKind = 'normal' | 'success' | 'error'
@@ -46,10 +63,18 @@ export interface RoomAxiomsGame {
   readonly hintCount: number
   readonly inspectCount: number
   readonly analysis: AnalysisResult
+  readonly analysisStatus: AnalysisStatus
+  readonly analysisError: RuntimeAnalysisError | null
+  readonly analysisWarnings: readonly RuntimeAnalysisWarning[]
+  readonly analysisRequestId: number | null
+  readonly runtimeAnalysis: RuntimeAnalysis | null
+  readonly targetGuestCount: number
   readonly status: StatusMessage
   readonly hint: Hint | null
   readonly result: ResultDialogState | null
   readonly mobilePanel: MobilePanel
+  readonly observedKind: (cellId: CellId) => CellKind | null
+  readonly developerTargetKind: (cellId: CellId) => CellKind | null
   readonly setTool: (tool: Tool) => void
   readonly setHoveredCell: (cellId: CellId | null) => void
   readonly selectRule: (ruleId: string) => void
@@ -73,7 +98,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   )
   const [marks, setMarks] = useState<ReadonlyMap<CellId, PlayerMark>>(() => new Map())
   const [actionLog, setActionLog] = useState<readonly ObservationEntry[]>(() =>
-    initialActionLog(puzzle),
+    initialActionLogForTarget(puzzle),
   )
   const [tool, setTool] = useState<Tool>('inspect')
   const [selectedRule, setSelectedRule] = useState<string | null>(null)
@@ -90,12 +115,45 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   const [hint, setHint] = useState<Hint | null>(null)
   const [result, setResult] = useState<ResultDialogState | null>(null)
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>('board')
+  const [analysis, setAnalysis] = useState<AnalysisResult>(() => emptyAnalysis())
+  const [runtimeAnalysis, setRuntimeAnalysis] = useState<RuntimeAnalysis | null>(null)
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<RuntimeFacadeSnapshot>(() =>
+    idleRuntimeSnapshot(),
+  )
+  const runtimeFacade = useMemo(
+    () =>
+      createRuntimeAnalysisFacade({
+        onResponse: (response) => {
+          setAnalysisSnapshot(snapshotFromResponse(response))
+          if (response.status === 'ready') {
+            setRuntimeAnalysis(response.analysis)
+            setAnalysis(analysisResultFromRuntime(response.analysis))
+          }
+        },
+      }),
+    [],
+  )
+  const targetGuests = useMemo(() => targetGuestCells(puzzle), [puzzle])
 
   const observations = useMemo(() => {
-    return new Map([...revealed].map((id) => [id, puzzle.target[id]] as const))
+    return observationMapForRevealed(puzzle, revealed)
   }, [puzzle, revealed])
 
-  const analysis = useMemo(() => analyzePuzzle(puzzle, observations), [observations, puzzle])
+  useEffect(() => {
+    const requestId = runtimeFacade.submit({
+      kind: 'ANALYZE_STATE',
+      puzzle,
+      observations: observationsFromMap(observations),
+      mode: devMode ? 'developer' : 'player',
+      options: {
+        includeNoGuessReport: devMode,
+      },
+    })
+
+    return () => {
+      runtimeFacade.cancel(requestId)
+    }
+  }, [devMode, observations, puzzle, runtimeFacade])
 
   const setStatusMessage = useCallback((text: string, kind: StatusKind = 'normal') => {
     setStatus({ text, kind })
@@ -111,6 +169,19 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       setShowTargetState(devMode && enabled)
     },
     [devMode],
+  )
+
+  const observedKind = useCallback(
+    (cellId: CellId) => observations.get(cellId) ?? null,
+    [observations],
+  )
+
+  const developerTargetKind = useCallback(
+    (cellId: CellId) => {
+      if (!devMode || !showTarget || revealed.has(cellId)) return null
+      return targetKindForDeveloperOverlay(puzzle, cellId)
+    },
+    [devMode, puzzle, revealed, showTarget],
   )
 
   const setMark = useCallback(
@@ -142,7 +213,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         return
       }
 
-      const kind = puzzle.target[cellId]
+      const { kind } = observationForTargetCell(puzzle, cellId)
       setInspectCount((value) => value + 1)
       setRevealed((current) => new Set(current).add(cellId))
       setActionLog((current) => [
@@ -223,7 +294,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         return classes
       }
 
-      const visibleSubjects = [...revealed].filter((id) => puzzle.target[id] === rule.subject)
+      const visibleSubjects = [...revealed].filter((id) => observations.get(id) === rule.subject)
       if (visibleSubjects.includes(cellId)) classes.push('subject-highlight')
       if (visibleSubjects.some((subject) => neighbors(subject, rule.scope.kind, puzzle.board).includes(cellId))) {
         classes.push('scope-highlight')
@@ -232,24 +303,19 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
       return classes
     },
-    [hint?.highlight, puzzle, revealed, selectedRule],
+    [hint?.highlight, observations, puzzle, revealed, selectedRule],
   )
 
   const requestHint = useCallback(() => {
     setHintCount((value) => value + 1)
-    setHint(createHint(puzzle, revealed, marks, analysis))
-  }, [analysis, marks, puzzle, revealed])
+    setHint(createHint(puzzle, runtimeAnalysis?.hint ?? null))
+  }, [puzzle, runtimeAnalysis?.hint])
 
   const submitConclusion = useCallback(() => {
     const guestMarks = [...marks.entries()]
       .filter(([, value]) => value === 'guest')
       .map(([id]) => id)
       .sort()
-    const targetGuests = Object.entries(puzzle.target)
-      .filter(([, kind]) => kind === 'guest')
-      .map(([id]) => id)
-      .sort()
-
     if (guestMarks.length !== targetGuests.length) {
       setStatusMessage(`需要标记恰好 ${targetGuests.length} 名访客；当前为 ${guestMarks.length}。`, 'error')
       return
@@ -271,12 +337,12 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         { label: '剩余候选布局', value: analysis.layouts.length },
       ],
     })
-  }, [analysis.layouts.length, hintCount, marks, puzzle.target, revealed.size, setStatusMessage])
+  }, [analysis.layouts.length, hintCount, marks, revealed.size, setStatusMessage, targetGuests])
 
   const reset = useCallback(() => {
     setRevealed(new Set(puzzle.initialReveals))
     setMarks(new Map())
-    setActionLog(initialActionLog(puzzle))
+    setActionLog(initialActionLogForTarget(puzzle))
     setTool('inspect')
     setSelectedRule(null)
     setHoveredCell(null)
@@ -324,10 +390,18 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     hintCount,
     inspectCount,
     analysis,
+    analysisStatus: analysisSnapshot.status,
+    analysisError: analysisSnapshot.error,
+    analysisWarnings: runtimeAnalysis?.warnings ?? [],
+    analysisRequestId: analysisSnapshot.requestId,
+    runtimeAnalysis,
+    targetGuestCount: targetGuests.length,
     status,
     hint,
     result,
     mobilePanel,
+    observedKind,
+    developerTargetKind,
     setTool,
     setHoveredCell,
     selectRule,
@@ -345,13 +419,101 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   }
 }
 
-function initialActionLog(puzzle: PuzzleDefinition): readonly ObservationEntry[] {
-  return puzzle.initialReveals.map((id, order) => ({
-    id,
-    kind: puzzle.target[id],
-    initial: true,
-    order,
-  }))
+function observationsFromMap(observations: ReadonlyMap<CellId, CellKind>): readonly Observation[] {
+  return [...observations.entries()].map(([cellId, kind]) => ({ cellId, kind }))
+}
+
+function analysisResultFromRuntime(runtimeAnalysis: RuntimeAnalysis): AnalysisResult {
+  const layoutCount = runtimeAnalysis.candidateGuestLayouts
+
+  return {
+    layouts: legacyLayoutSummary(layoutCount, runtimeAnalysis.uniqueGuestCells),
+    layoutCount,
+    ...(runtimeAnalysis.candidateGuestLayoutsGreaterThan === undefined
+      ? {}
+      : { layoutCountGreaterThan: runtimeAnalysis.candidateGuestLayoutsGreaterThan }),
+    binCandidates: runtimeAnalysis.binCandidates,
+    forcedSafe: runtimeAnalysis.forcedSafe,
+    forcedGuests: runtimeAnalysis.forcedGuests,
+    unique: runtimeAnalysis.guestLayoutUnique,
+    satisfiable: runtimeAnalysis.satisfiable,
+    truncated: runtimeAnalysis.stats.solver.truncated,
+    stats: runtimeAnalysis.stats.solver,
+    elapsed: runtimeAnalysis.stats.elapsedMs,
+  }
+}
+
+function legacyLayoutSummary(
+  count: number,
+  uniqueGuestCells: readonly CellId[] | null,
+): readonly (readonly CellId[])[] {
+  if (count === 1 && uniqueGuestCells !== null) return [uniqueGuestCells]
+  return Array.from({ length: count }, () => [])
+}
+
+function emptyAnalysis(): AnalysisResult {
+  return {
+    layouts: [],
+    layoutCount: 0,
+    binCandidates: [],
+    forcedSafe: [],
+    forcedGuests: [],
+    unique: false,
+    satisfiable: false,
+    truncated: false,
+    stats: zeroStats(),
+    elapsed: 0,
+  }
+}
+
+function idleRuntimeSnapshot(): RuntimeFacadeSnapshot {
+  return {
+    requestId: null,
+    status: 'idle',
+    analysis: null,
+    error: null,
+  }
+}
+
+function snapshotFromResponse(response: RuntimeWorkerResponse): RuntimeFacadeSnapshot {
+  switch (response.status) {
+    case 'loading':
+      return {
+        requestId: response.requestId,
+        status: 'loading',
+        analysis: null,
+        error: null,
+      }
+    case 'ready':
+      return {
+        requestId: response.requestId,
+        status: 'ready',
+        analysis: response.analysis,
+        error: null,
+      }
+    case 'error':
+      return {
+        requestId: response.requestId,
+        status: 'error',
+        analysis: null,
+        error: response.error,
+      }
+    case 'stale':
+      return {
+        requestId: response.requestId,
+        status: 'stale',
+        analysis: null,
+        error: null,
+      }
+  }
+}
+
+function zeroStats(): SolverStats {
+  return {
+    nodeCount: 0,
+    propagationCount: 0,
+    truncated: false,
+  }
 }
 
 export function ruleById(

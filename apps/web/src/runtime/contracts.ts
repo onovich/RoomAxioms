@@ -75,6 +75,7 @@ export interface RuntimeAnalysis {
   readonly candidateGuestLayoutsGreaterThan?: number
   readonly guestLayoutUnique: boolean
   readonly uniqueGuestCells: readonly CellId[] | null
+  readonly binCandidates: readonly CellId[]
   readonly forcedSafe: readonly CellId[]
   readonly forcedGuests: readonly CellId[]
   readonly hint: RuntimeHint | null

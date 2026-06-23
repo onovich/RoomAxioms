@@ -1,13 +1,5 @@
-import { analyzeRuntimeState } from '../runtime/analyzer'
-import type { AnalysisResult } from './analysis'
 import type { RuntimeHint } from '../runtime/contracts'
-import type {
-  CellId,
-  CellKind,
-  Observation,
-  PlayerMark,
-  PuzzleDefinition,
-} from '@room-axioms/domain'
+import type { CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 export interface Hint {
   readonly title: string
@@ -19,23 +11,10 @@ export interface Hint {
 
 export function createHint(
   puzzle: PuzzleDefinition,
-  revealed: ReadonlySet<CellId>,
-  _marks: ReadonlyMap<CellId, PlayerMark>,
-  _analysis: AnalysisResult,
+  runtimeHint: RuntimeHint | null,
 ): Hint {
-  void _marks
-  void _analysis
-
-  const runtimeAnalysis = analyzeRuntimeState({
-    requestId: 0,
-    kind: 'GET_HINT',
-    puzzle,
-    observations: observationsFromRevealed(puzzle, revealed),
-    mode: 'player',
-  })
-
-  if (runtimeAnalysis.hint !== null) {
-    return hintFromRuntime(runtimeAnalysis.hint)
+  if (runtimeHint !== null) {
+    return hintFromRuntime(runtimeHint)
   }
 
   return {
@@ -49,16 +28,6 @@ export function createHint(
 
 export function kindIsInspectable(kind: CellKind): boolean {
   return kind !== 'guest'
-}
-
-function observationsFromRevealed(
-  puzzle: PuzzleDefinition,
-  revealed: ReadonlySet<CellId>,
-): readonly Observation[] {
-  return [...revealed].map((cellId) => ({
-    cellId,
-    kind: puzzle.target[cellId],
-  }))
 }
 
 function hintFromRuntime(runtimeHint: RuntimeHint): Hint {

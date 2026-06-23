@@ -80,6 +80,9 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
       </div>
       <p className="dev-warning">以下信息不属于玩家可见线索。</p>
       <dl className="dev-grid">
+        <DevStat label="Runtime" value={runtimeStatusText(game)} />
+        <DevStat label="Warnings" value={runtimeWarningsText(game)} />
+        {game.analysisError ? <DevStat label="Error" value={game.analysisError.message} /> : null}
         <DevStat label="候选危险布局" value={game.analysis.layouts.length} />
         <DevStat label="垃圾桶候选" value={game.analysis.binCandidates.join('、') || '无'} />
         <DevStat label="强制安全" value={game.analysis.forcedSafe.join('、') || '-'} />
@@ -107,6 +110,17 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
   )
 }
 
+function runtimeStatusText(game: RoomAxiomsGame): string {
+  const request = game.analysisRequestId === null ? '-' : `#${game.analysisRequestId}`
+  const suffix = game.analysis.truncated ? ' / truncated' : ''
+  return `${game.analysisStatus} ${request}${suffix}`
+}
+
+function runtimeWarningsText(game: RoomAxiomsGame): string {
+  if (game.analysisWarnings.length === 0) return '-'
+  return game.analysisWarnings.map((warning) => warning.code).join(', ')
+}
+
 function DevStat({ label, value }: { readonly label: string; readonly value: string | number }) {
   return (
     <div>
@@ -115,4 +129,3 @@ function DevStat({ label, value }: { readonly label: string; readonly value: str
     </div>
   )
 }
-

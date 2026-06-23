@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest'
 
 import { case004 } from '../data/case004'
-import { analyzePuzzle } from './analysis'
+import { analyzeRuntimeState } from '../runtime/analyzer'
 import { createHint } from './hints'
-import type { CellId, CellKind, PlayerMark } from '@room-axioms/domain'
+import { observationsForRevealed } from './targetAccess'
+import type { CellId } from '@room-axioms/domain'
 
 describe('proof-backed hints', () => {
   it('selects the deterministic next case-004 proof deduction', () => {
     const revealed = new Set<CellId>(case004.initialReveals)
-    const analysis = analyzePuzzle(case004, observations(revealed), () => 0)
-    const hint = createHint(case004, revealed, new Map(), analysis)
+    const runtimeAnalysis = analyzeRuntimeState({
+      requestId: 1,
+      kind: 'GET_HINT',
+      puzzle: case004,
+      observations: observationsForRevealed(case004, revealed),
+      mode: 'player',
+    })
+    const hint = createHint(case004, runtimeAnalysis.hint)
 
     expect(hint.highlight).toBe('A1')
     expect(hint.conclusion).toBe('A1 is safe to inspect.')
@@ -17,21 +24,23 @@ describe('proof-backed hints', () => {
     expect(hint.reasoning).toContain('proof package deduction graph')
   })
 
-  it('does not treat player marks as proof facts', () => {
+  it('renders stable hints from the same public observations', () => {
     const revealed = new Set<CellId>(case004.initialReveals)
-    const analysis = analyzePuzzle(case004, observations(revealed), () => 0)
-    const markedGuests = new Map<CellId, PlayerMark>([
-      ['A1', 'guest'],
-      ['D1', 'guest'],
-    ])
+    const first = analyzeRuntimeState({
+      requestId: 1,
+      kind: 'GET_HINT',
+      puzzle: case004,
+      observations: observationsForRevealed(case004, revealed),
+      mode: 'player',
+    })
+    const second = analyzeRuntimeState({
+      requestId: 2,
+      kind: 'GET_HINT',
+      puzzle: case004,
+      observations: observationsForRevealed(case004, revealed),
+      mode: 'player',
+    })
 
-    expect(createHint(case004, revealed, markedGuests, analysis)).toEqual(
-      createHint(case004, revealed, new Map(), analysis),
-    )
+    expect(createHint(case004, first.hint)).toEqual(createHint(case004, second.hint))
   })
 })
-
-function observations(revealed: ReadonlySet<CellId>): ReadonlyMap<CellId, CellKind> {
-  const target = case004.target as Readonly<Record<CellId, CellKind>>
-  return new Map([...revealed].map((cellId) => [cellId, target[cellId]] as const))
-}
