@@ -88,7 +88,7 @@
     "devServer":  {
                       "startCommand":  "pnpm --filter @room-axioms/web dev -- --host 127.0.0.1 --port 5173 --strictPort",
                       "healthUrl":  "http://127.0.0.1:5173/RoomAxioms/",
-                      "readyText":  "Local:",
+                      "readyText":  "Room Axioms",
                       "startupTimeoutSeconds":  30,
                       "pidFile":  ".codex/project-ops-devserver.pid"
                   },
