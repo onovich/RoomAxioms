@@ -33,6 +33,10 @@ export {
   isForEachCountRule,
   isGlobalCountRule,
 } from './reasoner.js';
+export {
+  findExplanationGaps,
+  verifyDeduction,
+} from './validation.js';
 export type {
   CountBounds,
   CountSummary,
@@ -43,6 +47,8 @@ export type {
   Deduction,
   DeductionConclusion,
   DeductionInput,
+  DeductionValidationResult,
+  ExplanationGapReport,
   KnowledgeState,
   ProofGraph,
   ProofNode,

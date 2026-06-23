@@ -73,6 +73,23 @@ export interface VerificationIssue {
   readonly waveIndex?: number;
 }
 
+export interface DeductionValidationResult {
+  readonly deductionId: string;
+  readonly valid: boolean;
+  readonly issues: readonly VerificationIssue[];
+  readonly stats: SolverStats;
+}
+
+export interface ExplanationGapReport {
+  readonly forcedSafe: readonly CellId[];
+  readonly forcedGuests: readonly CellId[];
+  readonly explainedSafe: readonly CellId[];
+  readonly explainedGuests: readonly CellId[];
+  readonly validationResults: readonly DeductionValidationResult[];
+  readonly issues: readonly VerificationIssue[];
+  readonly stats: SolverStats;
+}
+
 export interface VerificationWave {
   readonly index: number;
   readonly observations: readonly Observation[];
