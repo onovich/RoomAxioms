@@ -1,4 +1,4 @@
-import type { RuleDefinition } from '../domain/types'
+import type { RuleDefinition } from '@room-axioms/domain'
 
 export function ruleChip(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
@@ -24,4 +24,3 @@ function shortKind(kind: string): string {
   if (kind === 'guest') return '客'
   return '空'
 }
-

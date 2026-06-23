@@ -1,5 +1,5 @@
 import { allCells, neighbors, sortCellIds } from '@room-axioms/domain'
-import type { CellId, CellKind, Comparator, ForEachCountRule, PuzzleDefinition } from '../domain/types'
+import type { CellId, CellKind, Comparator, ForEachCountRule, PuzzleDefinition } from '@room-axioms/domain'
 
 export interface AnalysisResult {
   readonly layouts: readonly (readonly CellId[])[]

@@ -10,8 +10,8 @@ import type {
   PlayerMark,
   PuzzleDefinition,
   RuleDefinition,
-  Tool,
-} from '../domain/types'
+} from '@room-axioms/domain'
+import type { Tool } from '../view/types'
 
 type StatusKind = 'normal' | 'success' | 'error'
 type ResultKind = 'success' | 'failure'

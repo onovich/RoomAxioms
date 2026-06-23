@@ -1,5 +1,5 @@
 import type { AnalysisResult } from './analysis'
-import type { CellId, CellKind, PlayerMark, PuzzleDefinition } from '../domain/types'
+import type { CellId, CellKind, PlayerMark, PuzzleDefinition } from '@room-axioms/domain'
 
 export interface Hint {
   readonly title: string
@@ -103,4 +103,3 @@ function safeFromBinHint(cellId: CellId): Hint {
 export function kindIsInspectable(kind: CellKind): boolean {
   return kind !== 'guest'
 }
-

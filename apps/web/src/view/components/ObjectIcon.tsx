@@ -1,4 +1,4 @@
-import type { CellKind } from '../../domain/types'
+import type { CellKind } from '@room-axioms/domain'
 
 interface ObjectIconProps {
   readonly kind: CellKind
@@ -48,4 +48,3 @@ export function ObjectIcon({ kind }: ObjectIconProps) {
     </svg>
   )
 }
-

@@ -1,8 +1,9 @@
 import { Circle, Flag, Search } from 'lucide-react'
 import { columnsForWidth } from '@room-axioms/domain'
 import { cellLabels, toolLabels } from '../../data/case004'
-import type { CellId, Tool } from '../../domain/types'
+import type { CellId } from '@room-axioms/domain'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import type { Tool } from '../types'
 import { ObjectIcon } from './ObjectIcon'
 
 interface BoardPanelProps {

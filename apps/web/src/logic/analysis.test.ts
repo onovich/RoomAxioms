@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { case004 } from '../data/case004'
-import type { CellKind } from '../domain/types'
+import type { CellKind } from '@room-axioms/domain'
 import { analyzePuzzle } from './analysis'
 
 function observations(ids: readonly string[]) {

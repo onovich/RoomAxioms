@@ -8,4 +8,24 @@ export {
   sortCellIds,
 } from './coordinates.js'
 
-export type { BoardSize, CellId, CellKind, Coord, ScopeKind } from './types.js'
+export { assertNever } from './types.js'
+
+export type {
+  BoardSize,
+  CellId,
+  CellKind,
+  Comparator,
+  Coord,
+  ForEachCountRule,
+  GlobalCountRule,
+  LocalScope,
+  Observation,
+  ObservationEntry,
+  PlayerMark,
+  PuzzleDefinition,
+  PuzzleMetadata,
+  RuleDefinition,
+  RulePresentation,
+  Scope,
+  ScopeKind,
+} from './types.js'

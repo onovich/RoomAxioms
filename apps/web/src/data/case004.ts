@@ -1,4 +1,5 @@
-import type { CellKind, PlayerMark, PuzzleDefinition, Tool } from '../domain/types'
+import type { CellKind, PlayerMark, PuzzleDefinition } from '@room-axioms/domain'
+import type { Tool } from '../view/types'
 
 export const cellLabels: Readonly<Record<CellKind, string>> = {
   empty: '空地',
@@ -121,4 +122,3 @@ export const case004 = {
     status: 'draft',
   },
 } as const satisfies PuzzleDefinition
-
