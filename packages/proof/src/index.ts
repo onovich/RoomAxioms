@@ -37,6 +37,9 @@ export {
   findExplanationGaps,
   verifyDeduction,
 } from './validation.js';
+export {
+  verifyNoGuess,
+} from './verifier.js';
 export type {
   CountBounds,
   CountSummary,

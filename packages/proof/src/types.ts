@@ -112,6 +112,7 @@ export interface VerificationReport {
   readonly satisfiable: boolean;
   readonly targetSatisfiesRules: boolean;
   readonly guestLayoutUniqueAtEnd: boolean;
+  readonly finalGuestCells: readonly CellId[] | null;
   readonly noGuess: boolean;
   readonly humanExplainable: boolean;
   readonly waves: readonly VerificationWave[];

@@ -27,6 +27,7 @@ describe('@room-axioms/proof package boundary', () => {
       satisfiable: true,
       targetSatisfiesRules: true,
       guestLayoutUniqueAtEnd: false,
+      finalGuestCells: null,
       noGuess: false,
       humanExplainable: false,
       waves: [],
