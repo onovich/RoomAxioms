@@ -104,6 +104,25 @@ importers:
         specifier: ^4.1.0
         version: 4.1.9(@types/node@24.13.2)(vite@8.0.16(@types/node@24.13.2))
 
+  packages/solver:
+    dependencies:
+      '@room-axioms/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@room-axioms/schema':
+        specifier: workspace:*
+        version: link:../schema
+    devDependencies:
+      '@room-axioms/oracle':
+        specifier: workspace:*
+        version: link:../oracle
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.9(@types/node@24.13.2)(vite@8.0.16(@types/node@24.13.2))
+
 packages:
 
   '@babel/code-frame@7.29.7':
