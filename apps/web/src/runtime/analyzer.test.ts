@@ -31,8 +31,8 @@ describe('runtime analyzer', () => {
       candidateGuestLayouts: 15,
       guestLayoutUnique: false,
       uniqueGuestCells: null,
-      binCandidates: ['B2'],
-      forcedSafe: ['A1', 'C1', 'B2', 'D2', 'A3', 'B3', 'C3'],
+      binCandidates: [],
+      forcedSafe: [],
       forcedGuests: [],
       warnings: [],
     })
@@ -70,6 +70,9 @@ describe('runtime analyzer', () => {
       guestLayoutUniqueAtEnd: true,
       finalGuestCells: ['D1', 'B4'],
     })
+    expect(analysis.binCandidates).toEqual(['B2'])
+    expect(analysis.forcedSafe).toEqual(['A1', 'C1', 'B2', 'D2', 'A3', 'B3', 'C3'])
+    expect(analysis.forcedGuests).toEqual([])
     expect(analysis.warnings).toEqual([])
   })
 

@@ -48,16 +48,26 @@ export function analyzeRuntimeState(
     observations: request.observations,
   }
   const warnings: RuntimeAnalysisWarning[] = []
+  const includeDeveloperDiagnostics =
+    request.mode === 'developer' || request.kind === 'VERIFY_CASE'
 
   const satisfiable = isSatisfiable(input, [], solverOptions)
   const candidateLayouts = countGuestLayouts(input, candidateLayoutCap, solverOptions)
-  const forced = findForcedCells(input, solverOptions)
-  const unique = isGuestLayoutUnique(input, solverOptions)
-  const binCandidates = findKindCandidates(request.puzzle, input.observations, 'bin', solverOptions)
+  const forced = includeDeveloperDiagnostics
+    ? findForcedCells(input, solverOptions)
+    : emptyForcedCells()
+  const unique = includeDeveloperDiagnostics
+    ? isGuestLayoutUnique(input, solverOptions)
+    : emptyUniqueLayout()
+  const binCandidates = includeDeveloperDiagnostics
+    ? findKindCandidates(request.puzzle, input.observations, 'bin', solverOptions)
+    : emptyCandidateCells()
   const deductions = deriveHumanDeductions(input)
   const proofGraph = buildProofGraph(input, deductions)
   const proofLines = renderProofText(proofGraph)
-  const gapReport = findExplanationGaps(input, deductions, solverOptions)
+  const gapReport = includeDeveloperDiagnostics
+    ? findExplanationGaps(input, deductions, solverOptions)
+    : emptyGapReport()
   const hint = selectRuntimeHint(request.observations, deductions, proofLines)
   const noGuess = request.options?.includeNoGuessReport === true
     ? verifyNoGuess(request.puzzle, { solver: solverOptions })
@@ -210,6 +220,50 @@ function findKindCandidates(
   return {
     candidates: sortCellIds(candidates, puzzle.board),
     stats,
+  }
+}
+
+function emptyForcedCells(): {
+  readonly safe: readonly CellId[]
+  readonly guests: readonly CellId[]
+  readonly stats: SolverStats
+} {
+  return {
+    safe: [],
+    guests: [],
+    stats: zeroStats(),
+  }
+}
+
+function emptyUniqueLayout(): {
+  readonly unique: boolean
+  readonly guestCells: readonly CellId[] | null
+  readonly stats: SolverStats
+} {
+  return {
+    unique: false,
+    guestCells: null,
+    stats: zeroStats(),
+  }
+}
+
+function emptyCandidateCells(): {
+  readonly candidates: readonly CellId[]
+  readonly stats: SolverStats
+} {
+  return {
+    candidates: [],
+    stats: zeroStats(),
+  }
+}
+
+function emptyGapReport(): {
+  readonly issues: readonly VerificationIssue[]
+  readonly stats: SolverStats
+} {
+  return {
+    issues: [],
+    stats: zeroStats(),
   }
 }
 
