@@ -50,6 +50,12 @@
 5. 接入 React UI、Web Worker 和开发者验证层。
 6. 用 `prototype/index.html` 作为视觉与交互参考，不把其中硬编码的样例逻辑直接当成生产架构。
 
+## 当前执行指南
+
+- 当前阶段：**Phase 1 - Domain Core Package**
+- 执行指南：`../../phase-1-domain-core-goal-mode-execution-guide.md`
+- 预算：8 个执行者会话轮
+
 ## MVP 完成定义
 
 - 能加载至少 10 个关卡 JSON。

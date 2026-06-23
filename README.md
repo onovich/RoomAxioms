@@ -12,6 +12,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
 
+## Active Goal Guide
+
+- Phase 1: Domain Core Package
+- Guide: `docs/phase-1-domain-core-goal-mode-execution-guide.md`
+- Budget: 8 executor rounds
+
 ## Commands
 
 ```powershell
