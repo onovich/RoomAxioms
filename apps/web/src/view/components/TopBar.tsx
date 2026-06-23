@@ -1,11 +1,15 @@
 import { Lightbulb, RotateCcw } from 'lucide-react'
+import type { CaseSummary } from '../../content/cases'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 
 interface TopBarProps {
   readonly game: RoomAxiomsGame
+  readonly cases: readonly CaseSummary[]
+  readonly selectedCaseId: string
+  readonly onSelectCase: (caseId: string) => void
 }
 
-export function TopBar({ game }: TopBarProps) {
+export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProps) {
   const guestMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
 
   return (
@@ -18,7 +22,23 @@ export function TopBar({ game }: TopBarProps) {
           <div className="brand">
             房间公理 <span>Room Axioms</span>
           </div>
-          <div className="case-name">{game.puzzle.caseName}</div>
+          <div className="case-meta">
+            <div className="case-name">{game.puzzle.caseName}</div>
+            <label className="case-picker">
+              <span>Case</span>
+              <select
+                value={selectedCaseId}
+                onChange={(event) => onSelectCase(event.target.value)}
+                aria-label="Select case"
+              >
+                {cases.map((caseItem) => (
+                  <option value={caseItem.id} key={caseItem.id}>
+                    {caseItem.caseName}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
       </div>
 

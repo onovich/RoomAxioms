@@ -47,7 +47,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -56,7 +57,8 @@ button {
 }
 
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
   outline: 3px solid var(--info);
   outline-offset: 3px;
 }
@@ -144,7 +146,33 @@ h3 {
 .case-name {
   color: var(--muted);
   font-size: 13px;
+}
+
+.case-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 2px;
+}
+
+.case-picker {
+  align-items: center;
+  color: var(--faint);
+  display: inline-flex;
+  font-size: 11px;
+  gap: 6px;
+}
+
+.case-picker select {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 230px;
+  min-height: 29px;
+  padding: 3px 7px;
 }
 
 .top-stats {
@@ -1224,6 +1252,10 @@ h3 {
   .brand span,
   .case-name {
     display: none;
+  }
+
+  .case-picker select {
+    max-width: 150px;
   }
 
   .brand-mark {
