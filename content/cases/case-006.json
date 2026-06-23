@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "id": "case-006",
+  "title": "Room 06: South Ledger",
+  "caseName": "Case 06 - South Ledger",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Cleaning bin",
+        "flavor": "Exactly one cleaning bin is in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Unregistered guests",
+        "flavor": "Exactly two guests are in this room."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cleanup",
+        "flavor": "Every bottle has exactly one bin in its orthogonal neighborhood."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Clear bin zone",
+        "flavor": "Every bin has no guest in its adjacent neighborhood."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror sightline",
+        "flavor": "Every mirror has exactly one guest in its adjacent neighborhood."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle quiet zone",
+        "flavor": "Every bottle has no guest in its orthogonal neighborhood."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A3",
+    "C3",
+    "B4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "guest",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "mirror",
+    "B2": "empty",
+    "C2": "mirror",
+    "D2": "empty",
+    "A3": "bottle",
+    "B3": "bin",
+    "C3": "bottle",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "bottle",
+    "C4": "mirror",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 2,
+    "tags": [
+      "intersection",
+      "local-count",
+      "vertical-variant"
+    ],
+    "author": "internal",
+    "status": "validated"
+  }
+}

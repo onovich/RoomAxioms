@@ -4,6 +4,9 @@ import case001Fixture from '../../../../content/cases/case-001.json' with { type
 import case002Fixture from '../../../../content/cases/case-002.json' with { type: 'json' }
 import case003Fixture from '../../../../content/cases/case-003.json' with { type: 'json' }
 import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
+import case005Fixture from '../../../../content/cases/case-005.json' with { type: 'json' }
+import case006Fixture from '../../../../content/cases/case-006.json' with { type: 'json' }
+import case007Fixture from '../../../../content/cases/case-007.json' with { type: 'json' }
 import { verifyCaseFixture } from './caseVerification'
 
 const caseFixtures = [
@@ -11,6 +14,9 @@ const caseFixtures = [
   { id: 'case-002', fixture: case002Fixture },
   { id: 'case-003', fixture: case003Fixture },
   { id: 'case-004', fixture: case004Fixture },
+  { id: 'case-005', fixture: case005Fixture },
+  { id: 'case-006', fixture: case006Fixture },
+  { id: 'case-007', fixture: case007Fixture },
 ] as const
 
 describe('case content verification harness', () => {
