@@ -8,6 +8,7 @@ import { verifyCase } from './caseVerification'
 
 const BASELINE_RUNS = 9
 const BASELINE_WARMUP_RUNS = 2
+const RUNTIME_ANALYSIS_PRODUCT_TARGET_MS = 100
 const RUNTIME_ANALYSIS_P95_CEILING_MS = 500
 const CANDIDATE_CAP_P95_MS = 200
 const FULL_VERIFICATION_P95_MS = 2_000
@@ -40,6 +41,14 @@ describe('MVP performance baseline', () => {
 
     expect(summary.last.status).toBe('ready')
     expect(summary.last.stats.solver.truncated).toBe(false)
+    recordPerformanceEvidence('case-004 player runtime', {
+      p95Ms: roundMs(summary.p95Ms),
+      worstMs: roundMs(summary.worstMs),
+      ceilingMs: RUNTIME_ANALYSIS_P95_CEILING_MS,
+      productTargetMs: RUNTIME_ANALYSIS_PRODUCT_TARGET_MS,
+      meetsProductTarget: summary.p95Ms <= RUNTIME_ANALYSIS_PRODUCT_TARGET_MS,
+      truncated: summary.last.stats.solver.truncated,
+    })
     expect(summary.p95Ms).toBeLessThanOrEqual(RUNTIME_ANALYSIS_P95_CEILING_MS)
   })
 
@@ -59,6 +68,12 @@ describe('MVP performance baseline', () => {
     expect(summary.last.count).toBe(cap)
     expect(summary.last.greaterThan).toBe(cap)
     expect(summary.last.stats.truncated).toBe(false)
+    recordPerformanceEvidence('5x5 candidate cap', {
+      p95Ms: roundMs(summary.p95Ms),
+      worstMs: roundMs(summary.worstMs),
+      ceilingMs: CANDIDATE_CAP_P95_MS,
+      truncated: summary.last.stats.truncated,
+    })
     expect(summary.p95Ms).toBeLessThanOrEqual(CANDIDATE_CAP_P95_MS)
   })
 
@@ -66,6 +81,12 @@ describe('MVP performance baseline', () => {
     const summary = measureBatch((puzzle) => verifyCase(puzzle), contentCases)
 
     expect(summary.results.every((report) => report.passed)).toBe(true)
+    recordPerformanceEvidence('ten-case verification batch', {
+      p95Ms: roundMs(summary.p95Ms),
+      worstMs: roundMs(summary.worstMs),
+      ceilingMs: FULL_VERIFICATION_P95_MS,
+      passedCases: summary.results.length,
+    })
     expect(summary.p95Ms).toBeLessThanOrEqual(FULL_VERIFICATION_P95_MS)
   })
 })
@@ -74,12 +95,14 @@ interface Measurement<T> {
   readonly last: T
   readonly samplesMs: readonly number[]
   readonly p95Ms: number
+  readonly worstMs: number
 }
 
 interface BatchMeasurement<T> {
   readonly results: readonly T[]
   readonly samplesMs: readonly number[]
   readonly p95Ms: number
+  readonly worstMs: number
 }
 
 function measureRepeated<T>(operation: () => T): Measurement<T> {
@@ -98,6 +121,7 @@ function measureRepeated<T>(operation: () => T): Measurement<T> {
     last,
     samplesMs: samples,
     p95Ms: percentile(samples, 0.95),
+    worstMs: Math.max(...samples),
   }
 }
 
@@ -116,7 +140,19 @@ function measureBatch<TInput, TOutput>(
     results,
     samplesMs: samples,
     p95Ms: percentile(samples, 0.95),
+    worstMs: Math.max(...samples),
   }
+}
+
+function recordPerformanceEvidence(
+  label: string,
+  fields: Readonly<Record<string, boolean | number | string>>,
+): void {
+  console.info(JSON.stringify({ type: 'room-axioms-performance', label, ...fields }))
+}
+
+function roundMs(value: number): number {
+  return Math.round(value * 100) / 100
 }
 
 function percentile(values: readonly number[], percentileValue: number): number {

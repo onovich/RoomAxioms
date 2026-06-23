@@ -34,7 +34,7 @@ Phase 8 starts from the accepted Phase 7 MVP:
 | Developer gating | Dev inspector and target overlay stay explicit developer-only affordances | PASS | Round 3 browser smoke confirmed dev panel and target overlay are gated separately. |
 | Smoke wrappers | `StartDevServer.cmd` and `Smoke.cmd` no longer fail on fixed-text mismatch, or the route is explicitly documented | PASS | `readyText` now matches stable served HTML text; Round 2 wrapper smoke passed. |
 | E2E posture | Minimal Playwright setup added if feasible, otherwise deterministic fallback documented | PASS with caveat | Deterministic fallback documented in `docs/phase-8-browser-e2e-posture.md`; multi-browser Playwright remains P2. |
-| Performance | Representative 4x4 player runtime P95/worst and 5x5 cap/full verification evidence recorded | Pending | Existing tests provide regression gates; Phase 8 records measured values. |
+| Performance | Representative 4x4 player runtime P95/worst and 5x5 cap/full verification evidence recorded | PASS | Round 4 measured case-004 player P95/worst 53.73 ms, below the 100 ms product target. |
 | Playtest | Protocol and feedback log template exist; no fabricated participant feedback | Pending | Required Phase 8 release research artifact. |
 | Boundaries | Domain/schema/solver/proof/web target-access boundaries remain clean | Pending | Final boundary scans required. |
 
@@ -44,7 +44,7 @@ Phase 8 starts from the accepted Phase 7 MVP:
 | --- | --- | --- | --- | --- |
 | QA-001 | P1 | Closed | `StartDevServer.cmd` / `Smoke.cmd` project wrapper health check expects fixed text that is not present in the served Vite HTML. | Updated project ops `readyText` to `Room Axioms`; `StartDevServer.cmd` and `Smoke.cmd` passed in Round 2. |
 | QA-002 | P1 | Accepted | Multi-browser Playwright is not configured in the repo, and browser binaries are not known to be installed. | Deterministic fallback documented; no Playwright dependency added for this release-candidate phase. |
-| QA-003 | P1 | Open | Phase 7 observed representative 4x4 player runtime P95 around 102-201 ms, above the aspirational 100 ms product target but under the committed 500 ms regression ceiling. | Re-measure Phase 8 values; fix a narrow bottleneck only if release-blocking. |
+| QA-003 | P1 | Closed | Phase 7 observed representative 4x4 player runtime P95 around 102-201 ms, above the aspirational 100 ms product target but under the committed 500 ms regression ceiling. | Round 4 re-measured case-004 player runtime P95/worst at 53.73 ms; no release-blocking optimization required. |
 | QA-004 | P1 | Open | No real target-player feedback has been collected in this executor run. | Create protocol and empty feedback log template; record absence honestly. |
 | QA-005 | P1 | Pending | Final Pages deployment must be verified after the final report push. | Use `gh run` and HTTP 200 check after final commit. |
 | QA-006 | P2 | Pending | Cross-browser coverage remains narrower than the long-term PR-012 ideal if Playwright is deferred. | Document as release caveat if deterministic fallback remains the chosen posture. |
@@ -62,6 +62,6 @@ The current P1 release risks are operational QA gaps rather than known gameplay 
 | 1 - Baseline | Guide/context read; issue register created; validation/commit/push completed as `1001fad`. | PASS |
 | 2 - Smoke/deployment | `StartDevServer.cmd` PASS; `Smoke.cmd` PASS; `StopDevServer.cmd` PASS; E2E posture documented. | PASS |
 | 3 - Player flow/a11y/responsive | Browser smoke PASS: default case, 10 selector options, case switch, keyboard, responsive, player secrecy, developer gating, console errors 0. | PASS |
-| 4 - Performance/stability | Pending. | Pending |
+| 4 - Performance/stability | Performance baseline PASS: case-004 player P95/worst 53.73 ms; 5x5 cap P95/worst 0.38 ms; ten-case verification P95/worst 172.17 ms; runtime stability tests cover stale/cancel/error/truncation. | PASS |
 | 5 - Playtest/readiness synthesis | Pending. | Pending |
 | 6 - Final validation/report | Pending. | Pending |
