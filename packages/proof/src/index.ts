@@ -24,6 +24,11 @@ export {
   summarizeForEachScope,
   summarizeGlobalCount,
 } from './reasoning.js';
+export {
+  deriveGlobalCountDeductions,
+  deriveHumanDeductions,
+  isGlobalCountRule,
+} from './reasoner.js';
 export type {
   CountBounds,
   CountSummary,
