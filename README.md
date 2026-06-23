@@ -17,6 +17,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Phase 1: Domain Core Package
 - Guide: `docs/phase-1-domain-core-goal-mode-execution-guide.md`
 - Budget: 8 executor rounds
+- Development plan: `docs/development-plan.md`
 
 ## Commands
 
