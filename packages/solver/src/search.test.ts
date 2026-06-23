@@ -64,13 +64,21 @@ describe('solver search and model finding', () => {
     expect(guestCells(solverResult.model)).toEqual(guestCells(oracleResult.models[0] ?? null));
   });
 
-  it('rejects non-empty assumptions until the assumption round implements them', () => {
-    expect(() =>
-      findModel(
-        { puzzle: oneGuestPuzzle() },
-        [{ kind: 'cellIs', cellId: 'A1', value: 'guest' }],
-      ),
-    ).toThrow(/Round 5/);
+  it('applies cellIs assumptions without polluting later searches', () => {
+    const puzzle = oneGuestPuzzle();
+    const assumed = findModel({ puzzle }, [{ kind: 'cellIs', cellId: 'A1', value: 'guest' }]);
+    const unassumed = findModel({ puzzle });
+
+    expect(guestCells(assumed.model)).toEqual(['A1']);
+    expect(guestCells(unassumed.model)).toEqual(['B2']);
+  });
+
+  it('applies cellIsNot assumptions', () => {
+    const puzzle = oneGuestPuzzle();
+    const result = findModel({ puzzle }, [{ kind: 'cellIsNot', cellId: 'B2', value: 'guest' }]);
+
+    expect(result.satisfiable).toBe(true);
+    expect(guestCells(result.model)).not.toEqual(['B2']);
   });
 });
 

@@ -8,10 +8,18 @@ import {
   createSolverState,
   createTrail,
   propagate,
+  removeCellKind,
   rollback,
 } from './propagation.js';
 import type { SolverState, Trail } from './propagation.js';
-import type { SolveInput, SolveResult, SolverModel, SolverOptions, SolverStats } from './types.js';
+import type {
+  SolveInput,
+  SolveResult,
+  SolverAssumption,
+  SolverModel,
+  SolverOptions,
+  SolverStats,
+} from './types.js';
 
 interface SearchContext {
   readonly input: SolveInput;
@@ -20,7 +28,11 @@ interface SearchContext {
   truncated: boolean;
 }
 
-export function searchFirstModel(input: SolveInput, options: SolverOptions = {}): SolveResult {
+export function searchFirstModel(
+  input: SolveInput,
+  assumptions: readonly SolverAssumption[] = [],
+  options: SolverOptions = {},
+): SolveResult {
   const state = createSolverState(input);
   const trail = createTrail();
   const context: SearchContext = {
@@ -30,6 +42,16 @@ export function searchFirstModel(input: SolveInput, options: SolverOptions = {})
     truncated: false,
   };
   const constraints = compileConstraints(input.puzzle);
+
+  const assumptionFailure = applyAssumptions(state, trail, assumptions);
+  if (assumptionFailure !== null) {
+    return {
+      satisfiable: false,
+      model: null,
+      stats: toStats(context, state),
+    };
+  }
+
   const model = search(state, trail, context, constraints);
 
   return {
@@ -37,6 +59,23 @@ export function searchFirstModel(input: SolveInput, options: SolverOptions = {})
     model,
     stats: toStats(context, state),
   };
+}
+
+function applyAssumptions(
+  state: SolverState,
+  trail: Trail,
+  assumptions: readonly SolverAssumption[],
+): string | null {
+  for (const assumption of assumptions) {
+    const result =
+      assumption.kind === 'cellIs'
+        ? assignCellKind(state, trail, assumption.cellId, assumption.value)
+        : removeCellKind(state, trail, assumption.cellId, assumption.value);
+
+    if (result.contradiction !== null) return result.contradiction;
+  }
+
+  return null;
 }
 
 function search(

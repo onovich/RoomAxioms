@@ -95,6 +95,13 @@ export function intersectCellDomain(
   mask: DomainMask,
 ): DomainMutationResult {
   const current = state.domains[cellId];
+  if (current === undefined) {
+    return {
+      changed: false,
+      contradiction: `Unknown cell: ${cellId}.`,
+    };
+  }
+
   const next = intersectMask(current, mask);
 
   return setCellDomain(state, trail, cellId, next);
@@ -106,7 +113,15 @@ export function removeCellKind(
   cellId: CellId,
   kind: Parameters<typeof removeKind>[1],
 ): DomainMutationResult {
-  return setCellDomain(state, trail, cellId, removeKind(state.domains[cellId], kind));
+  const current = state.domains[cellId];
+  if (current === undefined) {
+    return {
+      changed: false,
+      contradiction: `Unknown cell: ${cellId}.`,
+    };
+  }
+
+  return setCellDomain(state, trail, cellId, removeKind(current, kind));
 }
 
 export function propagate(
@@ -311,6 +326,13 @@ function setCellDomain(
   next: DomainMask,
 ): DomainMutationResult {
   const current = state.domains[cellId];
+  if (current === undefined) {
+    return {
+      changed: false,
+      contradiction: `Unknown cell: ${cellId}.`,
+    };
+  }
+
   if (current === next) return { changed: false, contradiction: null };
 
   trail.changes.push({ cellId, previous: current });
