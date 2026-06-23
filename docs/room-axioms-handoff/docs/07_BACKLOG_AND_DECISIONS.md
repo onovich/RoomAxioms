@@ -31,9 +31,9 @@
 
 ## 2. P0：开始编码前或首轮必须完成
 
-最近验收：`RA-004 小规模 oracle / Oracle And Verification Harness` 已 PASS，最终提交 `3202e01`。
+最近验收：`RA-005 CSP 内核 + RA-006 强制格/唯一性 / Solver Core And Queries` 已 PASS，最终提交 `d12edff`。
 
-当前执行阶段：`RA-005 CSP 内核 + RA-006 强制格/唯一性 / Solver Core And Queries`。执行指南见 `../../phase-4-solver-core-goal-mode-execution-guide.md`，预算 10 个执行者会话轮。
+当前执行阶段：`RA-007 人类推理 v1 + RA-008 零猜测验证器 / Human Reasoning And Proofs`。执行指南见 `../../phase-5-human-reasoning-proofs-goal-mode-execution-guide.md`，预算 10 个执行者会话轮。
 
 | ID | 事项 | 交付物 | 验收 |
 |---|---|---|---|

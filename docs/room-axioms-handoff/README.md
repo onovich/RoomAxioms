@@ -52,9 +52,9 @@
 
 ## 当前执行指南
 
-- 最近验收：**Phase 3 - Oracle And Verification Harness PASS**
-- 当前阶段：**Phase 4 - Solver Core And Queries**
-- 执行指南：`../../phase-4-solver-core-goal-mode-execution-guide.md`
+- 最近验收：**Phase 4 - Solver Core And Queries PASS**
+- 当前阶段：**Phase 5 - Human Reasoning And Proofs**
+- 执行指南：`../../phase-5-human-reasoning-proofs-goal-mode-execution-guide.md`
 - 预算：10 个执行者会话轮
 
 ## MVP 完成定义
