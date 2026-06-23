@@ -113,6 +113,7 @@ h3 {
   align-items: center;
   display: flex;
   gap: 12px;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -154,6 +155,7 @@ h3 {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 2px;
+  min-width: 0;
 }
 
 .case-picker {
@@ -170,7 +172,7 @@ h3 {
   border-radius: 6px;
   color: var(--text);
   cursor: pointer;
-  max-width: 230px;
+  max-width: min(230px, 55vw);
   min-height: 29px;
   padding: 3px 7px;
 }
@@ -203,8 +205,10 @@ h3 {
 .top-actions {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .ghost-button,
@@ -397,6 +401,12 @@ h3 {
   color: var(--muted);
   font-size: 12px;
   font-style: normal;
+  line-height: 1.45;
+}
+
+.rule-semantics {
+  color: #d2c4a5;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -1275,7 +1285,7 @@ h3 {
 
   .board-coordinates {
     --board-cell-max: 1fr;
-    --board-cell-min: 0;
+    --board-cell-min: 60px;
     --board-coordinate-size: 25px;
     gap: 5px;
     width: 100%;

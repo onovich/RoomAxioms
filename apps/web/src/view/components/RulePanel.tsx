@@ -1,4 +1,4 @@
-import { ruleChip } from '../../logic/scopeText'
+import { ruleChip, ruleSemantics } from '../../logic/scopeText'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 
 interface RulePanelProps {
@@ -33,6 +33,7 @@ export function RulePanel({ game, onOpenNeighborhood }: RulePanelProps) {
             <span className="rule-copy">
               <b>{rule.presentation.title}</b>
               <em>{rule.presentation.flavor}</em>
+              <small className="rule-semantics">{ruleSemantics(rule)}</small>
             </span>
             <span className="rule-chip">{ruleChip(rule)}</span>
           </button>
@@ -46,4 +47,3 @@ export function RulePanel({ game, onOpenNeighborhood }: RulePanelProps) {
     </aside>
   )
 }
-
