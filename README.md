@@ -30,9 +30,9 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Active Goal Guide
 
-- Phase 6: Web Runtime Integration
-- Guide: `docs/phase-6-web-runtime-integration-goal-mode-execution-guide.md`
-- Budget: 8 executor rounds
+- Phase 7: MVP Content And UX Hardening
+- Guide: `docs/phase-7-mvp-content-ux-hardening-goal-mode-execution-guide.md`
+- Budget: 10 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands

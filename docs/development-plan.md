@@ -26,10 +26,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 5 - Human Reasoning And Proofs, PASS, final commit `e8ff167`.
-- Current active phase: Phase 6 - Web Runtime Integration.
-- Active guide: `docs/phase-6-web-runtime-integration-goal-mode-execution-guide.md`.
-- Executor budget: 8 rounds.
+- Recently accepted: Phase 6 - Web Runtime Integration, PASS, final commit `e3c10b8`.
+- Current active phase: Phase 7 - MVP Content And UX Hardening.
+- Active guide: `docs/phase-7-mvp-content-ux-hardening-goal-mode-execution-guide.md`.
+- Executor budget: 10 rounds.
 - Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget

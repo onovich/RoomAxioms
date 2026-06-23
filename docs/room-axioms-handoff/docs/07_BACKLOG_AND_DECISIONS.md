@@ -31,9 +31,9 @@
 
 ## 2. P0：开始编码前或首轮必须完成
 
-最近验收：`RA-007 人类推理 v1 + RA-008 零猜测验证器 / Human Reasoning And Proofs` 已 PASS，最终提交 `e8ff167`。
+最近验收：`RA-009 UI 主流程 + RA-010 Worker/提示/dev 层 + RA-016 内容 hash 与验证签名 / Web Runtime Integration` 已 PASS，最终提交 `e3c10b8`。
 
-当前执行阶段：`RA-009 UI 主流程 + RA-010 Worker/提示/dev 层 + RA-016 内容 hash 与验证签名 / Web Runtime Integration`。执行指南见 `../../phase-6-web-runtime-integration-goal-mode-execution-guide.md`，预算 8 个执行者会话轮。
+当前执行阶段：`RA-011 首批 10 关 + RA-013 键盘与屏幕阅读器 + RA-014 三内核 E2E + RA-015 响应式 + RA-018 规则措辞 + RA-019 性能基准 + RA-020 美术与访客表现定稿 / MVP Content And UX Hardening`。执行指南见 `../../phase-7-mvp-content-ux-hardening-goal-mode-execution-guide.md`，预算 10 个执行者会话轮。
 
 | ID | 事项 | 交付物 | 验收 |
 |---|---|---|---|
