@@ -25,13 +25,13 @@ Phase 8 starts from the accepted Phase 7 MVP:
 | Git whitespace | `git diff --check` | Pending | CRLF working-copy warnings are acceptable when no real whitespace errors appear. |
 | Pages deployment | GitHub Pages workflow green and online URL HTTP 200 | Pending | Must be checked after final pushed report commit. |
 | Ten-case content | Case selector lists exactly 10 cases, stable default is `case-004` | Pending | Covered by existing tests; browser smoke to re-check release surface. |
-| Case validity | Schema parse, target satisfies rules, no-guess, final uniqueness, runtime ready | Pending | Covered by `caseVerification.test.ts`. |
-| Player secrecy | Player mode hides target, forced cells, solver internals, and developer-only summaries | Pending | Covered by tests and browser smoke selectors. |
-| Hints | Player hints remain proof-backed and do not expose search traces | Pending | Covered by runtime/proof path; browser QA to inspect visible behavior. |
-| Keyboard | Board navigation and essential controls usable without mouse | Pending | Existing test coverage plus browser smoke. |
-| Screen reader | Labels/status text do not expose private target or dev data | Pending | Existing component semantics plus focused DOM review. |
-| Responsive | 1280x800, 768x1024, and 390x844 core flows remain contained | Pending | Existing Phase 7 evidence; re-run focused smoke. |
-| Developer gating | Dev inspector and target overlay stay explicit developer-only affordances | Pending | Boundary scan and browser smoke. |
+| Case validity | Schema parse, target satisfies rules, no-guess, final uniqueness, runtime ready | Pending | Covered by `caseVerification.test.ts`; final validation pending. |
+| Player secrecy | Player mode hides target, forced cells, solver internals, and developer-only summaries | PASS | Round 3 browser smoke selectors all 0 in player mode. |
+| Hints | Player hints remain proof-backed and do not expose search traces | Pending | Covered by runtime/proof path; final validation pending. |
+| Keyboard | Board navigation and essential controls usable without mouse | PASS | Round 3 browser smoke confirmed `A1` + `ArrowRight` focuses `B1`. |
+| Screen reader | Labels/status text do not expose private target or dev data | PASS | Round 3 DOM labels expose revealed/unknown/player state only in player mode. |
+| Responsive | 1280x800, 768x1024, and 390x844 core flows remain contained | PASS | Round 3 browser smoke found no horizontal overflow; mobile evidence submit contained. |
+| Developer gating | Dev inspector and target overlay stay explicit developer-only affordances | PASS | Round 3 browser smoke confirmed dev panel and target overlay are gated separately. |
 | Smoke wrappers | `StartDevServer.cmd` and `Smoke.cmd` no longer fail on fixed-text mismatch, or the route is explicitly documented | PASS | `readyText` now matches stable served HTML text; Round 2 wrapper smoke passed. |
 | E2E posture | Minimal Playwright setup added if feasible, otherwise deterministic fallback documented | PASS with caveat | Deterministic fallback documented in `docs/phase-8-browser-e2e-posture.md`; multi-browser Playwright remains P2. |
 | Performance | Representative 4x4 player runtime P95/worst and 5x5 cap/full verification evidence recorded | Pending | Existing tests provide regression gates; Phase 8 records measured values. |
@@ -61,7 +61,7 @@ The current P1 release risks are operational QA gaps rather than known gameplay 
 | --- | --- | --- |
 | 1 - Baseline | Guide/context read; issue register created; validation/commit/push completed as `1001fad`. | PASS |
 | 2 - Smoke/deployment | `StartDevServer.cmd` PASS; `Smoke.cmd` PASS; `StopDevServer.cmd` PASS; E2E posture documented. | PASS |
-| 3 - Player flow/a11y/responsive | Pending. | Pending |
+| 3 - Player flow/a11y/responsive | Browser smoke PASS: default case, 10 selector options, case switch, keyboard, responsive, player secrecy, developer gating, console errors 0. | PASS |
 | 4 - Performance/stability | Pending. | Pending |
 | 5 - Playtest/readiness synthesis | Pending. | Pending |
 | 6 - Final validation/report | Pending. | Pending |
