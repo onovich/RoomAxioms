@@ -31,7 +31,9 @@
 
 ## 2. P0：开始编码前或首轮必须完成
 
-当前执行阶段：`RA-002 坐标与邻域 / Domain Core Package`。执行指南见 `../../phase-1-domain-core-goal-mode-execution-guide.md`，预算 8 个执行者会话轮。
+最近验收：`RA-002 坐标与邻域 / Domain Core Package` 已 PASS，最终提交 `2c098a4`。
+
+当前执行阶段：`RA-003 Schema v1 / Schema And Content Contract`。执行指南见 `../../phase-2-schema-content-goal-mode-execution-guide.md`，预算 6 个执行者会话轮。
 
 | ID | 事项 | 交付物 | 验收 |
 |---|---|---|---|

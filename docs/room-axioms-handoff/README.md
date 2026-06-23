@@ -52,9 +52,10 @@
 
 ## 当前执行指南
 
-- 当前阶段：**Phase 1 - Domain Core Package**
-- 执行指南：`../../phase-1-domain-core-goal-mode-execution-guide.md`
-- 预算：8 个执行者会话轮
+- 最近验收：**Phase 1 - Domain Core Package PASS**
+- 当前阶段：**Phase 2 - Schema And Content Contract**
+- 执行指南：`../../phase-2-schema-content-goal-mode-execution-guide.md`
+- 预算：6 个执行者会话轮
 
 ## MVP 完成定义
 
