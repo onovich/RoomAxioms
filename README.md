@@ -7,10 +7,17 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 ## Current Build
 
 - React + TypeScript + Vite app in `apps/web`
+- Pure TypeScript domain core in `packages/domain` as `@room-axioms/domain`
 - Data-driven recreation of the handoff prototype for `case-004`
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
+
+## Package Boundaries
+
+- `@room-axioms/domain` owns framework-free coordinates, board traversal, DSL v1 rule and puzzle types, game events, and the pure reducer.
+- `apps/web` imports the domain public API and keeps React state, presentation text, labels, and UI-only tool modes in the app layer.
+- The domain package does not depend on React, Vite, browser APIs, Zod, solver packages, or Node filesystem APIs.
 
 ## Active Goal Guide
 

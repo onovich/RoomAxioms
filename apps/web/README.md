@@ -17,8 +17,7 @@ The app is built with `base: '/RoomAxioms/'` for GitHub Pages.
 ## Structure
 
 - `src/data`: handoff puzzle data and labels
-- `src/domain`: coordinate, neighborhood, and puzzle types
 - `src/logic`: candidate layout analysis and hint text
 - `src/hooks`: game session state
 - `src/view`: screen and component composition
-
+- `@room-axioms/domain`: shared coordinates, neighborhood helpers, DSL types, events, and pure reducer
