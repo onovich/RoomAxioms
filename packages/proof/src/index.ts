@@ -29,6 +29,7 @@ export {
   deriveHumanDeductions,
   deriveKnownSafeFromObjectDeductions,
   deriveLocalCountDeductions,
+  deriveUniqueTargetNeighborIntersectionDeductions,
   isForEachCountRule,
   isGlobalCountRule,
 } from './reasoner.js';

@@ -1,9 +1,14 @@
+import { sortCellIds } from '@room-axioms/domain';
+import { assertPuzzleDefinition } from '@room-axioms/schema';
 import { findForcedCells, isSatisfiable } from '@room-axioms/solver';
 import { describe, expect, it } from 'vitest';
-import type { BoardSize, CellKind, Comparator, Observation, RuleDefinition } from '@room-axioms/domain';
+import type { BoardSize, CellId, CellKind, Comparator, Observation, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
+import case004Fixture from '../../../content/cases/case-004.json' with { type: 'json' };
 
 import { buildProofGraph, deriveHumanDeductions } from './index.js';
 import type { Deduction, KnowledgeState } from './index.js';
+
+const CASE004_BUDGET = { maxNodes: 200_000, maxModels: 200_000 } as const;
 
 describe('global count human techniques', () => {
   it('derives safe cells when the global guest count is saturated', () => {
@@ -178,8 +183,81 @@ describe('local count human techniques', () => {
   });
 });
 
+describe('unique target neighbor intersection technique', () => {
+  it('derives a single object from intersecting required target scopes', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bottle', 'bin', 'guest'],
+      rules: [
+        globalCountRule('R1', 'bin', { op: 'eq', value: 1 }),
+        forEachCountRule('R2', 'bottle', 'orthogonal', 'bin', { op: 'eq', value: 1 }),
+      ],
+      observations: [
+        { cellId: 'A2', kind: 'bottle' },
+        { cellId: 'C2', kind: 'bottle' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const result = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIsNot', cellId: 'B2', value: 'bin' }],
+    );
+
+    expect(conclusionsFor(deductions, 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION')).toEqual([
+      { kind: 'object', cellId: 'B2', object: 'bin' },
+    ]);
+    expect(conclusionsFor(deductions, 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT')).toEqual([
+      { kind: 'safe', cellId: 'B2' },
+    ]);
+    expect(result.satisfiable).toBe(false);
+    expect(result.stats.truncated).toBe(false);
+  });
+
+  it('reproduces the case-004 initial explainable safe chain without extra cells', () => {
+    const puzzle = loadCase004();
+    const state = {
+      puzzle,
+      observations: initialObservations(puzzle),
+    };
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle, observations: state.observations }, CASE004_BUDGET);
+    const observedCells = new Set(state.observations.map((observation) => observation.cellId));
+    const safeCellIds = sortCellIds(
+      new Set(deductions
+        .filter((deduction) => deduction.conclusion.kind === 'safe')
+        .map((deduction) => deduction.conclusion.cellId)
+        .filter((cellId) => !observedCells.has(cellId))),
+      puzzle.board,
+    );
+
+    expect(conclusionsFor(deductions, 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION')).toEqual([
+      { kind: 'object', cellId: 'B2', object: 'bin' },
+    ]);
+    expect(safeCellIds).toEqual(['A1', 'C1', 'B2', 'D2', 'A3', 'B3', 'C3']);
+    expect(safeCellIds).toEqual(forced.safe);
+    expect(forced.guests).toEqual([]);
+    expect(forced.stats.truncated).toBe(false);
+    expect(allDeductionsHavePremises(deductions)).toBe(true);
+  });
+});
+
 function allDeductionsHavePremises(deductions: readonly Deduction[]): boolean {
   return deductions.every((deduction) => deduction.premises.length > 0 && deduction.proofNodeIds.length > 0);
+}
+
+function loadCase004(): PuzzleDefinition {
+  return assertPuzzleDefinition(case004Fixture);
+}
+
+function initialObservations(puzzle: PuzzleDefinition): readonly Observation[] {
+  return puzzle.initialReveals.map((cellId) => observationFromTarget(puzzle, cellId));
+}
+
+function observationFromTarget(puzzle: PuzzleDefinition, cellId: CellId): Observation {
+  return {
+    cellId,
+    kind: puzzle.target[cellId],
+  };
 }
 
 function makeState(input: {
