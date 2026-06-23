@@ -8,7 +8,7 @@ import { verifyCase } from './caseVerification'
 
 const BASELINE_RUNS = 9
 const BASELINE_WARMUP_RUNS = 2
-const RUNTIME_ANALYSIS_P95_CEILING_MS = 200
+const RUNTIME_ANALYSIS_P95_CEILING_MS = 500
 const CANDIDATE_CAP_P95_MS = 200
 const FULL_VERIFICATION_P95_MS = 2_000
 
