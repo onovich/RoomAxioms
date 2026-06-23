@@ -13,6 +13,12 @@ importers:
       '@room-axioms/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@room-axioms/proof':
+        specifier: workspace:*
+        version: link:../../packages/proof
+      '@room-axioms/solver':
+        specifier: workspace:*
+        version: link:../../packages/solver
       lucide-react:
         specifier: ^0.561.0
         version: 0.561.0(react@19.2.7)
@@ -26,6 +32,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.5.0)
+      '@room-axioms/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
       '@types/node':
         specifier: ^24.12.3
         version: 24.13.2
