@@ -7,21 +7,24 @@ import type {
   SolverOptions,
   UniqueLayoutResult,
 } from './types.js';
+import { searchFirstModel } from './search.js';
 
 export function isSatisfiable(
-  _input: SolveInput,
-  _assumptions: readonly SolverAssumption[] = [],
-  _options: SolverOptions = {},
+  input: SolveInput,
+  assumptions: readonly SolverAssumption[] = [],
+  options: SolverOptions = {},
 ): SolveResult {
-  throw new Error('Solver satisfiability search is implemented in Phase 4 Round 4.');
+  assertNoAssumptions(assumptions);
+  return searchFirstModel(input, options);
 }
 
 export function findModel(
-  _input: SolveInput,
-  _assumptions: readonly SolverAssumption[] = [],
-  _options: SolverOptions = {},
+  input: SolveInput,
+  assumptions: readonly SolverAssumption[] = [],
+  options: SolverOptions = {},
 ): SolveResult {
-  throw new Error('Solver model search is implemented in Phase 4 Round 4.');
+  assertNoAssumptions(assumptions);
+  return searchFirstModel(input, options);
 }
 
 export function findForcedCells(_input: SolveInput, _options: SolverOptions = {}): ForcedCellResult {
@@ -38,4 +41,10 @@ export function countGuestLayouts(
   _options: SolverOptions = {},
 ): GuestLayoutCountResult {
   throw new Error('Solver guest-layout counting is implemented in Phase 4 Round 6.');
+}
+
+function assertNoAssumptions(assumptions: readonly SolverAssumption[]): void {
+  if (assumptions.length > 0) {
+    throw new Error('Solver assumptions are implemented in Phase 4 Round 5.');
+  }
 }
