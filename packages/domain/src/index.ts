@@ -7,6 +7,8 @@ export {
   parseCellId,
   sortCellIds,
 } from './coordinates.js'
+export { createInitialGameState, reduceGameState } from './events.js'
+export type { GameEvent, GameState, GameStatus, InitialGameStateInput } from './events.js'
 
 export { assertNever } from './types.js'
 
