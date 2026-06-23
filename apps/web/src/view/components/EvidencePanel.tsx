@@ -1,5 +1,9 @@
 import { Circle, Flag } from 'lucide-react'
 import { cellLabels } from '../../data/case004'
+import {
+  createDeveloperInspectorModel,
+  type DeveloperInspectorModel,
+} from '../../logic/developerInspector'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 
 interface EvidencePanelProps {
@@ -72,6 +76,16 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
 }
 
 function DeveloperPanel({ game }: EvidencePanelProps) {
+  const inspector = createDeveloperInspectorModel({
+    devMode: game.devMode,
+    requestId: game.analysisRequestId,
+    status: game.analysisStatus,
+    analysis: game.analysis,
+    runtimeAnalysis: game.runtimeAnalysis,
+    warnings: game.analysisWarnings,
+    error: game.analysisError,
+  })
+
   return (
     <section className="developer-panel">
       <div className="developer-title">
@@ -106,6 +120,34 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
           <i className="legend-guest">G</i> 强制访客
         </span>
       </div>
+      {inspector ? <DeveloperInspector model={inspector} /> : null}
+    </section>
+  )
+}
+
+function DeveloperInspector({ model }: { readonly model: DeveloperInspectorModel }) {
+  return (
+    <section className="runtime-inspector" aria-label="Developer runtime inspector">
+      <h3>Runtime Inspector</h3>
+      <dl className="runtime-grid">
+        <DevStat label="Request" value={model.request} />
+        <DevStat label="Satisfiable" value={model.satisfiable} />
+        <DevStat label="Guest layouts" value={model.candidateGuestLayouts} />
+        <DevStat label="Forced safe" value={model.forcedSafe} />
+        <DevStat label="Forced guests" value={model.forcedGuests} />
+        <DevStat label="Solver" value={model.solverStats} />
+        <DevStat label="Proof" value={model.proofStats} />
+        <DevStat label="No-guess" value={model.noGuess} />
+        <DevStat label="Warnings" value={model.warnings} />
+        {model.error ? <DevStat label="Error" value={model.error} /> : null}
+      </dl>
+      {model.proofLines.length > 0 ? (
+        <ol className="proof-lines">
+          {model.proofLines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ol>
+      ) : null}
     </section>
   )
 }

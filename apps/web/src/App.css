@@ -824,7 +824,8 @@ h3 {
   margin: 0;
 }
 
-.dev-grid > div {
+.dev-grid > div,
+.runtime-grid > div {
   align-items: flex-start;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
@@ -833,12 +834,14 @@ h3 {
   padding-bottom: 6px;
 }
 
-.dev-grid dt {
+.dev-grid dt,
+.runtime-grid dt {
   color: var(--muted);
   font-size: 10px;
 }
 
-.dev-grid dd {
+.dev-grid dd,
+.runtime-grid dd {
   font: 700 10px ui-monospace, Consolas, monospace;
   margin: 0;
   max-width: 155px;
@@ -871,6 +874,39 @@ h3 {
   justify-content: center;
   margin-right: 3px;
   width: 17px;
+}
+
+.runtime-inspector {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 11px;
+  padding-top: 10px;
+}
+
+.runtime-inspector h3 {
+  color: var(--text);
+  font-size: 11px;
+  margin: 0 0 8px;
+}
+
+.runtime-grid {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.proof-lines {
+  color: #cfc7b1;
+  font: 9px ui-monospace, Consolas, monospace;
+  line-height: 1.45;
+  margin: 10px 0 0;
+  max-height: 150px;
+  overflow: auto;
+  padding-left: 18px;
+}
+
+.proof-lines li {
+  margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .legend-safe {
