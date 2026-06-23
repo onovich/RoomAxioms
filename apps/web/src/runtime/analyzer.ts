@@ -23,6 +23,10 @@ import type {
   RuntimeHint,
 } from './contracts'
 
+export interface RuntimeAnalyzerDependencies {
+  readonly now?: () => number
+}
+
 const DEFAULT_CANDIDATE_LAYOUT_CAP = 20
 const DEFAULT_SOLVER_OPTIONS = {
   maxNodes: 200_000,
@@ -30,8 +34,11 @@ const DEFAULT_SOLVER_OPTIONS = {
   maxGuestLayouts: 200_000,
 } as const
 
-export function analyzeRuntimeState(request: RuntimeAnalysisRequest): RuntimeAnalysis {
-  const now = request.options?.now ?? (() => performance.now())
+export function analyzeRuntimeState(
+  request: RuntimeAnalysisRequest,
+  dependencies: RuntimeAnalyzerDependencies = {},
+): RuntimeAnalysis {
+  const now = dependencies.now ?? defaultNow
   const start = now()
   const solverOptions = request.options?.solver ?? DEFAULT_SOLVER_OPTIONS
   const candidateLayoutCap = request.options?.candidateLayoutCap ?? DEFAULT_CANDIDATE_LAYOUT_CAP
@@ -121,6 +128,10 @@ export function analyzeRuntimeState(request: RuntimeAnalysisRequest): RuntimeAna
     }),
     warnings,
   }
+}
+
+function defaultNow(): number {
+  return performance.now()
 }
 
 function selectRuntimeHint(

@@ -21,7 +21,6 @@ export interface RuntimeAnalyzerOptions {
   readonly solver?: SolverOptions
   readonly candidateLayoutCap?: number
   readonly includeNoGuessReport?: boolean
-  readonly now?: () => number
 }
 
 export type RuntimeAnalysisWarningCode =
