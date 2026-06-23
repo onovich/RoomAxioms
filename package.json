@@ -6,11 +6,10 @@
   "packageManager": "pnpm@11.8.0",
   "scripts": {
     "dev": "pnpm --filter @room-axioms/web dev",
-    "build": "pnpm --filter @room-axioms/web build",
-    "typecheck": "pnpm --filter @room-axioms/web typecheck",
-    "test": "pnpm --filter @room-axioms/web test",
-    "lint": "pnpm --filter @room-axioms/web lint",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
     "preview": "pnpm --filter @room-axioms/web preview"
   }
 }
-
