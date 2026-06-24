@@ -158,7 +158,7 @@ describe('case content verification harness', () => {
     expect(report.issues).toEqual([])
     expect(report).toMatchObject({
       id: 'case-012',
-      title: '客房 12：走廊差集',
+      title: '客房 12：走廊缺口',
       initial: {
         revealedCells: ['A1', 'B1', 'C1', 'B2', 'D2'],
         satisfiable: true,

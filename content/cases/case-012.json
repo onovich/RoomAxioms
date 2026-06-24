@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-012",
-  "title": "客房 12：走廊差集",
-  "caseName": "案卷 12 · 走廊差集",
+  "title": "客房 12：走廊缺口",
+  "caseName": "案卷 12 · 走廊缺口",
   "board": {
     "width": 4,
     "height": 3

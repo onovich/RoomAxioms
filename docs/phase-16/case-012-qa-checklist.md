@@ -25,10 +25,10 @@ Status: Round 1 baseline
 
 ## Copy Review
 
-- Title and case name plain Chinese: pending Round 2.
-- Rule titles plain Chinese: pending Round 2.
-- Rule flavor text plain Chinese and mechanically neutral: pending Round 2.
-- Existing web copy remains consistent with established wording: pending Round 2.
+- Title and case name plain Chinese: PASS after Round 2 copy fix from `走廊差集` to `走廊缺口`.
+- Rule titles plain Chinese: PASS.
+- Rule flavor text plain Chinese and mechanically neutral: PASS.
+- Existing web copy remains consistent with established wording: PASS.
 
 ## Runtime, Hint, And Player Secrecy
 

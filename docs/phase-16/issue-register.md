@@ -55,4 +55,17 @@ None found in Round 1.
 
 ## P2 Follow-Ups
 
-None recorded in Round 1.
+### P16-004 Case Title Used Internal Technique Language
+
+Severity: P2 copy readability.
+
+Round 2 finding:
+
+- `走廊差集` was accurate to the retained proof technique but too close to internal reasoning terminology for player-facing copy.
+
+Action:
+
+- changed `case-012` title and case name to `走廊缺口`;
+- left all mechanics, rules, target cells, and initial observations unchanged.
+
+Status: resolved in Round 2.
