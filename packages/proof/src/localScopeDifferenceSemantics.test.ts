@@ -30,7 +30,15 @@ describe('LOCAL_SCOPE_DIFFERENCE semantic fixtures', () => {
     expect(existingGuestDeductions).not.toContain('B3');
   });
 
-  it.todo('emits LOCAL_SCOPE_DIFFERENCE for B3 after the proof emission round lands');
+  it('emits LOCAL_SCOPE_DIFFERENCE for the forced difference cell', () => {
+    const state = positiveDifferenceState();
+    const differenceGuests = deductionsForTechnique(
+      deriveHumanDeductions(state),
+      'LOCAL_SCOPE_DIFFERENCE',
+    ).map((deduction) => deduction.conclusion);
+
+    expect(differenceGuests).toEqual([{ kind: 'guest', cellId: 'B3' }]);
+  });
 
   it('does not infer a difference from reverse implication', () => {
     const state = reverseImplicationState();

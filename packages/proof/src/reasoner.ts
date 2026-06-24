@@ -50,10 +50,15 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
     state,
     objectDeductions,
   );
+  const localScopeDifferenceDeductions = deriveLocalScopeDifferenceDeductions(
+    state,
+    objectDeductions,
+  );
   const safeFromObjectDeductions = deriveKnownSafeFromObjectDeductions(state, objectDeductions);
   const deductions = mergeDeductions([
     ...objectDeductions,
     ...localScopeIntersectionDeductions,
+    ...localScopeDifferenceDeductions,
     ...safeFromObjectDeductions,
   ]);
 
@@ -112,6 +117,57 @@ export function deriveLocalScopeIntersectionDeductions(
           technique: 'LOCAL_SCOPE_INTERSECTION',
           conclusion: { kind: 'safe', cellId },
           ruleIds: [consumer.rule.id, provider.rule.id],
+          premises,
+        }));
+      }
+    }
+  }
+
+  return sortDeductions(state, mergeDeductions(deductions));
+}
+
+export function deriveLocalScopeDifferenceDeductions(
+  state: KnowledgeState,
+  objectDeductions: readonly Deduction[] = [],
+): readonly Deduction[] {
+  const scopes = localTargetScopes(state, objectDeductions)
+    .filter((scope) => scope.rule.target === 'guest')
+    .filter((scope) => scope.remainingCapacity !== null)
+    .filter((scope) => scope.remainingCapacity !== null && scope.remainingCapacity >= 0);
+  const deductions: Deduction[] = [];
+
+  for (const outer of scopes) {
+    if (outer.remainingRequired <= 0) continue;
+
+    for (const inner of scopes) {
+      if (sameLocalScope(outer, inner)) continue;
+      if (inner.remainingCapacity === null || inner.remainingCapacity < 0) continue;
+      if (inner.summary.unknownCellIds.length === 0) continue;
+      if (!isSubset(inner.summary.unknownCellIds, outer.summary.unknownCellIds)) continue;
+
+      const differenceUnknown = subtractCellIds(
+        state,
+        outer.summary.unknownCellIds,
+        inner.summary.unknownCellIds,
+      );
+      if (differenceUnknown.length === 0) continue;
+
+      const differenceRequired = outer.remainingRequired - inner.remainingCapacity;
+      if (differenceRequired <= 0) continue;
+      if (differenceRequired !== differenceUnknown.length) continue;
+
+      const premises = localScopeDifferencePremises({
+        outer,
+        inner,
+        differenceUnknown,
+        differenceRequired,
+      });
+
+      for (const cellId of differenceUnknown) {
+        deductions.push(createDeduction({
+          technique: 'LOCAL_SCOPE_DIFFERENCE',
+          conclusion: { kind: 'guest', cellId },
+          ruleIds: [outer.rule.id, inner.rule.id],
           premises,
         }));
       }
@@ -389,6 +445,54 @@ function localScopeIntersectionPremises(input: {
   ];
 }
 
+function localScopeDifferencePremises(input: {
+  readonly outer: LocalTargetScope;
+  readonly inner: LocalTargetScope;
+  readonly differenceUnknown: readonly CellId[];
+  readonly differenceRequired: number;
+}): readonly ProofPremise[] {
+  const { outer, inner } = input;
+
+  return [
+    rulePremise(outer.rule),
+    outer.subjectPremise,
+    scopePremise(outer.rule, outer.subjectCellId, outer.summary.scopeCellIds),
+    countPremise(outer.summary),
+    rulePremise(inner.rule),
+    inner.subjectPremise,
+    scopePremise(inner.rule, inner.subjectCellId, inner.summary.scopeCellIds),
+    countPremise(inner.summary),
+    {
+      kind: 'scope',
+      label: [
+        `${inner.subjectCellId} unknown cells are contained in ${outer.subjectCellId}`,
+        inner.summary.unknownCellIds.join(', '),
+      ].join(': '),
+      cellIds: inner.summary.unknownCellIds,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+    {
+      kind: 'scope',
+      label: [
+        `${outer.subjectCellId}/${inner.subjectCellId} difference unknown cells`,
+        input.differenceUnknown.join(', '),
+      ].join(': '),
+      cellIds: input.differenceUnknown,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+    {
+      kind: 'count',
+      label: [
+        `${outer.subjectCellId} needs ${outer.remainingRequired} remaining guest cells`,
+        `${inner.subjectCellId} can contain at most ${inner.remainingCapacity ?? 'unbounded'}`,
+        `${input.differenceRequired} extra guest cell(s) must be in the difference`,
+      ].join('; '),
+      cellIds: outer.summary.scopeCellIds,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+  ];
+}
+
 function knownSubjectFacts(
   state: KnowledgeState,
   subject: CellKind,
@@ -473,6 +577,10 @@ function subtractCellIds(
 ): readonly CellId[] {
   const rightSet = new Set(right);
   return sortCellIds(left.filter((cellId) => !rightSet.has(cellId)), state.puzzle.board);
+}
+
+function isSubset(left: readonly CellId[], right: readonly CellId[]): boolean {
+  return left.every((cellId) => right.includes(cellId));
 }
 
 function isUnresolvedGlobalSingletonRule(rule: RuleDefinition): rule is GlobalCountRule {

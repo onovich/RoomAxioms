@@ -29,9 +29,8 @@ HumanReasoner v1 currently emits these approved technique ids:
 - `LOCAL_COUNT_ALL_REMAINING`
 - `UNIQUE_TARGET_NEIGHBOR_INTERSECTION`
 - `LOCAL_SCOPE_INTERSECTION`
+- `LOCAL_SCOPE_DIFFERENCE`
 - `KNOWN_SAFE_FROM_NON_GUEST_OBJECT`
-
-`LOCAL_SCOPE_DIFFERENCE` remains a reserved id. It is not emitted until a generic DSL-v1 pattern is justified and tested.
 
 ## Phase 10 Local Scope Intersection Contract
 
@@ -43,6 +42,17 @@ HumanReasoner v1 currently emits these approved technique ids:
 - every consumer-only unknown cell is then safe.
 
 The technique must not infer from reverse implications, hidden target values, or unsupported scope differences. The full Phase 10 semantics live in `docs/phase-10/local-scope-intersection-semantics.md`.
+
+## Phase 12 Local Scope Difference Contract
+
+`LOCAL_SCOPE_DIFFERENCE` explains guest cells from nested local `forEachCount` guest scopes:
+
+- both scopes target `guest`;
+- subject cells are known from observations or prior object deductions;
+- the inner remaining unknown cells must be contained in the outer remaining unknown cells;
+- the outer scope must require exactly enough extra guests beyond the inner scope capacity to fill every difference cell.
+
+The first supported form emits guest deductions only. It does not emit safe deductions from equal-scope differences because the accepted Phase 10 intersection technique already covers the first production safe-cell overlap pattern. The full Phase 12 semantics live in `docs/phase-12/local-scope-difference-semantics.md`.
 
 ## Verifier Semantics
 
