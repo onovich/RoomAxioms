@@ -34,10 +34,11 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 13 - Difference Case Authoring And Release Calibration.
 - Active guide: `docs/phase-13-difference-case-authoring-release-calibration-goal-mode-execution-guide.md`.
 - Executor budget: 12 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-13-difference-case-authoring-release-calibration-final-report.md`.
+- Executor status: complete; ready for planner/checker validation.
+- Final report: `docs/phase-13-difference-case-authoring-release-calibration-final-report.md`.
 - Promoted content: `content/cases/case-011.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
+- Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
