@@ -1,0 +1,92 @@
+{
+  "board": {
+    "width": 4,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross count",
+        "flavor": "Each bottle has exactly 1 guest in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror quiet zone",
+        "flavor": "Each mirror has exactly 0 guests around it."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "There are exactly 2 guests in the room."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 3,
+    "max": 5
+  },
+  "caps": {
+    "maxAttempts": 96,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-14-nested-difference-sample",
+    "titlePrefix": "Phase 14 Nested Difference Sample",
+    "caseNamePrefix": "Phase 14 Nested Difference Sample",
+    "metadata": {
+      "difficulty": 3,
+      "tags": [
+        "experimental",
+        "phase-14",
+        "sampled",
+        "local-scope-difference",
+        "retention-check"
+      ],
+      "author": "internal-phase-14",
+      "status": "draft",
+      "notes": "Private report-only sampling template for nested local-scope difference candidate discovery."
+    }
+  }
+}
