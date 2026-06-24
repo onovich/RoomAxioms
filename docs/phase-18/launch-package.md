@@ -1,6 +1,6 @@
 # Phase 18 Public Playtest Launch Package
 
-Status: launch package in progress
+Status: public tester package drafted
 Release posture: MVP release candidate for public playtest sharing
 
 ## Hosted Build
@@ -11,6 +11,8 @@ Release posture: MVP release candidate for public playtest sharing
 ## Short Share Copy
 
 Room Axioms is a browser deduction prototype where the rules are public before play, the room layout is fixed, and each investigation reveals one objective fact. This public playtest build contains 12 shipped cases and is ready for feedback on clarity, reasoning flow, controls, and confusing moments.
+
+Full share copy: [`share-copy.md`](share-copy.md).
 
 ## Required Caveat
 
@@ -25,6 +27,8 @@ This is a release candidate for playtesting, not a difficulty-calibrated public 
 - Use at most one hint if blocked, then describe whether it felt human-readable.
 - Submit the final guest layout and report whether the result felt fair.
 
+Tester-facing instructions: [`public-tester-instructions.md`](public-tester-instructions.md).
+
 ## What Feedback To Collect
 
 - Rule wording that felt unclear or too technical.
@@ -32,6 +36,9 @@ This is a release candidate for playtesting, not a difficulty-calibrated public 
 - Keyboard, mobile, or layout blockers.
 - Cases that felt too easy, too hard, or unclear.
 - Any moment where the UI appeared to reveal hidden target cells, forced cells, candidate counts, proof internals, generator data, or authoring diagnostics.
+
+Feedback template: [`feedback-template.md`](feedback-template.md).
+Feedback log: [`playtest-feedback-log.md`](playtest-feedback-log.md).
 
 ## What Is Out Of Scope
 
@@ -47,3 +54,11 @@ This is a release candidate for playtesting, not a difficulty-calibrated public 
 - Default case confirmed: `case-004`.
 - Metadata cleanup completed: `case-011` and `case-012` now use neutral maintainer metadata.
 - Full validation and smoke evidence: pending later Phase 18 rounds.
+
+## Package Files
+
+- [`public-tester-instructions.md`](public-tester-instructions.md): tester setup, case flow, and reporting expectations.
+- [`feedback-template.md`](feedback-template.md): copyable report form for real sessions.
+- [`share-copy.md`](share-copy.md): short and medium public sharing text.
+- [`issue-triage-rules.md`](issue-triage-rules.md): maintainer severity routing.
+- [`playtest-feedback-log.md`](playtest-feedback-log.md): real-feedback ledger, currently empty.
