@@ -161,7 +161,7 @@ Final validation:
 - Package boundaries remain clean: PASS.
 - Target access remains gated: PASS.
 - No public editor, UGC, backend, analytics, daily challenge, broad redesign, breaking schema migration, or new shipped DSL rule: PASS.
-- Working tree clean and final commit pushed: pending final report commit.
+- Working tree clean and final report commit pushed: PASS; exact final commit is reported in the executor handoff.
 
 ## Blockers Or Follow-Up Notes
 
