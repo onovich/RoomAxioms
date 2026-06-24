@@ -49,6 +49,25 @@ describe('solver-backed deduction validation', () => {
     expect(result.stats.truncated).toBe(false);
   });
 
+  it('confirms a local scope intersection safe deduction with the public solver API', () => {
+    const state = localScopeIntersectionState();
+    const deduction = requiredTechniqueDeduction(
+      deriveHumanDeductions(state),
+      'LOCAL_SCOPE_INTERSECTION',
+      'B3',
+    );
+    const result = verifyDeduction(state, deduction);
+    const gapReport = findExplanationGaps(state, deriveHumanDeductions(state));
+
+    expect(deduction.conclusion).toEqual({ kind: 'safe', cellId: 'B3' });
+    expect(result.valid).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.stats.truncated).toBe(false);
+    expect(gapReport.forcedSafe).toContain('B3');
+    expect(gapReport.explainedSafe).toContain('B3');
+    expect(gapReport.issues.filter((issue) => issue.cellIds?.includes('B3'))).toEqual([]);
+  });
+
   it('rejects a human deduction that the solver cannot confirm', () => {
     const state = makeState({
       allowedKinds: ['empty', 'guest'],
@@ -79,6 +98,34 @@ describe('solver-backed deduction validation', () => {
     expect(result.valid).toBe(false);
     expect(result.issues.map((issue) => issue.code)).toEqual(['SOLVER_TRUNCATED']);
     expect(result.stats.truncated).toBe(true);
+  });
+
+  it('rejects a fabricated local scope intersection from reverse implication', () => {
+    const state = reverseImplicationState();
+    const deduction = createDeduction({
+      technique: 'LOCAL_SCOPE_INTERSECTION',
+      conclusion: { kind: 'safe', cellId: 'B1' },
+      ruleIds: ['R1'],
+    });
+    const result = verifyDeduction(state, deduction);
+
+    expect(deriveHumanDeductions(state).filter((item) => item.technique === 'LOCAL_SCOPE_INTERSECTION')).toEqual([]);
+    expect(result.valid).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toEqual(['INVALID_DEDUCTION']);
+  });
+
+  it('rejects a fabricated local scope intersection for unsupported overlap', () => {
+    const state = suggestiveButUnforcedOverlapState();
+    const deduction = createDeduction({
+      technique: 'LOCAL_SCOPE_INTERSECTION',
+      conclusion: { kind: 'safe', cellId: 'B3' },
+      ruleIds: ['R1', 'R2'],
+    });
+    const result = verifyDeduction(state, deduction);
+
+    expect(deriveHumanDeductions(state).filter((item) => item.technique === 'LOCAL_SCOPE_INTERSECTION')).toEqual([]);
+    expect(result.valid).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toEqual(['INVALID_DEDUCTION']);
   });
 });
 
@@ -126,6 +173,61 @@ function requiredDeduction(
   ));
   if (deduction === undefined) throw new Error(`Missing ${kind} deduction for ${cellId}.`);
   return deduction;
+}
+
+function requiredTechniqueDeduction(
+  deductions: readonly Deduction[],
+  technique: Deduction['technique'],
+  cellId: string,
+): Deduction {
+  const deduction = deductions.find((candidate) => (
+    candidate.technique === technique && candidate.conclusion.cellId === cellId
+  ));
+  if (deduction === undefined) throw new Error(`Missing ${technique} deduction for ${cellId}.`);
+  return deduction;
+}
+
+function localScopeIntersectionState(): KnowledgeState {
+  return makeState({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'bottle', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 1 }),
+      forEachCountRule('R2', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 2 }),
+    ],
+    observations: [
+      { cellId: 'B1', kind: 'mirror' },
+      { cellId: 'A1', kind: 'empty' },
+      { cellId: 'B2', kind: 'bottle' },
+    ],
+  });
+}
+
+function suggestiveButUnforcedOverlapState(): KnowledgeState {
+  return makeState({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'bottle', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 1 }),
+      forEachCountRule('R2', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 1 }),
+    ],
+    observations: [
+      { cellId: 'B1', kind: 'mirror' },
+      { cellId: 'A1', kind: 'empty' },
+      { cellId: 'B2', kind: 'bottle' },
+    ],
+  });
+}
+
+function reverseImplicationState(): KnowledgeState {
+  return makeState({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 1 }),
+    ],
+    observations: [{ cellId: 'B2', kind: 'guest' }],
+  });
 }
 
 function makeState(input: {
