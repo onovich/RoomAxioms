@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T20:57:55.3681440+08:00
+updated_at: 2026-06-24T22:35:14+08:00
 
 planner:
   role: architect
@@ -23,19 +23,19 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-17-mvp-release-closure-honest-playtest-intake-goal-mode-execution-guide.md
-  active_goal_phase: Phase 17 - MVP Release Closure And Honest Playtest Intake
+  active_goal_guide: docs/phase-18-public-playtest-launch-package-metadata-cleanup-goal-mode-execution-guide.md
+  active_goal_phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup
   last_planner_dispatch: 2026-06-24T20:18:17+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-17-mvp-release-closure-honest-playtest-intake-goal-mode-execution-guide.md
   last_planner_dispatch_commit: a17fbed
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
-  last_check_phase: Phase 16 - Case 012 Release QA And Playtest Calibration
-  last_check_report: docs/phase-16-case-012-release-qa-playtest-calibration-final-report.md
-  last_check_commit: dd15a05
-  last_check_at: 2026-06-24T20:16:04+08:00
-  last_executor_report_commit: 7e90749
+  last_check_phase: Phase 17 - MVP Release Closure And Honest Playtest Intake
+  last_check_report: docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md
+  last_check_commit: 3323b81
+  last_check_at: 2026-06-24T22:35:14+08:00
+  last_executor_report_commit: 3323b81
   last_executor_report_status: READY_FOR_CHECK
   last_executor_report_phase: Phase 17 - MVP Release Closure And Honest Playtest Intake
   last_executor_report: docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md

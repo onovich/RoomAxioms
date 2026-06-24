@@ -31,15 +31,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 15 - Retained Difference Candidate Search And Promotion | Use Phase 14 retention tooling to search for a natural retained-difference case that unlocks later proof progress, with at most one gated promotion | Phase 14 follow-up | 12 rounds |
 | Phase 16 - Case 012 Release QA And Playtest Calibration | Release QA, copy review, smoke, player-secrecy checks, and honest playtest calibration prep for the newly promoted `case-012` | Phase 15 follow-up | 8 rounds |
 | Phase 17 - MVP Release Closure And Honest Playtest Intake | Close the current 12-case MVP as a release candidate with release checklist, known limitations, honest playtest intake, smoke evidence, and release decision | Phase 16 follow-up | 6 rounds |
+| Phase 18 - Public Playtest Launch Package And Metadata Cleanup | Prepare an honest public playtest launch package, clean internal shipped-case metadata, and validate the release-candidate sharing surface without new product scope | Phase 17 follow-up | 6 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 16 - Case 012 Release QA And Playtest Calibration, PASS, final commit `dd15a05`.
-- Current active phase: Phase 17 - MVP Release Closure And Honest Playtest Intake.
-- Active guide: `docs/phase-17-mvp-release-closure-honest-playtest-intake-goal-mode-execution-guide.md`.
+- Recently accepted: Phase 17 - MVP Release Closure And Honest Playtest Intake, PASS, final commit `3323b81`.
+- Current active phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup.
+- Active guide: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-goal-mode-execution-guide.md`.
 - Executor budget: 6 rounds.
-- Executor status: READY_FOR_CHECK; awaiting planner/checker acceptance.
-- Final report: `docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md`.
+- Executor status: ready for dispatch.
+- Final report target: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -48,6 +49,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 15 result: promoted one retained-difference case as `content/cases/case-012.json` after report/score/web verification and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` retained the required technique.
 - Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
+- Phase 18 planned work: prepare the public playtest launch package, clean internal shipped-case metadata, preserve the 12-case release candidate, and keep difficulty uncalibrated unless real playtest evidence exists.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -62,4 +64,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Retained-difference candidate search budget: 12 rounds, covering Phase 15.
 - Case-012 release QA and calibration budget: 8 rounds, covering Phase 16.
 - MVP release closure budget: 6 rounds, covering Phase 17.
+- Public playtest launch package budget: 6 rounds, covering Phase 18.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
