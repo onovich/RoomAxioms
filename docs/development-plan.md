@@ -28,20 +28,22 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 12 - Local Scope Difference And Content Expansion | Implement proof-side `LOCAL_SCOPE_DIFFERENCE`, validate experimental difference fixtures, and optionally promote one gated case without new DSL or public editor scope | Phase 9/11 recommendations | 14 rounds |
 | Phase 13 - Difference Case Authoring And Release Calibration | Author or sample a natural mid-band difference case, require minimization to retain `LOCAL_SCOPE_DIFFERENCE`, and promote at most one gated case | Phase 12 follow-up | 12 rounds |
 | Phase 14 - Difference Authoring Heuristics And Candidate Repair | Turn Phase 13 stop evidence into private retention-check tooling, better difference candidate heuristics, and at most one gated promotion | Phase 13 follow-up | 14 rounds |
+| Phase 15 - Retained Difference Candidate Search And Promotion | Use Phase 14 retention tooling to search for a natural retained-difference case that unlocks later proof progress, with at most one gated promotion | Phase 14 follow-up | 12 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 13 - Difference Case Authoring And Release Calibration, PASS, final commit `8195865`.
-- Current active phase: Phase 14 - Difference Authoring Heuristics And Candidate Repair.
-- Active guide: `docs/phase-14-difference-authoring-heuristics-candidate-repair-goal-mode-execution-guide.md`.
-- Executor budget: 14 rounds.
-- Executor status: complete; ready for planner/checker validation.
-- Final report: `docs/phase-14-difference-authoring-heuristics-candidate-repair-final-report.md`.
+- Recently accepted: Phase 14 - Difference Authoring Heuristics And Candidate Repair, PASS, final commit `ea23617`.
+- Current active phase: Phase 15 - Retained Difference Candidate Search And Promotion.
+- Active guide: `docs/phase-15-retained-difference-candidate-search-promotion-goal-mode-execution-guide.md`.
+- Executor budget: 12 rounds.
+- Executor status: ready for dispatch.
+- Final report target: `docs/phase-15-retained-difference-candidate-search-promotion-final-report.md`.
 - Promoted content: `content/cases/case-011.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
 - Phase 14 result: private authoring retention checks now make required proof-technique survival explicit during minimization; no public editor, new DSL, or automatic promotion entered the product.
+- Phase 15 planned work: search for a retained-difference candidate where the difference move unlocks later proof progress; promote at most one case.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -53,4 +55,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Difference proof and content expansion budget: 14 rounds, covering Phase 12.
 - Difference case authoring budget: 12 rounds, covering Phase 13.
 - Difference authoring heuristic budget: 14 rounds, covering Phase 14.
+- Retained-difference candidate search budget: 12 rounds, covering Phase 15.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
