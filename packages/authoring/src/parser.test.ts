@@ -8,6 +8,10 @@ const fixturePath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-10/phase-10-local-scope-intersection-001.json',
 )
+const sampleTemplatePath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-10/phase-10-sample-template.json',
+)
 
 describe('authoring CLI parser', () => {
   it('parses case-path commands with structured JSON output options', () => {
@@ -80,20 +84,39 @@ describe('authoring CLI parser', () => {
     })
   })
 
+  it('samples deterministic candidates from a private template without writing files', () => {
+    const report = runAuthoringCli(['sample', '--seed', '7', '--template', sampleTemplatePath])
+
+    expect(report.ok).toBe(true)
+    expect(report.status).toBe('sampled')
+    expect(report.sample).toMatchObject({
+      artifactPolicy: 'report-only',
+      attempts: 2,
+      input: {
+        seed: {
+          seed: 7,
+          deterministic: true,
+        },
+      },
+    })
+    expect(report.sample?.accepted.length).toBe(1)
+    expect(report.sample?.accepted[0]?.puzzle.id).toBe('phase-10-sample-001')
+    expect(report.diagnostics[0]?.message).toContain('no files were written')
+  })
+
   it('builds a stable not-implemented report foundation for later rounds', () => {
-    expect(runAuthoringCli(['sample', '--seed', '7', '--template', 'template.json'])).toEqual({
+    expect(runAuthoringCli(['sample', '--seed', '7', '--template', 'missing-template.json'])).toMatchObject({
       version: 'phase-10-authoring-v1',
       ok: false,
       command: 'sample',
-      inputPath: 'template.json',
+      inputPath: 'missing-template.json',
       seed: 7,
-      templatePath: 'template.json',
-      status: 'not-implemented',
+      templatePath: 'missing-template.json',
+      status: 'sampled',
       diagnostics: [
         {
-          code: 'COMMAND_NOT_IMPLEMENTED',
-          severity: 'warning',
-          message: 'sample parsed successfully; execution is implemented in later Phase 10 rounds.',
+          code: 'TEMPLATE_READ_FAILED',
+          severity: 'error',
         },
       ],
     })

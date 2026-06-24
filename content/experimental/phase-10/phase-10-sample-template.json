@@ -1,0 +1,54 @@
+{
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "guest"
+  ],
+  "guestCount": 1,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "One unregistered guest",
+        "flavor": "Exactly one guest is in this experimental room."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 8,
+    "max": 8
+  },
+  "caps": {
+    "maxAttempts": 2,
+    "maxNodes": 10000,
+    "maxModels": 10000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 1
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-10-sample",
+    "titlePrefix": "Phase 10 Sample Candidate",
+    "caseNamePrefix": "Phase 10 Sample",
+    "metadata": {
+      "difficulty": 1,
+      "tags": [
+        "experimental",
+        "phase-10",
+        "sampled"
+      ],
+      "author": "internal-phase-10",
+      "status": "draft",
+      "notes": "Private sample template for the Phase 10 authoring CLI."
+    }
+  }
+}
