@@ -65,6 +65,28 @@ describe('no-guess verifier', () => {
     expect(report.metrics.techniqueIds).toContain('LOCAL_SCOPE_INTERSECTION');
   });
 
+  it('uses local scope difference to cover a forced guest while preserving the later guess point', () => {
+    const report = verifyNoGuess(localScopeDifferencePuzzle(), { maxWaves: 3 });
+    const firstWave = report.waves[0];
+    const secondWave = report.waves[1];
+
+    expect(report.satisfiable).toBe(true);
+    expect(report.targetSatisfiesRules).toBe(true);
+    expect(report.noGuess).toBe(false);
+    expect(report.guestLayoutUniqueAtEnd).toBe(false);
+    expect(report.issues.map((issue) => issue.code)).toEqual(['GUESS_POINT']);
+    expect(report.issues.flatMap((issue) => issue.cellIds ?? [])).not.toContain('B3');
+    expect(firstWave?.issues).toEqual([]);
+    expect(firstWave?.deductions.some((deduction) => (
+      deduction.technique === 'LOCAL_SCOPE_DIFFERENCE' &&
+      deduction.conclusion.kind === 'guest' &&
+      deduction.conclusion.cellId === 'B3'
+    ))).toBe(true);
+    expect(firstWave?.confirmedGuests).toEqual(['B3']);
+    expect(secondWave?.issues.map((issue) => issue.code)).toEqual(['GUESS_POINT']);
+    expect(report.metrics.techniqueIds).toContain('LOCAL_SCOPE_DIFFERENCE');
+  });
+
   it('reports a guess point when no human deduction can advance a non-unique layout', () => {
     const report = verifyNoGuess(makePuzzle({
       allowedKinds: ['empty', 'guest'],
@@ -142,6 +164,29 @@ function localScopeIntersectionPuzzle(): PuzzleDefinition {
       C2: 'empty',
       A3: 'empty',
       B3: 'empty',
+      C3: 'empty',
+    },
+  });
+}
+
+function localScopeDifferencePuzzle(): PuzzleDefinition {
+  return makePuzzle({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'bottle', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 2 }),
+      forEachCountRule('R2', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 1 }),
+    ],
+    initialReveals: ['A1', 'B1', 'C1', 'B2'],
+    target: {
+      A1: 'empty',
+      B1: 'mirror',
+      C1: 'empty',
+      A2: 'guest',
+      B2: 'bottle',
+      C2: 'empty',
+      A3: 'empty',
+      B3: 'guest',
       C3: 'empty',
     },
   });
