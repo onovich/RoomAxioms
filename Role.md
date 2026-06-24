@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T18:10:32.8215691+08:00
+updated_at: 2026-06-24T18:13:59.4654286+08:00
 
 planner:
   role: architect
@@ -25,10 +25,10 @@ artist:
 idempotency:
   active_goal_guide: docs/phase-14-difference-authoring-heuristics-candidate-repair-goal-mode-execution-guide.md
   active_goal_phase: Phase 14 - Difference Authoring Heuristics And Candidate Repair
-  last_planner_dispatch: 2026-06-24T17:32:27.7783926+08:00
+  last_planner_dispatch: 2026-06-24T18:13:59.4654286+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-13-difference-case-authoring-release-calibration-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: c5e2e5a
+  last_planner_dispatch_guide: docs/phase-14-difference-authoring-heuristics-candidate-repair-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: 61b4afb
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 13 - Difference Case Authoring And Release Calibration
