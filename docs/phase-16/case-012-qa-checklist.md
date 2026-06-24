@@ -32,11 +32,11 @@ Status: Round 1 baseline
 
 ## Runtime, Hint, And Player Secrecy
 
-- Player-mode runtime for case-012: pending Round 3.
-- Developer-mode verification for case-012: pending Round 3.
-- Hint behavior from case-012 initial observations: pending Round 3.
-- Wrong or incomplete submission secrecy: pending Round 3.
-- Developer-only gating: pending Round 3.
+- Player-mode runtime for case-012: PASS.
+- Developer-mode verification for case-012: PASS.
+- Hint behavior from case-012 initial observations: PASS.
+- Wrong or incomplete submission secrecy: PASS for all shipped cases.
+- Developer-only gating: PASS.
 
 ## Responsive, Keyboard, And Smoke
 

@@ -86,18 +86,18 @@ describe('MVP content runtime smoke', () => {
     expect(copyFields.some((text) => text.includes('周围一圈'))).toBe(true)
   })
 
-  it('does not reveal target cells for wrong or incomplete submissions', () => {
-    const puzzle = contentCases.find((item) => item.id === 'case-004')
-    if (puzzle === undefined) throw new Error('case-004 missing from smoke content')
-
+  it.each(contentCases)('does not reveal target cells for wrong or incomplete submissions in $id', (puzzle) => {
     const targetGuests = guestCells(puzzle)
+    const wrongMarkedGuests = nonGuestCells(puzzle).slice(0, targetGuests.length)
     const incomplete = evaluateGuestConclusion(targetGuests, [])
-    const incorrect = evaluateGuestConclusion(targetGuests, ['A1', 'A2'])
+    const incorrect = evaluateGuestConclusion(targetGuests, wrongMarkedGuests)
 
-    expect(incomplete).toEqual({ kind: 'incomplete', required: 2, marked: 0 })
+    expect(incomplete).toEqual({ kind: 'incomplete', required: targetGuests.length, marked: 0 })
     expect(incorrect).toEqual({ kind: 'incorrect' })
-    expect(JSON.stringify(incomplete)).not.toContain(targetGuests[0] ?? '')
-    expect(JSON.stringify(incorrect)).not.toContain(targetGuests[0] ?? '')
+    for (const targetGuest of targetGuests) {
+      expect(JSON.stringify(incomplete)).not.toContain(targetGuest)
+      expect(JSON.stringify(incorrect)).not.toContain(targetGuest)
+    }
   })
 })
 
@@ -111,6 +111,13 @@ function initialObservations(puzzle: PuzzleDefinition): readonly Observation[] {
 function guestCells(puzzle: PuzzleDefinition): readonly CellId[] {
   return Object.entries(puzzle.target)
     .filter(([, kind]) => kind === 'guest')
+    .map(([cellId]) => cellId)
+    .sort()
+}
+
+function nonGuestCells(puzzle: PuzzleDefinition): readonly CellId[] {
+  return Object.entries(puzzle.target)
+    .filter(([, kind]) => kind !== 'guest')
     .map(([cellId]) => cellId)
     .sort()
 }

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { CellId, Observation, PuzzleDefinition } from '@room-axioms/domain'
 import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
 import case011Fixture from '../../../../content/cases/case-011.json' with { type: 'json' }
+import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
 
 import { analyzeRuntimeState } from './analyzer'
 
@@ -143,6 +144,66 @@ describe('runtime analyzer', () => {
     expect(developer.warnings).toEqual([])
   })
 
+  it('keeps promoted case-012 retained-difference analysis developer-gated', () => {
+    const puzzle = loadCase012()
+    const player = analyzeRuntimeState(
+      {
+        requestId: 6,
+        kind: 'GET_HINT',
+        puzzle,
+        observations: initialObservations(puzzle),
+        mode: 'player',
+        options: {
+          solver: CASE004_BUDGET,
+        },
+      },
+      { now: constantClock(0) },
+    )
+    const developer = analyzeRuntimeState(
+      {
+        requestId: 7,
+        kind: 'VERIFY_CASE',
+        puzzle,
+        observations: initialObservations(puzzle),
+        mode: 'developer',
+        options: {
+          solver: CASE004_BUDGET,
+          includeNoGuessReport: true,
+        },
+      },
+      { now: constantClock(0) },
+    )
+
+    expect(player).toMatchObject({
+      requestId: 6,
+      status: 'ready',
+      satisfiable: true,
+      candidateGuestLayouts: 2,
+      guestLayoutUnique: false,
+      uniqueGuestCells: null,
+      binCandidates: [],
+      forcedSafe: [],
+      forcedGuests: [],
+      warnings: [],
+    })
+    expect(player.hint).toMatchObject({
+      technique: 'LOCAL_COUNT_SATURATED',
+      conclusion: { kind: 'safe', cellId: 'D1' },
+      highlight: 'D1',
+    })
+    expect(player.noGuess).toBeUndefined()
+    expect(developer.noGuess).toMatchObject({
+      noGuess: true,
+      humanExplainable: true,
+      guestLayoutUniqueAtEnd: true,
+      finalGuestCells: ['B3', 'C3'],
+      metrics: {
+        techniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
+      },
+    })
+    expect(developer.warnings).toEqual([])
+  })
+
   it('reports truncation without treating the result as complete', () => {
     const puzzle = loadCase004()
     const analysis = analyzeRuntimeState(
@@ -172,6 +233,10 @@ function loadCase004(): PuzzleDefinition {
 
 function loadCase011(): PuzzleDefinition {
   return assertPuzzleDefinition(case011Fixture)
+}
+
+function loadCase012(): PuzzleDefinition {
+  return assertPuzzleDefinition(case012Fixture)
 }
 
 function initialObservations(puzzle: PuzzleDefinition): readonly Observation[] {

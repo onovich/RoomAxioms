@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { case004 } from '../data/case004'
+import { getCaseById } from '../content/cases'
 import { analyzeRuntimeState } from '../runtime/analyzer'
 import { createHint } from './hints'
 import { observationsForRevealed } from './targetAccess'
@@ -62,5 +63,26 @@ describe('proof-backed hints', () => {
     expect(hint.conclusion).toContain('B3')
     expect(hint.premises).toHaveLength(2)
     expect(hint.reasoning.length).toBeGreaterThan(0)
+  })
+
+  it('renders the first case-012 hint from public observations only', () => {
+    const puzzle = getCaseById('case-012')
+    const revealed = new Set<CellId>(puzzle.initialReveals)
+    const runtimeAnalysis = analyzeRuntimeState({
+      requestId: 3,
+      kind: 'GET_HINT',
+      puzzle,
+      observations: observationsForRevealed(puzzle, revealed),
+      mode: 'player',
+    })
+    const hint = createHint(puzzle, runtimeAnalysis.hint)
+
+    expect(runtimeAnalysis.forcedSafe).toEqual([])
+    expect(runtimeAnalysis.forcedGuests).toEqual([])
+    expect(runtimeAnalysis.noGuess).toBeUndefined()
+    expect(hint.highlight).toBe('D1')
+    expect(hint.conclusion).toBe('D1 可以安全调查。')
+    expect(hint.premises.length).toBeGreaterThan(0)
+    expect(hint.reasoning).toBe('这一步不用猜。')
   })
 })
