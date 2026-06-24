@@ -1,6 +1,6 @@
 # Phase 8 Release QA Issue Register
 
-Status: in progress
+Status: ready for final check
 Phase: Phase 8 - Release QA And Playtest Loop
 Created: 2026-06-24
 Executor thread: 019ef271-256c-7be2-9663-e658e2378564
@@ -21,13 +21,13 @@ Phase 8 starts from the accepted Phase 7 MVP:
 
 | Area | Required evidence | Status | Notes |
 | --- | --- | --- | --- |
-| Local validation | `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` through `Validate.cmd` | Pending | Required before each successful round commit. |
-| Git whitespace | `git diff --check` | Pending | CRLF working-copy warnings are acceptable when no real whitespace errors appear. |
-| Pages deployment | GitHub Pages workflow green and online URL HTTP 200 | Pending | Must be checked after final pushed report commit. |
-| Ten-case content | Case selector lists exactly 10 cases, stable default is `case-004` | Pending | Covered by existing tests; browser smoke to re-check release surface. |
-| Case validity | Schema parse, target satisfies rules, no-guess, final uniqueness, runtime ready | Pending | Covered by `caseVerification.test.ts`; final validation pending. |
+| Local validation | `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` through `Validate.cmd` | PASS | Final pre-report validation passed; commit wrapper re-runs this gate before push. |
+| Git whitespace | `git diff --check` | PASS | Final pre-report check passed with no output. |
+| Pages deployment | GitHub Pages workflow green and online URL HTTP 200 | PASS with final-post-push note | Latest pre-final run `28051820823` for `4afab7b` succeeded; online URL returned HTTP 200. Final report push run is checked after push and reported in READY_FOR_CHECK. |
+| Ten-case content | Case selector lists exactly 10 cases, stable default is `case-004` | PASS | Covered by tests and Round 3 browser smoke. |
+| Case validity | Schema parse, target satisfies rules, no-guess, final uniqueness, runtime ready | PASS | Final validation passed `caseVerification.test.ts` and runtime smoke. |
 | Player secrecy | Player mode hides target, forced cells, solver internals, and developer-only summaries | PASS | Round 3 browser smoke selectors all 0 in player mode. |
-| Hints | Player hints remain proof-backed and do not expose search traces | Pending | Covered by runtime/proof path; final validation pending. |
+| Hints | Player hints remain proof-backed and do not expose search traces | PASS | Final validation passed runtime/proof hint tests and player-mode smoke. |
 | Keyboard | Board navigation and essential controls usable without mouse | PASS | Round 3 browser smoke confirmed `A1` + `ArrowRight` focuses `B1`. |
 | Screen reader | Labels/status text do not expose private target or dev data | PASS | Round 3 DOM labels expose revealed/unknown/player state only in player mode. |
 | Responsive | 1280x800, 768x1024, and 390x844 core flows remain contained | PASS | Round 3 browser smoke found no horizontal overflow; mobile evidence submit contained. |
@@ -36,7 +36,7 @@ Phase 8 starts from the accepted Phase 7 MVP:
 | E2E posture | Minimal Playwright setup added if feasible, otherwise deterministic fallback documented | PASS with caveat | Deterministic fallback documented in `docs/phase-8-browser-e2e-posture.md`; multi-browser Playwright remains P2. |
 | Performance | Representative 4x4 player runtime P95/worst and 5x5 cap/full verification evidence recorded | PASS | Round 4 measured case-004 player P95/worst 53.73 ms, below the 100 ms product target. |
 | Playtest | Protocol and feedback log template exist; no fabricated participant feedback | PASS | Protocol and empty feedback log created; 0 real sessions recorded honestly. |
-| Boundaries | Domain/schema/solver/proof/web target-access boundaries remain clean | Pending | Final boundary scans required. |
+| Boundaries | Domain/schema/solver/proof/web target-access boundaries remain clean | PASS | Final boundary scans passed; only expected test/dev references were found. |
 
 ## Issue Register
 
@@ -46,8 +46,8 @@ Phase 8 starts from the accepted Phase 7 MVP:
 | QA-002 | P1 | Accepted | Multi-browser Playwright is not configured in the repo, and browser binaries are not known to be installed. | Deterministic fallback documented; no Playwright dependency added for this release-candidate phase. |
 | QA-003 | P1 | Closed | Phase 7 observed representative 4x4 player runtime P95 around 102-201 ms, above the aspirational 100 ms product target but under the committed 500 ms regression ceiling. | Round 4 re-measured case-004 player runtime P95/worst at 53.73 ms; no release-blocking optimization required. |
 | QA-004 | P1 | Accepted | No real target-player feedback has been collected in this executor run. | Protocol and empty feedback log template created; no fabricated participant results recorded. |
-| QA-005 | P1 | Pending | Final Pages deployment must be verified after the final report push. | Use `gh run` and HTTP 200 check after final commit. |
-| QA-006 | P2 | Pending | Cross-browser coverage remains narrower than the long-term PR-012 ideal if Playwright is deferred. | Document as release caveat if deterministic fallback remains the chosen posture. |
+| QA-005 | P1 | Pre-final PASS | Final Pages deployment must be verified after the final report push. | Pre-final Pages run `28051820823` for `4afab7b` succeeded and URL returned HTTP 200; final report push run is reported in READY_FOR_CHECK. |
+| QA-006 | P2 | Deferred | Cross-browser coverage remains narrower than the long-term PR-012 ideal if Playwright is deferred. | Documented as release caveat; deterministic fallback accepted for Phase 8. |
 
 ## Current Release Risk
 
@@ -64,4 +64,4 @@ The current P1 release risks are operational QA gaps rather than known gameplay 
 | 3 - Player flow/a11y/responsive | Browser smoke PASS: default case, 10 selector options, case switch, keyboard, responsive, player secrecy, developer gating, console errors 0. | PASS |
 | 4 - Performance/stability | Performance baseline PASS: case-004 player P95/worst 53.73 ms; 5x5 cap P95/worst 0.38 ms; ten-case verification P95/worst 172.17 ms; runtime stability tests cover stale/cancel/error/truncation. | PASS |
 | 5 - Playtest/readiness synthesis | Playtest protocol, honest empty feedback log, and release-readiness decision created. | PASS |
-| 6 - Final validation/report | Pending. | Pending |
+| 6 - Final validation/report | Final validation, smoke, boundary scans, and pre-final Pages check passed; final report authored. | PASS with post-push Pages check to report |
