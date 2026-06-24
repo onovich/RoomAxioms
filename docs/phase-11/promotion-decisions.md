@@ -52,4 +52,10 @@ Reason:
 
 ## Count Decision
 
-Phase 11 has promoted one candidate. A second promotion will only happen if a candidate passes the same gates without weakening validation. Otherwise Round 4 will record a stop decision.
+Phase 11 has promoted one candidate.
+
+Round 4 stop decision:
+
+- Do not promote a second case in Phase 11.
+- No second candidate has enough mid-band validation, copy review, runtime loading, and smoke evidence.
+- See `docs/phase-11/additional-candidate-stop-decision.md`.
