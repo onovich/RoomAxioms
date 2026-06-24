@@ -36,14 +36,14 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - `apps/web` imports the domain public API and keeps React state, presentation text, labels, and UI-only tool modes in the app layer.
 - The domain package does not depend on React, Vite, browser APIs, Zod, oracle/solver/proof packages, or Node filesystem APIs.
 
-## Active Goal Guide
+## Current Project Status
 
-- Phase 18: Public Playtest Launch Package And Metadata Cleanup
-- Guide: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-goal-mode-execution-guide.md`
-- Budget: 6 executor rounds
-- Status: ready for executor dispatch
-- Final report target: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`
-- Evidence baseline: Phase 17 accepted the current 12-case build as a release candidate with checklist, known limitations, release decision, playtest intake, empty feedback log, validation, local smoke, online HTTP checks, and boundary scans passed. No real playtest feedback exists yet, so difficulty remains uncalibrated.
+- Last accepted phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup
+- Final report: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`
+- Status: MVP release candidate ready for real public playtest intake
+- Active executor phase: none
+- Next gate: record real participant feedback before opening a calibration or release-fix phase
+- Evidence: public playtest launch package, neutral shipped metadata, validation, local smoke, online HTTP checks, Pages deploy, and boundary scans passed. No real playtest feedback exists yet, so difficulty remains uncalibrated.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

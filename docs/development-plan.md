@@ -35,12 +35,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 17 - MVP Release Closure And Honest Playtest Intake, PASS, final commit `3323b81`.
-- Current active phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup.
-- Active guide: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-goal-mode-execution-guide.md`.
-- Executor budget: 6 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`.
+- Recently accepted: Phase 18 - Public Playtest Launch Package And Metadata Cleanup, PASS, final commit `cb2ef96`.
+- Current active phase: none.
+- Active guide: none.
+- Executor budget: none until real participant feedback creates a calibration or release-fix phase.
+- Executor status: paused; public playtest intake is ready.
+- Final report: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -49,7 +49,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 15 result: promoted one retained-difference case as `content/cases/case-012.json` after report/score/web verification and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` retained the required technique.
 - Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
-- Phase 18 planned work: prepare the public playtest launch package, clean internal shipped-case metadata, preserve the 12-case release candidate, and keep difficulty uncalibrated unless real playtest evidence exists.
+- Phase 18 result: public playtest launch package is ready, internal shipped-case metadata is neutralized, the 12-case release candidate is preserved, and difficulty remains uncalibrated until real playtest evidence exists.
+- Next gate: gather real participant feedback, then decide whether to open a calibration, P0/P1 release-fix, copy/accessibility hardening, or content-expansion phase.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
