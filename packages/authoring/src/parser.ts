@@ -5,6 +5,7 @@ import type {
   AuthoringCliParseResult,
   AuthoringCommandName,
 } from './contracts.js'
+import type { TechniqueId } from '@room-axioms/proof'
 
 const CASE_PATH_COMMANDS = new Set<AuthoringCommandName>([
   'validate',
@@ -89,6 +90,7 @@ function parseOptions(args: readonly string[]): OptionParseResult {
   const flags = new Map<string, string>()
   const positionals: string[] = []
   let outputPath: string | undefined
+  const requiredTechniqueIds: TechniqueId[] = []
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
@@ -111,6 +113,18 @@ function parseOptions(args: readonly string[]): OptionParseResult {
       index += 1
       continue
     }
+    if (arg === '--require-technique') {
+      const value = args[index + 1]
+      if (value === undefined || value.startsWith('--')) {
+        return withOptionError('MISSING_FLAG_VALUE', '--require-technique requires a technique id.', arg)
+      }
+      if (!isTechniqueId(value)) {
+        return withOptionError('INVALID_TECHNIQUE', `Unknown proof technique id: ${value}.`, value)
+      }
+      requiredTechniqueIds.push(value)
+      index += 1
+      continue
+    }
     if (arg.startsWith('--')) {
       return withOptionError('UNKNOWN_FLAG', `Unknown authoring flag: ${arg}.`, arg)
     }
@@ -122,10 +136,26 @@ function parseOptions(args: readonly string[]): OptionParseResult {
     options: {
       format: 'json',
       ...(outputPath === undefined ? {} : { outputPath }),
+      ...(requiredTechniqueIds.length === 0 ? {} : { requiredTechniqueIds }),
     },
     flags,
     positionals,
   }
+}
+
+const TECHNIQUE_IDS = new Set<string>([
+  'GLOBAL_COUNT_SATURATED',
+  'GLOBAL_COUNT_ALL_REMAINING',
+  'LOCAL_COUNT_SATURATED',
+  'LOCAL_COUNT_ALL_REMAINING',
+  'UNIQUE_TARGET_NEIGHBOR_INTERSECTION',
+  'LOCAL_SCOPE_INTERSECTION',
+  'LOCAL_SCOPE_DIFFERENCE',
+  'KNOWN_SAFE_FROM_NON_GUEST_OBJECT',
+])
+
+function isTechniqueId(value: string): value is TechniqueId {
+  return TECHNIQUE_IDS.has(value)
 }
 
 function isCommandName(value: string | undefined): value is AuthoringCommandName {

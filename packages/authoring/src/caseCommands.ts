@@ -2,11 +2,13 @@ import {
   minimizeInitialReveals,
   scorePuzzleDifficulty,
 } from '@room-axioms/generator'
+import type { TechniqueId } from '@room-axioms/proof'
 
 import {
   AUTHORING_CLI_VERSION,
   type AuthoringCliDiagnostic,
   type AuthoringCliReport,
+  type AuthoringTechniqueRetentionReport,
   type CasePathCommand,
 } from './contracts.js'
 import { loadAuthoringCase, solverCaps } from './validation.js'
@@ -66,14 +68,20 @@ export function minimizeCaseCommand(
   const minimization = minimizeInitialReveals(loaded.puzzle, {
     solver: solverCaps(loaded.validation.caps),
   })
+  const techniqueRetention = techniqueRetentionReport(
+    minimization.proofBefore.metrics.techniqueIds,
+    minimization.proofAfter.metrics.techniqueIds,
+    command.options.requiredTechniqueIds ?? [],
+  )
   const ok = minimization.proofAfter.noGuess && minimization.proofAfter.guestLayoutUniqueAtEnd
 
   return {
     ...baseReport,
     ok,
-    diagnostics: minimizationDiagnostics(command.casePath, ok),
+    diagnostics: minimizationDiagnostics(command.casePath, ok, techniqueRetention),
     validation: loaded.validation,
     minimization,
+    techniqueRetention,
   }
 }
 
@@ -95,12 +103,52 @@ function caseReportBase(
 function minimizationDiagnostics(
   sourcePath: string,
   ok: boolean,
+  techniqueRetention: AuthoringTechniqueRetentionReport,
 ): readonly AuthoringCliDiagnostic[] {
-  return [{
+  const diagnostics: AuthoringCliDiagnostic[] = [{
     code: ok ? 'MINIMIZATION_COMPLETE' : 'MINIMIZATION_NEEDS_REPAIR',
     severity: ok ? 'info' : 'warning',
     message: ok
       ? `${sourcePath} minimized in report-only mode; source file was not modified.`
       : `${sourcePath} minimization did not preserve proof and final uniqueness.`,
   }]
+
+  if (techniqueRetention.requiredTechniqueIds.length > 0) {
+    diagnostics.push({
+      code: techniqueRetention.requiredTechniquesRetained
+        ? 'TECHNIQUE_RETENTION_PASS'
+        : 'TECHNIQUE_RETENTION_FAILED',
+      severity: techniqueRetention.requiredTechniquesRetained ? 'info' : 'warning',
+      message: techniqueRetention.requiredTechniquesRetained
+        ? `${sourcePath} retained required proof techniques after minimization.`
+        : `${sourcePath} lost required proof techniques after minimization: ${techniqueRetention.missingRequiredTechniqueIds.join(', ')}.`,
+    })
+  }
+
+  return diagnostics
+}
+
+function techniqueRetentionReport(
+  beforeTechniqueIds: readonly TechniqueId[],
+  afterTechniqueIds: readonly TechniqueId[],
+  requiredTechniqueIds: readonly TechniqueId[],
+): AuthoringTechniqueRetentionReport {
+  const before = uniqueTechniques(beforeTechniqueIds)
+  const after = uniqueTechniques(afterTechniqueIds)
+  const required = uniqueTechniques(requiredTechniqueIds)
+  const afterSet = new Set<TechniqueId>(after)
+
+  return {
+    beforeTechniqueIds: before,
+    afterTechniqueIds: after,
+    preservedTechniqueIds: before.filter((techniqueId) => afterSet.has(techniqueId)),
+    lostTechniqueIds: before.filter((techniqueId) => !afterSet.has(techniqueId)),
+    requiredTechniqueIds: required,
+    missingRequiredTechniqueIds: required.filter((techniqueId) => !afterSet.has(techniqueId)),
+    requiredTechniquesRetained: required.every((techniqueId) => afterSet.has(techniqueId)),
+  }
+}
+
+function uniqueTechniques(techniqueIds: readonly TechniqueId[]): readonly TechniqueId[] {
+  return Array.from(new Set<TechniqueId>(techniqueIds))
 }

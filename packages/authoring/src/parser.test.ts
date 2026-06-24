@@ -8,6 +8,10 @@ const fixturePath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-10/phase-10-local-scope-intersection-001.json',
 )
+const phase13DifferencePath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-13/phase-13-local-scope-difference-001.json',
+)
 const sampleTemplatePath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-10/phase-10-sample-template.json',
@@ -67,6 +71,27 @@ describe('authoring CLI parser', () => {
     })
   })
 
+  it('parses required proof technique retention flags', () => {
+    expect(parseAuthoringArgs([
+      'minimize',
+      'content/experimental/phase-13/example.json',
+      '--require-technique',
+      'LOCAL_SCOPE_DIFFERENCE',
+      '--require-technique',
+      'LOCAL_SCOPE_INTERSECTION',
+    ])).toEqual({
+      ok: true,
+      command: {
+        name: 'minimize',
+        casePath: 'content/experimental/phase-13/example.json',
+        options: {
+          format: 'json',
+          requiredTechniqueIds: ['LOCAL_SCOPE_DIFFERENCE', 'LOCAL_SCOPE_INTERSECTION'],
+        },
+      },
+    })
+  })
+
   it('returns structured parse errors without throwing', () => {
     expect(parseAuthoringArgs(['sample', '--seed', 'nope', '--template', 'template.json'])).toEqual({
       ok: false,
@@ -80,6 +105,17 @@ describe('authoring CLI parser', () => {
       ok: false,
       error: {
         code: 'MISSING_CASE_PATH',
+      },
+    })
+    expect(parseAuthoringArgs([
+      'minimize',
+      'content/experimental/phase-13/example.json',
+      '--require-technique',
+      'NOT_A_TECHNIQUE',
+    ])).toMatchObject({
+      ok: false,
+      error: {
+        code: 'INVALID_TECHNIQUE',
       },
     })
   })
@@ -193,5 +229,42 @@ describe('authoring CLI parser', () => {
     })
     expect(report.minimization?.steps.every((step) => step.removed === false)).toBe(true)
     expect(report.diagnostics[0]?.message).toContain('source file was not modified')
+  })
+
+  it('reports retained required techniques after minimization', () => {
+    const report = runAuthoringCli([
+      'minimize',
+      fixturePath,
+      '--require-technique',
+      'LOCAL_SCOPE_INTERSECTION',
+    ])
+
+    expect(report.ok).toBe(true)
+    expect(report.techniqueRetention).toMatchObject({
+      requiredTechniqueIds: ['LOCAL_SCOPE_INTERSECTION'],
+      missingRequiredTechniqueIds: [],
+      requiredTechniquesRetained: true,
+    })
+    expect(report.techniqueRetention?.afterTechniqueIds).toContain('LOCAL_SCOPE_INTERSECTION')
+    expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('TECHNIQUE_RETENTION_PASS')
+  })
+
+  it('reports dropped required techniques after minimization', () => {
+    const report = runAuthoringCli([
+      'minimize',
+      phase13DifferencePath,
+      '--require-technique',
+      'LOCAL_SCOPE_DIFFERENCE',
+    ])
+
+    expect(report.ok).toBe(true)
+    expect(report.techniqueRetention).toMatchObject({
+      beforeTechniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
+      afterTechniqueIds: ['LOCAL_COUNT_SATURATED'],
+      requiredTechniqueIds: ['LOCAL_SCOPE_DIFFERENCE'],
+      missingRequiredTechniqueIds: ['LOCAL_SCOPE_DIFFERENCE'],
+      requiredTechniquesRetained: false,
+    })
+    expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('TECHNIQUE_RETENTION_FAILED')
   })
 })

@@ -1,4 +1,5 @@
 import type { GeneratorRunReport, ProvisionalDifficultyScore, RevealMinimizationReport } from '@room-axioms/generator'
+import type { TechniqueId } from '@room-axioms/proof'
 
 export const AUTHORING_PACKAGE_NAME = '@room-axioms/authoring' as const
 
@@ -16,6 +17,7 @@ export type AuthoringOutputFormat = 'json'
 export interface AuthoringCliOptions {
   readonly format: AuthoringOutputFormat
   readonly outputPath?: string
+  readonly requiredTechniqueIds?: readonly TechniqueId[]
 }
 
 export type AuthoringCliCommand =
@@ -42,6 +44,7 @@ export interface AuthoringCliParseError {
     | 'MISSING_FLAG_VALUE'
     | 'UNKNOWN_FLAG'
     | 'INVALID_SEED'
+    | 'INVALID_TECHNIQUE'
     | 'MISSING_SEED'
     | 'MISSING_TEMPLATE'
   readonly message: string
@@ -74,6 +77,7 @@ export interface AuthoringCliReport {
   readonly validation?: AuthoringCaseValidationReport
   readonly score?: ProvisionalDifficultyScore
   readonly minimization?: RevealMinimizationReport
+  readonly techniqueRetention?: AuthoringTechniqueRetentionReport
   readonly sample?: GeneratorRunReport
 }
 
@@ -148,4 +152,14 @@ export interface AuthoringSchemaIssueReport {
   readonly path: readonly (string | number)[]
   readonly message: string
   readonly context?: Readonly<Record<string, unknown>>
+}
+
+export interface AuthoringTechniqueRetentionReport {
+  readonly beforeTechniqueIds: readonly TechniqueId[]
+  readonly afterTechniqueIds: readonly TechniqueId[]
+  readonly preservedTechniqueIds: readonly TechniqueId[]
+  readonly lostTechniqueIds: readonly TechniqueId[]
+  readonly requiredTechniqueIds: readonly TechniqueId[]
+  readonly missingRequiredTechniqueIds: readonly TechniqueId[]
+  readonly requiredTechniquesRetained: boolean
 }

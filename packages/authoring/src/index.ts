@@ -14,6 +14,7 @@ export {
   type AuthoringSchemaIssueReport,
   type AuthoringSolverCapsReport,
   type AuthoringSolverStatsReport,
+  type AuthoringTechniqueRetentionReport,
   type CasePathCommand,
   type SampleCommand,
 } from './contracts.js'
