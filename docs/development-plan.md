@@ -24,18 +24,20 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 8 - Release QA And Playtest Loop | Validate Pages release, run playtest research, organize findings, fix P0/P1 defects, and decide MVP release readiness | RA-017 + release gates | 6 rounds |
 | Phase 9 - Generator And Expansion Spike | Explore generator v1, initial reveal minimization, difficulty scoring, technique expansion, internal editor, and follow-up scope | RA-021 to RA-028 | 8 exploratory rounds |
 | Phase 10 - Authoring CLI And Proof Technique Hardening | Implement `LOCAL_SCOPE_INTERSECTION`, add private authoring CLI/report workflow, and create validated experimental mid-band fixtures without public UGC or content promotion | Phase 9 recommendations | 16 rounds |
+| Phase 11 - Candidate Promotion And Playtest Calibration | Use authoring CLI evidence to promote validated mid-band candidates, harden runtime/copy/smoke evidence, and prepare honest playtest calibration records without public UGC or new DSL | Phase 10 recommendations | 12 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 9 - Generator And Expansion Spike, PASS, final commit `58dab89`.
-- Current active phase: Phase 10 - Authoring CLI And Proof Technique Hardening.
-- Active guide: `docs/phase-10-authoring-cli-proof-technique-hardening-goal-mode-execution-guide.md`.
-- Executor budget: 16 rounds.
-- Dispatch status: active in executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Recently accepted: Phase 10 - Authoring CLI And Proof Technique Hardening, PASS, final commit `c377dfb`; copy cleanup commit `f0fcc97`.
+- Current active phase: Phase 11 - Candidate Promotion And Playtest Calibration.
+- Active guide: `docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md`.
+- Executor budget: 12 rounds.
+- Dispatch status: ready for executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
 
 - Main pre-MVP executor budget: 65 rounds, covering Phase 1 through Phase 8.
 - Expansion exploration budget: 8 rounds, covering Phase 9.
 - Post-spike hardening budget: 16 rounds, covering Phase 10.
+- Content promotion and calibration budget: 12 rounds, covering Phase 11.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

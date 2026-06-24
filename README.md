@@ -13,6 +13,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Exact CSP solver queries in `packages/solver` as `@room-axioms/solver`
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Internal generator spike prototypes in `packages/generator` as private `@room-axioms/generator`
+- Private authoring CLI in `packages/authoring` as `@room-axioms/authoring`
 - Ten validated MVP cases in `content/cases/case-001.json` through `case-010.json`
 - Data-driven content loading with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
@@ -27,14 +28,15 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - `@room-axioms/solver` owns exact CSP queries, forced-cell analysis, guest-layout uniqueness, and bounded guest-layout counting.
 - `@room-axioms/proof` owns human deductions, proof graphs, proof rendering, and no-guess verification.
 - `@room-axioms/generator` owns internal, report-only generation, reveal minimization, and provisional difficulty spike code; it is not imported by the player-facing web app.
+- `@room-axioms/authoring` owns private offline validation, report, score, minimize, and sample workflows for maintainers; it is not imported by the player-facing web app.
 - `apps/web` imports the domain public API and keeps React state, presentation text, labels, and UI-only tool modes in the app layer.
 - The domain package does not depend on React, Vite, browser APIs, Zod, oracle/solver/proof packages, or Node filesystem APIs.
 
 ## Active Goal Guide
 
-- Phase 10: Authoring CLI And Proof Technique Hardening
-- Guide: `docs/phase-10-authoring-cli-proof-technique-hardening-goal-mode-execution-guide.md`
-- Budget: 16 executor rounds
+- Phase 11: Candidate Promotion And Playtest Calibration
+- Guide: `docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md`
+- Budget: 12 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands
