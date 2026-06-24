@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { parseAuthoringArgs, runAuthoringCli } from './index.js'
+
+const fixturePath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-10/phase-10-local-scope-intersection-001.json',
+)
 
 describe('authoring CLI parser', () => {
   it('parses case-path commands with structured JSON output options', () => {
@@ -88,5 +95,51 @@ describe('authoring CLI parser', () => {
         },
       ],
     })
+  })
+
+  it('validates an experimental case through schema, solver, proof, and caps', () => {
+    const report = runAuthoringCli(['validate', fixturePath])
+
+    expect(report).toMatchObject({
+      ok: true,
+      command: 'validate',
+      status: 'validated',
+      validation: {
+        puzzleId: 'phase-10-local-scope-intersection-001',
+        schema: {
+          ok: true,
+          issueCount: 0,
+        },
+        targetRules: {
+          satisfiesRules: true,
+        },
+        initialSatisfiability: {
+          satisfiable: true,
+        },
+        proof: {
+          noGuess: true,
+          humanExplainable: true,
+          targetSatisfiesRules: true,
+          guestLayoutUniqueAtEnd: true,
+        },
+        recommendation: 'ready-for-experimental-review',
+      },
+    })
+    expect(report.validation?.initialGuestLayouts?.count).toBeGreaterThan(1)
+    expect(report.validation?.proof?.techniqueIds).toContain('LOCAL_SCOPE_INTERSECTION')
+    expect(report.validation?.caps).toEqual({
+      maxNodes: 20000,
+      maxModels: 20000,
+      maxGuestLayouts: 100,
+      candidateLayoutCap: 100,
+    })
+  })
+
+  it('uses the same validation core for report command output', () => {
+    const report = runAuthoringCli(['report', fixturePath])
+
+    expect(report.ok).toBe(true)
+    expect(report.status).toBe('reported')
+    expect(report.validation?.recommendation).toBe('ready-for-experimental-review')
   })
 })

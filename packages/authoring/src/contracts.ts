@@ -55,15 +55,84 @@ export interface AuthoringCliReport {
   readonly ok: boolean
   readonly command?: AuthoringCommandName
   readonly inputPath?: string
+  readonly resolvedInputPath?: string
   readonly outputPath?: string
   readonly seed?: number
   readonly templatePath?: string
-  readonly status: 'parsed' | 'not-implemented' | 'error'
+  readonly status: 'parsed' | 'not-implemented' | 'validated' | 'reported' | 'error'
   readonly diagnostics: readonly AuthoringCliDiagnostic[]
+  readonly validation?: AuthoringCaseValidationReport
 }
 
 export interface AuthoringCliDiagnostic {
   readonly code: string
   readonly severity: 'info' | 'warning' | 'error'
   readonly message: string
+}
+
+export type AuthoringRecommendation =
+  | 'ready-for-experimental-review'
+  | 'repair-schema'
+  | 'repair-target-rules'
+  | 'repair-initial-satisfiability'
+  | 'repair-proof'
+  | 'repair-final-uniqueness'
+  | 'raise-caps-or-simplify'
+
+export interface AuthoringSolverCapsReport {
+  readonly maxNodes: number
+  readonly maxModels: number
+  readonly maxGuestLayouts: number
+  readonly candidateLayoutCap: number
+}
+
+export interface AuthoringSolverStatsReport {
+  readonly nodeCount: number
+  readonly propagationCount: number
+  readonly truncated: boolean
+}
+
+export interface AuthoringCaseValidationReport {
+  readonly puzzleId?: string
+  readonly sourcePath: string
+  readonly resolvedPath: string
+  readonly caps: AuthoringSolverCapsReport
+  readonly schema: {
+    readonly ok: boolean
+    readonly issueCount: number
+    readonly issues: readonly AuthoringSchemaIssueReport[]
+  }
+  readonly targetRules?: {
+    readonly satisfiesRules: boolean
+    readonly stats: AuthoringSolverStatsReport
+  }
+  readonly initialSatisfiability?: {
+    readonly satisfiable: boolean
+    readonly stats: AuthoringSolverStatsReport
+  }
+  readonly initialGuestLayouts?: {
+    readonly count: number
+    readonly greaterThan?: number
+    readonly stats: AuthoringSolverStatsReport
+  }
+  readonly proof?: {
+    readonly noGuess: boolean
+    readonly humanExplainable: boolean
+    readonly targetSatisfiesRules: boolean
+    readonly guestLayoutUniqueAtEnd: boolean
+    readonly finalGuestCells: readonly string[] | null
+    readonly issueCodes: readonly string[]
+    readonly waveCount: number
+    readonly deductionCount: number
+    readonly techniqueIds: readonly string[]
+    readonly stats: AuthoringSolverStatsReport
+  }
+  readonly recommendation: AuthoringRecommendation
+}
+
+export interface AuthoringSchemaIssueReport {
+  readonly code: string
+  readonly path: readonly (string | number)[]
+  readonly message: string
+  readonly context?: Readonly<Record<string, unknown>>
 }

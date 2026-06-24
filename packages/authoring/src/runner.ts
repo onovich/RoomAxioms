@@ -1,8 +1,21 @@
 import type { AuthoringCliReport } from './contracts.js'
 import { parseAuthoringArgs } from './parser.js'
 import { parsedCommandReport, parseErrorReport } from './reports.js'
+import { validateCaseCommand } from './validation.js'
 
-export function runAuthoringCli(args: readonly string[]): AuthoringCliReport {
+export interface RunAuthoringCliOptions {
+  readonly cwd?: string
+}
+
+export function runAuthoringCli(
+  args: readonly string[],
+  options: RunAuthoringCliOptions = {},
+): AuthoringCliReport {
   const parsed = parseAuthoringArgs(args)
-  return parsed.ok ? parsedCommandReport(parsed.command) : parseErrorReport(parsed.error)
+  if (!parsed.ok) return parseErrorReport(parsed.error)
+  if (parsed.command.name === 'validate' || parsed.command.name === 'report') {
+    return validateCaseCommand(parsed.command, { cwd: options.cwd })
+  }
+
+  return parsedCommandReport(parsed.command)
 }
