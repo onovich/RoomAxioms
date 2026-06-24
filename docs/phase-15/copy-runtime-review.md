@@ -26,12 +26,15 @@ The selector summary exposes only:
 - `tags`;
 - `board`.
 
+Hints and developer diagnostics remain on the existing runtime path. The promoted case changes data only; it does not add new hint templates, target overlays, forced-cell overlays, authoring imports, generator imports, or developer-only UI surfaces.
+
 ## Verification
 
 Commands:
 
 ```powershell
 cmd /c pnpm.cmd --filter @room-axioms/web test -- src/content/caseVerification.test.ts
+cmd /c pnpm.cmd --filter @room-axioms/web test -- src/logic/hints.test.ts src/runtime/analyzer.test.ts
 cmd /c pnpm.cmd authoring -- report content/cases/case-012.json
 cmd /c pnpm.cmd authoring -- score content/cases/case-012.json
 cmd /c pnpm.cmd authoring -- minimize content/cases/case-012.json --require-technique LOCAL_SCOPE_DIFFERENCE
@@ -40,6 +43,7 @@ cmd /c pnpm.cmd authoring -- minimize content/cases/case-012.json --require-tech
 Results:
 
 - web content verification: PASS;
+- focused hint/runtime tests: PASS;
 - shipped cases load in stable order through `case-012`;
 - experimental Phase 15 IDs are absent from `contentCases` and `caseSummaries`;
 - `case-012` report: PASS, `ok: true`;

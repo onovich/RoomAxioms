@@ -41,7 +41,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Phase 15: Retained Difference Candidate Search And Promotion
 - Guide: `docs/phase-15-retained-difference-candidate-search-promotion-goal-mode-execution-guide.md`
 - Budget: 12 executor rounds
-- Status: ready for executor dispatch
+- Status: READY_FOR_CHECK
 - Final report target: `docs/phase-15-retained-difference-candidate-search-promotion-final-report.md`
 - Development plan: `docs/development-plan.md`
 
