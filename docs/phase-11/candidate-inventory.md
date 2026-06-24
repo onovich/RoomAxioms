@@ -30,6 +30,13 @@ Rationale:
 - It genuinely exercises the accepted `LOCAL_SCOPE_INTERSECTION` proof technique.
 - It has no cap pressure or truncation in authoring evidence.
 
+Round 2 decision:
+
+- Planned shipped id: `case-011`.
+- Planned title: `客房 11：交汇视线`.
+- Planned case name: `案卷 11 · 交汇视线`.
+- See `docs/phase-11/promotion-decisions.md` and `docs/phase-11/copy-plan.md`.
+
 ## Non-Promotion Notes
 
 - No experimental file is imported by `apps/web/src/content/cases.ts` in Round 1.
