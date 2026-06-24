@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-15-retained-difference-002",
+  "title": "Phase 15 Experimental - Corridor Difference 002",
+  "caseName": "Phase 15 Experimental - Corridor Difference 002",
+  "board": {
+    "width": 4,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross count",
+        "flavor": "Each bottle has exactly 1 guest in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror quiet zone",
+        "flavor": "Each mirror has 0 guests around it."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Empty cross quiet zone",
+        "flavor": "Each empty cell has 0 guests in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "There are exactly 2 guests in the room."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "bottle",
+    "D2": "empty",
+    "A3": "bottle",
+    "B3": "guest",
+    "C3": "guest",
+    "D3": "bottle"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "experimental",
+      "phase-15",
+      "local-scope-difference",
+      "corridor"
+    ],
+    "author": "internal-phase-15",
+    "status": "draft",
+    "notes": "Private retained-difference candidate. Not shipped in default web content."
+  }
+}

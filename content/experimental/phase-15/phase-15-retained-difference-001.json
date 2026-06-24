@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-15-retained-difference-001",
+  "title": "Phase 15 Experimental - Guest Bridge Difference 001",
+  "caseName": "Phase 15 Experimental - Guest Bridge Difference 001",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Bottle cross count",
+        "flavor": "Each bottle has exactly 2 guests in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror ring count",
+        "flavor": "Each mirror has exactly 1 guest around it."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "guest",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Guest ring count",
+        "flavor": "Each guest has exactly 1 guest around it."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bin cross count",
+        "flavor": "Each bin has exactly 1 guest in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "There are exactly 2 guests in the room."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "guest",
+    "A3": "bin",
+    "B3": "guest",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "experimental",
+      "phase-15",
+      "local-scope-difference",
+      "guest-bridge"
+    ],
+    "author": "internal-phase-15",
+    "status": "draft",
+    "notes": "Private retained-difference candidate. Not shipped in default web content."
+  }
+}
