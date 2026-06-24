@@ -46,8 +46,77 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
     ...intersectionDeductions,
     ...derivedLocalDeductions,
   ]);
+  const localScopeIntersectionDeductions = deriveLocalScopeIntersectionDeductions(
+    state,
+    objectDeductions,
+  );
   const safeFromObjectDeductions = deriveKnownSafeFromObjectDeductions(state, objectDeductions);
-  const deductions = mergeDeductions([...objectDeductions, ...safeFromObjectDeductions]);
+  const deductions = mergeDeductions([
+    ...objectDeductions,
+    ...localScopeIntersectionDeductions,
+    ...safeFromObjectDeductions,
+  ]);
+
+  return sortDeductions(state, mergeDeductions(deductions));
+}
+
+export function deriveLocalScopeIntersectionDeductions(
+  state: KnowledgeState,
+  objectDeductions: readonly Deduction[] = [],
+): readonly Deduction[] {
+  const scopes = localTargetScopes(state, objectDeductions)
+    .filter((scope) => scope.rule.target === 'guest')
+    .filter((scope) => scope.remainingCapacity !== null)
+    .filter((scope) => scope.remainingCapacity !== null && scope.remainingCapacity >= 0);
+  const deductions: Deduction[] = [];
+
+  for (const consumer of scopes) {
+    if (consumer.remainingCapacity === null || consumer.remainingCapacity <= 0) continue;
+
+    for (const provider of scopes) {
+      if (sameLocalScope(consumer, provider)) continue;
+      if (provider.remainingRequired <= 0) continue;
+
+      const sharedUnknown = intersectCellSets([consumer.summary.unknownCellIds, provider.summary.unknownCellIds]);
+      if (sharedUnknown.length === 0) continue;
+
+      const providerOnlyUnknown = subtractCellIds(
+        state,
+        provider.summary.unknownCellIds,
+        consumer.summary.unknownCellIds,
+      );
+      const consumerOnlyUnknown = subtractCellIds(
+        state,
+        consumer.summary.unknownCellIds,
+        provider.summary.unknownCellIds,
+      );
+      if (consumerOnlyUnknown.length === 0) continue;
+
+      const providerForcedSharedGuests = Math.max(
+        0,
+        provider.remainingRequired - providerOnlyUnknown.length,
+      );
+      if (providerForcedSharedGuests <= 0) continue;
+      if (providerForcedSharedGuests < consumer.remainingCapacity) continue;
+
+      const premises = localScopeIntersectionPremises({
+        consumer,
+        provider,
+        sharedUnknown,
+        providerOnlyUnknown,
+        providerForcedSharedGuests,
+      });
+
+      for (const cellId of consumerOnlyUnknown) {
+        deductions.push(createDeduction({
+          technique: 'LOCAL_SCOPE_INTERSECTION',
+          conclusion: { kind: 'safe', cellId },
+          ruleIds: [consumer.rule.id, provider.rule.id],
+          premises,
+        }));
+      }
+    }
+  }
 
   return sortDeductions(state, mergeDeductions(deductions));
 }
@@ -233,6 +302,93 @@ interface PossibleRequiredTargetScope {
   readonly possibleTargetCellIds: readonly CellId[];
 }
 
+interface LocalTargetScope {
+  readonly rule: ForEachCountRule;
+  readonly subjectCellId: CellId;
+  readonly subjectPremise: ProofPremise;
+  readonly summary: ReturnType<typeof summarizeForEachScope>;
+  readonly remainingRequired: number;
+  readonly remainingCapacity: number | null;
+}
+
+function localTargetScopes(
+  state: KnowledgeState,
+  objectDeductions: readonly Deduction[],
+): readonly LocalTargetScope[] {
+  const scopes: LocalTargetScope[] = [];
+
+  for (const rule of state.puzzle.rules.filter(isForEachCountRule)) {
+    for (const subjectFact of knownSubjectFacts(state, rule.subject, objectDeductions)) {
+      const summary = summarizeForEachScope(state, rule, subjectFact.cellId);
+      const upperBound = summary.bounds.upperBound;
+
+      scopes.push({
+        rule,
+        subjectCellId: subjectFact.cellId,
+        subjectPremise: subjectFact.premise,
+        summary,
+        remainingRequired: summary.bounds.lowerBound - summary.knownTargetCellIds.length,
+        remainingCapacity: upperBound === null ? null : upperBound - summary.knownTargetCellIds.length,
+      });
+    }
+  }
+
+  return scopes;
+}
+
+function sameLocalScope(left: LocalTargetScope, right: LocalTargetScope): boolean {
+  return left.rule.id === right.rule.id && left.subjectCellId === right.subjectCellId;
+}
+
+function localScopeIntersectionPremises(input: {
+  readonly consumer: LocalTargetScope;
+  readonly provider: LocalTargetScope;
+  readonly sharedUnknown: readonly CellId[];
+  readonly providerOnlyUnknown: readonly CellId[];
+  readonly providerForcedSharedGuests: number;
+}): readonly ProofPremise[] {
+  const { consumer, provider } = input;
+
+  return [
+    rulePremise(consumer.rule),
+    consumer.subjectPremise,
+    scopePremise(consumer.rule, consumer.subjectCellId, consumer.summary.scopeCellIds),
+    countPremise(consumer.summary),
+    rulePremise(provider.rule),
+    provider.subjectPremise,
+    scopePremise(provider.rule, provider.subjectCellId, provider.summary.scopeCellIds),
+    countPremise(provider.summary),
+    {
+      kind: 'scope',
+      label: [
+        `${consumer.subjectCellId}/${provider.subjectCellId} shared unknown cells`,
+        input.sharedUnknown.join(', '),
+      ].join(': '),
+      cellIds: input.sharedUnknown,
+      ruleIds: [consumer.rule.id, provider.rule.id],
+    },
+    {
+      kind: 'count',
+      label: [
+        `${provider.subjectCellId} needs ${provider.remainingRequired} remaining guest cells`,
+        `${input.providerOnlyUnknown.length} provider-only unknown cells`,
+        `at least ${input.providerForcedSharedGuests} shared guest cell(s)`,
+      ].join('; '),
+      cellIds: [...input.providerOnlyUnknown, ...input.sharedUnknown],
+      ruleIds: [provider.rule.id],
+    },
+    {
+      kind: 'count',
+      label: [
+        `${consumer.subjectCellId} has remaining guest capacity ${consumer.remainingCapacity ?? 'unbounded'}`,
+        'shared guest requirement consumes that capacity',
+      ].join('; '),
+      cellIds: consumer.summary.scopeCellIds,
+      ruleIds: [consumer.rule.id, provider.rule.id],
+    },
+  ];
+}
+
 function knownSubjectFacts(
   state: KnowledgeState,
   subject: CellKind,
@@ -308,6 +464,15 @@ function intersectCellSets(cellSets: readonly (readonly CellId[])[]): readonly C
   if (firstSet === undefined) return [];
 
   return firstSet.filter((cellId) => remainingSets.every((cellSet) => cellSet.includes(cellId)));
+}
+
+function subtractCellIds(
+  state: KnowledgeState,
+  left: readonly CellId[],
+  right: readonly CellId[],
+): readonly CellId[] {
+  const rightSet = new Set(right);
+  return sortCellIds(left.filter((cellId) => !rightSet.has(cellId)), state.puzzle.board);
 }
 
 function isUnresolvedGlobalSingletonRule(rule: RuleDefinition): rule is GlobalCountRule {

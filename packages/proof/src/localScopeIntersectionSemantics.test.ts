@@ -23,11 +23,16 @@ describe('LOCAL_SCOPE_INTERSECTION semantic fixtures', () => {
       .filter((deduction) => deduction.technique !== 'LOCAL_SCOPE_INTERSECTION')
       .filter((deduction) => deduction.conclusion.kind === 'safe')
       .map((deduction) => deduction.conclusion.cellId);
+    const intersectionSafe = deductionsForTechnique(
+      deriveHumanDeductions(state),
+      'LOCAL_SCOPE_INTERSECTION',
+    ).map((deduction) => deduction.conclusion);
 
     expect(forced.safe).toContain('B3');
     expect(b3CanBeGuest.satisfiable).toBe(false);
     expect(b3CanBeGuest.stats.truncated).toBe(false);
     expect(existingSafeWithoutIntersection).not.toContain('B3');
+    expect(intersectionSafe).toEqual([{ kind: 'safe', cellId: 'B3' }]);
   });
 
   it('does not force a consumer-only cell when the provider need can avoid the intersection', () => {

@@ -28,9 +28,10 @@ HumanReasoner v1 currently emits these approved technique ids:
 - `LOCAL_COUNT_SATURATED`
 - `LOCAL_COUNT_ALL_REMAINING`
 - `UNIQUE_TARGET_NEIGHBOR_INTERSECTION`
+- `LOCAL_SCOPE_INTERSECTION`
 - `KNOWN_SAFE_FROM_NON_GUEST_OBJECT`
 
-`LOCAL_SCOPE_INTERSECTION` and `LOCAL_SCOPE_DIFFERENCE` remain reserved ids. They are not emitted until a generic DSL-v1 pattern is justified and tested.
+`LOCAL_SCOPE_DIFFERENCE` remains a reserved id. It is not emitted until a generic DSL-v1 pattern is justified and tested.
 
 ## Phase 10 Local Scope Intersection Contract
 
