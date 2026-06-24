@@ -1,0 +1,92 @@
+{
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "酒瓶十字登记",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 2 名未登记住客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "镜面周围登记",
+        "flavor": "每面镜子的周围一圈里，恰好有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "总住客登记",
+        "flavor": "整间客房里，恰好有 2 名未登记住客。"
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 3,
+    "max": 5
+  },
+  "caps": {
+    "maxAttempts": 48,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-13-difference-sample",
+    "titlePrefix": "Phase 13 Difference Sample",
+    "caseNamePrefix": "Phase 13 Difference Sample",
+    "metadata": {
+      "difficulty": 3,
+      "tags": [
+        "experimental",
+        "phase-13",
+        "sampled",
+        "local-scope-difference"
+      ],
+      "author": "internal-phase-13",
+      "status": "draft",
+      "notes": "Private report-only sampling template for Phase 13 difference candidate discovery."
+    }
+  }
+}
+
