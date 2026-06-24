@@ -11,4 +11,4 @@ Status: active
 
 ## Release Blocker Decision
 
-No P0/P1 launch blocker is known after Round 2 metadata cleanup.
+No P0/P1 launch blocker is known after Round 4 validation, smoke, online HTTP, and boundary scans.
