@@ -24,8 +24,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "Cleaning bin",
-        "flavor": "Exactly one cleaning bin is in this room."
+        "title": "清扫容器",
+        "flavor": "房间里恰好有 1 个垃圾桶。"
       }
     },
     {
@@ -37,8 +37,8 @@
         "value": 2
       },
       "presentation": {
-        "title": "Unregistered guests",
-        "flavor": "Exactly two guests are in this room."
+        "title": "未登记住客",
+        "flavor": "房间里恰好有 2 名访客。"
       }
     },
     {
@@ -54,8 +54,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "Bottle cleanup",
-        "flavor": "Every bottle has exactly one bin in its orthogonal neighborhood."
+        "title": "酒瓶清扫",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。"
       }
     },
     {
@@ -71,8 +71,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "Clear bin zone",
-        "flavor": "Every bin has no guest in its adjacent neighborhood."
+        "title": "清扫安全区",
+        "flavor": "每个垃圾桶周围一圈里，没有访客。"
       }
     },
     {
@@ -88,8 +88,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "Mirror sightline",
-        "flavor": "Every mirror has exactly one guest in its adjacent neighborhood."
+        "title": "镜面登记",
+        "flavor": "每面镜子周围一圈里，恰好有 1 名访客。"
       }
     },
     {
@@ -105,8 +105,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "Bottle quiet zone",
-        "flavor": "Every bottle has no guest in its orthogonal neighborhood."
+        "title": "酒瓶禁区",
+        "flavor": "每个酒瓶的上下左右邻格里，没有访客。"
       }
     }
   ],

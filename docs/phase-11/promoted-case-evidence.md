@@ -109,3 +109,8 @@ Rule titles:
 - `空房登记`
 
 Rule text uses `上下左右邻格` and `周围一圈` without exposing solver, target, candidate, forced-cell, generator, or authoring internals.
+
+Round 6 copy review:
+
+- PASS, promoted copy remains Chinese and plain-language.
+- PASS, no promoted rule copy contains abstract scope terms such as `正交` or `邻接域`.

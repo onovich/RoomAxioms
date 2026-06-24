@@ -35,7 +35,7 @@ export const case004 = {
       count: { op: 'eq', value: 1 },
       presentation: {
         title: '清扫容器',
-        flavor: '房间中恰有 1 个垃圾桶。',
+        flavor: '房间里恰好有 1 个垃圾桶。',
       },
     },
     {
@@ -45,7 +45,7 @@ export const case004 = {
       count: { op: 'eq', value: 2 },
       presentation: {
         title: '未登记住客',
-        flavor: '房间中恰有 2 名访客。',
+        flavor: '房间里恰好有 2 名访客。',
       },
     },
     {
@@ -57,7 +57,7 @@ export const case004 = {
       count: { op: 'eq', value: 1 },
       presentation: {
         title: '酒瓶清扫',
-        flavor: '每个酒瓶的正交邻域中，恰好有 1 个垃圾桶。',
+        flavor: '每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。',
       },
     },
     {
@@ -69,7 +69,7 @@ export const case004 = {
       count: { op: 'eq', value: 0 },
       presentation: {
         title: '清扫安全区',
-        flavor: '每个垃圾桶的邻接域中，没有访客。',
+        flavor: '每个垃圾桶周围一圈里，没有访客。',
       },
     },
     {
@@ -81,7 +81,7 @@ export const case004 = {
       count: { op: 'eq', value: 1 },
       presentation: {
         title: '镜面登记',
-        flavor: '每面镜子的邻接域中，恰好有 1 名访客。',
+        flavor: '每面镜子周围一圈里，恰好有 1 名访客。',
       },
     },
     {
@@ -93,7 +93,7 @@ export const case004 = {
       count: { op: 'eq', value: 0 },
       presentation: {
         title: '酒瓶禁区',
-        flavor: '每个酒瓶的正交邻域中，没有访客。',
+        flavor: '每个酒瓶的上下左右邻格里，没有访客。',
       },
     },
   ],

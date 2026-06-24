@@ -25,7 +25,7 @@
       },
       "presentation": {
         "title": "\u6e05\u626b\u5bb9\u5668",
-        "flavor": "\u623f\u95f4\u4e2d\u6070\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
+        "flavor": "房间里恰好有 1 个垃圾桶。"
       }
     },
     {
@@ -38,7 +38,7 @@
       },
       "presentation": {
         "title": "\u672a\u767b\u8bb0\u4f4f\u5ba2",
-        "flavor": "\u623f\u95f4\u4e2d\u6070\u6709 2 \u540d\u8bbf\u5ba2\u3002"
+        "flavor": "房间里恰好有 2 名访客。"
       }
     },
     {
@@ -55,7 +55,7 @@
       },
       "presentation": {
         "title": "\u9152\u74f6\u6e05\u626b",
-        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u6b63\u4ea4\u90bb\u57df\u4e2d\uff0c\u6070\u597d\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。"
       }
     },
     {
@@ -72,7 +72,7 @@
       },
       "presentation": {
         "title": "\u6e05\u626b\u5b89\u5168\u533a",
-        "flavor": "\u6bcf\u4e2a\u5783\u573e\u6876\u7684\u90bb\u63a5\u57df\u4e2d\uff0c\u6ca1\u6709\u8bbf\u5ba2\u3002"
+        "flavor": "每个垃圾桶周围一圈里，没有访客。"
       }
     },
     {
@@ -89,7 +89,7 @@
       },
       "presentation": {
         "title": "\u955c\u9762\u767b\u8bb0",
-        "flavor": "\u6bcf\u9762\u955c\u5b50\u7684\u90bb\u63a5\u57df\u4e2d\uff0c\u6070\u597d\u6709 1 \u540d\u8bbf\u5ba2\u3002"
+        "flavor": "每面镜子周围一圈里，恰好有 1 名访客。"
       }
     },
     {
@@ -106,7 +106,7 @@
       },
       "presentation": {
         "title": "\u9152\u74f6\u7981\u533a",
-        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u6b63\u4ea4\u90bb\u57df\u4e2d\uff0c\u6ca1\u6709\u8bbf\u5ba2\u3002"
+        "flavor": "每个酒瓶的上下左右邻格里，没有访客。"
       }
     }
   ],

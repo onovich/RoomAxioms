@@ -21,8 +21,8 @@
         "value": 2
       },
       "presentation": {
-        "title": "Two unregistered guests",
-        "flavor": "Exactly two guests are in this room."
+        "title": "未登记住客",
+        "flavor": "房间里恰好有 2 名访客。"
       }
     }
   ],

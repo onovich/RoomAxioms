@@ -69,6 +69,23 @@ describe('MVP content runtime smoke', () => {
     expect(localRuleTexts.every((text) => !text.includes('邻接'))).toBe(true)
   })
 
+  it('keeps shipped case and rule presentation copy Chinese and plain', () => {
+    const copyFields = contentCases.flatMap((puzzle) => [
+      puzzle.title,
+      puzzle.caseName ?? puzzle.title,
+      ...puzzle.rules.flatMap((rule) => [
+        rule.presentation?.title ?? '',
+        rule.presentation?.flavor ?? '',
+      ]),
+    ])
+
+    expect(copyFields.every((text) => !/[A-Za-z]/.test(text))).toBe(true)
+    expect(copyFields.every((text) => !text.includes('正交'))).toBe(true)
+    expect(copyFields.every((text) => !text.includes('邻接域'))).toBe(true)
+    expect(copyFields.some((text) => text.includes('上下左右邻格'))).toBe(true)
+    expect(copyFields.some((text) => text.includes('周围一圈'))).toBe(true)
+  })
+
   it('does not reveal target cells for wrong or incomplete submissions', () => {
     const puzzle = contentCases.find((item) => item.id === 'case-004')
     if (puzzle === undefined) throw new Error('case-004 missing from smoke content')
