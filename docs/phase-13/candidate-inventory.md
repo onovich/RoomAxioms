@@ -43,7 +43,7 @@ Round 3 report:
 
 Round 3 status:
 
-- keep for Round 4 score/minimize/retention filtering.
+- rejected in Round 4 because minimization drops `LOCAL_SCOPE_DIFFERENCE` and the score remains provisional band `2`.
 
 ### `phase-13-local-scope-difference-002`
 
@@ -75,7 +75,7 @@ Round 3 report:
 
 Round 3 status:
 
-- keep as reviewed-but-rejected unless Round 4 finds a narrow content-only repair.
+- rejected in Round 4 because proof/no-guess fails and minimization cannot repair final uniqueness.
 
 ### `phase-13-difference-sample-template`
 
@@ -114,4 +114,3 @@ Round 1 baseline:
 Round 3 status:
 
 - rejected for Phase 13 promotion baseline.
-
