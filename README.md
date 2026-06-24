@@ -38,12 +38,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Active Goal Guide
 
-- Phase 16: Case 012 Release QA And Playtest Calibration
-- Guide: `docs/phase-16-case-012-release-qa-playtest-calibration-goal-mode-execution-guide.md`
-- Budget: 8 executor rounds
-- Status: READY_FOR_CHECK from executor
-- Final report: `docs/phase-16-case-012-release-qa-playtest-calibration-final-report.md`
-- Evidence: case-012 release QA, authoring retention, focused web/proof/authoring tests, local smoke, and online HTTP checks passed. No real playtest feedback exists yet, so difficulty remains uncalibrated.
+- Phase 17: MVP Release Closure And Honest Playtest Intake
+- Guide: `docs/phase-17-mvp-release-closure-honest-playtest-intake-goal-mode-execution-guide.md`
+- Budget: 6 executor rounds
+- Status: ready for executor dispatch
+- Final report target: `docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md`
+- Evidence baseline: Phase 16 passed case-012 release QA, authoring retention, focused web/proof/authoring tests, local smoke, and online HTTP checks. No real playtest feedback exists yet, so difficulty remains uncalibrated.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
