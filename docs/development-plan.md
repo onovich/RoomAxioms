@@ -23,17 +23,19 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 7 - MVP Content And UX Hardening | Produce first 10 cases, three-engine E2E, keyboard/screen-reader support, responsive polish, performance baseline, and rule-copy revision | RA-011, RA-013, RA-014, RA-015, RA-018, RA-019, RA-020 | 10 rounds |
 | Phase 8 - Release QA And Playtest Loop | Validate Pages release, run playtest research, organize findings, fix P0/P1 defects, and decide MVP release readiness | RA-017 + release gates | 6 rounds |
 | Phase 9 - Generator And Expansion Spike | Explore generator v1, initial reveal minimization, difficulty scoring, technique expansion, internal editor, and follow-up scope | RA-021 to RA-028 | 8 exploratory rounds |
+| Phase 10 - Authoring CLI And Proof Technique Hardening | Implement `LOCAL_SCOPE_INTERSECTION`, add private authoring CLI/report workflow, and create validated experimental mid-band fixtures without public UGC or content promotion | Phase 9 recommendations | 16 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 8 - Release QA And Playtest Loop, PASS, final commit `fb5a4f8`.
-- Current active phase: Phase 9 - Generator And Expansion Spike, executor complete and ready for planner check.
-- Active guide: `docs/phase-9-generator-expansion-spike-goal-mode-execution-guide.md`.
-- Executor budget: 8 exploratory rounds.
-- Dispatch status: executor report pending planner/checker validation from thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Recently accepted: Phase 9 - Generator And Expansion Spike, PASS, final commit `58dab89`.
+- Current active phase: Phase 10 - Authoring CLI And Proof Technique Hardening.
+- Active guide: `docs/phase-10-authoring-cli-proof-technique-hardening-goal-mode-execution-guide.md`.
+- Executor budget: 16 rounds.
+- Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
 
 - Main pre-MVP executor budget: 65 rounds, covering Phase 1 through Phase 8.
 - Expansion exploration budget: 8 rounds, covering Phase 9.
+- Post-spike hardening budget: 16 rounds, covering Phase 10.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

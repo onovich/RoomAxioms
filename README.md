@@ -32,9 +32,9 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Active Goal Guide
 
-- Phase 9: Generator And Expansion Spike
-- Guide: `docs/phase-9-generator-expansion-spike-goal-mode-execution-guide.md`
-- Budget: 8 exploratory executor rounds
+- Phase 10: Authoring CLI And Proof Technique Hardening
+- Guide: `docs/phase-10-authoring-cli-proof-technique-hardening-goal-mode-execution-guide.md`
+- Budget: 16 executor rounds
 - Development plan: `docs/development-plan.md`
 
 ## Commands
