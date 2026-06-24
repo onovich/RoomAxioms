@@ -68,6 +68,26 @@ describe('solver-backed deduction validation', () => {
     expect(gapReport.issues.filter((issue) => issue.cellIds?.includes('B3'))).toEqual([]);
   });
 
+  it('confirms a local scope difference guest deduction with the public solver API', () => {
+    const state = localScopeDifferenceState();
+    const deductions = deriveHumanDeductions(state);
+    const deduction = requiredTechniqueDeduction(
+      deductions,
+      'LOCAL_SCOPE_DIFFERENCE',
+      'B3',
+    );
+    const result = verifyDeduction(state, deduction);
+    const gapReport = findExplanationGaps(state, deductions);
+
+    expect(deduction.conclusion).toEqual({ kind: 'guest', cellId: 'B3' });
+    expect(result.valid).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.stats.truncated).toBe(false);
+    expect(gapReport.forcedGuests).toContain('B3');
+    expect(gapReport.explainedGuests).toContain('B3');
+    expect(gapReport.issues.filter((issue) => issue.cellIds?.includes('B3'))).toEqual([]);
+  });
+
   it('rejects a human deduction that the solver cannot confirm', () => {
     const state = makeState({
       allowedKinds: ['empty', 'guest'],
@@ -93,6 +113,20 @@ describe('solver-backed deduction validation', () => {
       observations: [{ cellId: 'A1', kind: 'guest' }],
     });
     const deduction = requiredDeduction(deriveHumanDeductions(state), 'B1', 'safe');
+    const result = verifyDeduction(state, deduction, { maxNodes: 0 });
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toEqual(['SOLVER_TRUNCATED']);
+    expect(result.stats.truncated).toBe(true);
+  });
+
+  it('does not accept a local scope difference deduction when solver validation truncates', () => {
+    const state = localScopeDifferenceState();
+    const deduction = requiredTechniqueDeduction(
+      deriveHumanDeductions(state),
+      'LOCAL_SCOPE_DIFFERENCE',
+      'B3',
+    );
     const result = verifyDeduction(state, deduction, { maxNodes: 0 });
 
     expect(result.valid).toBe(false);
@@ -198,6 +232,23 @@ function localScopeIntersectionState(): KnowledgeState {
     observations: [
       { cellId: 'B1', kind: 'mirror' },
       { cellId: 'A1', kind: 'empty' },
+      { cellId: 'B2', kind: 'bottle' },
+    ],
+  });
+}
+
+function localScopeDifferenceState(): KnowledgeState {
+  return makeState({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'bottle', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 2 }),
+      forEachCountRule('R2', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 1 }),
+    ],
+    observations: [
+      { cellId: 'A1', kind: 'empty' },
+      { cellId: 'B1', kind: 'mirror' },
+      { cellId: 'C1', kind: 'empty' },
       { cellId: 'B2', kind: 'bottle' },
     ],
   });
