@@ -21,7 +21,7 @@ import {
   type CasePathCommand,
 } from './contracts.js'
 
-const DEFAULT_CAPS = {
+export const DEFAULT_CAPS = {
   maxNodes: 20_000,
   maxModels: 20_000,
   maxGuestLayouts: 100,
@@ -32,36 +32,66 @@ export interface ValidateCaseCommandOptions {
   readonly cwd?: string
 }
 
+export interface LoadedAuthoringCase {
+  readonly ok: boolean
+  readonly sourcePath: string
+  readonly resolvedPath: string
+  readonly diagnostics: readonly AuthoringCliDiagnostic[]
+  readonly validation: AuthoringCaseValidationReport
+  readonly puzzle?: PuzzleDefinition
+}
+
 export function validateCaseCommand(
   command: CasePathCommand,
   options: ValidateCaseCommandOptions = {},
 ): AuthoringCliReport {
-  const resolvedPath = resolveInputPath(command.casePath, options.cwd ?? process.cwd())
-  const baseReport = {
+  const loaded = loadAuthoringCase(command.casePath, options.cwd ?? process.cwd())
+  const baseReport = caseCommandBaseReport(command, loaded.resolvedPath)
+
+  return {
+    ...baseReport,
+    ok: loaded.validation.recommendation === 'ready-for-experimental-review',
+    diagnostics: loaded.diagnostics,
+    validation: loaded.validation,
+  }
+}
+
+export function loadAuthoringCase(casePath: string, cwd: string): LoadedAuthoringCase {
+  const resolvedPath = resolveInputPath(casePath, cwd)
+  const loaded = readJsonFile(resolvedPath)
+  if (!loaded.ok) {
+    const validation = emptyValidation(casePath, resolvedPath, loaded.recommendation)
+    return {
+      ok: false,
+      sourcePath: casePath,
+      resolvedPath,
+      diagnostics: [loaded.diagnostic],
+      validation,
+    }
+  }
+
+  const validationResult = validatePuzzleInput(loaded.value, casePath, resolvedPath)
+  return {
+    ok: validationResult.puzzle !== undefined && validationResult.validation.schema.ok,
+    sourcePath: casePath,
+    resolvedPath,
+    diagnostics: diagnosticsForValidation(validationResult.validation),
+    validation: validationResult.validation,
+    ...(validationResult.puzzle === undefined ? {} : { puzzle: validationResult.puzzle }),
+  }
+}
+
+function caseCommandBaseReport(
+  command: CasePathCommand,
+  resolvedPath: string,
+): Omit<AuthoringCliReport, 'ok' | 'diagnostics' | 'validation'> {
+  return {
     version: AUTHORING_CLI_VERSION,
     command: command.name,
     inputPath: command.casePath,
     resolvedInputPath: resolvedPath,
     ...(command.options.outputPath === undefined ? {} : { outputPath: command.options.outputPath }),
     status: command.name === 'report' ? 'reported' : 'validated',
-  } as const
-
-  const loaded = readJsonFile(resolvedPath)
-  if (!loaded.ok) {
-    return {
-      ...baseReport,
-      ok: false,
-      diagnostics: [loaded.diagnostic],
-      validation: emptyValidation(command.casePath, resolvedPath, loaded.recommendation),
-    }
-  }
-
-  const validation = validatePuzzleInput(loaded.value, command.casePath, resolvedPath)
-  return {
-    ...baseReport,
-    ok: validation.recommendation === 'ready-for-experimental-review',
-    diagnostics: diagnosticsForValidation(validation),
-    validation,
   }
 }
 
@@ -104,19 +134,26 @@ function readJsonFile(resolvedPath: string): JsonLoadResult {
   }
 }
 
+interface PuzzleValidationResult {
+  readonly puzzle?: PuzzleDefinition
+  readonly validation: AuthoringCaseValidationReport
+}
+
 function validatePuzzleInput(
   input: unknown,
   sourcePath: string,
   resolvedPath: string,
-): AuthoringCaseValidationReport {
+): PuzzleValidationResult {
   const parsed = parsePuzzleDefinition(input)
   if (!parsed.ok || parsed.puzzle === undefined) {
     return {
-      ...emptyValidation(sourcePath, resolvedPath, 'repair-schema'),
-      schema: {
-        ok: false,
-        issueCount: parsed.issues.length,
-        issues: parsed.issues.map(schemaIssueReport),
+      validation: {
+        ...emptyValidation(sourcePath, resolvedPath, 'repair-schema'),
+        schema: {
+          ok: false,
+          issueCount: parsed.issues.length,
+          issues: parsed.issues.map(schemaIssueReport),
+        },
       },
     }
   }
@@ -152,41 +189,44 @@ function validatePuzzleInput(
   })
 
   return {
-    puzzleId: puzzle.id,
-    sourcePath,
-    resolvedPath,
-    caps: DEFAULT_CAPS,
-    schema: {
-      ok: true,
-      issueCount: 0,
-      issues: [],
+    puzzle,
+    validation: {
+      puzzleId: puzzle.id,
+      sourcePath,
+      resolvedPath,
+      caps: DEFAULT_CAPS,
+      schema: {
+        ok: true,
+        issueCount: 0,
+        issues: [],
+      },
+      targetRules: {
+        satisfiesRules: targetRules.satisfiable && !targetRules.stats.truncated,
+        stats: statsReport(targetRules.stats),
+      },
+      initialSatisfiability: {
+        satisfiable: initialSatisfiability.satisfiable && !initialSatisfiability.stats.truncated,
+        stats: statsReport(initialSatisfiability.stats),
+      },
+      initialGuestLayouts: {
+        count: initialGuestLayouts.count,
+        ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
+        stats: statsReport(initialGuestLayouts.stats),
+      },
+      proof: {
+        noGuess: proof.noGuess,
+        humanExplainable: proof.humanExplainable,
+        targetSatisfiesRules: proof.targetSatisfiesRules,
+        guestLayoutUniqueAtEnd: proof.guestLayoutUniqueAtEnd,
+        finalGuestCells: proof.finalGuestCells,
+        issueCodes: proof.issues.map((issue) => issue.code),
+        waveCount: proof.metrics.waveCount,
+        deductionCount: proof.metrics.deductionCount,
+        techniqueIds: proof.metrics.techniqueIds,
+        stats: statsReport(proofStats),
+      },
+      recommendation,
     },
-    targetRules: {
-      satisfiesRules: targetRules.satisfiable && !targetRules.stats.truncated,
-      stats: statsReport(targetRules.stats),
-    },
-    initialSatisfiability: {
-      satisfiable: initialSatisfiability.satisfiable && !initialSatisfiability.stats.truncated,
-      stats: statsReport(initialSatisfiability.stats),
-    },
-    initialGuestLayouts: {
-      count: initialGuestLayouts.count,
-      ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
-      stats: statsReport(initialGuestLayouts.stats),
-    },
-    proof: {
-      noGuess: proof.noGuess,
-      humanExplainable: proof.humanExplainable,
-      targetSatisfiesRules: proof.targetSatisfiesRules,
-      guestLayoutUniqueAtEnd: proof.guestLayoutUniqueAtEnd,
-      finalGuestCells: proof.finalGuestCells,
-      issueCodes: proof.issues.map((issue) => issue.code),
-      waveCount: proof.metrics.waveCount,
-      deductionCount: proof.metrics.deductionCount,
-      techniqueIds: proof.metrics.techniqueIds,
-      stats: statsReport(proofStats),
-    },
-    recommendation,
   }
 }
 
@@ -270,7 +310,7 @@ function targetObservationsForCells(
   }))
 }
 
-function solverCaps(caps: AuthoringSolverCapsReport): {
+export function solverCaps(caps: AuthoringSolverCapsReport): {
   readonly maxNodes: number
   readonly maxModels: number
   readonly maxGuestLayouts: number

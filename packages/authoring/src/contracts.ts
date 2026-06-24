@@ -1,3 +1,5 @@
+import type { ProvisionalDifficultyScore, RevealMinimizationReport } from '@room-axioms/generator'
+
 export const AUTHORING_PACKAGE_NAME = '@room-axioms/authoring' as const
 
 export const AUTHORING_CLI_VERSION = 'phase-10-authoring-v1' as const
@@ -59,9 +61,11 @@ export interface AuthoringCliReport {
   readonly outputPath?: string
   readonly seed?: number
   readonly templatePath?: string
-  readonly status: 'parsed' | 'not-implemented' | 'validated' | 'reported' | 'error'
+  readonly status: 'parsed' | 'not-implemented' | 'validated' | 'reported' | 'scored' | 'minimized' | 'error'
   readonly diagnostics: readonly AuthoringCliDiagnostic[]
   readonly validation?: AuthoringCaseValidationReport
+  readonly score?: ProvisionalDifficultyScore
+  readonly minimization?: RevealMinimizationReport
 }
 
 export interface AuthoringCliDiagnostic {

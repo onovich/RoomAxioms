@@ -1,4 +1,5 @@
 import type { AuthoringCliReport } from './contracts.js'
+import { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 import { parseAuthoringArgs } from './parser.js'
 import { parsedCommandReport, parseErrorReport } from './reports.js'
 import { validateCaseCommand } from './validation.js'
@@ -15,6 +16,12 @@ export function runAuthoringCli(
   if (!parsed.ok) return parseErrorReport(parsed.error)
   if (parsed.command.name === 'validate' || parsed.command.name === 'report') {
     return validateCaseCommand(parsed.command, { cwd: options.cwd })
+  }
+  if (parsed.command.name === 'score') {
+    return scoreCaseCommand(parsed.command, { cwd: options.cwd })
+  }
+  if (parsed.command.name === 'minimize') {
+    return minimizeCaseCommand(parsed.command, { cwd: options.cwd })
   }
 
   return parsedCommandReport(parsed.command)

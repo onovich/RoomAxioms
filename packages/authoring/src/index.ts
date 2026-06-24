@@ -17,6 +17,7 @@ export {
   type CasePathCommand,
   type SampleCommand,
 } from './contracts.js'
+export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export { parsedCommandReport, parseErrorReport } from './reports.js'
 export { runAuthoringCli, type RunAuthoringCliOptions } from './runner.js'

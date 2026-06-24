@@ -81,17 +81,19 @@ describe('authoring CLI parser', () => {
   })
 
   it('builds a stable not-implemented report foundation for later rounds', () => {
-    expect(runAuthoringCli(['score', 'case.json'])).toEqual({
+    expect(runAuthoringCli(['sample', '--seed', '7', '--template', 'template.json'])).toEqual({
       version: 'phase-10-authoring-v1',
       ok: false,
-      command: 'score',
-      inputPath: 'case.json',
+      command: 'sample',
+      inputPath: 'template.json',
+      seed: 7,
+      templatePath: 'template.json',
       status: 'not-implemented',
       diagnostics: [
         {
           code: 'COMMAND_NOT_IMPLEMENTED',
           severity: 'warning',
-          message: 'score parsed successfully; execution is implemented in later Phase 10 rounds.',
+          message: 'sample parsed successfully; execution is implemented in later Phase 10 rounds.',
         },
       ],
     })
@@ -141,5 +143,32 @@ describe('authoring CLI parser', () => {
     expect(report.ok).toBe(true)
     expect(report.status).toBe('reported')
     expect(report.validation?.recommendation).toBe('ready-for-experimental-review')
+  })
+
+  it('scores cases with uncalibrated authoring metrics', () => {
+    const report = runAuthoringCli(['score', fixturePath])
+
+    expect(report.ok).toBe(true)
+    expect(report.status).toBe('scored')
+    expect(report.score).toMatchObject({
+      puzzleId: 'phase-10-local-scope-intersection-001',
+      calibratedWithRealPlaytest: false,
+    })
+    expect(report.score?.metrics.techniqueIds).toContain('LOCAL_SCOPE_INTERSECTION')
+    expect(report.validation?.recommendation).toBe('ready-for-experimental-review')
+  })
+
+  it('reports reveal minimization without mutating source content', () => {
+    const report = runAuthoringCli(['minimize', fixturePath])
+
+    expect(report.ok).toBe(true)
+    expect(report.status).toBe('minimized')
+    expect(report.minimization).toMatchObject({
+      puzzleId: 'phase-10-local-scope-intersection-001',
+      beforeCount: 2,
+      afterCount: 2,
+    })
+    expect(report.minimization?.steps.every((step) => step.removed === false)).toBe(true)
+    expect(report.diagnostics[0]?.message).toContain('source file was not modified')
   })
 })
