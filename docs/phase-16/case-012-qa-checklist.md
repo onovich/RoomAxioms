@@ -40,12 +40,12 @@ Status: Round 1 baseline
 
 ## Responsive, Keyboard, And Smoke
 
-- Local smoke: pending Round 4.
+- Local smoke: PASS.
 - Online HTTP smoke: pending final round.
-- Desktop viewport smoke: pending Round 4 if feasible.
-- Mobile viewport smoke: pending Round 4 if feasible.
-- Keyboard navigation smoke: pending Round 4 if feasible.
-- Console-error status: pending Round 4 if feasible.
+- Desktop viewport smoke: PASS.
+- Mobile viewport smoke: PASS.
+- Keyboard navigation smoke: PASS.
+- Console-error status: PASS, none observed.
 
 ## Playtest Calibration
 

@@ -48,7 +48,7 @@ Gate:
 Disposition:
 
 - runtime, hint, and submission secrecy evidence recorded in Round 3;
-- smoke evidence remains pending Round 4.
+- smoke evidence recorded in Round 4.
 
 ## P0/P1 Defects
 
