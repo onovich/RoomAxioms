@@ -69,3 +69,10 @@
 ## 当前状态
 
 设计与技术交接基线已形成；代码仓库尚未创建。未办事项详见 `docs/07_BACKLOG_AND_DECISIONS.md`。
+# Current Execution Guide (Codex)
+
+- Recent planner acceptance: **Phase 8 - Release QA And Playtest Loop PASS**, final commit `fb5a4f8`.
+- Current phase: **Phase 9 - Generator And Expansion Spike**.
+- Execution guide: `../phase-9-generator-expansion-spike-goal-mode-execution-guide.md`.
+- Budget: 8 exploratory executor rounds.
+- Scope note: this is an internal generator/expansion spike; it must not ship a public editor, UGC platform, backend, or breaking schema migration.

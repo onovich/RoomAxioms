@@ -212,3 +212,11 @@ MVP 可先使用酒店/清扫混合占位，不阻塞逻辑实现。
 5. 再决定 UI 细节与首批 10 关生产。
 
 在该检查点前，不启动生成器、复杂关卡编辑器或新规则类型。
+# Current Execution State (Codex)
+
+- Recent planner acceptance: **Phase 8 - Release QA And Playtest Loop PASS**, final commit `fb5a4f8`.
+- Current phase: **Phase 9 - Generator And Expansion Spike**.
+- Backlog focus: `RA-021` through `RA-028`.
+- Execution guide: `../../phase-9-generator-expansion-spike-goal-mode-execution-guide.md`.
+- Budget: 8 exploratory executor rounds.
+- Scope note: Phase 9 explores generator, minimization, difficulty scoring, technique expansion, and internal authoring workflow; it does not ship public UGC, backend services, broad redesign, or breaking schema changes.

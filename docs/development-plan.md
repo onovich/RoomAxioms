@@ -26,10 +26,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 7 - MVP Content And UX Hardening, PASS, final commit `10c62ed`.
-- Current active phase: Phase 8 - Release QA And Playtest Loop.
-- Active guide: `docs/phase-8-release-qa-playtest-loop-goal-mode-execution-guide.md`.
-- Executor budget: 6 rounds.
+- Recently accepted: Phase 8 - Release QA And Playtest Loop, PASS, final commit `fb5a4f8`.
+- Current active phase: Phase 9 - Generator And Expansion Spike.
+- Active guide: `docs/phase-9-generator-expansion-spike-goal-mode-execution-guide.md`.
+- Executor budget: 8 exploratory rounds.
 - Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
