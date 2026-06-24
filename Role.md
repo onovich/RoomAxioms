@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T19:33:11.3137770+08:00
+updated_at: 2026-06-24T19:36:49.9986970+08:00
 
 planner:
   role: architect
@@ -25,10 +25,10 @@ artist:
 idempotency:
   active_goal_guide: docs/phase-16-case-012-release-qa-playtest-calibration-goal-mode-execution-guide.md
   active_goal_phase: Phase 16 - Case 012 Release QA And Playtest Calibration
-  last_planner_dispatch: 2026-06-24T18:56:10.4391616+08:00
+  last_planner_dispatch: 2026-06-24T19:36:49.9986970+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-15-retained-difference-candidate-search-promotion-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: f54f69a
+  last_planner_dispatch_guide: docs/phase-16-case-012-release-qa-playtest-calibration-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: 9633c08
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 15 - Retained Difference Candidate Search And Promotion
