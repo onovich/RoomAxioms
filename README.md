@@ -14,7 +14,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Internal generator spike prototypes in `packages/generator` as private `@room-axioms/generator`
 - Private authoring CLI in `packages/authoring` as `@room-axioms/authoring`
-- Ten validated MVP cases in `content/cases/case-001.json` through `case-010.json`
+- Eleven validated shipped cases in `content/cases/case-001.json` through `case-011.json`
 - Data-driven content loading with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
@@ -37,6 +37,8 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Phase 11: Candidate Promotion And Playtest Calibration
 - Guide: `docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md`
 - Budget: 12 executor rounds
+- Status: executor complete, ready for planner check
+- Final report: `docs/phase-11-candidate-promotion-playtest-calibration-final-report.md`
 - Development plan: `docs/development-plan.md`
 
 ## Commands

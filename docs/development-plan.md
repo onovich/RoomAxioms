@@ -32,7 +32,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 11 - Candidate Promotion And Playtest Calibration.
 - Active guide: `docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md`.
 - Executor budget: 12 rounds.
-- Dispatch status: ready for executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Executor status: complete and ready for planner check.
+- Final report: `docs/phase-11-candidate-promotion-playtest-calibration-final-report.md`.
+- Promoted content: `content/cases/case-011.json`.
+- Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
 
