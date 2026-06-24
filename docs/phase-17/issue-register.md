@@ -13,7 +13,7 @@ Scope: MVP release closure for the current 12-case release candidate
 
 | ID | Severity | Area | Status | Decision |
 | --- | --- | --- | --- | --- |
-| P17-001 | P2 | Playtest calibration | Open | No real participant feedback is available. Keep public difficulty calibration deferred and do not fabricate feedback. |
+| P17-001 | P2 | Playtest calibration | Open | No real participant feedback is available. Playtest intake docs are prepared; keep public difficulty calibration deferred and do not fabricate feedback. |
 | P17-002 | P2 | Release posture | Open | Release decision is `release-candidate`, not fully calibrated public release, until planner/checker acceptance and real playtest evidence. |
 
 ## Resolved Issues
