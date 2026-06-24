@@ -17,6 +17,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Eleven validated shipped cases in `content/cases/case-001.json` through `case-011.json`
 - Private Phase 12 experimental difference fixture in `content/experimental/phase-12`
 - Private Phase 13 experimental difference candidates in `content/experimental/phase-13`
+- Private Phase 14 difference-retention candidates and evidence in `content/experimental/phase-14` and `docs/phase-14`
 - Data-driven content loading with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
@@ -39,8 +40,8 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Phase 14: Difference Authoring Heuristics And Candidate Repair
 - Guide: `docs/phase-14-difference-authoring-heuristics-candidate-repair-goal-mode-execution-guide.md`
 - Budget: 14 executor rounds
-- Status: ready for executor dispatch
-- Final report target: `docs/phase-14-difference-authoring-heuristics-candidate-repair-final-report.md`
+- Status: executor complete; ready for planner/checker validation
+- Final report: `docs/phase-14-difference-authoring-heuristics-candidate-repair-final-report.md`
 - Development plan: `docs/development-plan.md`
 
 ## Commands

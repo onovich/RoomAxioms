@@ -35,12 +35,13 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 14 - Difference Authoring Heuristics And Candidate Repair.
 - Active guide: `docs/phase-14-difference-authoring-heuristics-candidate-repair-goal-mode-execution-guide.md`.
 - Executor budget: 14 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-14-difference-authoring-heuristics-candidate-repair-final-report.md`.
+- Executor status: complete; ready for planner/checker validation.
+- Final report: `docs/phase-14-difference-authoring-heuristics-candidate-repair-final-report.md`.
 - Promoted content: `content/cases/case-011.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
-- Phase 14 planned work: private retention-check/heuristic support for natural difference candidates; no public editor, new DSL, or automatic promotion.
+- Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
+- Phase 14 result: private authoring retention checks now make required proof-technique survival explicit during minimization; no public editor, new DSL, or automatic promotion entered the product.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
