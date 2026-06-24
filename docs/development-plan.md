@@ -31,7 +31,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 10 - Authoring CLI And Proof Technique Hardening.
 - Active guide: `docs/phase-10-authoring-cli-proof-technique-hardening-goal-mode-execution-guide.md`.
 - Executor budget: 16 rounds.
-- Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Dispatch status: active in executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
 
