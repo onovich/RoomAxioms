@@ -27,10 +27,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently accepted: Phase 8 - Release QA And Playtest Loop, PASS, final commit `fb5a4f8`.
-- Current active phase: Phase 9 - Generator And Expansion Spike.
+- Current active phase: Phase 9 - Generator And Expansion Spike, executor complete and ready for planner check.
 - Active guide: `docs/phase-9-generator-expansion-spike-goal-mode-execution-guide.md`.
 - Executor budget: 8 exploratory rounds.
-- Dispatch status: pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Dispatch status: executor report pending planner/checker validation from thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
 
