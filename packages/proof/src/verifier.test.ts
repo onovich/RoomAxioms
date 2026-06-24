@@ -43,6 +43,28 @@ describe('no-guess verifier', () => {
     ]);
   });
 
+  it('uses local scope intersection to cover one forced cell while preserving another explanation gap', () => {
+    const report = verifyNoGuess(localScopeIntersectionPuzzle(), { maxWaves: 3 });
+    const firstWave = report.waves[0];
+
+    expect(report.satisfiable).toBe(true);
+    expect(report.targetSatisfiesRules).toBe(true);
+    expect(report.noGuess).toBe(false);
+    expect(report.guestLayoutUniqueAtEnd).toBe(false);
+    expect(report.issues.map((issue) => issue.code)).toEqual(['EXPLANATION_GAP']);
+    expect(report.issues.flatMap((issue) => issue.cellIds ?? [])).toEqual(['C1']);
+    expect(report.issues.flatMap((issue) => issue.cellIds ?? [])).not.toContain('B3');
+    expect(firstWave?.issues.map((issue) => issue.code)).toEqual(['EXPLANATION_GAP']);
+    expect(firstWave?.deductions.some((deduction) => deduction.technique === 'LOCAL_SCOPE_INTERSECTION')).toBe(true);
+    expect(firstWave?.deductions.some((deduction) => (
+      deduction.technique === 'LOCAL_SCOPE_INTERSECTION' &&
+      deduction.conclusion.kind === 'safe' &&
+      deduction.conclusion.cellId === 'B3'
+    ))).toBe(true);
+    expect(firstWave?.revealed).toEqual([]);
+    expect(report.metrics.techniqueIds).toContain('LOCAL_SCOPE_INTERSECTION');
+  });
+
   it('reports a guess point when no human deduction can advance a non-unique layout', () => {
     const report = verifyNoGuess(makePuzzle({
       allowedKinds: ['empty', 'guest'],
@@ -99,5 +121,46 @@ function globalCountRule(id: string, target: CellKind, count: Comparator): RuleD
     target,
     count,
     presentation: { title: `${target} count` },
+  };
+}
+
+function localScopeIntersectionPuzzle(): PuzzleDefinition {
+  return makePuzzle({
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'bottle', 'mirror', 'guest'],
+    rules: [
+      forEachCountRule('R1', 'bottle', 'orthogonal', 'guest', { op: 'eq', value: 1 }),
+      forEachCountRule('R2', 'mirror', 'adjacent', 'guest', { op: 'eq', value: 2 }),
+    ],
+    initialReveals: ['A1', 'B1', 'B2'],
+    target: {
+      A1: 'empty',
+      B1: 'mirror',
+      C1: 'guest',
+      A2: 'guest',
+      B2: 'bottle',
+      C2: 'empty',
+      A3: 'empty',
+      B3: 'empty',
+      C3: 'empty',
+    },
+  });
+}
+
+function forEachCountRule(
+  id: string,
+  subject: CellKind,
+  scope: 'orthogonal' | 'adjacent',
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'forEachCount',
+    subject,
+    scope: { kind: scope },
+    target,
+    count,
+    presentation: { title: `${subject} ${target} count` },
   };
 }
