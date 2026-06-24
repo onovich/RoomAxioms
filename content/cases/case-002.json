@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-002",
-  "title": "Room 02: Clear Hallway",
-  "caseName": "Case 02 - Clear Hallway",
+  "title": "客房 02：空走廊",
+  "caseName": "案卷 02 · 空走廊",
   "board": {
     "width": 3,
     "height": 3

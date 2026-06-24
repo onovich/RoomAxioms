@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-007",
-  "title": "Room 07: Turned Register",
-  "caseName": "Case 07 - Turned Register",
+  "title": "客房 07：翻转登记簿",
+  "caseName": "案卷 07 · 翻转登记簿",
   "board": {
     "width": 4,
     "height": 4

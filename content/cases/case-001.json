@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-001",
-  "title": "Room 01: Last Door",
-  "caseName": "Case 01 - Last Door",
+  "title": "客房 01：最后一扇门",
+  "caseName": "案卷 01 · 最后一扇门",
   "board": {
     "width": 3,
     "height": 3

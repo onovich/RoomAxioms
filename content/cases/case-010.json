@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-010",
-  "title": "Room 10: Mirror Pair",
-  "caseName": "Case 10 - Mirror Pair",
+  "title": "客房 10：成对镜子",
+  "caseName": "案卷 10 · 成对镜子",
   "board": {
     "width": 3,
     "height": 3
