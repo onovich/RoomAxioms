@@ -38,8 +38,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 17 - MVP Release Closure And Honest Playtest Intake.
 - Active guide: `docs/phase-17-mvp-release-closure-honest-playtest-intake-goal-mode-execution-guide.md`.
 - Executor budget: 6 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md`.
+- Executor status: READY_FOR_CHECK; awaiting planner/checker acceptance.
+- Final report: `docs/phase-17-mvp-release-closure-honest-playtest-intake-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -47,7 +47,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 14 result: private authoring retention checks now make required proof-technique survival explicit during minimization; no public editor, new DSL, or automatic promotion entered the product.
 - Phase 15 result: promoted one retained-difference case as `content/cases/case-012.json` after report/score/web verification and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` retained the required technique.
 - Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
-- Phase 17 planned work: release closure for the current 12-case MVP, honest playtest intake, known limitations, release notes, smoke evidence, and only P0/P1 fixes if required.
+- Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
