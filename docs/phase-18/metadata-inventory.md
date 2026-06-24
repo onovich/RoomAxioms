@@ -1,6 +1,6 @@
 # Phase 18 Shipped Metadata Inventory
 
-Status: baseline before cleanup
+Status: cleanup completed in Round 2
 
 ## Shipped Case Baseline
 
@@ -9,14 +9,14 @@ Status: baseline before cleanup
 - Default case: `case-004`.
 - Player-facing selector source: `apps/web/src/content/cases.ts`.
 
-## Internal Phase Metadata Found
+## Internal Phase Metadata Cleanup
 
-| File | Case id | Field | Current value | Cleanup decision |
+| File | Case id | Field | Baseline value | Round 2 value |
 | --- | --- | --- | --- | --- |
-| `content/cases/case-011.json` | `case-011` | `metadata.author` | `internal-phase-11` | Replace with neutral maintainer metadata in Round 2. |
-| `content/cases/case-011.json` | `case-011` | `metadata.notes` | `Promoted from the Phase 10 local-scope-intersection experimental fixture. Difficulty remains provisional until real playtest calibration.` | Replace source-history phrase with neutral behavior-preserving note in Round 2. |
-| `content/cases/case-012.json` | `case-012` | `metadata.author` | `internal-phase-15` | Replace with neutral maintainer metadata in Round 2. |
-| `content/cases/case-012.json` | `case-012` | `metadata.notes` | `Promoted from Phase 15 retained-difference candidate 003. Difficulty remains provisional until real playtest calibration.` | Replace source-history phrase with neutral behavior-preserving note in Round 2. |
+| `content/cases/case-011.json` | `case-011` | `metadata.author` | `internal-phase-11` | `room-axioms-maintainers` |
+| `content/cases/case-011.json` | `case-011` | `metadata.notes` | `Promoted from the Phase 10 local-scope-intersection experimental fixture. Difficulty remains provisional until real playtest calibration.` | `Maintainer-authored mid-band local-scope-intersection case. Difficulty remains provisional until real playtest calibration.` |
+| `content/cases/case-012.json` | `case-012` | `metadata.author` | `internal-phase-15` | `room-axioms-maintainers` |
+| `content/cases/case-012.json` | `case-012` | `metadata.notes` | `Promoted from Phase 15 retained-difference candidate 003. Difficulty remains provisional until real playtest calibration.` | `Maintainer-authored mid-band local-scope-difference case. Difficulty remains provisional until real playtest calibration.` |
 
 ## Non-Cleanup Metadata
 

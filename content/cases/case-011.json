@@ -89,8 +89,8 @@
       "mid-band",
       "local-scope-intersection"
     ],
-    "author": "internal-phase-11",
+    "author": "room-axioms-maintainers",
     "status": "validated",
-    "notes": "Promoted from the Phase 10 local-scope-intersection experimental fixture. Difficulty remains provisional until real playtest calibration."
+    "notes": "Maintainer-authored mid-band local-scope-intersection case. Difficulty remains provisional until real playtest calibration."
   }
 }

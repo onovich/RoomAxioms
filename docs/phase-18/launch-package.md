@@ -1,6 +1,6 @@
 # Phase 18 Public Playtest Launch Package
 
-Status: baseline outline
+Status: launch package in progress
 Release posture: MVP release candidate for public playtest sharing
 
 ## Hosted Build
@@ -45,5 +45,5 @@ This is a release candidate for playtesting, not a difficulty-calibrated public 
 - Shipped case count confirmed: 12.
 - Shipped case ids confirmed: `case-001` through `case-012`.
 - Default case confirmed: `case-004`.
-- Metadata cleanup target identified: `case-011` and `case-012` non-player-facing metadata.
+- Metadata cleanup completed: `case-011` and `case-012` now use neutral maintainer metadata.
 - Full validation and smoke evidence: pending later Phase 18 rounds.

@@ -107,8 +107,8 @@
       "mid-band",
       "local-scope-difference"
     ],
-    "author": "internal-phase-15",
+    "author": "room-axioms-maintainers",
     "status": "validated",
-    "notes": "Promoted from Phase 15 retained-difference candidate 003. Difficulty remains provisional until real playtest calibration."
+    "notes": "Maintainer-authored mid-band local-scope-difference case. Difficulty remains provisional until real playtest calibration."
   }
 }

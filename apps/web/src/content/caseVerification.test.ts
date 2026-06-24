@@ -44,6 +44,15 @@ describe('case content verification harness', () => {
     expect(caseSummaries.some((summary) => summary.id === DEFAULT_CASE_ID)).toBe(true)
   })
 
+  it('keeps shipped case metadata free of internal phase labels', () => {
+    const internalPhasePattern = /\b(?:internal-)?phase[- ]\d+\b/i
+
+    for (const puzzle of contentCases) {
+      expect(puzzle.metadata.author ?? '').not.toMatch(internalPhasePattern)
+      expect(puzzle.metadata.notes ?? '').not.toMatch(internalPhasePattern)
+    }
+  })
+
   it.each(contentCases)('passes all public verification checks for $id', (puzzle) => {
     const report = verifyCaseFixture(puzzle)
 
