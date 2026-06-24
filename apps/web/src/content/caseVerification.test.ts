@@ -25,7 +25,9 @@ describe('case content verification harness', () => {
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
     expect(contentCases).toHaveLength(11)
     expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-12-'))).toBe(false)
+    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-13-'))).toBe(false)
     expect(caseSummaries.some((summary) => summary.id.startsWith('phase-12-'))).toBe(false)
+    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-13-'))).toBe(false)
     expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
       title: '客房 11：交汇视线',
       caseName: '案卷 11 · 交汇视线',
