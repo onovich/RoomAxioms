@@ -37,15 +37,15 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 16 - Case 012 Release QA And Playtest Calibration.
 - Active guide: `docs/phase-16-case-012-release-qa-playtest-calibration-goal-mode-execution-guide.md`.
 - Executor budget: 8 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-16-case-012-release-qa-playtest-calibration-final-report.md`.
+- Executor status: READY_FOR_CHECK; awaiting planner/checker acceptance.
+- Final report: `docs/phase-16-case-012-release-qa-playtest-calibration-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
 - Phase 14 result: private authoring retention checks now make required proof-technique survival explicit during minimization; no public editor, new DSL, or automatic promotion entered the product.
 - Phase 15 result: promoted one retained-difference case as `content/cases/case-012.json` after report/score/web verification and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` retained the required technique.
-- Phase 16 planned work: release QA and honest playtest calibration prep for `case-012`; no new cases or broad feature expansion.
+- Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
