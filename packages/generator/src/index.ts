@@ -1,4 +1,5 @@
 export * from './contract.js'
+export * from './difficulty.js'
 export * from './filter.js'
 export * from './minimization.js'
 export * from './sampling.js'

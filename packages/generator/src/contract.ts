@@ -128,13 +128,17 @@ export interface ProvisionalDifficultyScore {
   readonly band: 1 | 2 | 3 | 4 | 5
   readonly metrics: {
     readonly boardCells: number
+    readonly unknownCellCount: number
     readonly revealCount: number
+    readonly candidateGuestLayouts: number
+    readonly candidateGuestLayoutsGreaterThan?: number
     readonly proofWaveCount: number
     readonly deductionCount: number
     readonly techniqueCount: number
     readonly techniqueIds: readonly TechniqueId[]
     readonly solverNodeCount: number
     readonly solverPropagationCount: number
+    readonly solverTruncated: boolean
   }
 }
 
