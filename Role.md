@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T19:36:49.9986970+08:00
+updated_at: 2026-06-24T20:04:45.3505436+08:00
 
 planner:
   role: architect
@@ -35,9 +35,9 @@ idempotency:
   last_check_report: docs/phase-15-retained-difference-candidate-search-promotion-final-report.md
   last_check_commit: 3dc5526
   last_check_at: 2026-06-24T19:33:11.3137770+08:00
-  last_executor_report_commit: 3dc5526
+  last_executor_report_commit: 64a5b8a
   last_executor_report_status: READY_FOR_CHECK
-  last_executor_report_phase: Phase 15 - Retained Difference Candidate Search And Promotion
-  last_executor_report: docs/phase-15-retained-difference-candidate-search-promotion-final-report.md
-  last_executor_report_at: 2026-06-24T19:27:04.2606471+08:00
-  last_executor_report_guide: docs/phase-15-retained-difference-candidate-search-promotion-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 16 - Case 012 Release QA And Playtest Calibration
+  last_executor_report: docs/phase-16-case-012-release-qa-playtest-calibration-final-report.md
+  last_executor_report_at: 2026-06-24T20:04:45.3505436+08:00
+  last_executor_report_guide: docs/phase-16-case-012-release-qa-playtest-calibration-goal-mode-execution-guide.md
