@@ -36,9 +36,9 @@ Release candidate: current 12-case shipped build
 
 ## Release Communication
 
-- Release notes: pending Round 2.
-- Known limitations: pending Round 2.
-- Release decision: pending Round 2.
+- Release notes: PASS, `docs/phase-17/release-notes.md`.
+- Known limitations: PASS, `docs/phase-17/known-limitations.md`.
+- Release decision: PASS, `docs/phase-17/release-decision.md` marks the build as a release candidate with caveats.
 - Playtest intake protocol: pending Round 3.
 - Feedback log handling: pending Round 3.
 
