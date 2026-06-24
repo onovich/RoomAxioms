@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-14-local-scope-difference-003",
+  "title": "Phase 14 Experimental - Retained Difference 003",
+  "caseName": "Phase 14 Experimental - Retained Difference 003",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Bottle ring count",
+        "flavor": "Each bottle has exactly 2 guests around it."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror cross count",
+        "flavor": "Each mirror has exactly 1 guest in orthogonal neighbors."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bin ring count",
+        "flavor": "Each bin has exactly 1 guest around it."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "There are exactly 2 guests in the room."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "C1",
+    "B2",
+    "C2",
+    "A3",
+    "C3"
+  ],
+  "target": {
+    "A1": "mirror",
+    "B1": "guest",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "empty",
+    "A3": "bin",
+    "B3": "guest",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "experimental",
+      "phase-14",
+      "local-scope-difference",
+      "retention-check",
+      "candidate-repair"
+    ],
+    "author": "internal-phase-14",
+    "status": "draft",
+    "notes": "Private retained-difference repair candidate. Not shipped in default web content."
+  }
+}
