@@ -38,12 +38,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Executor budget: 12 rounds.
 - Executor status: ready for dispatch.
 - Final report target: `docs/phase-15-retained-difference-candidate-search-promotion-final-report.md`.
-- Promoted content: `content/cases/case-011.json`.
+- Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
 - Phase 14 result: private authoring retention checks now make required proof-technique survival explicit during minimization; no public editor, new DSL, or automatic promotion entered the product.
-- Phase 15 planned work: search for a retained-difference candidate where the difference move unlocks later proof progress; promote at most one case.
+- Phase 15 result so far: promoted one retained-difference case as `content/cases/case-012.json` after report/score/web verification and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` retained the required technique.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget

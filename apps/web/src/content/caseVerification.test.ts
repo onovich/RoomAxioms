@@ -17,19 +17,22 @@ describe('case content verification harness', () => {
       'case-009',
       'case-010',
       'case-011',
+      'case-012',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })
 
   it('keeps selector summaries stable and free of hidden case data', () => {
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(11)
+    expect(contentCases).toHaveLength(12)
     expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-12-'))).toBe(false)
     expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-13-'))).toBe(false)
     expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-14-'))).toBe(false)
+    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-15-'))).toBe(false)
     expect(caseSummaries.some((summary) => summary.id.startsWith('phase-12-'))).toBe(false)
     expect(caseSummaries.some((summary) => summary.id.startsWith('phase-13-'))).toBe(false)
     expect(caseSummaries.some((summary) => summary.id.startsWith('phase-14-'))).toBe(false)
+    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-15-'))).toBe(false)
     expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
       title: '客房 11：交汇视线',
       caseName: '案卷 11 · 交汇视线',
@@ -134,6 +137,45 @@ describe('case content verification harness', () => {
         waveCount: 1,
         deductionCount: 5,
         techniqueIds: ['LOCAL_SCOPE_INTERSECTION'],
+        issueCodes: [],
+      },
+      runtime: {
+        status: 'ready',
+        candidateGuestLayouts: 2,
+        guestLayoutUnique: false,
+        noGuess: true,
+        humanExplainable: true,
+        warningCodes: [],
+      },
+    })
+    expect(report.stats.truncated).toBe(false)
+  })
+
+  it('records the promoted case-012 retained local-scope-difference evidence', () => {
+    const report = verifyCaseFixture(getCaseById('case-012'))
+
+    expect(report.passed).toBe(true)
+    expect(report.issues).toEqual([])
+    expect(report).toMatchObject({
+      id: 'case-012',
+      title: '客房 12：走廊差集',
+      initial: {
+        revealedCells: ['A1', 'B1', 'C1', 'B2', 'D2'],
+        satisfiable: true,
+        candidateGuestLayouts: 2,
+      },
+      final: {
+        unique: true,
+        guestCells: ['B3', 'C3'],
+      },
+      proof: {
+        noGuess: true,
+        humanExplainable: true,
+        guestLayoutUniqueAtEnd: true,
+        finalGuestCells: ['B3', 'C3'],
+        waveCount: 1,
+        deductionCount: 7,
+        techniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
         issueCodes: [],
       },
       runtime: {

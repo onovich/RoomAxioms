@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "id": "case-012",
+  "title": "客房 12：走廊差集",
+  "caseName": "案卷 12 · 走廊差集",
+  "board": {
+    "width": 4,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字线",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "镜面静区",
+        "flavor": "每面镜子周围一圈里，没有未登记住客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "空房静线",
+        "flavor": "每个空房间的上下左右邻格里，没有未登记住客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "住客总数",
+        "flavor": "这间客房里共有 2 名未登记住客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2",
+    "D2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "bottle",
+    "D2": "empty",
+    "A3": "bottle",
+    "B3": "guest",
+    "C3": "guest",
+    "D3": "bottle"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "mvp",
+      "mid-band",
+      "local-scope-difference"
+    ],
+    "author": "internal-phase-15",
+    "status": "validated",
+    "notes": "Promoted from Phase 15 retained-difference candidate 003. Difficulty remains provisional until real playtest calibration."
+  }
+}

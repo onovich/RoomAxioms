@@ -81,3 +81,49 @@ Round 3 decision:
 No Phase 15 candidate is promotion-ready from report evidence alone.
 
 Candidate 001 reproduces the compact retained-difference proof-gap blocker. Candidate 002 improves the corridor shape and is worth filtering because it has more accepted proof activity and only one remaining gap.
+
+### `phase-15-retained-difference-003`
+
+Path:
+
+- `content/experimental/phase-15/phase-15-retained-difference-003.json`
+
+Pattern:
+
+- Focused repair of candidate 002.
+
+Intent:
+
+- keep the candidate-002 corridor shape;
+- add `D2` as an initial empty reveal so the existing empty orthogonal quiet-zone rule can explain the remaining `D3` safe cell;
+- preserve `B2` as a necessary bottle reveal so the `B2`/`B1` difference still forces `B3` as a guest.
+
+Report evidence:
+
+- report: `ok: true`;
+- schema issue count: `0`;
+- target rules satisfy: `true`;
+- initial satisfiable: `true`;
+- initial guest layouts: `2`;
+- proof noGuess: `true`;
+- proof humanExplainable: `true`;
+- final guest layout unique: `true`;
+- final guest cells: `B3`, `C3`;
+- issue codes: none;
+- wave count: `1`;
+- deduction count: `7`;
+- technique ids: `LOCAL_COUNT_SATURATED`, `LOCAL_SCOPE_DIFFERENCE`;
+- truncation: `false`.
+
+Score evidence:
+
+- score: `12.15`;
+- provisional band: `3`;
+- `calibratedWithRealPlaytest: false`;
+- solver truncation: `false`.
+
+Round 5 decision:
+
+- promote a reviewed copy as `content/cases/case-012.json`;
+- keep the experimental source under `content/experimental/phase-15` as the search trace;
+- require shipped-copy `report`, `score`, web verification, and `minimize --require-technique LOCAL_SCOPE_DIFFERENCE` before final PASS.

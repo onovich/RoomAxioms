@@ -9,6 +9,9 @@ cmd /c pnpm.cmd authoring -- score content/experimental/phase-15/phase-15-retain
 cmd /c pnpm.cmd authoring -- minimize content/experimental/phase-15/phase-15-retained-difference-001.json --require-technique LOCAL_SCOPE_DIFFERENCE
 cmd /c pnpm.cmd authoring -- score content/experimental/phase-15/phase-15-retained-difference-002.json
 cmd /c pnpm.cmd authoring -- minimize content/experimental/phase-15/phase-15-retained-difference-002.json --require-technique LOCAL_SCOPE_DIFFERENCE
+cmd /c pnpm.cmd authoring -- score content/experimental/phase-15/phase-15-retained-difference-003.json
+cmd /c pnpm.cmd authoring -- minimize content/experimental/phase-15/phase-15-retained-difference-003.json --require-technique LOCAL_SCOPE_DIFFERENCE
+cmd /c pnpm.cmd authoring -- minimize content/cases/case-012.json --require-technique LOCAL_SCOPE_DIFFERENCE
 ```
 
 ## Candidate 001
@@ -83,9 +86,65 @@ Repair implication:
 
 ## Round 4 Outcome
 
-No candidate passes all Phase 15 gates.
+Candidate 003 was added in Round 5 after the Round 4 stop point.
 
 - Candidate 001 passes technique retention but fails proof/no-guess/final uniqueness.
 - Candidate 002 approaches a valid no-guess proof but fails the Phase 15 retention gate after minimization.
 
 Round 5 should attempt one focused repair of candidate 002. Quality gate remains stricter than promotion pressure.
+
+## Candidate 003
+
+Score evidence:
+
+- command: PASS;
+- `ok: true`;
+- score: `12.15`;
+- provisional band: `3`;
+- `calibratedWithRealPlaytest: false`;
+- candidate guest layouts: `2`;
+- proof wave count: `1`;
+- deduction count: `7`;
+- technique ids: `LOCAL_COUNT_SATURATED`, `LOCAL_SCOPE_DIFFERENCE`;
+- solver truncation: `false`.
+
+Minimization evidence:
+
+- command: PASS;
+- `ok: true`;
+- before cells: `A1`, `B1`, `C1`, `B2`, `D2`;
+- after cells: `A1`, `B1`, `C1`, `B2`, `D2`;
+- diagnostic: `TECHNIQUE_RETENTION_PASS`;
+- required techniques retained: `true`;
+- missing required techniques: none;
+- proof after minimization: `noGuess: true`, `humanExplainable: true`, `guestLayoutUniqueAtEnd: true`;
+- final guest cells: `B3`, `C3`.
+
+Filter classification:
+
+- retained-difference candidate that passes the Phase 15 hard gate.
+
+## Shipped Copy `case-012`
+
+Minimization evidence:
+
+- command: PASS;
+- `ok: true`;
+- before cells: `A1`, `B1`, `C1`, `B2`, `D2`;
+- after cells: `A1`, `B1`, `C1`, `B2`, `D2`;
+- diagnostic: `TECHNIQUE_RETENTION_PASS`;
+- required techniques retained: `true`;
+- preserved techniques: `LOCAL_COUNT_SATURATED`, `LOCAL_SCOPE_DIFFERENCE`;
+- lost techniques: none;
+- proof after minimization: `noGuess: true`, `humanExplainable: true`, `guestLayoutUniqueAtEnd: true`;
+- final guest cells: `B3`, `C3`.
+
+## Round 5 Outcome
+
+Candidate 003 passes all retained-difference gates and is promoted as `case-012`.
+
+- Initial guest-layout count is `2`, so the puzzle is not initially unique.
+- The proof has one wave and seven deductions.
+- `LOCAL_SCOPE_DIFFERENCE` forces `B3` as a guest.
+- Existing local-count deductions explain the safe cells and final uniqueness without adding new proof techniques or DSL semantics.
+- The minimized reveal set still requires the difference move.

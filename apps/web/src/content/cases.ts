@@ -11,6 +11,7 @@ import case008Fixture from '../../../../content/cases/case-008.json' with { type
 import case009Fixture from '../../../../content/cases/case-009.json' with { type: 'json' }
 import case010Fixture from '../../../../content/cases/case-010.json' with { type: 'json' }
 import case011Fixture from '../../../../content/cases/case-011.json' with { type: 'json' }
+import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
 
 export const DEFAULT_CASE_ID = 'case-004'
 
@@ -35,6 +36,7 @@ const caseFixtures = [
   case009Fixture,
   case010Fixture,
   case011Fixture,
+  case012Fixture,
 ] as const
 
 export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixture) =>
