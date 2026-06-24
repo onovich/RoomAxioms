@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { contentCases, DEFAULT_CASE_ID, getCaseById } from './cases'
+import { caseSummaries, contentCases, DEFAULT_CASE_ID, getCaseById } from './cases'
 import { verifyCaseFixture } from './caseVerification'
 
 describe('case content verification harness', () => {
@@ -19,6 +19,19 @@ describe('case content verification harness', () => {
       'case-011',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
+  })
+
+  it('keeps selector summaries stable and free of hidden case data', () => {
+    expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
+    expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
+      title: '客房 11：交汇视线',
+      caseName: '案卷 11 · 交汇视线',
+      difficulty: 3,
+    })
+    for (const summary of caseSummaries) {
+      expect(Object.keys(summary).sort()).toEqual(['board', 'caseName', 'difficulty', 'id', 'tags', 'title'])
+    }
+    expect(caseSummaries.some((summary) => summary.id === DEFAULT_CASE_ID)).toBe(true)
   })
 
   it.each(contentCases)('passes all public verification checks for $id', (puzzle) => {
