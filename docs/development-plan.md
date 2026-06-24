@@ -33,9 +33,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Current active phase: Phase 12 - Local Scope Difference And Content Expansion.
 - Active guide: `docs/phase-12-local-scope-difference-content-expansion-goal-mode-execution-guide.md`.
 - Executor budget: 14 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-12-local-scope-difference-content-expansion-final-report.md`.
+- Executor status: complete; ready for planner/checker validation.
+- Final report: `docs/phase-12-local-scope-difference-content-expansion-final-report.md`.
 - Promoted content: `content/cases/case-011.json`.
+- Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
