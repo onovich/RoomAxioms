@@ -2,25 +2,26 @@ import type { RuleDefinition } from '@room-axioms/domain'
 
 export function ruleChip(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
-    return `全局 · ${comparatorText(rule.count.op, rule.count.value)} ${kindLabel(rule.target)}`
+    return countTargetPhrase(rule.target, rule.count.op, rule.count.value)
   }
 
-  const subject = kindLabel(rule.subject)
-  const target = kindLabel(rule.target)
-  const scope = scopeLabel(rule.scope.kind)
-  return `${subject} -> ${scope} · ${comparatorText(rule.count.op, rule.count.value)} ${target}`
+  return `${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+}
+
+export function rulePlainText(rule: RuleDefinition): string {
+  if (rule.type === 'globalCount') {
+    return `房间里${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  }
+
+  if (rule.count.op === 'eq' && rule.count.value === 0) {
+    return `${kindLabel(rule.target)}不在${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}。`
+  }
+
+  return `${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
 }
 
 export function ruleSemantics(rule: RuleDefinition): string {
-  if (rule.type === 'globalCount') {
-    return `全局统计：棋盘内 ${kindLabel(rule.target)} 的数量 ${comparatorText(rule.count.op, rule.count.value)}。`
-  }
-
-  return [
-    `单向约束：对每个 ${kindLabel(rule.subject)}，`,
-    `${scopeLabel(rule.scope.kind)}内 ${kindLabel(rule.target)} 的数量 ${comparatorText(rule.count.op, rule.count.value)}。`,
-    `${kindLabel(rule.target)} 不会反向要求附近必须有 ${kindLabel(rule.subject)}。`,
-  ].join('')
+  return rulePlainText(rule)
 }
 
 export function comparatorText(op: 'eq' | 'gte' | 'lte', value: number): string {
@@ -38,5 +39,21 @@ function kindLabel(kind: string): string {
 }
 
 function scopeLabel(scope: 'orthogonal' | 'adjacent'): string {
-  return scope === 'orthogonal' ? '正交邻域' : '邻接域'
+  return scope === 'orthogonal' ? '上下左右邻格' : '周围一圈'
+}
+
+function countTargetPhrase(kind: string, op: 'eq' | 'gte' | 'lte', value: number): string {
+  const target = kindLabel(kind)
+  if (op === 'eq' && value === 0) return `没有${target}`
+
+  const quantity = `${value} ${kindUnit(kind)}`
+  if (op === 'eq') return `有 ${quantity}${target}`
+  if (op === 'gte') return `至少有 ${quantity}${target}`
+  return `最多有 ${quantity}${target}`
+}
+
+function kindUnit(kind: string): string {
+  if (kind === 'guest') return '名'
+  if (kind === 'mirror') return '面'
+  return '个'
 }

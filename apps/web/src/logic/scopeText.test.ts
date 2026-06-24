@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { RuleDefinition } from '@room-axioms/domain'
 
-import { comparatorText, ruleChip, ruleSemantics } from './scopeText'
+import { comparatorText, ruleChip, rulePlainText, ruleSemantics } from './scopeText'
 
 describe('rule text helpers', () => {
   it('renders compact global count chips', () => {
-    expect(ruleChip(globalRule())).toBe('全局 · = 2 访客')
+    expect(ruleChip(globalRule())).toBe('有 2 名访客')
+    expect(rulePlainText(globalRule())).toBe('房间里有 2 名访客。')
     expect(comparatorText('gte', 1)).toBe('>= 1')
     expect(comparatorText('lte', 0)).toBe('<= 0')
   })
@@ -13,10 +14,24 @@ describe('rule text helpers', () => {
   it('renders one-way local rule semantics', () => {
     const rule = localRule()
 
-    expect(ruleChip(rule)).toBe('镜子 -> 邻接域 · = 1 访客')
-    expect(ruleSemantics(rule)).toBe(
-      '单向约束：对每个 镜子，邻接域内 访客 的数量 = 1。访客 不会反向要求附近必须有 镜子。',
-    )
+    expect(ruleChip(rule)).toBe('周围一圈：有 1 名访客')
+    expect(rulePlainText(rule)).toBe('镜子的周围一圈，有 1 名访客。')
+    expect(ruleSemantics(rule)).toBe('镜子的周围一圈，有 1 名访客。')
+  })
+
+  it('renders zero-count local rules as natural exclusion sentences', () => {
+    const rule: RuleDefinition = {
+      id: 'R3',
+      type: 'forEachCount',
+      subject: 'bottle',
+      scope: { kind: 'orthogonal' },
+      target: 'guest',
+      count: { op: 'eq', value: 0 },
+      presentation: { title: 'Bottle' },
+    }
+
+    expect(ruleChip(rule)).toBe('上下左右邻格：没有访客')
+    expect(rulePlainText(rule)).toBe('访客不在酒瓶的上下左右邻格。')
   })
 })
 

@@ -19,9 +19,9 @@ describe('proof-backed hints', () => {
     const hint = createHint(case004, runtimeAnalysis.hint)
 
     expect(hint.highlight).toBe('A1')
-    expect(hint.conclusion).toBe('A1 is safe to inspect.')
+    expect(hint.conclusion).toBe('A1 可以安全调查。')
     expect(hint.premises.length).toBeGreaterThan(0)
-    expect(hint.reasoning).toContain('proof package deduction graph')
+    expect(hint.reasoning).toBe('这一步不用猜。')
   })
 
   it('renders stable hints from the same public observations', () => {

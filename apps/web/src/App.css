@@ -260,7 +260,6 @@ h3 {
   transform: translateY(-1px);
 }
 
-.dev-toggle,
 .target-toggle {
   align-items: center;
   color: var(--muted);
@@ -269,11 +268,6 @@ h3 {
   gap: 7px;
 }
 
-.dev-toggle {
-  padding: 7px 8px;
-}
-
-.dev-toggle input,
 .target-toggle input {
   accent-color: var(--accent);
 }
@@ -348,10 +342,8 @@ h3 {
   border-radius: var(--radius);
   cursor: pointer;
   display: grid;
-  gap: 5px 8px;
-  grid-template-areas:
-    'index copy'
-    '. chip';
+  gap: 8px;
+  grid-template-areas: 'index copy';
   grid-template-columns: 34px 1fr;
   padding: 10px;
   text-align: left;
@@ -1278,8 +1270,7 @@ h3 {
     width: 38px;
   }
 
-  .top-actions .ghost-button,
-  .dev-toggle {
+  .top-actions .ghost-button {
     display: none;
   }
 

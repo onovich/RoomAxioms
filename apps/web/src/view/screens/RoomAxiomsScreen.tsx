@@ -33,7 +33,6 @@ function RoomAxiomsCaseView({
   readonly onSelectCase: (caseId: string) => void
 }) {
   const game = useRoomAxiomsGame(puzzle)
-  const [neighborhoodOpen, setNeighborhoodOpen] = useState(false)
 
   return (
     <div className="room-axioms-app" data-mobile-panel={game.mobilePanel}>
@@ -44,16 +43,12 @@ function RoomAxiomsCaseView({
         onSelectCase={onSelectCase}
       />
       <main className="app-shell">
-        <RulePanel game={game} onOpenNeighborhood={() => setNeighborhoodOpen(true)} />
+        <RulePanel game={game} />
         <BoardPanel game={game} />
         <EvidencePanel game={game} />
       </main>
       <MobileTabs game={game} />
-      <Dialogs
-        game={game}
-        neighborhoodOpen={neighborhoodOpen}
-        onCloseNeighborhood={() => setNeighborhoodOpen(false)}
-      />
+      <Dialogs game={game} />
     </div>
   )
 }

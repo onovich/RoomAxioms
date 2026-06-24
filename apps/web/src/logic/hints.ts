@@ -18,11 +18,10 @@ export function createHint(
   }
 
   return {
-    title: 'No proof-backed hint available',
-    conclusion: `${puzzle.title} has no currently explainable next step.`,
-    premises: ['The hint system only uses revealed observations and rule-backed proof deductions.'],
-    reasoning:
-      'No human-readable deduction was produced for the current public state, so the app avoids showing solver-only conclusions.',
+    title: '暂时没有提示',
+    conclusion: `${puzzle.title} 现在没有可以直接说明的一步。`,
+    premises: ['提示只使用已经翻开的格子和公开规则。'],
+    reasoning: '系统不会把只有求解器知道、玩家还推不出来的结论当作提示。',
   }
 }
 
@@ -34,11 +33,10 @@ function hintFromRuntime(runtimeHint: RuntimeHint): Hint {
   return {
     title: techniqueTitle(runtimeHint.technique),
     conclusion: conclusionText(runtimeHint),
-    premises: runtimeHint.proofLines.length > 0
-      ? runtimeHint.proofLines
-      : runtimeHint.ruleIds.map((ruleId) => `Rule ${ruleId}`),
-    reasoning:
-      'This hint is produced from the proof package deduction graph, using only revealed observations and puzzle rules.',
+    premises: runtimeHint.ruleIds.length > 0
+      ? runtimeHint.ruleIds.map((ruleId) => `用到规则 ${ruleId}`)
+      : ['只使用已经翻开的格子和公开规则。'],
+    reasoning: '这一步不用猜。',
     ...(runtimeHint.highlight === null ? {} : { highlight: runtimeHint.highlight }),
   }
 }
@@ -46,21 +44,21 @@ function hintFromRuntime(runtimeHint: RuntimeHint): Hint {
 function techniqueTitle(technique: RuntimeHint['technique']): string {
   switch (technique) {
     case 'GLOBAL_COUNT_SATURATED':
-      return 'Global count is saturated'
+      return '数量已经够了'
     case 'GLOBAL_COUNT_ALL_REMAINING':
-      return 'All remaining cells are forced'
+      return '剩下的都必须算上'
     case 'LOCAL_COUNT_SATURATED':
-      return 'Local count is saturated'
+      return '这个范围已经数够了'
     case 'LOCAL_COUNT_ALL_REMAINING':
-      return 'All cells in this scope are forced'
+      return '这个范围剩下的都要算'
     case 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION':
-      return 'Neighbor scopes intersect'
+      return '几个范围重叠出了答案'
     case 'LOCAL_SCOPE_INTERSECTION':
-      return 'Local scopes intersect'
+      return '几个范围重叠出了答案'
     case 'LOCAL_SCOPE_DIFFERENCE':
-      return 'Local scopes differ'
+      return '两个范围相减出了答案'
     case 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT':
-      return 'Known object is safe'
+      return '已知物品不是访客'
   }
 }
 
@@ -69,10 +67,18 @@ function conclusionText(runtimeHint: RuntimeHint): string {
 
   switch (conclusion.kind) {
     case 'safe':
-      return `${conclusion.cellId} is safe to inspect.`
+      return `${conclusion.cellId} 可以安全调查。`
     case 'guest':
-      return `${conclusion.cellId} must contain a guest.`
+      return `${conclusion.cellId} 一定是访客。`
     case 'object':
-      return `${conclusion.cellId} must be ${conclusion.object}.`
+      return `${conclusion.cellId} 一定是 ${objectText(conclusion.object)}。`
   }
+}
+
+function objectText(kind: CellKind): string {
+  if (kind === 'bottle') return '酒瓶'
+  if (kind === 'bin') return '垃圾桶'
+  if (kind === 'mirror') return '镜子'
+  if (kind === 'guest') return '访客'
+  return '空地'
 }

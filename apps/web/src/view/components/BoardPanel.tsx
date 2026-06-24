@@ -23,10 +23,10 @@ export function BoardPanel({ game }: BoardPanelProps) {
     <section className="board-panel" data-panel="board" aria-labelledby="boardHeading">
       <div className="board-heading">
         <div>
-          <span className="eyebrow">固定世界 · 客观揭示</span>
-          <h2 id="boardHeading">客房调查区域</h2>
+          <span className="eyebrow">翻格子找证据</span>
+          <h2 id="boardHeading">房间棋盘</h2>
         </div>
-        <div className="mode-badge">当前工具：{toolLabels[game.tool]}</div>
+        <div className="mode-badge">{toolLabels[game.tool]}</div>
       </div>
 
       <div className="board-stage">
@@ -169,7 +169,7 @@ function ToolButton({
 }) {
   const Icon = tool === 'inspect' ? Search : tool === 'guest' ? Flag : Circle
   const description =
-    tool === 'inspect' ? '揭示客观物件' : tool === 'guest' ? '可撤销的判断' : '铅笔式笔记'
+    tool === 'inspect' ? '翻开格子' : tool === 'guest' ? '做访客笔记' : '做安全笔记'
 
   return (
     <button className={`tool-button${active ? ' active' : ''}`} type="button" onClick={onClick}>
@@ -196,8 +196,8 @@ function captionFor(game: RoomAxiomsGame): string {
     return `${game.hoveredCell} · ${stateText}`
   }
 
-  if (game.selectedRule) return '蓝色描边为所选规则的实际棋盘内范围；金色描边为已揭示主体。'
-  return '选择一条规则可查看其作用范围。右键格子可循环访客/安全笔记。'
+  if (game.selectedRule) return '蓝框是这条规则会看的格子；金框是规则的起点物品。'
+  return '选中规则，可以查看规则生效的格子。右键格子可快速切换笔记。'
 }
 
 function cellAria(

@@ -55,7 +55,7 @@ describe('MVP content runtime smoke', () => {
     expect(developer.warnings).toEqual([])
   })
 
-  it('keeps rule reading copy explicit about one-way local semantics', () => {
+  it('keeps rule reading copy plain and free of abstract scope terms', () => {
     const localRuleTexts = contentCases.flatMap((puzzle) =>
       puzzle.rules
         .filter((rule) => rule.type === 'forEachCount')
@@ -63,8 +63,10 @@ describe('MVP content runtime smoke', () => {
     )
 
     expect(localRuleTexts.length).toBeGreaterThan(0)
-    expect(localRuleTexts.every((text) => text.includes('单向约束'))).toBe(true)
-    expect(localRuleTexts.every((text) => text.includes('不会反向要求'))).toBe(true)
+    expect(localRuleTexts.some((text) => text.includes('上下左右邻格'))).toBe(true)
+    expect(localRuleTexts.some((text) => text.includes('周围一圈'))).toBe(true)
+    expect(localRuleTexts.every((text) => !text.includes('正交'))).toBe(true)
+    expect(localRuleTexts.every((text) => !text.includes('邻接'))).toBe(true)
   })
 
   it('does not reveal target cells for wrong or incomplete submissions', () => {

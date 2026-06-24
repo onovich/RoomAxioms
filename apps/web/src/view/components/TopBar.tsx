@@ -43,9 +43,7 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
       </div>
 
       <div className="top-stats" aria-label="关卡进度">
-        <ProgressStat label="访客标记" value={`${guestMarks} / ${game.targetGuestCount}`} />
-        <ProgressStat label="已调查" value={`${game.revealed.size} / ${game.cells.length}`} />
-        {game.devMode ? <ProgressStat label="候选布局" value={game.analysisLayoutCountText} /> : null}
+        <ProgressStat label="已标访客" value={`${guestMarks} / ${game.targetGuestCount}`} />
       </div>
 
       <div className="top-actions">
@@ -53,14 +51,6 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
           <Lightbulb size={17} aria-hidden="true" />
           <span>解释一步</span>
         </button>
-        <label className="dev-toggle">
-          <input
-            type="checkbox"
-            checked={game.devMode}
-            onChange={(event) => game.setDevMode(event.target.checked)}
-          />
-          <span>验证层</span>
-        </label>
         <button className="icon-button" type="button" onClick={game.reset} aria-label="重置关卡">
           <RotateCcw size={20} aria-hidden="true" />
         </button>

@@ -1,25 +1,19 @@
-import { ruleChip, ruleSemantics } from '../../logic/scopeText'
+import { rulePlainText } from '../../logic/scopeText'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 
 interface RulePanelProps {
   readonly game: RoomAxiomsGame
-  readonly onOpenNeighborhood: () => void
 }
 
-export function RulePanel({ game, onOpenNeighborhood }: RulePanelProps) {
+export function RulePanel({ game }: RulePanelProps) {
   return (
     <aside className="panel rules-panel" data-panel="rules" aria-labelledby="rulesHeading">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">全部规则已公开</span>
+          <span className="eyebrow">规则</span>
           <h1 id="rulesHeading">房间公理</h1>
         </div>
-        <button className="small-button" type="button" onClick={onOpenNeighborhood}>
-          邻域定义
-        </button>
       </div>
-
-      <p className="contract">调查只会揭示房间中早已存在的物件。规则不会新增、修改或追溯生效。</p>
 
       <div className="rule-list">
         {game.puzzle.rules.map((rule) => (
@@ -31,18 +25,11 @@ export function RulePanel({ game, onOpenNeighborhood }: RulePanelProps) {
           >
             <span className="rule-index">{rule.id}</span>
             <span className="rule-copy">
-              <b>{rule.presentation.title}</b>
-              <em>{rule.presentation.flavor}</em>
-              <small className="rule-semantics">{ruleSemantics(rule)}</small>
+              <b>{rulePlainText(rule)}</b>
+              <em>{rule.presentation.title}</em>
             </span>
-            <span className="rule-chip">{ruleChip(rule)}</span>
           </button>
         ))}
-      </div>
-
-      <div className="direction-note">
-        <span className="direction-arrow">主体 -&gt; 目标</span>
-        <p>规则是单向约束。例如“镜子附近恰有一名访客”不代表每名访客附近都有镜子。</p>
       </div>
     </aside>
   )

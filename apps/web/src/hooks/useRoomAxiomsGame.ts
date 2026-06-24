@@ -235,9 +235,9 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         setFailed(true)
         setResult({
           kind: 'failure',
-          eyebrow: '调查中止',
-          title: `${cellId} 中存在访客`,
-          body: '规则没有改变；这次调查在执行前并未被公开信息证明安全。失败界面不会揭示另一名访客的位置。',
+          eyebrow: '调查失败',
+          title: `${cellId} 是访客`,
+          body: '这里有访客。你可以重开再试。',
           stats: [
             { label: '主动调查', value: inspectCount + 1 },
             { label: '提示次数', value: hintCount },
@@ -252,7 +252,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         next.delete(cellId)
         return next
       })
-      setStatusMessage(`${cellId} 揭示为${cellLabels[kind]}。这是新增事实，规则没有变化。`, 'success')
+      setStatusMessage(`${cellId} 是${cellLabels[kind]}。`, 'success')
     },
     [failed, hintCount, inspectCount, marks, puzzle, revealed, setStatusMessage],
   )
@@ -329,12 +329,12 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     const conclusion = evaluateGuestConclusion(targetGuests, guestMarks)
 
     if (conclusion.kind === 'incomplete') {
-      setStatusMessage(`需要标记恰好 ${conclusion.required} 名访客；当前为 ${conclusion.marked}。`, 'error')
+      setStatusMessage(`需要标出 ${conclusion.required} 名访客；现在标了 ${conclusion.marked} 名。`, 'error')
       return
     }
 
     if (conclusion.kind === 'incorrect') {
-      setStatusMessage('当前结论不成立。系统不会指出哪一格错误，你可以继续修正。', 'error')
+      setStatusMessage('这个答案不对。你可以继续改笔记。', 'error')
       return
     }
 
@@ -342,14 +342,14 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       kind: 'success',
       eyebrow: '调查完成',
       title: `${targetGuests.length} 名访客已经定位`,
-      body: `规则从未改变。你通过公开规则与客观物证，把候选危险布局收缩为唯一答案：${guestMarks.join('、')}。`,
+      body: `你找到了所有访客：${guestMarks.join('、')}。`,
       stats: [
-        { label: '已揭示格', value: revealed.size },
+        { label: '访客标记', value: guestMarks.length },
+        { label: '主动调查', value: inspectCount },
         { label: '提示次数', value: hintCount },
-        { label: '剩余候选布局', value: layoutCountText(analysis) },
       ],
     })
-  }, [analysis, hintCount, marks, revealed.size, setStatusMessage, targetGuests])
+  }, [hintCount, inspectCount, marks, setStatusMessage, targetGuests])
 
   const reset = useCallback(() => {
     setRevealed(new Set(puzzle.initialReveals))
@@ -576,5 +576,5 @@ export function evaluateGuestConclusion(
 }
 
 function initialStatusText(): string {
-  return '从公开规则与已揭示物件开始推理。没有倒计时。'
+  return '选择格子调查，或先做访客/安全笔记。'
 }

@@ -37,7 +37,6 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
               <span className="evidence-coord">{entry.id}</span>
               <span>
                 <b>{cellLabels[entry.kind]}</b>
-                <small>{entry.initial ? '进入房间时可见' : '调查后揭示的客观事实'}</small>
               </span>
             </li>
           ))}
