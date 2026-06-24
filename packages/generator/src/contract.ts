@@ -104,6 +104,7 @@ export interface RevealMinimizationStep {
   readonly removed: boolean
   readonly reason:
     | 'preserved-no-guess-and-uniqueness'
+    | 'required-for-schema'
     | 'required-for-proof'
     | 'required-for-uniqueness'
     | 'solver-truncated'

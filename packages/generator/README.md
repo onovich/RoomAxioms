@@ -72,3 +72,9 @@ Round 3 adds the filter gate:
 - `generateVerifiedCandidates(input)` searches through the capped sampler output.
 - Only candidates passing schema, target-rule, initial satisfiability, proof/no-guess, and final guest-layout uniqueness gates enter `accepted`.
 - Solver-valid but human-unprovable candidates remain rejected; the filter never narrates solver search as proof.
+
+Round 4 adds reveal minimization:
+
+- `minimizeInitialReveals(puzzle)` tries removing initial reveals in stable order.
+- Each removal is kept only when schema parsing, proof/no-guess completion, and final guest-layout uniqueness still pass.
+- The report records before/after reveal counts, per-cell keep/remove reasons, and before/after proof reports.
