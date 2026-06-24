@@ -6,7 +6,7 @@ import {
   type Observation,
   type PuzzleDefinition,
 } from '@room-axioms/domain'
-import { verifyNoGuess } from '@room-axioms/proof'
+import { verifyNoGuess, type VerificationReport } from '@room-axioms/proof'
 import { parsePuzzleDefinition } from '@room-axioms/schema'
 import {
   isGuestLayoutUnique,
@@ -35,6 +35,7 @@ export interface TargetSamplingPreview {
   readonly proofNoGuess: boolean
   readonly proofHumanExplainable: boolean
   readonly proofIssueCodes: readonly string[]
+  readonly proof: VerificationReport
   readonly stats: SolverStats
 }
 
@@ -120,8 +121,6 @@ export function sampleTargetAndObservationPools(
 
     if (proof.issues.some((issue) => issue.code === 'SOLVER_TRUNCATED')) {
       rejected.push(rejection(attempt, 'SOLVER_TRUNCATED', 'proof-no-guess', 'Proof preview reported solver truncation.'))
-    } else if (!proof.guestLayoutUniqueAtEnd) {
-      rejected.push(rejection(attempt, 'FINAL_GUEST_LAYOUT_AMBIGUOUS', 'final-guest-layout-unique', 'Proof preview did not reach a unique guest layout.'))
     } else if (!proof.noGuess || !proof.humanExplainable) {
       const hasGap = proof.issues.some((issue) => issue.code === 'EXPLANATION_GAP')
       rejected.push(
@@ -132,6 +131,8 @@ export function sampleTargetAndObservationPools(
           hasGap ? 'Proof preview found an explanation gap.' : 'Proof preview found a guess point.',
         ),
       )
+    } else if (!proof.guestLayoutUniqueAtEnd) {
+      rejected.push(rejection(attempt, 'FINAL_GUEST_LAYOUT_AMBIGUOUS', 'final-guest-layout-unique', 'Proof preview did not reach a unique guest layout.'))
     }
 
     sampled.push({
@@ -143,6 +144,7 @@ export function sampleTargetAndObservationPools(
       proofNoGuess: proof.noGuess,
       proofHumanExplainable: proof.humanExplainable,
       proofIssueCodes: proof.issues.map((issue) => issue.code),
+      proof,
       stats,
     })
 

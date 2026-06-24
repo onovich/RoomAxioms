@@ -66,3 +66,9 @@ Round 2 adds deterministic target and initial-observation sampling:
 - `sampleTargetAndObservationPools(input)` samples target layouts and initial reveal pools.
 - Candidate previews are not publishable content; they are only inputs for later generate-verify-filter work.
 - Target, initial-state, uniqueness-preview, proof, and cap failures are recorded as structured rejections.
+
+Round 3 adds the filter gate:
+
+- `generateVerifiedCandidates(input)` searches through the capped sampler output.
+- Only candidates passing schema, target-rule, initial satisfiability, proof/no-guess, and final guest-layout uniqueness gates enter `accepted`.
+- Solver-valid but human-unprovable candidates remain rejected; the filter never narrates solver search as proof.
