@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T16:45:37.4835921+08:00
+updated_at: 2026-06-24T17:28:47.8659854+08:00
 
 planner:
   role: architect
@@ -23,21 +23,21 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-12-local-scope-difference-content-expansion-goal-mode-execution-guide.md
-  active_goal_phase: Phase 12 - Local Scope Difference And Content Expansion
+  active_goal_guide: docs/phase-13-difference-case-authoring-release-calibration-goal-mode-execution-guide.md
+  active_goal_phase: Phase 13 - Difference Case Authoring And Release Calibration
   last_planner_dispatch: 2026-06-24T16:45:37.4835921+08:00
-  last_planner_dispatch_status: sent
+  last_planner_dispatch_status: pending
   last_planner_dispatch_guide: docs/phase-12-local-scope-difference-content-expansion-goal-mode-execution-guide.md
   last_planner_dispatch_commit: 36328ac
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
-  last_check_phase: Phase 11 - Candidate Promotion And Playtest Calibration
-  last_check_report: docs/phase-11-candidate-promotion-playtest-calibration-final-report.md
-  last_check_commit: 15124a1
-  last_check_at: 2026-06-24T16:41:08.8527088+08:00
-  last_executor_report_commit: 15124a1
+  last_check_phase: Phase 12 - Local Scope Difference And Content Expansion
+  last_check_report: docs/phase-12-local-scope-difference-content-expansion-final-report.md
+  last_check_commit: 7c78bbc
+  last_check_at: 2026-06-24T17:28:47.8659854+08:00
+  last_executor_report_commit: 7c78bbc
   last_executor_report_status: READY_FOR_CHECK
-  last_executor_report_phase: Phase 11 - Candidate Promotion And Playtest Calibration
-  last_executor_report: docs/phase-11-candidate-promotion-playtest-calibration-final-report.md
-  last_executor_report_at: 2026-06-24T16:41:08.8527088+08:00
-  last_executor_report_guide: docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 12 - Local Scope Difference And Content Expansion
+  last_executor_report: docs/phase-12-local-scope-difference-content-expansion-final-report.md
+  last_executor_report_at: 2026-06-24T17:28:47.8659854+08:00
+  last_executor_report_guide: docs/phase-12-local-scope-difference-content-expansion-goal-mode-execution-guide.md
