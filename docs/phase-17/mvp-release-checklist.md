@@ -11,7 +11,7 @@ Release candidate: current 12-case shipped build
 - Default case: PASS, `DEFAULT_CASE_ID` remains `case-004`.
 - `case-011`: PASS, remains shipped content.
 - `case-012`: PASS, remains shipped content.
-- Experimental content: pending Round 4 boundary scan; expected to remain outside the player-facing selector.
+- Experimental content: PASS with non-blocking metadata note; experimental content remains outside the player-facing selector and app imports, while `case-012` still carries internal author metadata `internal-phase-15`.
 
 ## Release Scope
 
@@ -22,17 +22,17 @@ Release candidate: current 12-case shipped build
 
 ## Validation Gates
 
-- Full local validation: pending Round 4 and Round 6.
-- Focused shipped-case validation: pending Round 4 and Round 6.
-- Local smoke: pending Round 4 and Round 6.
-- Online HTTP smoke: pending Round 4 and Round 6.
+- Full local validation: PASS in Round 4; final recheck pending Round 6.
+- Focused shipped-case validation: PASS in Round 4; final recheck pending Round 6.
+- Local smoke: PASS in Round 4; final recheck pending Round 6.
+- Online HTTP smoke: PASS in Round 4; final recheck pending Round 6.
 - GitHub Pages final run: pending final push.
 
 ## Player Secrecy
 
-- Target layout is not player-facing: pending Round 4 boundary scan.
-- Forced cells, candidate counts, authoring diagnostics, generator data, and proof internals remain developer-only or private: pending Round 4 boundary scan.
-- Player marks remain notes, not solver/proof facts: pending Round 4 evidence.
+- Target layout is not player-facing: PASS in Round 4 boundary scan.
+- Forced cells, candidate counts, authoring diagnostics, generator data, and proof internals remain developer-only or private: PASS in Round 4 boundary scan.
+- Player marks remain notes, not solver/proof facts: PASS by existing runtime/web regression tests.
 
 ## Release Communication
 

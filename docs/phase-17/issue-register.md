@@ -15,6 +15,7 @@ Scope: MVP release closure for the current 12-case release candidate
 | --- | --- | --- | --- | --- |
 | P17-001 | P2 | Playtest calibration | Open | No real participant feedback is available. Playtest intake docs are prepared; keep public difficulty calibration deferred and do not fabricate feedback. |
 | P17-002 | P2 | Release posture | Open | Release decision is `release-candidate`, not fully calibrated public release, until planner/checker acceptance and real playtest evidence. |
+| P17-003 | P2 | Internal metadata | Open | `content/cases/case-012.json` still records author metadata `internal-phase-15`. Non-blocking because no experimental content is imported by player code and the metadata is not a player-facing selector id. |
 
 ## Resolved Issues
 
@@ -24,4 +25,4 @@ Scope: MVP release closure for the current 12-case release candidate
 
 ## Release Blocker Decision
 
-No P0/P1 issue is known at the Phase 17 baseline. The current release candidate can proceed through closure validation unless Round 4 smoke, boundary scans, or final validation exposes a blocker.
+No P0/P1 issue is known after Round 4 validation, smoke, online HTTP checks, and boundary scans. The current release candidate can proceed to final validation unless Round 6 exposes a blocker.
