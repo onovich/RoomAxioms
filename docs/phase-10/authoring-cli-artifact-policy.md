@@ -105,3 +105,7 @@ Final Phase 10 validation should include scans proving:
 - `@room-axioms/authoring` is not imported by `apps/web`, `content/cases`, domain, schema, solver, proof, or generator;
 - `@room-axioms/generator` and experimental fixture paths are not imported by the default web selector;
 - no command output is checked into shipped content accidentally.
+
+## Maintainer Workflow
+
+See `docs/phase-10/authoring-cli-maintainer-workflow.md` for concrete command examples, JSON output expectations, and the experimental-candidate promotion checklist.
