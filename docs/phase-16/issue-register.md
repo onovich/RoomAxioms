@@ -33,6 +33,8 @@ Gate:
 Disposition:
 
 - open as a playtest honesty guard.
+- Phase 16 playtest protocol and empty feedback log created in Round 5;
+- remains open only as a final-report/pass-criteria reminder.
 
 ### P16-003 Player Secrecy Must Hold For Case-012
 

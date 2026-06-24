@@ -49,7 +49,7 @@ Status: Round 1 baseline
 
 ## Playtest Calibration
 
-- Case-012 playtest protocol prepared: pending Round 5.
-- Case-012 feedback log created or updated: pending Round 5.
-- Real feedback recorded only if real participant evidence exists: pending Round 5.
-- Difficulty remains uncalibrated without real feedback: pending Round 5.
+- Case-012 playtest protocol prepared: PASS.
+- Case-012 feedback log created or updated: PASS.
+- Real feedback recorded only if real participant evidence exists: PASS, no real participant feedback exists.
+- Difficulty remains uncalibrated without real feedback: PASS.
