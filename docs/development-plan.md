@@ -25,15 +25,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 9 - Generator And Expansion Spike | Explore generator v1, initial reveal minimization, difficulty scoring, technique expansion, internal editor, and follow-up scope | RA-021 to RA-028 | 8 exploratory rounds |
 | Phase 10 - Authoring CLI And Proof Technique Hardening | Implement `LOCAL_SCOPE_INTERSECTION`, add private authoring CLI/report workflow, and create validated experimental mid-band fixtures without public UGC or content promotion | Phase 9 recommendations | 16 rounds |
 | Phase 11 - Candidate Promotion And Playtest Calibration | Use authoring CLI evidence to promote validated mid-band candidates, harden runtime/copy/smoke evidence, and prepare honest playtest calibration records without public UGC or new DSL | Phase 10 recommendations | 12 rounds |
+| Phase 12 - Local Scope Difference And Content Expansion | Implement proof-side `LOCAL_SCOPE_DIFFERENCE`, validate experimental difference fixtures, and optionally promote one gated case without new DSL or public editor scope | Phase 9/11 recommendations | 14 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 10 - Authoring CLI And Proof Technique Hardening, PASS, final commit `c377dfb`; copy cleanup commit `f0fcc97`.
-- Current active phase: Phase 11 - Candidate Promotion And Playtest Calibration.
-- Active guide: `docs/phase-11-candidate-promotion-playtest-calibration-goal-mode-execution-guide.md`.
-- Executor budget: 12 rounds.
-- Executor status: complete and ready for planner check.
-- Final report: `docs/phase-11-candidate-promotion-playtest-calibration-final-report.md`.
+- Recently accepted: Phase 11 - Candidate Promotion And Playtest Calibration, PASS, final commit `15124a1`.
+- Current active phase: Phase 12 - Local Scope Difference And Content Expansion.
+- Active guide: `docs/phase-12-local-scope-difference-content-expansion-goal-mode-execution-guide.md`.
+- Executor budget: 14 rounds.
+- Executor status: ready for dispatch.
+- Final report target: `docs/phase-12-local-scope-difference-content-expansion-final-report.md`.
 - Promoted content: `content/cases/case-011.json`.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
@@ -43,4 +44,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Expansion exploration budget: 8 rounds, covering Phase 9.
 - Post-spike hardening budget: 16 rounds, covering Phase 10.
 - Content promotion and calibration budget: 12 rounds, covering Phase 11.
+- Difference proof and content expansion budget: 14 rounds, covering Phase 12.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
