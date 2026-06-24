@@ -57,3 +57,12 @@ The spike records failures instead of hiding them:
 ## Search Limits
 
 Phase 9 prototypes should stay small: 3x3 or 4x4 boards, existing cell kinds, and current DSL v1 semantics only. Caps are part of the input contract and must be reflected in reports.
+
+## Current Prototype
+
+Round 2 adds deterministic target and initial-observation sampling:
+
+- `createGeneratorSeed(seed)` records the deterministic seed policy.
+- `sampleTargetAndObservationPools(input)` samples target layouts and initial reveal pools.
+- Candidate previews are not publishable content; they are only inputs for later generate-verify-filter work.
+- Target, initial-state, uniqueness-preview, proof, and cap failures are recorded as structured rejections.
