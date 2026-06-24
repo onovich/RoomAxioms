@@ -75,6 +75,23 @@ Result:
 - `case-011` passes schema, target rules, initial satisfiability, final uniqueness, no-guess, runtime readiness, and no-truncation checks.
 - Player-mode smoke keeps no-guess details, forced cells, and candidate internals hidden.
 
+## Runtime Hint Compatibility Evidence
+
+Command:
+
+```powershell
+pnpm --filter @room-axioms/web test -- src/runtime/analyzer.test.ts
+```
+
+Result:
+
+- PASS
+- `case-011` player-mode `GET_HINT` returns a `LOCAL_SCOPE_INTERSECTION` hint.
+- The first highlighted safe cell is `A2`.
+- Player-mode analysis keeps `binCandidates`, `forcedSafe`, and `forcedGuests` empty.
+- Player-mode analysis does not include the explicit `noGuess` verification summary.
+- Developer `VERIFY_CASE` with `includeNoGuessReport: true` returns final guest cells `A1` and technique ids `LOCAL_SCOPE_INTERSECTION`.
+
 ## Copy Evidence
 
 Case title:
