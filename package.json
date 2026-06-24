@@ -10,6 +10,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
-    "preview": "pnpm --filter @room-axioms/web preview"
+    "preview": "pnpm --filter @room-axioms/web preview",
+    "authoring": "pnpm --filter @room-axioms/authoring cli"
   }
 }
