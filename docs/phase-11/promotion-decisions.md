@@ -6,7 +6,7 @@ Status: Round 2 selection
 
 ### `phase-10-local-scope-intersection-001` -> planned `case-011`
 
-Decision: selected for one shipped-content promotion attempt.
+Decision: promoted as `case-011` in Round 3.
 
 Evidence:
 
@@ -25,7 +25,7 @@ Promotion rationale:
 
 - It is the only available reviewed candidate with mid-band evidence.
 - It exercises the accepted Phase 10 proof technique.
-- It can be promoted by copying the reviewed puzzle into `content/cases` with Chinese player-facing copy.
+- It was promoted by copying the reviewed puzzle into `content/cases` with Chinese player-facing copy.
 - It does not require new DSL semantics, new proof techniques, relaxed solver caps, or UI redesign.
 
 ## Rejected Or Deferred
@@ -52,4 +52,4 @@ Reason:
 
 ## Count Decision
 
-Phase 11 will attempt one promotion first. A second promotion will only happen if a candidate passes the same gates without weakening validation. Otherwise Round 4 will record a stop decision.
+Phase 11 has promoted one candidate. A second promotion will only happen if a candidate passes the same gates without weakening validation. Otherwise Round 4 will record a stop decision.

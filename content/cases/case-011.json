@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "case-011",
+  "title": "客房 11：交汇视线",
+  "caseName": "案卷 11 · 交汇视线",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "镜面登记",
+        "flavor": "每面镜子的上下左右邻格里，恰好有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "lte",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶静区",
+        "flavor": "每个酒瓶周围一圈里，最多有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "空房登记",
+        "flavor": "每个空房间的上下左右邻格里，恰好有 1 名未登记住客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "B2"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "mirror",
+    "C1": "bin",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "bin",
+    "A3": "bin",
+    "B3": "bottle",
+    "C3": "bin"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "mvp",
+      "mid-band",
+      "local-scope-intersection"
+    ],
+    "author": "internal-phase-11",
+    "status": "validated",
+    "notes": "Promoted from the Phase 10 local-scope-intersection experimental fixture. Difficulty remains provisional until real playtest calibration."
+  }
+}

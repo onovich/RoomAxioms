@@ -4,7 +4,7 @@ import { contentCases, DEFAULT_CASE_ID, getCaseById } from './cases'
 import { verifyCaseFixture } from './caseVerification'
 
 describe('case content verification harness', () => {
-  it('loads exactly the ten MVP cases in stable order', () => {
+  it('loads the shipped cases in stable order', () => {
     expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
       'case-001',
       'case-002',
@@ -16,6 +16,7 @@ describe('case content verification harness', () => {
       'case-008',
       'case-009',
       'case-010',
+      'case-011',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })
@@ -85,6 +86,45 @@ describe('case content verification harness', () => {
       },
     })
     expect(report.proof.deductionCount).toBeGreaterThan(0)
+    expect(report.stats.truncated).toBe(false)
+  })
+
+  it('records the promoted case-011 local-scope-intersection evidence', () => {
+    const report = verifyCaseFixture(getCaseById('case-011'))
+
+    expect(report.passed).toBe(true)
+    expect(report.issues).toEqual([])
+    expect(report).toMatchObject({
+      id: 'case-011',
+      title: '客房 11：交汇视线',
+      initial: {
+        revealedCells: ['B1', 'B2'],
+        satisfiable: true,
+        candidateGuestLayouts: 2,
+      },
+      final: {
+        unique: true,
+        guestCells: ['A1'],
+      },
+      proof: {
+        noGuess: true,
+        humanExplainable: true,
+        guestLayoutUniqueAtEnd: true,
+        finalGuestCells: ['A1'],
+        waveCount: 1,
+        deductionCount: 5,
+        techniqueIds: ['LOCAL_SCOPE_INTERSECTION'],
+        issueCodes: [],
+      },
+      runtime: {
+        status: 'ready',
+        candidateGuestLayouts: 2,
+        guestLayoutUnique: false,
+        noGuess: true,
+        humanExplainable: true,
+        warningCodes: [],
+      },
+    })
     expect(report.stats.truncated).toBe(false)
   })
 })
