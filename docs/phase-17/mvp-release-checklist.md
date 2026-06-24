@@ -41,6 +41,7 @@ Release candidate: current 12-case shipped build
 - Release decision: PASS, `docs/phase-17/release-decision.md` marks the build as a release candidate with caveats.
 - Playtest intake protocol: PASS, `docs/phase-17/playtest-intake-protocol.md`.
 - Feedback log handling: PASS, `docs/phase-17/playtest-feedback-log.md` and `docs/phase-17/playtest-intake-handling.md`.
+- Buffer disposition: PASS, `docs/phase-17/buffer-disposition.md` records that no P0/P1 buffer fix was needed.
 
 ## Playtest Calibration
 

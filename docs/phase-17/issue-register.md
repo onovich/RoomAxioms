@@ -25,4 +25,4 @@ Scope: MVP release closure for the current 12-case release candidate
 
 ## Release Blocker Decision
 
-No P0/P1 issue is known after Round 4 validation, smoke, online HTTP checks, and boundary scans. The current release candidate can proceed to final validation unless Round 6 exposes a blocker.
+No P0/P1 issue is known after Round 4 validation, smoke, online HTTP checks, and boundary scans. Round 5 did not consume the buffer for fixes or feature work. The current release candidate can proceed to final validation unless Round 6 exposes a blocker.
