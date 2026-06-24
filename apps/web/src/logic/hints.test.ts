@@ -5,6 +5,7 @@ import { analyzeRuntimeState } from '../runtime/analyzer'
 import { createHint } from './hints'
 import { observationsForRevealed } from './targetAccess'
 import type { CellId } from '@room-axioms/domain'
+import type { RuntimeHint } from '../runtime/contracts'
 
 describe('proof-backed hints', () => {
   it('selects the deterministic next case-004 proof deduction', () => {
@@ -42,5 +43,24 @@ describe('proof-backed hints', () => {
     })
 
     expect(createHint(case004, first.hint)).toEqual(createHint(case004, second.hint))
+  })
+
+  it('renders local scope difference runtime hints without developer diagnostics', () => {
+    const runtimeHint = {
+      deductionId: 'deduction:LOCAL_SCOPE_DIFFERENCE:guest:B3:R1+R2',
+      technique: 'LOCAL_SCOPE_DIFFERENCE',
+      conclusion: { kind: 'guest', cellId: 'B3' },
+      ruleIds: ['R1', 'R2'],
+      proofLines: [
+        '[DERIVED] derived:LOCAL_SCOPE_DIFFERENCE: B3 is guest <- fact:B1:mirror, fact:B2:bottle',
+      ],
+      highlight: 'B3',
+    } satisfies RuntimeHint
+    const hint = createHint(case004, runtimeHint)
+
+    expect(hint.highlight).toBe('B3')
+    expect(hint.conclusion).toContain('B3')
+    expect(hint.premises).toHaveLength(2)
+    expect(hint.reasoning.length).toBeGreaterThan(0)
   })
 })

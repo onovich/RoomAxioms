@@ -68,6 +68,37 @@ describe('proof text rendering', () => {
       `[DERIVED] ${deduction.proofNodeIds[0]}: LOCAL_SCOPE_INTERSECTION: B3 is safe <- ${factNodeId('B1', 'mirror')}, ${factNodeId('B2', 'bottle')}, ${ruleNodeId('R1')}, ${ruleNodeId('R2')}`,
     ]);
   });
+
+  it('renders local scope difference deductions with stable public parents', () => {
+    const state = {
+      puzzle: makeLocalScopePuzzle(),
+      observations: [
+        { cellId: 'B1', kind: 'mirror' },
+        { cellId: 'B2', kind: 'bottle' },
+      ],
+    } satisfies { readonly puzzle: PuzzleDefinition; readonly observations: readonly Observation[] };
+    const deduction = createDeduction({
+      technique: 'LOCAL_SCOPE_DIFFERENCE',
+      conclusion: { kind: 'guest', cellId: 'B3' },
+      ruleIds: ['R2', 'R1'],
+      premises: [
+        { kind: 'rule', label: 'mirror local guest count', ruleIds: ['R1'] },
+        { kind: 'rule', label: 'bottle local guest count', ruleIds: ['R2'] },
+        { kind: 'observation', label: 'B1 is known', cellIds: ['B1'] },
+        { kind: 'observation', label: 'B2 is known', cellIds: ['B2'] },
+        { kind: 'scope', label: 'difference public scope cells', cellIds: ['B3'], ruleIds: ['R1', 'R2'] },
+      ],
+    });
+    const graph = buildProofGraph(state, [deduction]);
+
+    expect(renderProofText(graph)).toEqual([
+      `[FACT] ${factNodeId('B1', 'mirror')}: B1 is mirror`,
+      `[FACT] ${factNodeId('B2', 'bottle')}: B2 is bottle`,
+      `[RULE] ${ruleNodeId('R1')}: R1: mirror sees two guests`,
+      `[RULE] ${ruleNodeId('R2')}: R2: bottle sees one guest`,
+      `[DERIVED] ${deduction.proofNodeIds[0]}: LOCAL_SCOPE_DIFFERENCE: B3 is guest <- ${factNodeId('B1', 'mirror')}, ${factNodeId('B2', 'bottle')}, ${ruleNodeId('R1')}, ${ruleNodeId('R2')}`,
+    ]);
+  });
 });
 
 function makePuzzle(): PuzzleDefinition {
