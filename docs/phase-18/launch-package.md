@@ -53,7 +53,8 @@ Feedback log: [`playtest-feedback-log.md`](playtest-feedback-log.md).
 - Shipped case ids confirmed: `case-001` through `case-012`.
 - Default case confirmed: `case-004`.
 - Metadata cleanup completed: `case-011` and `case-012` now use neutral maintainer metadata.
-- Full validation and smoke evidence: pending later Phase 18 rounds.
+- Full validation and smoke evidence: recorded in [`launch-smoke-boundary-evidence.md`](launch-smoke-boundary-evidence.md).
+- Buffer disposition: recorded in [`buffer-disposition.md`](buffer-disposition.md).
 
 ## Package Files
 
@@ -62,3 +63,5 @@ Feedback log: [`playtest-feedback-log.md`](playtest-feedback-log.md).
 - [`share-copy.md`](share-copy.md): short and medium public sharing text.
 - [`issue-triage-rules.md`](issue-triage-rules.md): maintainer severity routing.
 - [`playtest-feedback-log.md`](playtest-feedback-log.md): real-feedback ledger, currently empty.
+- [`launch-smoke-boundary-evidence.md`](launch-smoke-boundary-evidence.md): validation, smoke, online HTTP, and boundary scans.
+- [`buffer-disposition.md`](buffer-disposition.md): Round 5 no-blocker disposition.
