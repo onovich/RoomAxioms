@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-19-mixed-wide-001",
+  "title": "Mixed Wide Draft 001",
+  "caseName": "Phase 19 Mixed Wide Draft 001",
+  "board": {
+    "width": 5,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bin total",
+        "flavor": "Exactly 1 bin is in the room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in the room."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cleanup",
+        "flavor": "Every bottle sees exactly 1 bin orthogonally."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bin safe zone",
+        "flavor": "Every bin excludes guests from adjacent cells."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror registration",
+        "flavor": "Every mirror sees exactly 1 guest around it."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle exclusion",
+        "flavor": "Every bottle excludes guests from orthogonal cells."
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "E1",
+    "A2",
+    "C2",
+    "E2",
+    "E3",
+    "E4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "guest",
+    "E1": "empty",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "bottle",
+    "D2": "empty",
+    "E2": "empty",
+    "A3": "mirror",
+    "B3": "empty",
+    "C3": "mirror",
+    "D3": "empty",
+    "E3": "empty",
+    "A4": "empty",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty",
+    "E4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-19",
+      "candidate",
+      "mixed-4x4"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Private Phase 19 mixed candidate; not shipped until promotion gates pass."
+  }
+}

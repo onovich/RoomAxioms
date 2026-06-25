@@ -1,6 +1,6 @@
 # Phase 19 Quality Gate Evidence
 
-Status: Round 6 evidence recorded
+Status: Rounds 7-10 evidence recorded
 
 ## Implemented Gate Surfaces
 
@@ -83,6 +83,16 @@ Recorded in `docs/phase-19/sampling-evidence.md`:
 - zero generated candidates promoted;
 - capped sampling had no solver truncation but accepted no candidates for the recorded seeds.
 
+### Experimental Candidate Pool
+
+Recorded in `docs/phase-19/candidate-pool-evidence.md`:
+
+- two local-count first-deduction candidates;
+- one non-isomorphic local-scope-intersection candidate;
+- one non-isomorphic mixed 5x4 candidate;
+- all accepted candidates pass authoring report and score with no truncation;
+- `phase-19-intersection-wide-001` passes required `LOCAL_SCOPE_INTERSECTION` minimization retention.
+
 ## Architecture Notes
 
 - Gates consume authoring/generator/proof/solver/schema public APIs.
@@ -127,6 +137,19 @@ Recorded in `docs/phase-19/sampling-evidence.md`:
 ## Round 6 Validation
 
 - Template sampling commands: PASS for four report-only templates, with zero accepted candidates and no solver truncation.
+- `git diff --check`: PASS, with normal CRLF working-copy warnings only.
+- `Validate.cmd`: PASS.
+  - `pnpm lint`: PASS.
+  - `pnpm typecheck`: PASS.
+  - `pnpm test`: PASS.
+  - `pnpm build`: PASS.
+
+## Rounds 7-10 Candidate Validation
+
+- `phase-19-local-count-compact-001`: report PASS, score PASS, no truncation.
+- `phase-19-local-count-wide-001`: report PASS, score PASS, no truncation.
+- `phase-19-intersection-wide-001`: report PASS, score PASS, minimize `--require-technique LOCAL_SCOPE_INTERSECTION` PASS.
+- `phase-19-mixed-wide-001`: report PASS, score PASS, no truncation.
 - `git diff --check`: PASS, with normal CRLF working-copy warnings only.
 - `Validate.cmd`: PASS.
   - `pnpm lint`: PASS.
