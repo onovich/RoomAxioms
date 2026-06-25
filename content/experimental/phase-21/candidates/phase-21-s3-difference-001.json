@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-21-s3-difference-001",
+  "title": "Phase 21 S3 Difference Candidate 001",
+  "caseName": "Phase 21 S3 - Difference Candidate 001",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross ledger"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror quiet ledger"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Empty quiet cross"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2",
+    "B3",
+    "D3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "mirror",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bottle",
+    "C3": "bottle",
+    "D3": "empty",
+    "A4": "bin",
+    "B4": "guest",
+    "C4": "guest",
+    "D4": "bin"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-21",
+      "s3",
+      "local-scope-difference",
+      "hidden-bottle"
+    ],
+    "author": "internal-phase-21",
+    "status": "draft",
+    "notes": "Private Phase 21 S3 candidate from a hidden-bottle local-scope-difference skeleton. No global count; not shipped until promotion gates pass."
+  }
+}
