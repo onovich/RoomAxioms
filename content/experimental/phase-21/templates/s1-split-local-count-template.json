@@ -1,0 +1,110 @@
+{
+  "skeletonId": "S1",
+  "skeletonName": "Split Local Count Closure",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross",
+        "flavor": "Every bottle sees exactly 1 guest orthogonally."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror quiet zone",
+        "flavor": "No guest is adjacent to a mirror."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "lte",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Empty cross limit",
+        "flavor": "Every empty room sees at most 1 guest orthogonally."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 6
+  },
+  "caps": {
+    "maxAttempts": 160,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 4
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-21-s1-split-local-count",
+    "titlePrefix": "Phase 21 S1 Split Local Count Candidate",
+    "caseNamePrefix": "Phase 21 S1 Split Local Count",
+    "metadata": {
+      "difficulty": 3,
+      "tags": [
+        "experimental",
+        "phase-21",
+        "s1",
+        "local-count"
+      ],
+      "author": "internal-phase-21",
+      "status": "draft",
+      "notes": "Private report-only template for S1 split local-count exploration."
+    }
+  }
+}

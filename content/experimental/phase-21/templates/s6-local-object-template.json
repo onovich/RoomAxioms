@@ -1,0 +1,111 @@
+{
+  "skeletonId": "S6",
+  "skeletonName": "Local Object All-Remaining Probe",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle bin cross",
+        "flavor": "Every bottle sees exactly 1 bin orthogonally."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bin safe ring",
+        "flavor": "No guest is adjacent to a bin."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror guest cross",
+        "flavor": "Every mirror sees exactly 1 guest orthogonally."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 6
+  },
+  "caps": {
+    "maxAttempts": 192,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 4
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-21-s6-local-object",
+    "titlePrefix": "Phase 21 S6 Local Object Candidate",
+    "caseNamePrefix": "Phase 21 S6 Local Object",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-21",
+        "s6",
+        "object-all-remaining"
+      ],
+      "author": "internal-phase-21",
+      "status": "draft",
+      "notes": "Private report-only template for S6 local-object exploration."
+    }
+  }
+}

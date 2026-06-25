@@ -1,0 +1,128 @@
+{
+  "skeletonId": "S3",
+  "skeletonName": "Offset Difference Pair",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross",
+        "flavor": "Every bottle sees exactly 1 guest orthogonally."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror safe ring",
+        "flavor": "No guest is adjacent to a mirror."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Empty safe cross",
+        "flavor": "No guest is orthogonal to an empty room."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "lte",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bin ring limit",
+        "flavor": "Every bin has at most 1 guest around it."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 6
+  },
+  "caps": {
+    "maxAttempts": 192,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 4
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-21-s3-offset-difference",
+    "titlePrefix": "Phase 21 S3 Offset Difference Candidate",
+    "caseNamePrefix": "Phase 21 S3 Offset Difference",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-21",
+        "s3",
+        "local-scope-difference"
+      ],
+      "author": "internal-phase-21",
+      "status": "draft",
+      "notes": "Private report-only template for S3 offset-difference exploration."
+    }
+  }
+}
