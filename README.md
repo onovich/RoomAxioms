@@ -39,13 +39,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last accepted phase: Phase 21 - Distinct Puzzle Ladder Production
-- Current executor result: Phase 22 - Expressive Mechanics And Content Expansion Lab ready for checker review
+- Last accepted phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
+- Current executor result: Phase 22 accepted by planner/checker; no next executor phase has been dispatched yet
 - Final report: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`
-- Active executor phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
+- Active executor phase: none
 - Guide: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-goal-mode-execution-guide.md`
-- Budget: 24 executor rounds
-- Result: region, sightline/blocker, anchor-frontier, and internal contaminated-record verifier support are implemented; the selector now has 10 anti-clone-checked player-facing cases without promoted clone content.
+- Completed budget: 24 executor rounds
+- Result: the final selector has 10 cases (`case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, `case-020`) with additive region, sightline, and anchor-frontier mechanics; contaminated-record verification remains internal.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

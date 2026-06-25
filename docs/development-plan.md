@@ -39,13 +39,13 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 21 - Distinct Puzzle Ladder Production, PASS, final commit `760686a`.
-- Current executor result: Phase 22 - Expressive Mechanics And Content Expansion Lab, READY_FOR_CHECK.
-- Active guide: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-goal-mode-execution-guide.md`.
-- Executor budget: 24 rounds.
-- Executor status: final validation/report in progress.
-- Final report target: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`.
-- Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
+- Recently accepted: Phase 22 - Expressive Mechanics And Content Expansion Lab, PASS, final commit `9ab415d`.
+- Current executor result: none; Phase 22 has been accepted and no next executor phase has been dispatched yet.
+- Active guide: none.
+- Executor budget: none active.
+- Executor status: idle; awaiting planner/user decision for the next phase.
+- Final report: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`.
+- Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, and `case-020`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
@@ -57,7 +57,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 19 result: player-facing content is now an 8-case difficulty ladder; the trivial and mirror cases were replaced or removed from the selector; private authoring quality gates now cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
 - Phase 20 result: the player selector is now the smaller honest set `case-011`, `case-012`, and `case-004`; anti-clone gates now cover effective-board reduction, proof-trace fingerprints, candidate-shrink signatures, rule-impact vectors, and novelty claims; rejected Phase 19 clones are no longer player-facing.
 - Phase 21 result: promoted two distinct new cases, `case-013` and `case-014`, preserving `case-004`, `case-011`, and `case-012`; the final selector is `case-004`, `case-011`, `case-013`, `case-012`, and `case-014`, all passing anti-clone and novelty gates.
-- Phase 22 result: region/zone, sightline/blocker, anchor-frontier, and high-tier contaminated-record verifier support are implemented; the player selector now has 10 anti-clone-checked cases preserving `case-004` as default; contaminated-record content remains internal verifier evidence only.
+- Phase 22 result: region/zone, sightline/blocker, anchor-frontier, and high-tier contaminated-record verifier support are implemented and accepted; the player selector now has 10 anti-clone-checked cases (`case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, `case-020`) preserving `case-004` as default; contaminated-record content remains internal verifier evidence only.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -76,5 +76,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - High-quality puzzle ladder budget: 14 rounds, covering Phase 19, completed.
 - Anti-clone ladder repair budget: 16 rounds, covering Phase 20, completed.
 - Distinct puzzle ladder production budget: 16 rounds, covering Phase 21, completed.
-- Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22.
+- Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22, completed.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
