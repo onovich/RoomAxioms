@@ -14,7 +14,6 @@ describe('case content verification harness', () => {
       'case-014',
       'case-017',
       'case-018',
-      'case-019',
       'case-020',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
@@ -24,7 +23,7 @@ describe('case content verification harness', () => {
     const internalCasePrefix = /^phase-\d+-/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(10)
+    expect(contentCases).toHaveLength(9)
     expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
     expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
     expect(contentCases.some((puzzle) => [

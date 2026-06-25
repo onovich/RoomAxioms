@@ -57,7 +57,7 @@ export const case004 = {
       count: { op: 'eq', value: 1 },
       presentation: {
         title: '酒瓶清扫',
-        flavor: '每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。',
+        flavor: '每个酒瓶的上下左右邻格里，必有 1 个垃圾桶。',
       },
     },
     {
@@ -81,7 +81,7 @@ export const case004 = {
       count: { op: 'eq', value: 1 },
       presentation: {
         title: '镜面登记',
-        flavor: '每面镜子周围一圈里，恰好有 1 名访客。',
+        flavor: '每面镜子周围一圈里，必有 1 名访客。',
       },
     },
     {

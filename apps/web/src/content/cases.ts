@@ -8,7 +8,6 @@ import case014Fixture from '../../../../content/cases/case-014.json' with { type
 import case015Fixture from '../../../../content/cases/case-015.json' with { type: 'json' }
 import case017Fixture from '../../../../content/cases/case-017.json' with { type: 'json' }
 import case018Fixture from '../../../../content/cases/case-018.json' with { type: 'json' }
-import case019Fixture from '../../../../content/cases/case-019.json' with { type: 'json' }
 import case020Fixture from '../../../../content/cases/case-020.json' with { type: 'json' }
 
 export const DEFAULT_CASE_ID = 'case-004'
@@ -31,7 +30,6 @@ const caseFixtures = [
   case014Fixture,
   case017Fixture,
   case018Fixture,
-  case019Fixture,
   case020Fixture,
 ] as const
 

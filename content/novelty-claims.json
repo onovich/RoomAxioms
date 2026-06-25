@@ -115,15 +115,14 @@
     },
     {
       "puzzleId": "case-019",
-      "status": "accepted",
-      "novelty": "Wider anchor-line frontier case where an east-shelf safe reveal and south-row line pressure converge on C2/A3.",
+      "status": "rejected",
+      "novelty": "Rejected Phase 22 anchor-line frontier case; quarantined during Phase 23.",
       "evidence": {
-        "reviewerNote": "Promoted in Phase 22 because the 4x3 board, five opening layouts, and east-shelf anchor placement differ from the 3x3 anchor case.",
+        "reviewerNote": "User rejected or did not accept this case during Phase 23 intake: the east-shelf copy is unclear, and the current proof/copy does not explain why C2 is a guest or why C1 is safe.",
         "gateEvidence": [
-          "phase-22-promotion",
-          "REGION_COUNT_SATURATED",
-          "LINE_COUNT_ALL_REMAINING",
-          "anchor-frontier"
+          "phase-23-quarantined",
+          "copy-unclear",
+          "proof-explanation-gap"
         ]
       }
     },

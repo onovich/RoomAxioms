@@ -22,7 +22,6 @@ describe('novelty claim manifest', () => {
       'case-015',
       'case-017',
       'case-018',
-      'case-019',
       'case-020',
     ])
 
@@ -36,7 +35,6 @@ describe('novelty claim manifest', () => {
       'case-015',
       'case-017',
       'case-018',
-      'case-019',
       'case-020',
     ])
     expect(report.rejectedPuzzleIds).toEqual([
@@ -46,6 +44,7 @@ describe('novelty claim manifest', () => {
       'case-005',
       'case-006',
       'case-016',
+      'case-019',
     ])
   })
 
