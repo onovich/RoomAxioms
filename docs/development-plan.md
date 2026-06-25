@@ -37,12 +37,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates, PASS, final commit `c3b47ed`, but the user rejected its newly promoted content as clone-like.
-- Current active phase: Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair.
-- Active guide: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-goal-mode-execution-guide.md`.
-- Executor budget: 16 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-final-report.md`.
+- Recently accepted: Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair, PASS, final commit `0618515`.
+- Current active phase: none.
+- Active guide: none.
+- Executor budget: none active.
+- Executor status: idle; awaiting planner/user decision for the next phase.
+- Final report: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -53,7 +53,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
 - Phase 18 result: public playtest launch package is ready, internal shipped-case metadata is neutralized, the 12-case release candidate is preserved, and difficulty remains uncalibrated until real playtest evidence exists.
 - Phase 19 result: player-facing content is now an 8-case difficulty ladder; the trivial and mirror cases were replaced or removed from the selector; private authoring quality gates now cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
-- Phase 20 planned work: treat the user's rejection of Phase 19 additions as binding product feedback; add anti-clone gates for effective-board reduction, proof-trace fingerprints, candidate-shrink signatures, rule-impact vectors, and novelty claims; repair the selector without padding clone content.
+- Phase 20 result: the player selector is now the smaller honest set `case-011`, `case-012`, and `case-004`; anti-clone gates now cover effective-board reduction, proof-trace fingerprints, candidate-shrink signatures, rule-impact vectors, and novelty claims; rejected Phase 19 clones are no longer player-facing.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -70,5 +70,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - MVP release closure budget: 6 rounds, covering Phase 17.
 - Public playtest launch package budget: 6 rounds, covering Phase 18.
 - High-quality puzzle ladder budget: 14 rounds, covering Phase 19, completed.
-- Anti-clone ladder repair budget: 16 rounds, covering Phase 20.
+- Anti-clone ladder repair budget: 16 rounds, covering Phase 20, completed.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
