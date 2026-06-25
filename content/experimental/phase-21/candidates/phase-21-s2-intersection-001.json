@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-21-s2-intersection-001",
+  "title": "Phase 21 S2 Intersection Candidate 001",
+  "caseName": "Phase 21 S2 - Intersection Candidate 001",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Bottle cross ledger",
+        "flavor": "Every bottle sees exactly 2 guests orthogonally."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror ring ledger",
+        "flavor": "Every mirror has exactly 1 guest around it."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Bottle ring ledger",
+        "flavor": "Every bottle has exactly 2 guests around it."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "guest",
+    "A3": "empty",
+    "B3": "guest",
+    "C3": "bottle"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "experimental",
+      "phase-21",
+      "s2",
+      "local-scope-intersection"
+    ],
+    "author": "internal-phase-21",
+    "status": "draft",
+    "notes": "Private Phase 21 S2 candidate copied from the earlier Phase 12 experimental fixture for renewed anti-clone review; not shipped until promotion gates pass."
+  }
+}

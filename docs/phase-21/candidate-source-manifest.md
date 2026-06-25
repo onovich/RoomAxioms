@@ -18,7 +18,11 @@ This manifest records the source skeleton for Phase 21 private templates and can
 
 ## Candidate Registry
 
-No candidate JSON has been accepted or promoted in Round 3. Candidate JSONs must be added only with a skeleton source, standard authoring reports, and explicit promotion/rejection evidence.
+| Candidate | Source skeleton | Source note | Round status |
+| --- | --- | --- | --- |
+| `content/experimental/phase-21/candidates/phase-21-s2-intersection-001.json` | S2 | Copied from earlier Phase 12 private fixture for renewed Phase 21 anti-clone review; not a Phase 19 rejected case. | Round 5 promotion queue, not player-facing |
+
+Candidate JSONs must be added only with a skeleton source, standard authoring reports, and explicit promotion/rejection evidence.
 
 ## Round 3 Self-Checks
 
