@@ -4,6 +4,7 @@ export {
   countGuestLayouts,
   findForcedCells,
   findModel,
+  findPossibleRecordSets,
   isGuestLayoutUnique,
   isSatisfiable,
 } from './queries.js';
@@ -11,6 +12,8 @@ export {
 export type {
   ForcedCellResult,
   GuestLayoutCountResult,
+  RecordSetPossibility,
+  RecordSetPossibilityResult,
   SolveInput,
   SolveResult,
   SolverAssumption,

@@ -3,6 +3,7 @@ import { verifyNoGuess } from '@room-axioms/proof'
 import { parsePuzzleDefinition, type SchemaIssue } from '@room-axioms/schema'
 import {
   countGuestLayouts,
+  findPossibleRecordSets,
   isSatisfiable,
   type SolverStats,
 } from '@room-axioms/solver'
@@ -169,6 +170,9 @@ function validatePuzzleInput(
     DEFAULT_CAPS.candidateLayoutCap,
     solver,
   )
+  const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
+    ? findPossibleRecordSets({ puzzle, observations: initialObservations }, solver)
+    : undefined
   const proof = verifyNoGuess(puzzle, { solver })
   const proofStats = proof.waves.reduce(
     (current, wave) => combineStats(current, wave.solverStats),
@@ -186,6 +190,8 @@ function validatePuzzleInput(
     proofTargetSatisfiesRules: proof.targetSatisfiesRules,
     proofGuestLayoutUniqueAtEnd: proof.guestLayoutUniqueAtEnd,
     proofStats,
+    recordSetStats: recordSets?.stats,
+    recordSetPossibleAssignmentCount: recordSets?.possibleAssignments.length,
   })
 
   return {
@@ -225,6 +231,14 @@ function validatePuzzleInput(
         techniqueIds: proof.metrics.techniqueIds,
         stats: statsReport(proofStats),
       },
+      ...(recordSets === undefined
+        ? {}
+        : {
+            recordSets: {
+              possibleAssignments: recordSets.possibleAssignments,
+              stats: statsReport(recordSets.stats),
+            },
+          }),
       recommendation,
     },
   }
@@ -276,6 +290,8 @@ interface RecommendationInput {
   readonly proofTargetSatisfiesRules: boolean
   readonly proofGuestLayoutUniqueAtEnd: boolean
   readonly proofStats: SolverStats
+  readonly recordSetStats?: SolverStats
+  readonly recordSetPossibleAssignmentCount?: number
 }
 
 function recommendationFor(input: RecommendationInput): AuthoringRecommendation {
@@ -284,9 +300,13 @@ function recommendationFor(input: RecommendationInput): AuthoringRecommendation 
     input.initialStats.truncated ||
     input.initialLayoutStats.truncated ||
     input.initialLayoutsGreaterThan !== undefined ||
-    input.proofStats.truncated
+    input.proofStats.truncated ||
+    input.recordSetStats?.truncated
   ) {
     return 'raise-caps-or-simplify'
+  }
+  if (input.recordSetPossibleAssignmentCount !== undefined && input.recordSetPossibleAssignmentCount === 0) {
+    return 'repair-initial-satisfiability'
   }
   if (!input.targetRulesOk || !input.proofTargetSatisfiesRules) return 'repair-target-rules'
   if (!input.initialSatisfiable) return 'repair-initial-satisfiability'

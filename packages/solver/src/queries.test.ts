@@ -2,7 +2,7 @@ import { enumerateModels } from '@room-axioms/oracle';
 import { describe, expect, it } from 'vitest';
 import type { CellKind, Comparator, Observation, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
-import { countGuestLayouts, findForcedCells, isGuestLayoutUnique } from './queries.js';
+import { countGuestLayouts, findForcedCells, findPossibleRecordSets, isGuestLayoutUnique, isSatisfiable } from './queries.js';
 
 describe('forced-cell queries', () => {
   it('finds forced safe cells when a guest is already observed', () => {
@@ -131,6 +131,39 @@ describe('guest-layout uniqueness and counting', () => {
   });
 });
 
+describe('contaminated record-set queries', () => {
+  it('enumerates possible false-record assignments against observations', () => {
+    const puzzle = contaminatedOneOrTwoGuestPuzzle();
+    const result = findPossibleRecordSets({
+      puzzle,
+      observations: [
+        { cellId: 'A1', kind: 'guest' },
+        { cellId: 'B1', kind: 'empty' },
+        { cellId: 'A2', kind: 'empty' },
+        { cellId: 'B2', kind: 'empty' },
+      ],
+    });
+
+    expect(result.possibleAssignments.map((assignment) => assignment.falseRecordIds)).toEqual([
+      ['card-two'],
+    ]);
+    expect(result.stats.truncated).toBe(false);
+  });
+
+  it('solves and counts layouts across possible false-record assignments', () => {
+    const puzzle = contaminatedOneOrTwoGuestPuzzle();
+
+    expect(isSatisfiable({ puzzle })).toMatchObject({
+      satisfiable: true,
+      stats: { truncated: false },
+    });
+    expect(countGuestLayouts({ puzzle }, 20)).toMatchObject({
+      count: 10,
+      stats: { truncated: false },
+    });
+  });
+});
+
 function oneGuestPuzzle(): PuzzleDefinition {
   return makePuzzle({
     width: 2,
@@ -140,10 +173,34 @@ function oneGuestPuzzle(): PuzzleDefinition {
   });
 }
 
+function contaminatedOneOrTwoGuestPuzzle(): PuzzleDefinition {
+  return makePuzzle({
+    width: 2,
+    height: 2,
+    allowedKinds: ['empty', 'guest'],
+    records: [
+      { id: 'card-one', title: 'Card One', ruleIds: ['one-guest'] },
+      { id: 'card-two', title: 'Card Two', ruleIds: ['two-guests'] },
+    ],
+    rules: [
+      globalCountRule('one-guest', 'guest', { op: 'eq', value: 1 }),
+      globalCountRule('two-guests', 'guest', { op: 'eq', value: 2 }),
+      {
+        id: 'one-card-false',
+        type: 'recordSet',
+        recordIds: ['card-one', 'card-two'],
+        falseRecords: { op: 'eq', value: 1 },
+        presentation: { title: 'One card is polluted' },
+      },
+    ],
+  });
+}
+
 function makePuzzle(input: {
   readonly width: number;
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
+  readonly records?: PuzzleDefinition['records'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -152,6 +209,7 @@ function makePuzzle(input: {
     title: 'Solver Forced Cells Test',
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
+    ...(input.records === undefined ? {} : { records: input.records }),
     rules: input.rules,
     initialReveals: [],
     target: {},

@@ -268,6 +268,9 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
       };
     }
 
+    case 'recordSet':
+      throw new Error(`Record-set rule ${rule.id} must be expanded before constraint compilation.`);
+
     default:
       return assertNever(rule);
   }

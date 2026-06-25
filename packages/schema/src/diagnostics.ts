@@ -92,6 +92,7 @@ function validatePuzzleSemantics(puzzle: PuzzleDefinition): readonly SchemaIssue
   issues.push(...validateInitialReveals(puzzle))
   issues.push(...validateRegions(puzzle))
   issues.push(...validateAnchors(puzzle))
+  issues.push(...validateRecords(puzzle))
   issues.push(...validateRules(puzzle))
 
   return sortIssues(issues)
@@ -237,6 +238,7 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
   const allowedKinds = new Set<CellKind>(puzzle.allowedKinds)
   const regionIds = new Set((puzzle.regions ?? []).map((region) => region.id))
   const anchorIds = new Set((puzzle.anchors ?? []).map((anchor) => anchor.id))
+  const recordIds = new Set((puzzle.records ?? []).map((record) => record.id))
   const seenRuleIds = new Map<string, number>()
   let hasGuestRule = false
 
@@ -253,13 +255,14 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
       seenRuleIds.set(rule.id, index)
     }
 
-    if (rule.target === 'guest' || (rule.type === 'forEachCount' && rule.subject === 'guest')) {
+    if (ruleReferencesGuest(rule)) {
       hasGuestRule = true
     }
 
     issues.push(...validateRuleKindReferences(rule, index, allowedKinds))
     issues.push(...validateRuleRegionReferences(rule, index, regionIds))
     issues.push(...validateRuleAnchorReferences(rule, index, anchorIds))
+    issues.push(...validateRuleRecordReferences(rule, index, recordIds))
     issues.push(...validateRuleLineReferences(rule, index, puzzle))
   })
 
@@ -274,12 +277,79 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
   return issues
 }
 
+function validateRecords(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
+  const issues: SchemaIssue[] = []
+  const seenRecordIds = new Map<string, number>()
+  const ruleIds = new Set(puzzle.rules.map((rule) => rule.id))
+  const recordSetRuleIds = new Set(puzzle.rules.filter((rule) => rule.type === 'recordSet').map((rule) => rule.id))
+  const owningRecordByRuleId = new Map<string, string>()
+
+  puzzle.records?.forEach((record, recordIndex) => {
+    const firstIndex = seenRecordIds.get(record.id)
+    if (firstIndex !== undefined) {
+      issues.push(
+        createIssue(
+          'RECORD_ID_DUPLICATE',
+          ['records', recordIndex, 'id'],
+          `Record id ${record.id} is duplicated`,
+          { recordId: record.id, firstIndex },
+        ),
+      )
+    } else {
+      seenRecordIds.set(record.id, recordIndex)
+    }
+
+    record.ruleIds.forEach((ruleId, ruleIndex) => {
+      if (!ruleIds.has(ruleId)) {
+        issues.push(
+          createIssue(
+            'RECORD_RULE_UNKNOWN',
+            ['records', recordIndex, 'ruleIds', ruleIndex],
+            `Record ${record.id} references unknown rule ${ruleId}`,
+            { recordId: record.id, ruleId },
+          ),
+        )
+        return
+      }
+
+      if (recordSetRuleIds.has(ruleId)) {
+        issues.push(
+          createIssue(
+            'RECORD_RULE_INVALID',
+            ['records', recordIndex, 'ruleIds', ruleIndex],
+            `Record ${record.id} cannot contain record-set rule ${ruleId}`,
+            { recordId: record.id, ruleId },
+          ),
+        )
+      }
+
+      const owningRecordId = owningRecordByRuleId.get(ruleId)
+      if (owningRecordId !== undefined) {
+        issues.push(
+          createIssue(
+            'RECORD_RULE_DUPLICATE',
+            ['records', recordIndex, 'ruleIds', ruleIndex],
+            `Rule ${ruleId} is already owned by record ${owningRecordId}`,
+            { recordId: record.id, ruleId, firstRecordId: owningRecordId },
+          ),
+        )
+      } else {
+        owningRecordByRuleId.set(ruleId, record.id)
+      }
+    })
+  })
+
+  return issues
+}
+
 function validateRuleKindReferences(
   rule: RuleDefinition,
   index: number,
   allowedKinds: ReadonlySet<CellKind>,
 ): readonly SchemaIssue[] {
   const issues: SchemaIssue[] = []
+
+  if (rule.type === 'recordSet') return issues
 
   if (!allowedKinds.has(rule.target)) {
     issues.push(
@@ -355,6 +425,30 @@ function validateRuleAnchorReferences(
   ]
 }
 
+function validateRuleRecordReferences(
+  rule: RuleDefinition,
+  index: number,
+  recordIds: ReadonlySet<string>,
+): readonly SchemaIssue[] {
+  if (rule.type !== 'recordSet') return []
+
+  const issues: SchemaIssue[] = []
+  rule.recordIds.forEach((recordId, recordIndex) => {
+    if (recordIds.has(recordId)) return
+
+    issues.push(
+      createIssue(
+        'RULE_RECORD_UNKNOWN',
+        ['rules', index, 'recordIds', recordIndex],
+        `Rule ${rule.id} references unknown record ${recordId}`,
+        { ruleId: rule.id, recordId },
+      ),
+    )
+  })
+
+  return issues
+}
+
 function validateRuleLineReferences(
   rule: RuleDefinition,
   index: number,
@@ -409,6 +503,11 @@ function validateRuleLineReferences(
   }
 
   return []
+}
+
+function ruleReferencesGuest(rule: RuleDefinition): boolean {
+  if (rule.type === 'recordSet') return false
+  return rule.target === 'guest' || (rule.type === 'forEachCount' && rule.subject === 'guest')
 }
 
 function zodIssueToSchemaIssue(issue: ZodIssue): SchemaIssue {

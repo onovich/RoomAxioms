@@ -124,6 +124,7 @@ export type RuleDefinition =
   | RegionCountRule
   | LineCountRule
   | AnchorCountRule
+  | RecordSetRule
 
 export interface RecordSetRule {
   readonly id: string

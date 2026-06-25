@@ -156,6 +156,14 @@ export interface AuthoringCaseValidationReport {
     readonly techniqueIds: readonly string[]
     readonly stats: AuthoringSolverStatsReport
   }
+  readonly recordSets?: {
+    readonly possibleAssignments: readonly {
+      readonly assignmentId: string
+      readonly falseRecordIds: readonly string[]
+      readonly activeRuleIds: readonly string[]
+    }[]
+    readonly stats: AuthoringSolverStatsReport
+  }
   readonly recommendation: AuthoringRecommendation
 }
 

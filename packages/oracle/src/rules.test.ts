@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CellKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
+import type { CellKind, Comparator, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
 import { evaluateRule, satisfiesRules } from './rules.js';
 import type { CellAssignment } from './types.js';
@@ -165,7 +165,7 @@ function makeAssignment(rows: readonly (readonly CellKind[])[]): CellAssignment 
 function globalCountRule(
   id: string,
   target: CellKind,
-  count: RuleDefinition['count'],
+  count: Comparator,
 ): RuleDefinition {
   return {
     id,
@@ -181,7 +181,7 @@ function forEachCountRule(
   subject: CellKind,
   scope: 'adjacent' | 'orthogonal',
   target: CellKind,
-  count: RuleDefinition['count'],
+  count: Comparator,
 ): RuleDefinition {
   return {
     id,

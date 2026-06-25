@@ -14,6 +14,8 @@ function ruleKind(rule: RuleDefinition): string {
       return `line:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
     case 'anchorCount':
       return `anchor:${rule.anchorId}:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
+    case 'recordSet':
+      return `records:${rule.falseRecords.op}:${rule.falseRecords.value}:${rule.recordIds.join('+')}`
     default:
       return assertNever(rule)
   }
@@ -101,15 +103,16 @@ describe('rule definitions', () => {
     expect(ruleKind(anchorRule)).toBe('anchor:known-bottle:ray:guest:eq:1')
   })
 
-  it('declares future expressive rule shapes outside production rule definitions', () => {
+  it('supports record-set contamination as a high-tier production rule shape', () => {
     const recordRule = {
       id: 'CR1',
       type: 'recordSet',
       recordIds: ['card-a', 'card-b'],
       falseRecords: { op: 'eq', value: 1 },
       presentation: { title: 'One record is contaminated' },
-    } satisfies ExpressiveRuleDefinition
+    } satisfies RuleDefinition
 
+    expect(ruleKind(recordRule)).toBe('records:eq:1:card-a+card-b')
     expect(expressiveRuleKind(recordRule)).toBe('records:eq:1:card-a+card-b')
   })
 })

@@ -1072,6 +1072,14 @@ function ruleSignature(rule: RuleDefinition): string {
     })
   }
 
+  if (rule.type === 'recordSet') {
+    return JSON.stringify({
+      type: rule.type,
+      recordIds: [...rule.recordIds].sort(),
+      falseRecords: rule.falseRecords,
+    })
+  }
+
   return JSON.stringify({
     type: rule.type,
     subject: rule.subject,
@@ -1408,6 +1416,14 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
       scope: rule.scope.kind,
       target: traceKind(rule.target, mode),
       count: rule.count,
+    })
+  }
+
+  if (rule.type === 'recordSet') {
+    return JSON.stringify({
+      type: rule.type,
+      recordIds: [...rule.recordIds].sort(),
+      falseRecords: rule.falseRecords,
     })
   }
 

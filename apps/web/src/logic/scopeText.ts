@@ -17,6 +17,10 @@ export function ruleChip(rule: RuleDefinition): string {
     return `${rule.anchorId} 的${anchorScopeLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
   }
 
+  if (rule.type === 'recordSet') {
+    return recordSetPhrase(rule)
+  }
+
   return `${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
 }
 
@@ -35,6 +39,10 @@ export function rulePlainText(rule: RuleDefinition): string {
 
   if (rule.type === 'anchorCount') {
     return `${rule.anchorId} 的${anchorScopeLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  }
+
+  if (rule.type === 'recordSet') {
+    return `${recordSetPhrase(rule)}。`
   }
 
   if (rule.count.op === 'eq' && rule.count.value === 0) {
@@ -80,6 +88,13 @@ function lineLabel(rule: Extract<RuleDefinition, { readonly type: 'lineCount' }>
 function anchorScopeLabel(rule: Extract<RuleDefinition, { readonly type: 'anchorCount' }>): string {
   if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') return scopeLabel(rule.scope.kind)
   return rule.scope.kind
+}
+
+function recordSetPhrase(rule: Extract<RuleDefinition, { readonly type: 'recordSet' }>): string {
+  const countText = rule.falseRecords.op === 'eq'
+    ? `恰好 ${rule.falseRecords.value} 张`
+    : `最多 ${rule.falseRecords.value} 张`
+  return `污染记录：${countText}记录可能为假`
 }
 
 function directionLabel(direction: 'north' | 'south' | 'east' | 'west'): string {

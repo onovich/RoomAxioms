@@ -3,12 +3,15 @@ import { allCells } from '@room-axioms/domain';
 import type {
   ForcedCellResult,
   GuestLayoutCountResult,
+  RecordSetPossibility,
+  RecordSetPossibilityResult,
   SolveInput,
   SolveResult,
   SolverAssumption,
   SolverOptions,
   UniqueLayoutResult,
 } from './types.js';
+import { expandRecordSetAssignments, hasRecordSetRules } from './recordSets.js';
 import { searchFirstModel, visitModels } from './search.js';
 
 export function isSatisfiable(
@@ -16,6 +19,10 @@ export function isSatisfiable(
   assumptions: readonly SolverAssumption[] = [],
   options: SolverOptions = {},
 ): SolveResult {
+  if (hasRecordSetRules(input.puzzle)) {
+    return searchFirstContaminatedModel(input, assumptions, options);
+  }
+
   return searchFirstModel(input, assumptions, options);
 }
 
@@ -24,6 +31,10 @@ export function findModel(
   assumptions: readonly SolverAssumption[] = [],
   options: SolverOptions = {},
 ): SolveResult {
+  if (hasRecordSetRules(input.puzzle)) {
+    return searchFirstContaminatedModel(input, assumptions, options);
+  }
+
   return searchFirstModel(input, assumptions, options);
 }
 
@@ -87,6 +98,39 @@ export function countGuestLayouts(
   };
 }
 
+export function findPossibleRecordSets(
+  input: SolveInput,
+  options: SolverOptions = {},
+): RecordSetPossibilityResult {
+  if (!hasRecordSetRules(input.puzzle)) {
+    return {
+      possibleAssignments: [],
+      stats: zeroStats(),
+    };
+  }
+
+  const possibleAssignments: RecordSetPossibility[] = [];
+  let stats = zeroStats();
+
+  for (const assignment of expandRecordSetAssignments(input.puzzle)) {
+    const result = searchFirstModel({ ...input, puzzle: assignment.puzzle }, [], options);
+    stats = combineStats(stats, result.stats);
+    if (result.satisfiable && !result.stats.truncated) {
+      possibleAssignments.push({
+        assignmentId: assignment.id,
+        falseRecordIds: assignment.falseRecordIds,
+        activeRuleIds: assignment.activeRuleIds,
+      });
+    }
+    if (result.stats.truncated) break;
+  }
+
+  return {
+    possibleAssignments,
+    stats,
+  };
+}
+
 interface GuestLayoutSummary {
   readonly count: number;
   readonly greaterThan?: number;
@@ -108,27 +152,70 @@ function collectGuestLayouts(input: SolveInput, cap: number, options: SolverOpti
   const cells = allCells(input.puzzle.board);
   const layouts = new Map<string, readonly string[]>();
   let greaterThan: number | undefined;
+  let stopped = false;
+  let stats = zeroStats();
 
-  const result = visitModels(input, [], options, (model) => {
-    const guestCells = cells.filter((cellId) => model.cells[cellId] === 'guest');
-    const key = guestCells.join('|');
+  for (const assignment of expandRecordSetAssignments(input.puzzle)) {
+    if (stopped) break;
 
-    if (!layouts.has(key)) {
-      if (layouts.size >= effectiveCap) {
-        greaterThan = effectiveCap;
-        return false;
+    const result = visitModels({ ...input, puzzle: assignment.puzzle }, [], options, (model) => {
+      const guestCells = cells.filter((cellId) => model.cells[cellId] === 'guest');
+      const key = guestCells.join('|');
+
+      if (!layouts.has(key)) {
+        if (layouts.size >= effectiveCap) {
+          greaterThan = effectiveCap;
+          stopped = true;
+          return false;
+        }
+
+        layouts.set(key, guestCells);
       }
 
-      layouts.set(key, guestCells);
-    }
-
-    return true;
-  });
+      return true;
+    });
+    stats = combineStats(stats, result.stats);
+    if (result.stats.truncated) break;
+  }
 
   return {
     count: layouts.size,
     ...(greaterThan === undefined ? {} : { greaterThan }),
     layouts: [...layouts.values()],
-    stats: result.stats,
+    stats,
+  };
+}
+
+function searchFirstContaminatedModel(
+  input: SolveInput,
+  assumptions: readonly SolverAssumption[],
+  options: SolverOptions,
+): SolveResult {
+  let stats = zeroStats();
+
+  for (const assignment of expandRecordSetAssignments(input.puzzle)) {
+    const result = searchFirstModel({ ...input, puzzle: assignment.puzzle }, assumptions, options);
+    stats = combineStats(stats, result.stats);
+    if (result.satisfiable || result.stats.truncated) {
+      return {
+        satisfiable: result.satisfiable,
+        model: result.model,
+        stats,
+      };
+    }
+  }
+
+  return {
+    satisfiable: false,
+    model: null,
+    stats,
+  };
+}
+
+function zeroStats(): SolveResult['stats'] {
+  return {
+    nodeCount: 0,
+    propagationCount: 0,
+    truncated: false,
   };
 }

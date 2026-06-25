@@ -536,6 +536,10 @@ function renameRuleKinds(
     }
   }
 
+  if (rule.type === 'recordSet') {
+    return rule
+  }
+
   return {
     ...rule,
     subject: rename(rule.subject),

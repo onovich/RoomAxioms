@@ -76,6 +76,19 @@ describe('rule text helpers', () => {
     expect(ruleChip(rule)).toBe('known-bottle 的上下左右邻格：没有访客')
     expect(rulePlainText(rule)).toBe('known-bottle 的上下左右邻格，没有访客。')
   })
+
+  it('renders record-set rules without internal assignment details', () => {
+    const rule: RuleDefinition = {
+      id: 'CR1',
+      type: 'recordSet',
+      recordIds: ['card-a', 'card-b'],
+      falseRecords: { op: 'eq', value: 1 },
+      presentation: { title: 'Polluted records' },
+    }
+
+    expect(ruleChip(rule)).toBe('污染记录：恰好 1 张记录可能为假')
+    expect(rulePlainText(rule)).toBe('污染记录：恰好 1 张记录可能为假。')
+  })
 })
 
 function globalRule(): RuleDefinition {

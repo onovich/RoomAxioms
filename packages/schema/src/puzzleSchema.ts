@@ -44,6 +44,14 @@ export const anchorDefinitionSchema = z.strictObject({
   subject: cellKindSchema,
 })
 
+export const recordDefinitionSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  title: z.string().refine(hasNonBlankText, 'Record title must not be empty'),
+  ruleIds: z.array(z.string().regex(ruleIdPattern)).min(1).refine(hasUniqueValues, {
+    message: 'Record rule ids must be unique',
+  }),
+})
+
 export const globalScopeSchema = z.strictObject({
   kind: z.literal('global'),
 })
@@ -120,12 +128,26 @@ export const anchorCountRuleSchema = z.strictObject({
   presentation: rulePresentationSchema,
 })
 
+export const recordSetRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('recordSet'),
+  recordIds: z.array(z.string().regex(ruleIdPattern)).min(1).refine(hasUniqueValues, {
+    message: 'Record-set record ids must be unique',
+  }),
+  falseRecords: z.strictObject({
+    op: z.enum(['eq', 'lte']),
+    value: z.literal(1),
+  }),
+  presentation: rulePresentationSchema,
+})
+
 export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   globalCountRuleSchema,
   forEachCountRuleSchema,
   regionCountRuleSchema,
   lineCountRuleSchema,
   anchorCountRuleSchema,
+  recordSetRuleSchema,
 ])
 
 export const puzzleMetadataSchema = z.strictObject({
@@ -161,6 +183,9 @@ export const puzzleDefinitionSchema = z.strictObject({
   }).optional(),
   anchors: z.array(anchorDefinitionSchema).refine((anchors) => hasUniqueValues(anchors.map((anchor) => anchor.id)), {
     message: 'Anchor ids must be unique',
+  }).optional(),
+  records: z.array(recordDefinitionSchema).refine((records) => hasUniqueValues(records.map((record) => record.id)), {
+    message: 'Record ids must be unique',
   }).optional(),
   rules: z.array(ruleDefinitionSchema).min(1),
   initialReveals: z.array(cellIdSchema),

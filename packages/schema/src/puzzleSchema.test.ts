@@ -239,4 +239,72 @@ describe('puzzleDefinitionSchema', () => {
     expect(result.ok).toBe(false)
     expect(result.issues.map((issue) => issue.code)).toContain('RULE_ANCHOR_UNKNOWN')
   })
+
+  it('accepts contaminated record sets with exactly one false record', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      records: [
+        { id: 'card-a', title: 'Card A', ruleIds: ['R1'] },
+        { id: 'card-b', title: 'Card B', ruleIds: ['R2'] },
+      ],
+      rules: [
+        {
+          id: 'R1',
+          type: 'globalCount',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'One guest' },
+        },
+        {
+          id: 'R2',
+          type: 'regionCount',
+          regionId: 'north-wing',
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+          presentation: { title: 'No north guest' },
+        },
+        {
+          id: 'CR1',
+          type: 'recordSet',
+          recordIds: ['card-a', 'card-b'],
+          falseRecords: { op: 'eq', value: 1 },
+          presentation: { title: 'One card is polluted' },
+        },
+      ],
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects contaminated records with invalid rule and record references', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      records: [
+        { id: 'card-a', title: 'Card A', ruleIds: ['missing-rule'] },
+      ],
+      rules: [
+        ...validMinimalPuzzle.rules,
+        {
+          id: 'CR1',
+          type: 'recordSet',
+          recordIds: ['missing-card'],
+          falseRecords: { op: 'lte', value: 1 },
+          presentation: { title: 'At most one polluted card' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.issues.map((issue) => issue.code)).toEqual([
+      'RECORD_RULE_UNKNOWN',
+      'RULE_RECORD_UNKNOWN',
+    ])
+  })
 })

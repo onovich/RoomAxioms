@@ -24,6 +24,10 @@ const paddedCase004Path = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-20/padded-case004-right-edge.json',
 )
+const contaminatedRecordFixturePath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-22/fixtures/contaminated-record-cross-check.json',
+)
 
 describe('authoring CLI parser', () => {
   it('parses case-path commands with structured JSON output options', () => {
@@ -233,6 +237,23 @@ describe('authoring CLI parser', () => {
     expect(report.ok).toBe(true)
     expect(report.status).toBe('reported')
     expect(report.validation?.recommendation).toBe('ready-for-experimental-review')
+  })
+
+  it('reports possible false-record assignments for contaminated fixtures', () => {
+    const report = runAuthoringCli(['report', contaminatedRecordFixturePath])
+
+    expect(report.ok).toBe(true)
+    expect(report.validation?.recordSets).toMatchObject({
+      possibleAssignments: [
+        {
+          assignmentId: 'card-two',
+          falseRecordIds: ['card-two'],
+          activeRuleIds: ['R1'],
+        },
+      ],
+      stats: { truncated: false },
+    })
+    expect(report.validation?.proof?.guestLayoutUniqueAtEnd).toBe(true)
   })
 
   it('scores cases with uncalibrated authoring metrics', () => {

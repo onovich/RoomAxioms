@@ -354,6 +354,11 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         return classes
       }
 
+      if (rule.type === 'recordSet') {
+        if (hint?.highlight === cellId) classes.push('hint-highlight')
+        return classes
+      }
+
       const visibleSubjects = [...revealed].filter((id) => observations.get(id) === rule.subject)
       if (visibleSubjects.includes(cellId)) classes.push('subject-highlight')
       if (visibleSubjects.some((subject) => neighbors(subject, rule.scope.kind, puzzle.board).includes(cellId))) {

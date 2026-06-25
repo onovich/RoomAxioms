@@ -79,6 +79,9 @@ export function evaluateRule(
       };
     }
 
+    case 'recordSet':
+      throw new Error(`Record-set rule ${rule.id} must be expanded before oracle evaluation.`);
+
     default:
       return assertNever(rule);
   }

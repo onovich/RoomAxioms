@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-22-contaminated-cross-check",
+  "title": "Phase 22 Contaminated Cross-Check",
+  "caseName": "Phase 22 Internal Fixture - Contaminated Cross-Check",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "guest"
+  ],
+  "records": [
+    {
+      "id": "card-one",
+      "title": "One guest record",
+      "ruleIds": [
+        "R1"
+      ]
+    },
+    {
+      "id": "card-two",
+      "title": "Two guest record",
+      "ruleIds": [
+        "R2"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "One guest",
+        "flavor": "This record says there is exactly one unregistered guest."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Two guests",
+        "flavor": "This record says there are exactly two unregistered guests."
+      }
+    },
+    {
+      "id": "CR1",
+      "type": "recordSet",
+      "recordIds": [
+        "card-one",
+        "card-two"
+      ],
+      "falseRecords": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "One record is polluted",
+        "flavor": "Exactly one listed record is false."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2",
+    "A3",
+    "B3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 5,
+    "tags": [
+      "phase-22",
+      "internal-fixture",
+      "contaminated-record"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Internal verifier fixture only. The observed empty cells eliminate the two-guest record without exposing record-assignment internals to player mode."
+  }
+}

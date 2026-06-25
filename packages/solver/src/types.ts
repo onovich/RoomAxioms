@@ -48,3 +48,14 @@ export interface GuestLayoutCountResult {
   readonly greaterThan?: number;
   readonly stats: SolverStats;
 }
+
+export interface RecordSetPossibility {
+  readonly assignmentId: string;
+  readonly falseRecordIds: readonly string[];
+  readonly activeRuleIds: readonly string[];
+}
+
+export interface RecordSetPossibilityResult {
+  readonly possibleAssignments: readonly RecordSetPossibility[];
+  readonly stats: SolverStats;
+}
