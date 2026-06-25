@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-23-probe-022",
+  "title": "Phase 23 Probe 022 Double Row Anchor Chain",
+  "caseName": "Phase 23 Probe 022",
+  "board": {
+    "width": 5,
+    "height": 5
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "anchors": [
+    {
+      "id": "bin-anchor",
+      "title": "Bin anchor",
+      "subject": "bin"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "mirror",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Single mirror",
+        "flavor": "There is exactly 1 mirror."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 4
+      },
+      "presentation": {
+        "title": "Four guests",
+        "flavor": "There are exactly 4 guests."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "mirror",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle mirror cross",
+        "flavor": "Every bottle has exactly 1 orthogonal mirror."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle quiet cross",
+        "flavor": "No guest is orthogonal to a bottle."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "anchorCount",
+      "anchorId": "bin-anchor",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bin quiet cross",
+        "flavor": "No guest is orthogonal to a confirmed bin."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "lineCount",
+      "scope": {
+        "kind": "row",
+        "index": 3
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Fourth row count",
+        "flavor": "The fourth row has exactly 2 guests."
+      }
+    },
+    {
+      "id": "R7",
+      "type": "lineCount",
+      "scope": {
+        "kind": "row",
+        "index": 4
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Fifth row count",
+        "flavor": "The fifth row has exactly 2 guests."
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "D1",
+    "A1",
+    "E1",
+    "A2",
+    "E2",
+    "A3",
+    "E3",
+    "B5",
+    "D5",
+    "B2",
+    "D2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "bottle",
+    "E1": "empty",
+    "A2": "empty",
+    "B2": "bin",
+    "C2": "empty",
+    "D2": "bin",
+    "E2": "empty",
+    "A3": "empty",
+    "B3": "bin",
+    "C3": "empty",
+    "D3": "bin",
+    "E3": "empty",
+    "A4": "guest",
+    "B4": "empty",
+    "C4": "bin",
+    "D4": "empty",
+    "E4": "guest",
+    "A5": "guest",
+    "B5": "empty",
+    "C5": "bin",
+    "D5": "empty",
+    "E5": "guest"
+  },
+  "metadata": {
+    "difficulty": 5,
+    "tags": [
+      "experimental",
+      "phase-23",
+      "rejected",
+      "target-4-probe",
+      "anchor-frontier",
+      "line-count"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Rejected in Phase 23 Round 12: added reveals reduce search but leave proof explanation gaps and a degeneracy warning; not player-facing."
+  }
+}
