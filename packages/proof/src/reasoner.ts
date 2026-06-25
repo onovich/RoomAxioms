@@ -4,6 +4,7 @@ import type {
   CellKind,
   ForEachCountRule,
   GlobalCountRule,
+  LineCountRule,
   RegionCountRule,
   RuleDefinition,
 } from '@room-axioms/domain';
@@ -13,11 +14,13 @@ import {
   comparatorBounds,
   countPremise,
   createKnowledgeIndex,
+  lineScopePremise,
   rulePremise,
   regionScopePremise,
   scopePremise,
   summarizeForEachScope,
   summarizeGlobalCount,
+  summarizeLineCount,
   summarizeRegionCount,
 } from './reasoning.js';
 import type { Deduction, DeductionConclusion, KnowledgeState, ProofPremise } from './types.js';
@@ -30,6 +33,8 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
       baseDeductions.push(...deriveGlobalCountDeductions(state, rule));
     } else if (rule.type === 'regionCount') {
       baseDeductions.push(...deriveRegionCountDeductions(state, rule));
+    } else if (rule.type === 'lineCount') {
+      baseDeductions.push(...deriveLineCountDeductions(state, rule));
     } else if (rule.type === 'forEachCount') {
       baseDeductions.push(...deriveLocalCountDeductions(state, rule));
     }
@@ -250,6 +255,45 @@ export function deriveRegionCountDeductions(
     for (const cellId of summary.unknownCellIds) {
       deductions.push(createDeduction({
         technique: 'REGION_COUNT_ALL_REMAINING',
+        conclusion: targetConclusion(cellId, rule.target),
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  return sortDeductions(state, deductions);
+}
+
+export function deriveLineCountDeductions(
+  state: KnowledgeState,
+  rule: LineCountRule,
+): readonly Deduction[] {
+  const summary = summarizeLineCount(state, rule);
+  const premises = [rulePremise(rule), lineScopePremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const deductions: Deduction[] = [];
+  const upperBound = summary.bounds.upperBound;
+
+  if (
+    rule.target === 'guest' &&
+    upperBound !== null &&
+    summary.knownTargetCellIds.length === upperBound
+  ) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'LINE_COUNT_SATURATED',
+        conclusion: { kind: 'safe', cellId },
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  const remainingRequired = summary.bounds.lowerBound - summary.knownTargetCellIds.length;
+  if (remainingRequired > 0 && remainingRequired === summary.unknownCellIds.length) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'LINE_COUNT_ALL_REMAINING',
         conclusion: targetConclusion(cellId, rule.target),
         ruleIds: [rule.id],
         premises,
@@ -681,4 +725,8 @@ export function isForEachCountRule(rule: RuleDefinition): rule is ForEachCountRu
 
 export function isRegionCountRule(rule: RuleDefinition): rule is RegionCountRule {
   return rule.type === 'regionCount';
+}
+
+export function isLineCountRule(rule: RuleDefinition): rule is LineCountRule {
+  return rule.type === 'lineCount';
 }

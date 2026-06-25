@@ -1,4 +1,4 @@
-import { allCells, assertNever, neighbors, regionCells } from '@room-axioms/domain';
+import { allCells, assertNever, lineCells, neighbors, rayCells, regionCells } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
@@ -52,6 +52,16 @@ export function evaluateRule(
       };
     }
 
+    case 'lineCount': {
+      const actual = countCells(lineScopeCells(rule, puzzle, model), rule.target, model);
+
+      return {
+        ruleId: rule.id,
+        satisfied: compareCount(actual, rule.count),
+        actual,
+      };
+    }
+
     default:
       return assertNever(rule);
   }
@@ -63,6 +73,34 @@ export function satisfiesRules(puzzle: PuzzleDefinition, model: OracleModel): bo
 
 function countCells(cells: readonly CellId[], target: CellKind, model: OracleModel): number {
   return cells.filter((cellId) => model.cells[cellId] === target).length;
+}
+
+function lineScopeCells(
+  rule: Extract<RuleDefinition, { readonly type: 'lineCount' }>,
+  puzzle: PuzzleDefinition,
+  model: OracleModel,
+): readonly CellId[] {
+  switch (rule.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(rule.scope, puzzle.board);
+    case 'ray':
+      break;
+  }
+
+  if (rule.origin === undefined) {
+    throw new Error(`Rule ${rule.id} must include origin for a ray scope.`);
+  }
+
+  const blockerKinds = new Set(rule.scope.stopAtKinds ?? []);
+  const visible: CellId[] = [];
+
+  for (const cellId of rayCells(rule.origin, rule.scope.direction, puzzle.board)) {
+    if (blockerKinds.has(model.cells[cellId])) break;
+    visible.push(cellId);
+  }
+
+  return visible;
 }
 
 function compareCount(actual: number, comparator: Comparator): boolean {

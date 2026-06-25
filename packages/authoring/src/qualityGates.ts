@@ -1052,6 +1052,16 @@ function ruleSignature(rule: RuleDefinition): string {
     })
   }
 
+  if (rule.type === 'lineCount') {
+    return JSON.stringify({
+      type: rule.type,
+      origin: rule.origin,
+      scope: rule.scope,
+      target: rule.target,
+      count: rule.count,
+    })
+  }
+
   return JSON.stringify({
     type: rule.type,
     subject: rule.subject,
@@ -1361,6 +1371,21 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
     return JSON.stringify({
       type: rule.type,
       regionId: rule.regionId,
+      target: traceKind(rule.target, mode),
+      count: rule.count,
+    })
+  }
+
+  if (rule.type === 'lineCount') {
+    return JSON.stringify({
+      type: rule.type,
+      origin: rule.origin,
+      scope: rule.scope.kind === 'ray'
+        ? {
+            ...rule.scope,
+            stopAtKinds: rule.scope.stopAtKinds?.map((kind) => traceKind(kind, mode)).sort(),
+          }
+        : rule.scope,
       target: traceKind(rule.target, mode),
       count: rule.count,
     })

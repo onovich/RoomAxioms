@@ -47,6 +47,24 @@ export const localScopeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('adjacent') }),
 ])
 
+export const staticLineScopeSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('row'), index: z.number().int().nonnegative() }),
+  z.strictObject({ kind: z.literal('column'), index: z.number().int().nonnegative() }),
+])
+
+export const rayScopeSchema = z.strictObject({
+  kind: z.literal('ray'),
+  direction: z.enum(['north', 'south', 'east', 'west']),
+  stopAtKinds: z.array(cellKindSchema).refine(hasUniqueValues, {
+    message: 'Ray blocker kinds must be unique',
+  }).optional(),
+})
+
+export const lineScopeSchema = z.discriminatedUnion('kind', [
+  ...staticLineScopeSchema.options,
+  rayScopeSchema,
+])
+
 export const scopeSchema = z.discriminatedUnion('kind', [globalScopeSchema, ...localScopeSchema.options])
 
 export const globalCountRuleSchema = z.strictObject({
@@ -76,10 +94,21 @@ export const regionCountRuleSchema = z.strictObject({
   presentation: rulePresentationSchema,
 })
 
+export const lineCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('lineCount'),
+  origin: cellIdSchema.optional(),
+  scope: lineScopeSchema,
+  target: cellKindSchema,
+  count: comparatorSchema,
+  presentation: rulePresentationSchema,
+})
+
 export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   globalCountRuleSchema,
   forEachCountRuleSchema,
   regionCountRuleSchema,
+  lineCountRuleSchema,
 ])
 
 export const puzzleMetadataSchema = z.strictObject({

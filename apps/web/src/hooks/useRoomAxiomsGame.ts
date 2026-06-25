@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { allCells, neighbors, regionCells } from '@room-axioms/domain'
+import { allCells, lineCells, neighbors, rayCells, regionCells } from '@room-axioms/domain'
 import { cellLabels } from '../data/case004'
 import type { AnalysisResult } from '../logic/analysis'
 import { createHint, kindIsInspectable, type Hint } from '../logic/hints'
@@ -309,6 +309,31 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         if (region !== undefined && regionCells(region, puzzle.board).includes(cellId)) {
           classes.push('scope-highlight')
         }
+        if (hint?.highlight === cellId) classes.push('hint-highlight')
+        return classes
+      }
+
+      if (rule.type === 'lineCount') {
+        let lineScopeCells: readonly CellId[] = []
+        switch (rule.scope.kind) {
+          case 'row':
+          case 'column':
+            lineScopeCells = lineCells(rule.scope, puzzle.board)
+            break
+          case 'ray': {
+            const stopAtKinds = rule.scope.stopAtKinds ?? []
+            lineScopeCells = rule.origin === undefined
+              ? []
+              : rayCells(rule.origin, rule.scope.direction, puzzle.board, {
+                  stopCells: allCells(puzzle.board).filter((id) => {
+                    const kind = observations.get(id)
+                    return kind !== undefined && stopAtKinds.includes(kind)
+                  }),
+                })
+            break
+          }
+        }
+        if (lineScopeCells.includes(cellId)) classes.push('scope-highlight')
         if (hint?.highlight === cellId) classes.push('hint-highlight')
         return classes
       }

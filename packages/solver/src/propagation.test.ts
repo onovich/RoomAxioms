@@ -77,6 +77,25 @@ describe('solver propagation and trail rollback', () => {
     expect(containsKind(state.domains.A2, 'guest')).toBe(true);
   });
 
+  it('propagates saturated static line count upper bounds only inside the line', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'guest'],
+      rules: [lineCountRule('row-one-guest', { kind: 'row', index: 0 }, 'guest', { op: 'eq', value: 1 })],
+    });
+    const state = createSolverState({ puzzle });
+    const trail = createTrail();
+
+    assignCellKind(state, trail, 'A1', 'guest');
+    const result = propagate(state, compileConstraints(puzzle), trail);
+
+    expect(result.ok).toBe(true);
+    expect(singletonKind(state.domains.B1)).toBe('empty');
+    expect(singletonKind(state.domains.C1)).toBe('empty');
+    expect(containsKind(state.domains.A2, 'guest')).toBe(true);
+  });
+
   it('propagates local target exclusion for active subjects', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -239,6 +258,24 @@ function regionCountRule(
     id,
     type: 'regionCount',
     regionId,
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function lineCountRule(
+  id: string,
+  scope: Extract<RuleDefinition, { readonly type: 'lineCount' }>['scope'],
+  target: CellKind,
+  count: Comparator,
+  origin?: string,
+): RuleDefinition {
+  return {
+    id,
+    type: 'lineCount',
+    ...(origin === undefined ? {} : { origin }),
+    scope,
     target,
     count,
     presentation: { title: id },

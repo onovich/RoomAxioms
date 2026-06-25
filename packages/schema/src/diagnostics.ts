@@ -222,6 +222,7 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
 
     issues.push(...validateRuleKindReferences(rule, index, allowedKinds))
     issues.push(...validateRuleRegionReferences(rule, index, regionIds))
+    issues.push(...validateRuleLineReferences(rule, index, puzzle))
   })
 
   if (!hasGuestRule) {
@@ -264,6 +265,21 @@ function validateRuleKindReferences(
     )
   }
 
+  if (rule.type === 'lineCount' && rule.scope.kind === 'ray') {
+    rule.scope.stopAtKinds?.forEach((kind, blockerIndex) => {
+      if (allowedKinds.has(kind)) return
+
+      issues.push(
+        createIssue(
+          'RULE_KIND_NOT_ALLOWED',
+          ['rules', index, 'scope', 'stopAtKinds', blockerIndex],
+          `Rule ${rule.id} references blocker kind ${kind} outside allowedKinds`,
+          { ruleId: rule.id, kind },
+        ),
+      )
+    })
+  }
+
   return issues
 }
 
@@ -282,6 +298,62 @@ function validateRuleRegionReferences(
       { ruleId: rule.id, regionId: rule.regionId },
     ),
   ]
+}
+
+function validateRuleLineReferences(
+  rule: RuleDefinition,
+  index: number,
+  puzzle: PuzzleDefinition,
+): readonly SchemaIssue[] {
+  if (rule.type !== 'lineCount') return []
+
+  if (rule.scope.kind === 'row' && rule.scope.index >= puzzle.board.height) {
+    return [
+      createIssue(
+        'LINE_SCOPE_OUT_OF_BOARD',
+        ['rules', index, 'scope', 'index'],
+        `Rule ${rule.id} references row ${rule.scope.index} outside the board`,
+        { ruleId: rule.id, index: rule.scope.index },
+      ),
+    ]
+  }
+
+  if (rule.scope.kind === 'column' && rule.scope.index >= puzzle.board.width) {
+    return [
+      createIssue(
+        'LINE_SCOPE_OUT_OF_BOARD',
+        ['rules', index, 'scope', 'index'],
+        `Rule ${rule.id} references column ${rule.scope.index} outside the board`,
+        { ruleId: rule.id, index: rule.scope.index },
+      ),
+    ]
+  }
+
+  if (rule.scope.kind !== 'ray') return []
+
+  if (rule.origin === undefined) {
+    return [
+      createIssue(
+        'LINE_RAY_ORIGIN_MISSING',
+        ['rules', index, 'origin'],
+        `Rule ${rule.id} must include origin for a ray scope`,
+        { ruleId: rule.id },
+      ),
+    ]
+  }
+
+  if (!tryCanonicalCellId(rule.origin, puzzle.board)) {
+    return [
+      createIssue(
+        'LINE_RAY_ORIGIN_OUT_OF_BOARD',
+        ['rules', index, 'origin'],
+        `Rule ${rule.id} references ray origin ${rule.origin} outside the board`,
+        { ruleId: rule.id, cellId: rule.origin },
+      ),
+    ]
+  }
+
+  return []
 }
 
 function zodIssueToSchemaIssue(issue: ZodIssue): SchemaIssue {
@@ -309,6 +381,7 @@ function isCellKindPath(path: readonly (string | number)[]): boolean {
 
   return (
     previous === 'allowedKinds' ||
+    previous === 'stopAtKinds' ||
     previous === 'target' ||
     last === 'target' ||
     last === 'subject'

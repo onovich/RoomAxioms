@@ -102,6 +102,68 @@ describe('constraint compilation and count bounds', () => {
     });
   });
 
+  it('computes static line count bounds from row cells', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'guest'],
+      rules: [lineCountRule('row-one-guest', { kind: 'row', index: 0 }, 'guest', { op: 'eq', value: 1 })],
+    });
+    const initial = createInitialDomains(puzzle);
+    const guestAtA1 = setCellDomain(initial, 'A1', singletonMask('guest'));
+    const domains = setCellDomain(guestAtA1, 'B1', singletonMask('empty'));
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'lineCount',
+      ruleId: 'row-one-guest',
+      bounds: { minimum: 1, maximum: 2 },
+      possible: true,
+    });
+  });
+
+  it('checks blocker-aware ray bounds exactly for complete domains', () => {
+    const puzzle = makePuzzle({
+      width: 4,
+      height: 3,
+      allowedKinds: ['empty', 'mirror', 'guest'],
+      rules: [
+        lineCountRule(
+          'east-ray-one-guest',
+          { kind: 'ray', direction: 'east', stopAtKinds: ['mirror'] },
+          'guest',
+          { op: 'eq', value: 1 },
+          'A1',
+        ),
+      ],
+    });
+    const domains = {
+      ...createInitialDomains(puzzle),
+      A1: singletonMask('empty'),
+      B1: singletonMask('guest'),
+      C1: singletonMask('mirror'),
+      D1: singletonMask('guest'),
+      A2: singletonMask('empty'),
+      B2: singletonMask('empty'),
+      C2: singletonMask('empty'),
+      D2: singletonMask('empty'),
+      A3: singletonMask('empty'),
+      B3: singletonMask('empty'),
+      C3: singletonMask('empty'),
+      D3: singletonMask('empty'),
+    };
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'lineCount',
+      ruleId: 'east-ray-one-guest',
+      bounds: { minimum: 1, maximum: 1 },
+      possible: true,
+    });
+  });
+
   it('marks forced local subjects impossible when target bounds cannot satisfy the comparator', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -181,6 +243,24 @@ function regionCountRule(
     id,
     type: 'regionCount',
     regionId,
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function lineCountRule(
+  id: string,
+  scope: Extract<RuleDefinition, { readonly type: 'lineCount' }>['scope'],
+  target: CellKind,
+  count: Comparator,
+  origin?: string,
+): RuleDefinition {
+  return {
+    id,
+    type: 'lineCount',
+    ...(origin === undefined ? {} : { origin }),
+    scope,
     target,
     count,
     presentation: { title: id },

@@ -1,10 +1,11 @@
-import { allCells, assertNever, neighbors, regionCells } from '@room-axioms/domain';
+import { allCells, assertNever, lineCells, neighbors, rayCells, regionCells } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
   Comparator,
   ForEachCountRule,
   GlobalCountRule,
+  LineCountRule,
   PuzzleDefinition,
   RegionCountRule,
   RuleDefinition,
@@ -41,7 +42,18 @@ export interface RegionCountConstraint {
   readonly cells: readonly CellId[];
 }
 
-export type CompiledConstraint = GlobalCountConstraint | ForEachCountConstraint | RegionCountConstraint;
+export interface LineCountConstraint {
+  readonly kind: 'lineCount';
+  readonly rule: LineCountRule;
+  readonly cells: readonly CellId[];
+  readonly dynamicScope: boolean;
+}
+
+export type CompiledConstraint =
+  | GlobalCountConstraint
+  | ForEachCountConstraint
+  | RegionCountConstraint
+  | LineCountConstraint;
 
 export interface GlobalCountBounds {
   readonly kind: 'globalCount';
@@ -72,7 +84,14 @@ export interface RegionCountBounds {
   readonly possible: boolean;
 }
 
-export type ConstraintBounds = GlobalCountBounds | ForEachCountBounds | RegionCountBounds;
+export interface LineCountBounds {
+  readonly kind: 'lineCount';
+  readonly ruleId: string;
+  readonly bounds: CountBounds;
+  readonly possible: boolean;
+}
+
+export type ConstraintBounds = GlobalCountBounds | ForEachCountBounds | RegionCountBounds | LineCountBounds;
 
 export function compileConstraints(puzzle: PuzzleDefinition): readonly CompiledConstraint[] {
   return puzzle.rules.map((rule) => compileRule(rule, puzzle));
@@ -112,6 +131,17 @@ export function evaluateConstraintBounds(
 
       return {
         kind: 'regionCount',
+        ruleId: constraint.rule.id,
+        bounds,
+        possible: comparatorCanBeSatisfied(bounds, constraint.rule.count),
+      };
+    }
+
+    case 'lineCount': {
+      const bounds = countLineBounds(constraint, domains);
+
+      return {
+        kind: 'lineCount',
         ruleId: constraint.rule.id,
         bounds,
         possible: comparatorCanBeSatisfied(bounds, constraint.rule.count),
@@ -180,6 +210,16 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
         cells: cellsForRegionRule(rule, puzzle),
       };
 
+    case 'lineCount': {
+      const line = cellsForLineRule(rule, puzzle);
+      return {
+        kind: 'lineCount',
+        rule,
+        cells: line.cells,
+        dynamicScope: line.dynamicScope,
+      };
+    }
+
     default:
       return assertNever(rule);
   }
@@ -192,6 +232,74 @@ function cellsForRegionRule(rule: RegionCountRule, puzzle: PuzzleDefinition): re
   }
 
   return regionCells(region, puzzle.board);
+}
+
+export function countLineBounds(
+  constraint: LineCountConstraint,
+  domains: DomainState,
+): CountBounds {
+  if (!constraint.dynamicScope) {
+    return countKindBounds(constraint.cells, constraint.rule.target, domains);
+  }
+
+  if (!lineConstraintScopeComplete(constraint, domains)) {
+    return { minimum: 0, maximum: countKindBounds(constraint.cells, constraint.rule.target, domains).maximum };
+  }
+
+  return countKindBounds(visibleDynamicLineCells(constraint, domains), constraint.rule.target, domains);
+}
+
+export function lineConstraintScopeComplete(
+  constraint: LineCountConstraint,
+  domains: DomainState,
+): boolean {
+  return constraint.cells.every((cellId) => {
+    const mask = domains[cellId];
+    return mask !== undefined && isSingleton(mask);
+  });
+}
+
+function visibleDynamicLineCells(
+  constraint: LineCountConstraint,
+  domains: DomainState,
+): readonly CellId[] {
+  if (constraint.rule.scope.kind !== 'ray') return constraint.cells;
+
+  const blockerKinds = new Set(constraint.rule.scope.stopAtKinds ?? []);
+  const visible: CellId[] = [];
+
+  for (const cellId of constraint.cells) {
+    const kind = singletonKind(domains[cellId]);
+    if (kind !== null && blockerKinds.has(kind)) break;
+    visible.push(cellId);
+  }
+
+  return visible;
+}
+
+function cellsForLineRule(
+  rule: LineCountRule,
+  puzzle: PuzzleDefinition,
+): { readonly cells: readonly CellId[]; readonly dynamicScope: boolean } {
+  switch (rule.scope.kind) {
+    case 'row':
+    case 'column':
+      return {
+        cells: lineCells(rule.scope, puzzle.board),
+        dynamicScope: false,
+      };
+    case 'ray':
+      break;
+  }
+
+  if (rule.origin === undefined) {
+    throw new Error(`Rule ${rule.id} must include origin for a ray scope.`);
+  }
+
+  return {
+    cells: rayCells(rule.origin, rule.scope.direction, puzzle.board),
+    dynamicScope: (rule.scope.stopAtKinds ?? []).length > 0,
+  };
 }
 
 function evaluateForEachEntryBounds(

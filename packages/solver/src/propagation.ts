@@ -11,13 +11,16 @@ import type { DomainMask, DomainState } from './bitset.js';
 import {
   comparatorCanBeSatisfied,
   countKindBounds,
+  countLineBounds,
   evaluateConstraintBounds,
+  lineConstraintScopeComplete,
 } from './constraints.js';
 import type {
   CompiledConstraint,
   CountBounds,
   ForEachCountConstraint,
   GlobalCountConstraint,
+  LineCountConstraint,
   RegionCountConstraint,
 } from './constraints.js';
 import type { SolveInput } from './types.js';
@@ -179,6 +182,8 @@ function propagateConstraint(
       return propagateForEachCount(state, trail, constraint);
     case 'regionCount':
       return propagateRegionCount(state, trail, constraint);
+    case 'lineCount':
+      return propagateLineCount(state, trail, constraint);
   }
 }
 
@@ -246,6 +251,28 @@ function propagateRegionCount(
   constraint: RegionCountConstraint,
 ): ConstraintPropagation {
   const bounds = countKindBounds(constraint.cells, constraint.rule.target, state.domains as DomainState);
+
+  return enforceTargetCount(
+    state,
+    trail,
+    constraint.cells,
+    constraint.rule.target,
+    constraint.rule.count,
+    bounds,
+    constraint.rule.id,
+  );
+}
+
+function propagateLineCount(
+  state: SolverState,
+  trail: Trail,
+  constraint: LineCountConstraint,
+): ConstraintPropagation {
+  if (constraint.dynamicScope && !lineConstraintScopeComplete(constraint, state.domains as DomainState)) {
+    return { changed: false, contradiction: null };
+  }
+
+  const bounds = countLineBounds(constraint, state.domains as DomainState);
 
   return enforceTargetCount(
     state,

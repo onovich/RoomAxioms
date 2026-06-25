@@ -47,6 +47,20 @@ describe('rule text helpers', () => {
     expect(ruleChip(rule)).toBe('north-wing：有 1 名访客')
     expect(rulePlainText(rule)).toBe('north-wing区域，有 1 名访客。')
   })
+
+  it('renders line count rules with row labels', () => {
+    const rule: RuleDefinition = {
+      id: 'LR1',
+      type: 'lineCount',
+      scope: { kind: 'row', index: 1 },
+      target: 'guest',
+      count: { op: 'lte', value: 1 },
+      presentation: { title: 'Row limit' },
+    }
+
+    expect(ruleChip(rule)).toBe('第 2 行：最多有 1 名访客')
+    expect(rulePlainText(rule)).toBe('第 2 行，最多有 1 名访客。')
+  })
 })
 
 function globalRule(): RuleDefinition {

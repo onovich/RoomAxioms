@@ -1,10 +1,11 @@
-import { allCells, neighbors, regionCells, sortCellIds } from '@room-axioms/domain';
+import { allCells, lineCells, neighbors, rayCells, regionCells, sortCellIds } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
   Comparator,
   ForEachCountRule,
   GlobalCountRule,
+  LineCountRule,
   Observation,
   PuzzleDefinition,
   RegionCountRule,
@@ -60,6 +61,10 @@ export function summarizeRegionCount(state: KnowledgeState, rule: RegionCountRul
   return summarizeCountInCells(state, rule, regionCells(region, state.puzzle.board));
 }
 
+export function summarizeLineCount(state: KnowledgeState, rule: LineCountRule): CountSummary {
+  return summarizeCountInCells(state, rule, lineScopeCells(state, rule));
+}
+
 export function summarizeForEachScope(
   state: KnowledgeState,
   rule: ForEachCountRule,
@@ -70,7 +75,7 @@ export function summarizeForEachScope(
 
 export function summarizeCountInCells(
   state: KnowledgeState,
-  rule: GlobalCountRule | ForEachCountRule | RegionCountRule,
+  rule: GlobalCountRule | ForEachCountRule | RegionCountRule | LineCountRule,
   scopeCellIds: readonly CellId[],
 ): CountSummary {
   const index = createKnowledgeIndex(state);
@@ -139,6 +144,20 @@ export function regionScopePremise(rule: RegionCountRule, scopeCellIds: readonly
   };
 }
 
+export function lineScopePremise(rule: LineCountRule, scopeCellIds: readonly CellId[]): ProofPremise {
+  const label =
+    rule.scope.kind === 'ray'
+      ? `${rule.id} ${rule.scope.direction} ray from ${rule.origin ?? 'unknown'}: ${scopeCellIds.join(', ')}`
+      : `${rule.id} ${rule.scope.kind} ${rule.scope.index}: ${scopeCellIds.join(', ')}`;
+
+  return {
+    kind: 'scope',
+    label,
+    cellIds: scopeCellIds,
+    ruleIds: [rule.id],
+  };
+}
+
 export function countPremise(summary: CountSummary): ProofPremise {
   return {
     kind: 'count',
@@ -151,6 +170,33 @@ export function countPremise(summary: CountSummary): ProofPremise {
     cellIds: summary.scopeCellIds,
     ruleIds: [summary.ruleId],
   };
+}
+
+function lineScopeCells(state: KnowledgeState, rule: LineCountRule): readonly CellId[] {
+  switch (rule.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(rule.scope, state.puzzle.board);
+    case 'ray':
+      break;
+  }
+
+  if (rule.origin === undefined) throw new Error(`Rule ${rule.id} must include origin for a ray scope.`);
+
+  const cells = rayCells(rule.origin, rule.scope.direction, state.puzzle.board);
+  const stopAtKinds = new Set(rule.scope.stopAtKinds ?? []);
+  if (stopAtKinds.size === 0) return cells;
+
+  const observations = createKnowledgeIndex(state).observationsByCell;
+  const visible: CellId[] = [];
+
+  for (const cellId of cells) {
+    const observedKind = observations.get(cellId)?.kind;
+    if (observedKind !== undefined && stopAtKinds.has(observedKind)) break;
+    visible.push(cellId);
+  }
+
+  return visible;
 }
 
 export function comparatorBounds(comparator: Comparator): CountBounds {

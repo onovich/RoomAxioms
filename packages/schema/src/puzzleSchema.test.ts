@@ -130,4 +130,62 @@ describe('puzzleDefinitionSchema', () => {
     expect(result.ok).toBe(false)
     expect(result.issues.map((issue) => issue.code)).toContain('RULE_REGION_UNKNOWN')
   })
+
+  it('accepts row and ray line count rules', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      allowedKinds: ['empty', 'mirror', 'guest'],
+      rules: [
+        {
+          id: 'LR1',
+          type: 'lineCount',
+          scope: { kind: 'row', index: 0 },
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'First row has one guest' },
+        },
+        {
+          id: 'LR2',
+          type: 'lineCount',
+          origin: 'A1',
+          scope: { kind: 'ray', direction: 'east', stopAtKinds: ['mirror'] },
+          target: 'guest',
+          count: { op: 'lte', value: 1 },
+          presentation: { title: 'Sightline has at most one guest' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects line count rules with invalid board references', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      rules: [
+        {
+          id: 'LR1',
+          type: 'lineCount',
+          scope: { kind: 'column', index: 3 },
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Missing column' },
+        },
+        {
+          id: 'LR2',
+          type: 'lineCount',
+          scope: { kind: 'ray', direction: 'east' },
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Ray without origin' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.issues.map((issue) => issue.code)).toEqual([
+      'LINE_SCOPE_OUT_OF_BOARD',
+      'LINE_RAY_ORIGIN_MISSING',
+    ])
+  })
 })

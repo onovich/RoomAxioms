@@ -120,6 +120,36 @@ describe('region count human techniques', () => {
   });
 });
 
+describe('line count human techniques', () => {
+  it('derives safe cells from a blocker-aware ray count when the visible guest count is saturated', () => {
+    const state = makeState({
+      board: { width: 4, height: 3 },
+      allowedKinds: ['empty', 'mirror', 'guest'],
+      rules: [
+        lineCountRule(
+          'LR1',
+          { kind: 'ray', direction: 'east', stopAtKinds: ['mirror'] },
+          'guest',
+          { op: 'eq', value: 1 },
+          'A1',
+        ),
+      ],
+      observations: [
+        { cellId: 'B1', kind: 'guest' },
+        { cellId: 'D1', kind: 'mirror' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle: state.puzzle, observations: state.observations });
+
+    expect(conclusionsFor(deductions, 'LINE_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'C1' },
+    ]);
+    expect(forced.safe).toEqual(['C1']);
+    expect(forced.guests).toEqual([]);
+  });
+});
+
 describe('local count human techniques', () => {
   it('derives safe cells when a local guest count is saturated', () => {
     const state = makeState({
@@ -341,6 +371,24 @@ function regionCountRule(
     target,
     count,
     presentation: { title: `${regionId} ${target} count` },
+  };
+}
+
+function lineCountRule(
+  id: string,
+  scope: Extract<RuleDefinition, { readonly type: 'lineCount' }>['scope'],
+  target: CellKind,
+  count: Comparator,
+  origin?: CellId,
+): RuleDefinition {
+  return {
+    id,
+    type: 'lineCount',
+    ...(origin === undefined ? {} : { origin }),
+    scope,
+    target,
+    count,
+    presentation: { title: `${target} line count` },
   };
 }
 

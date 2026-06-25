@@ -516,6 +516,19 @@ function renameRuleKinds(
     }
   }
 
+  if (rule.type === 'lineCount') {
+    return {
+      ...rule,
+      scope: rule.scope.kind === 'ray'
+        ? {
+            ...rule.scope,
+            stopAtKinds: rule.scope.stopAtKinds?.map(rename),
+          }
+        : rule.scope,
+      target: rename(rule.target),
+    }
+  }
+
   return {
     ...rule,
     subject: rename(rule.subject),
