@@ -14,7 +14,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Internal generator spike prototypes in `packages/generator` as private `@room-axioms/generator`
 - Private authoring CLI in `packages/authoring` as `@room-axioms/authoring`
-- Ten validated shipped cases in `content/cases`
+- Validated and quarantined case files in `content/cases`
 - Additive region, sightline/blocker, anchor-frontier, and internal contaminated-record verification mechanics
 - Private Phase 12 experimental difference fixture in `content/experimental/phase-12`
 - Private Phase 13 experimental difference candidates in `content/experimental/phase-13`
@@ -39,13 +39,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last accepted phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
-- Current executor result: Phase 23 dispatched for execution
-- Final report: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`
-- Active executor phase: Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates
+- Last completed check: Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates, accepted with blocker
+- Current executor result: Phase 23 returned `READY_FOR_CHECK_WITH_BLOCKER`; no next executor phase has been dispatched yet
+- Final report: `docs/phase-23-difficulty-4-plus-puzzle-expansion-final-report.md`
+- Active executor phase: none
 - Guide: `docs/phase-23-difficulty-4-plus-puzzle-expansion-goal-mode-execution-guide.md`
-- Active budget: 40 executor rounds
-- Result: Phase 22 accepted the 10-case expressive-mechanics selector; Phase 23 now targets user-rated difficulty improvements, copy repair, degeneracy gates, and an attempted expansion of 20 target-difficulty plus 10 super-hard cases.
+- Completed budget: 40 executor rounds
+- Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, promoted `case-021` as the only honest target-4 case, and documented that 20 target promotions plus 10 super-hard promotions are blocked under the current mechanics/content method.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

@@ -42,13 +42,13 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 22 - Expressive Mechanics And Content Expansion Lab, PASS, final commit `9ab415d`.
-- Current executor result: Phase 23 dispatched for execution.
-- Active guide: `docs/phase-23-difficulty-4-plus-puzzle-expansion-goal-mode-execution-guide.md`.
-- Executor budget: 40 rounds.
-- Executor status: executing user-rated difficulty and content-quality expansion.
-- Last accepted final report: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`.
-- Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, and `case-020`.
+- Recently checked: Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates, accepted with blocker, final commit `1ba3c1d`.
+- Current executor result: none; Phase 23 blocker has been accepted and no next executor phase has been dispatched yet.
+- Active guide: none.
+- Executor budget: none active.
+- Executor status: idle; awaiting planner/user decision for Phase 24 or another direction.
+- Last completed final report: `docs/phase-23-difficulty-4-plus-puzzle-expansion-final-report.md`.
+- Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
 - Phase 14 experimental content: `content/experimental/phase-14/`; not promoted to shipped content because the retained-difference candidate still failed proof/final uniqueness and the repaired candidates erased the need for `LOCAL_SCOPE_DIFFERENCE`.
@@ -62,6 +62,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 21 result: promoted two distinct new cases, `case-013` and `case-014`, preserving `case-004`, `case-011`, and `case-012`; the final selector is `case-004`, `case-011`, `case-013`, `case-012`, and `case-014`, all passing anti-clone and novelty gates.
 - Phase 22 result: region/zone, sightline/blocker, anchor-frontier, and high-tier contaminated-record verifier support are implemented and accepted; the player selector now has 10 anti-clone-checked cases (`case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, `case-020`) preserving `case-004` as default; contaminated-record content remains internal verifier evidence only.
 - Phase 23 target: encode the user's difficulty ratings and failure modes into stricter authoring gates, fix copy and `case-019`, reject direct edge/sightline giveaways, and attempt 20 new 4/5 cases plus 10 super-hard 6-7 cases without padding or fabricated calibration.
+- Phase 23 result: accepted with blocker. The phase produced stricter difficulty/degeneracy gates, localized copy fixes, selector tiering, and one honest target-4 promotion (`case-021`); `case-019` is quarantined from the player selector; the requested 20 target-4 and 10 super-hard promotions remain blocked by current mechanics/content-production limits.
 - Planned Phase 24 direction: expand the rule grammar only after Phase 23 exposes the real bottlenecks; favor constraints that make rules share variables and create multi-step overlapping proof frontiers, not one-off syntax.
 - Planned Phase 25 direction: build a maintainer-facing authoring editor and live diagnostics workbench so level design becomes an inspectable human-in-the-loop workflow rather than pure AI generation.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
@@ -93,7 +94,7 @@ These are accepted as candidates, not active execution scope:
 - Anti-clone ladder repair budget: 16 rounds, covering Phase 20, completed.
 - Distinct puzzle ladder production budget: 16 rounds, covering Phase 21, completed.
 - Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22, completed.
-- Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23.
+- Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23, completed with blocker.
 - Rule grammar expressiveness expansion budget: 24 rounds, reserved for Phase 24 after Phase 23 acceptance.
 - Authoring editor and live diagnostics workbench budget: 28 rounds, reserved for Phase 25 after Phase 24 acceptance or an explicit user reprioritization.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
