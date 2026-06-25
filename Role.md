@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-26T00:11:28+08:00
+updated_at: 2026-06-26T01:42:10+08:00
 
 planner:
   role: architect
@@ -35,9 +35,9 @@ idempotency:
   last_check_report: docs/phase-21-distinct-puzzle-ladder-production-final-report.md
   last_check_commit: 760686a
   last_check_at: 2026-06-25T23:46:48+08:00
-  last_executor_report_commit: 760686a
+  last_executor_report_commit: e5a20b7
   last_executor_report_status: READY_FOR_CHECK
-  last_executor_report_phase: Phase 21 - Distinct Puzzle Ladder Production
-  last_executor_report: docs/phase-21-distinct-puzzle-ladder-production-final-report.md
-  last_executor_report_at: 2026-06-25T23:46:48+08:00
-  last_executor_report_guide: docs/phase-21-distinct-puzzle-ladder-production-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
+  last_executor_report: docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md
+  last_executor_report_at: 2026-06-26T01:42:10+08:00
+  last_executor_report_guide: docs/phase-22-expressive-mechanics-and-content-expansion-lab-goal-mode-execution-guide.md
