@@ -37,6 +37,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 21 - Distinct Puzzle Ladder Production | Produce new player-facing cases from distinct proof skeletons under Phase 20 anti-clone gates, promoting only genuinely novel cases | Phase 20 follow-up | 16 rounds |
 | Phase 22 - Expressive Mechanics And Content Expansion Lab | Add region, sightline, anchor-frontier, and high-tier contaminated-record mechanics, then use them to try an honest 10-20 case selector | User-approved mechanics expansion | 24 rounds |
 | Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates | Turn user playtest ratings into stricter difficulty, copy, degeneracy, and anti-giveaway gates, then attempt 20 target-difficulty and 10 super-hard new cases | User rejection of low-difficulty Phase 22 cases | 40 rounds |
+| Phase 24 - Rule Grammar Expressiveness Expansion | Expand the rule grammar deliberately after Phase 23 evidence shows which puzzle interactions remain too shallow; prioritize shared variables, overlapping scopes, conditional/comparative constraints, and contaminated-record variants that create deeper proof frontiers | User direction: rule grammar expansion is the next planning priority | 24 rounds |
+| Phase 25 - Authoring Editor And Live Diagnostics Workbench | Build a maintainer-facing level editor plus immediate diagnostics for uniqueness, no-guess proof, rule contribution, degeneracy, effective board, clone risk, and difficulty signals so human authors can design faster without relying on bulk AI generation | User direction: editor + instant diagnostics is the next-stage plan | 28 rounds |
 
 ## Current Execution State
 
@@ -60,7 +62,19 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 21 result: promoted two distinct new cases, `case-013` and `case-014`, preserving `case-004`, `case-011`, and `case-012`; the final selector is `case-004`, `case-011`, `case-013`, `case-012`, and `case-014`, all passing anti-clone and novelty gates.
 - Phase 22 result: region/zone, sightline/blocker, anchor-frontier, and high-tier contaminated-record verifier support are implemented and accepted; the player selector now has 10 anti-clone-checked cases (`case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-019`, `case-020`) preserving `case-004` as default; contaminated-record content remains internal verifier evidence only.
 - Phase 23 target: encode the user's difficulty ratings and failure modes into stricter authoring gates, fix copy and `case-019`, reject direct edge/sightline giveaways, and attempt 20 new 4/5 cases plus 10 super-hard 6-7 cases without padding or fabricated calibration.
+- Planned Phase 24 direction: expand the rule grammar only after Phase 23 exposes the real bottlenecks; favor constraints that make rules share variables and create multi-step overlapping proof frontiers, not one-off syntax.
+- Planned Phase 25 direction: build a maintainer-facing authoring editor and live diagnostics workbench so level design becomes an inspectable human-in-the-loop workflow rather than pure AI generation.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+
+## Candidate Future Directions
+
+These are accepted as candidates, not active execution scope:
+
+- Human-authored proof skeletons with solver-assisted map/fact filling.
+- A bad-case corpus for rejected patterns such as mirrors, padding, one-rule solutions, singleton sightlines, and direct edge giveaways.
+- Batch candidate generation plus ruthless automated filtering, with AI only reviewing survivors.
+- Theme/VN packaging integration after the puzzle production loop is stable.
+- Public editor or UGC only after private authoring and validation workflows are mature.
 
 ## Total Budget
 
@@ -80,4 +94,6 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Distinct puzzle ladder production budget: 16 rounds, covering Phase 21, completed.
 - Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22, completed.
 - Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23.
+- Rule grammar expressiveness expansion budget: 24 rounds, reserved for Phase 24 after Phase 23 acceptance.
+- Authoring editor and live diagnostics workbench budget: 28 rounds, reserved for Phase 25 after Phase 24 acceptance or an explicit user reprioritization.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
