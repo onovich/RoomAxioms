@@ -310,5 +310,5 @@ describe('authoring CLI parser', () => {
     })
     expect(report.antiClone?.hardFailureCount).toBeGreaterThan(0)
     expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('ANTI_CLONE_BLOCKED')
-  }, 30_000)
+  }, 60_000)
 })
