@@ -1,4 +1,12 @@
-import type { BoardSize, CellId, Coord, ScopeKind } from './types.js'
+import type {
+  BoardSize,
+  CellId,
+  Coord,
+  Direction,
+  RegionDefinition,
+  ScopeKind,
+  StaticLineScope,
+} from './types.js'
 
 export function columnsForWidth(width: number): readonly string[] {
   assertPositiveInteger(width, 'width')
@@ -59,6 +67,64 @@ export function allCells(size: BoardSize): readonly CellId[] {
   return cells
 }
 
+export function regionCells(region: RegionDefinition, size: BoardSize): readonly CellId[] {
+  const canonical = region.cells.map((cellId) => formatCellId(parseCellId(cellId, size), size))
+
+  return sortCellIds(new Set(canonical), size)
+}
+
+export function lineCells(scope: StaticLineScope, size: BoardSize): readonly CellId[] {
+  if (scope.kind === 'row') return rowCells(scope.index, size)
+  return columnCells(scope.index, size)
+}
+
+export function rowCells(rowIndex: number, size: BoardSize): readonly CellId[] {
+  assertBoardSize(size)
+  assertZeroBasedIndex(rowIndex, size.height, 'row')
+
+  return Array.from({ length: size.width }, (_, x) => formatCellId({ x, y: rowIndex }, size))
+}
+
+export function columnCells(columnIndex: number, size: BoardSize): readonly CellId[] {
+  assertBoardSize(size)
+  assertZeroBasedIndex(columnIndex, size.width, 'column')
+
+  return Array.from({ length: size.height }, (_, y) => formatCellId({ x: columnIndex, y }, size))
+}
+
+export interface RayCellsOptions {
+  readonly stopCells?: readonly CellId[]
+  readonly includeStopCell?: boolean
+}
+
+export function rayCells(
+  originId: CellId,
+  direction: Direction,
+  size: BoardSize,
+  options: RayCellsOptions = {},
+): readonly CellId[] {
+  const origin = parseCellId(originId, size)
+  const delta = directionDelta(direction)
+  const stopCells = new Set(
+    (options.stopCells ?? []).map((cellId) => formatCellId(parseCellId(cellId, size), size)),
+  )
+  const cells: CellId[] = []
+  let next = { x: origin.x + delta.x, y: origin.y + delta.y }
+
+  while (isInside(next, size)) {
+    const cellId = formatCellId(next, size)
+    if (stopCells.has(cellId)) {
+      if (options.includeStopCell === true) cells.push(cellId)
+      break
+    }
+
+    cells.push(cellId)
+    next = { x: next.x + delta.x, y: next.y + delta.y }
+  }
+
+  return cells
+}
+
 export function neighbors(
   id: CellId,
   scope: Exclude<ScopeKind, 'global'>,
@@ -96,5 +162,24 @@ function assertBoardSize(size: BoardSize): void {
 function assertPositiveInteger(value: number, name: string): void {
   if (!Number.isInteger(value) || value < 1) {
     throw new Error(`Board ${name} must be a positive integer: ${value}`)
+  }
+}
+
+function assertZeroBasedIndex(value: number, upperBound: number, name: string): void {
+  if (!Number.isInteger(value) || value < 0 || value >= upperBound) {
+    throw new Error(`Board ${name} index is outside the board: ${value}`)
+  }
+}
+
+function directionDelta(direction: Direction): Coord {
+  switch (direction) {
+    case 'north':
+      return { x: 0, y: -1 }
+    case 'south':
+      return { x: 0, y: 1 }
+    case 'east':
+      return { x: 1, y: 0 }
+    case 'west':
+      return { x: -1, y: 0 }
   }
 }

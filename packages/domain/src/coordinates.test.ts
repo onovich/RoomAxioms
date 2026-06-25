@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
   allCells,
+  columnCells,
   columnsForWidth,
   formatCellId,
+  lineCells,
   neighbors,
   parseCellId,
+  rayCells,
+  regionCells,
+  rowCells,
   sortCellIds,
 } from './index.js'
 
@@ -79,5 +84,33 @@ describe('neighborhoods', () => {
     expect(neighbors('A1', 'orthogonal', size)).toEqual(['B1', 'A2'])
     expect(neighbors('B1', 'orthogonal', size)).toEqual(['A1', 'C1', 'B2'])
     expect(neighbors('B2', 'orthogonal', size)).toEqual(['B1', 'A2', 'C2', 'B3'])
+  })
+})
+
+describe('expressive traversal helpers', () => {
+  it('collects region cells as canonical sorted unique board cells', () => {
+    expect(regionCells({
+      id: 'east-wing',
+      title: 'East wing',
+      cells: ['D2', 'b1', 'B1', 'C3'],
+    }, size)).toEqual(['B1', 'D2', 'C3'])
+  })
+
+  it('collects row and column line cells by zero-based index', () => {
+    expect(rowCells(1, size)).toEqual(['A2', 'B2', 'C2', 'D2'])
+    expect(columnCells(2, size)).toEqual(['C1', 'C2', 'C3', 'C4'])
+    expect(lineCells({ kind: 'row', index: 3 }, size)).toEqual(['A4', 'B4', 'C4', 'D4'])
+    expect(lineCells({ kind: 'column', index: 0 }, size)).toEqual(['A1', 'A2', 'A3', 'A4'])
+    expect(() => rowCells(4, size)).toThrow(/outside the board/)
+    expect(() => columnCells(-1, size)).toThrow(/outside the board/)
+  })
+
+  it('walks directional rays and stops before blocker cells by default', () => {
+    expect(rayCells('B2', 'east', size)).toEqual(['C2', 'D2'])
+    expect(rayCells('B2', 'west', size)).toEqual(['A2'])
+    expect(rayCells('B2', 'north', size)).toEqual(['B1'])
+    expect(rayCells('B2', 'south', size)).toEqual(['B3', 'B4'])
+    expect(rayCells('A2', 'east', size, { stopCells: ['C2'] })).toEqual(['B2'])
+    expect(rayCells('A2', 'east', size, { stopCells: ['C2'], includeStopCell: true })).toEqual(['B2', 'C2'])
   })
 })

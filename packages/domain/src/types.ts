@@ -16,6 +16,8 @@ export type PlayerMark = 'guest' | 'safe'
 
 export type ScopeKind = 'global' | 'orthogonal' | 'adjacent'
 
+export type Direction = 'north' | 'south' | 'east' | 'west'
+
 export type Comparator =
   | { readonly op: 'eq'; readonly value: number }
   | { readonly op: 'gte'; readonly value: number }
@@ -40,6 +42,24 @@ export interface LocalScope {
 
 export type Scope = { readonly kind: 'global' } | LocalScope
 
+export interface StaticLineScope {
+  readonly kind: 'row' | 'column'
+  readonly index: number
+}
+
+export interface RayScope {
+  readonly kind: 'ray'
+  readonly direction: Direction
+  readonly stopAtKinds?: readonly CellKind[]
+}
+
+export interface RegionReferenceScope {
+  readonly kind: 'region'
+  readonly regionId: string
+}
+
+export type ExpressiveScope = LocalScope | StaticLineScope | RayScope | RegionReferenceScope
+
 export interface ForEachCountRule {
   readonly id: string
   readonly type: 'forEachCount'
@@ -51,6 +71,70 @@ export interface ForEachCountRule {
 }
 
 export type RuleDefinition = GlobalCountRule | ForEachCountRule
+
+export interface RegionDefinition {
+  readonly id: string
+  readonly title: string
+  readonly cells: readonly CellId[]
+}
+
+export interface AnchorDefinition {
+  readonly id: string
+  readonly title: string
+  readonly subject: CellKind
+}
+
+export interface RecordDefinition {
+  readonly id: string
+  readonly title: string
+  readonly ruleIds: readonly string[]
+}
+
+export interface RegionCountRule {
+  readonly id: string
+  readonly type: 'regionCount'
+  readonly regionId: string
+  readonly target: CellKind
+  readonly count: Comparator
+  readonly presentation: RulePresentation
+}
+
+export interface LineCountRule {
+  readonly id: string
+  readonly type: 'lineCount'
+  readonly subject?: CellKind
+  readonly origin?: CellId
+  readonly scope: StaticLineScope | RayScope
+  readonly target: CellKind
+  readonly count: Comparator
+  readonly presentation: RulePresentation
+}
+
+export interface AnchorCountRule {
+  readonly id: string
+  readonly type: 'anchorCount'
+  readonly anchorId: string
+  readonly scope: ExpressiveScope
+  readonly target: CellKind
+  readonly count: Comparator
+  readonly presentation: RulePresentation
+}
+
+export interface RecordSetRule {
+  readonly id: string
+  readonly type: 'recordSet'
+  readonly recordIds: readonly string[]
+  readonly falseRecords: { readonly op: 'eq' | 'lte'; readonly value: 1 }
+  readonly presentation: RulePresentation
+}
+
+export type ExpressiveRuleDefinition =
+  | RegionCountRule
+  | LineCountRule
+  | AnchorCountRule
+  | RecordSetRule
+
+export type AnyRuleDefinition = RuleDefinition | ExpressiveRuleDefinition
 
 export interface PuzzleMetadata {
   readonly difficulty: 1 | 2 | 3 | 4 | 5
@@ -67,6 +151,9 @@ export interface PuzzleDefinition {
   readonly caseName?: string
   readonly board: BoardSize
   readonly allowedKinds: readonly CellKind[]
+  readonly regions?: readonly RegionDefinition[]
+  readonly anchors?: readonly AnchorDefinition[]
+  readonly records?: readonly RecordDefinition[]
   readonly rules: readonly RuleDefinition[]
   readonly initialReveals: readonly CellId[]
   readonly target: Readonly<Record<CellId, CellKind>>
