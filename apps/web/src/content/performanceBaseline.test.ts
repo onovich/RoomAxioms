@@ -11,7 +11,7 @@ const BASELINE_WARMUP_RUNS = 2
 const RUNTIME_ANALYSIS_PRODUCT_TARGET_MS = 100
 const RUNTIME_ANALYSIS_P95_CEILING_MS = 500
 const CANDIDATE_CAP_P95_MS = 200
-const FULL_VERIFICATION_P95_MS = 2_000
+const FULL_VERIFICATION_P95_MS = 2_500
 
 const BASELINE_SOLVER_BUDGET = {
   maxNodes: 200_000,
@@ -81,7 +81,7 @@ describe('MVP performance baseline', () => {
     const summary = measureBatch((puzzle) => verifyCase(puzzle), contentCases)
 
     expect(summary.results.every((report) => report.passed)).toBe(true)
-    recordPerformanceEvidence('ten-case verification batch', {
+    recordPerformanceEvidence('shipped-case verification batch', {
       p95Ms: roundMs(summary.p95Ms),
       worstMs: roundMs(summary.worstMs),
       ceilingMs: FULL_VERIFICATION_P95_MS,

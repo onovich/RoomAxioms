@@ -15,6 +15,7 @@ describe('case content verification harness', () => {
       'case-017',
       'case-018',
       'case-020',
+      'case-021',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })
@@ -23,7 +24,7 @@ describe('case content verification harness', () => {
     const internalCasePrefix = /^phase-\d+-/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(9)
+    expect(contentCases).toHaveLength(10)
     expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
     expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
     expect(contentCases.some((puzzle) => [
@@ -275,6 +276,51 @@ describe('case content verification harness', () => {
       runtime: {
         status: 'ready',
         candidateGuestLayouts: 4,
+        guestLayoutUnique: false,
+        noGuess: true,
+        humanExplainable: true,
+        warningCodes: [],
+      },
+    })
+    expect(report.stats.truncated).toBe(false)
+  })
+
+  it('records the promoted case-021 multi-wave centerline evidence', () => {
+    const report = verifyCaseFixture(getCaseById('case-021'))
+
+    expect(report.passed).toBe(true)
+    expect(report.issues).toEqual([])
+    expect(report).toMatchObject({
+      id: 'case-021',
+      title: '客房 21：中线清扫链',
+      initial: {
+        revealedCells: ['B1', 'D1', 'B3', 'D3', 'B4', 'D4'],
+        satisfiable: true,
+        candidateGuestLayouts: 56,
+      },
+      final: {
+        unique: true,
+        guestCells: ['A4', 'A5', 'E5'],
+      },
+      proof: {
+        noGuess: true,
+        humanExplainable: true,
+        guestLayoutUniqueAtEnd: true,
+        finalGuestCells: ['A4', 'A5', 'E5'],
+        waveCount: 4,
+        deductionCount: 23,
+        techniqueIds: [
+          'ANCHOR_COUNT_SATURATED',
+          'KNOWN_SAFE_FROM_NON_GUEST_OBJECT',
+          'LOCAL_COUNT_SATURATED',
+          'REGION_COUNT_ALL_REMAINING',
+          'UNIQUE_TARGET_NEIGHBOR_INTERSECTION',
+        ],
+        issueCodes: [],
+      },
+      runtime: {
+        status: 'ready',
+        candidateGuestLayouts: 56,
         guestLayoutUnique: false,
         noGuess: true,
         humanExplainable: true,

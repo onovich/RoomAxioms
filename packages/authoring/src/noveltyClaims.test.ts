@@ -12,7 +12,7 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../.
 const manifestPath = resolve(repositoryRoot, 'content/novelty-claims.json')
 
 describe('novelty claim manifest', () => {
-  it('accepts the Phase 21 novelty manifest for useful baselines, promoted cases, and rejected suspects', () => {
+  it('accepts the novelty manifest for useful baselines, promoted cases, and rejected suspects', () => {
     const report = evaluateNoveltyClaimManifest(loadManifest(), [
       'case-004',
       'case-011',
@@ -23,6 +23,7 @@ describe('novelty claim manifest', () => {
       'case-017',
       'case-018',
       'case-020',
+      'case-021',
     ])
 
     expect(report.ok).toBe(true)
@@ -36,6 +37,7 @@ describe('novelty claim manifest', () => {
       'case-017',
       'case-018',
       'case-020',
+      'case-021',
     ])
     expect(report.rejectedPuzzleIds).toEqual([
       'case-001',

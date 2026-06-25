@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "id": "case-021",
+  "title": "客房 21：中线清扫链",
+  "caseName": "案卷 21 · 中线清扫链",
+  "board": {
+    "width": 5,
+    "height": 5
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "side-clear",
+      "title": "侧翼空区",
+      "cells": [
+        "A2",
+        "A3",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "id": "mirror-anchor",
+      "title": "镜面锚点",
+      "subject": "mirror"
+    },
+    {
+      "id": "bin-anchor",
+      "title": "清扫锚点",
+      "subject": "bin"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "三名访客",
+        "flavor": "房间里一共有 3 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "mirror",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "唯一镜面",
+        "flavor": "房间里一共有 1 面镜子。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "mirror",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶找镜",
+        "flavor": "每个酒瓶上下左右相邻格里恰好有 1 面镜子。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "酒瓶十字禁区",
+        "flavor": "每个酒瓶上下左右相邻格里没有未登记访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "anchorCount",
+      "anchorId": "mirror-anchor",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "镜面安静区",
+        "flavor": "每面已确认镜子周围一圈没有未登记访客。"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "anchorCount",
+      "anchorId": "bin-anchor",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "清扫十字区",
+        "flavor": "每个已确认清扫点上下左右没有未登记访客。"
+      }
+    },
+    {
+      "id": "R7",
+      "type": "regionCount",
+      "regionId": "side-clear",
+      "target": "empty",
+      "count": {
+        "op": "eq",
+        "value": 5
+      },
+      "presentation": {
+        "title": "侧翼空区",
+        "flavor": "侧翼空区里的 5 个格子全是空房。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "D1",
+    "B3",
+    "D3",
+    "B4",
+    "D4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "bottle",
+    "E1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "bin",
+    "D2": "empty",
+    "E2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "bin",
+    "D3": "empty",
+    "E3": "empty",
+    "A4": "guest",
+    "B4": "empty",
+    "C4": "bin",
+    "D4": "empty",
+    "E4": "empty",
+    "A5": "guest",
+    "B5": "empty",
+    "C5": "bin",
+    "D5": "empty",
+    "E5": "guest"
+  },
+  "metadata": {
+    "difficulty": 5,
+    "tags": [
+      "target-4",
+      "multi-wave",
+      "anchor-frontier",
+      "region",
+      "intersection"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Provisional 4+ ladder case; difficulty is uncalibrated until real playtest evidence exists."
+  }
+}

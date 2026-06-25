@@ -28,7 +28,7 @@ export interface RuntimeAnalyzerDependencies {
   readonly now?: () => number
 }
 
-const DEFAULT_CANDIDATE_LAYOUT_CAP = 20
+const DEFAULT_CANDIDATE_LAYOUT_CAP = 100
 const DEFAULT_SOLVER_OPTIONS = {
   maxNodes: 200_000,
   maxModels: 200_000,

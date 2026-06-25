@@ -141,6 +141,21 @@
       }
     },
     {
+      "puzzleId": "case-021",
+      "status": "accepted",
+      "novelty": "Four-wave centerline cleaning chain where two observed bottles identify the only mirror, the mirror opens a bin anchor chain, and a side-region empty count preserves high opening ambiguity without padding.",
+      "evidence": {
+        "reviewerNote": "Promoted as the first target 4+ ladder case because the accepted reveal set has 56 opening guest layouts, 4 proof waves, 23 deductions, 19 effective unknown cells, four material rule families, no redundant rules, and a degeneracy pass. The no-guess minimizer removes too many opening reveals and loses the Phase 23 difficulty gates, so the promoted reveal set is intentionally non-minimal.",
+        "gateEvidence": [
+          "phase-23-target-candidate-round-10",
+          "UNIQUE_TARGET_NEIGHBOR_INTERSECTION",
+          "ANCHOR_COUNT_SATURATED",
+          "REGION_COUNT_ALL_REMAINING",
+          "multi-wave-proof"
+        ]
+      }
+    },
+    {
       "puzzleId": "case-001",
       "status": "rejected",
       "novelty": "No accepted Phase 20 novelty claim.",
