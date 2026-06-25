@@ -14,12 +14,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Internal generator spike prototypes in `packages/generator` as private `@room-axioms/generator`
 - Private authoring CLI in `packages/authoring` as `@room-axioms/authoring`
-- Eight validated shipped cases in `content/cases`
+- Ten validated shipped cases in `content/cases`
+- Additive region, sightline/blocker, anchor-frontier, and internal contaminated-record verification mechanics
 - Private Phase 12 experimental difference fixture in `content/experimental/phase-12`
 - Private Phase 13 experimental difference candidates in `content/experimental/phase-13`
 - Private Phase 14 difference-retention candidates and evidence in `content/experimental/phase-14` and `docs/phase-14`
 - Private Phase 15 retained-difference candidates and promotion evidence in `content/experimental/phase-15` and `docs/phase-15`
-- Data-driven 8-case difficulty ladder with `case-004` as the default case
+- Data-driven 10-case selector with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
@@ -39,12 +40,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 ## Current Project Status
 
 - Last accepted phase: Phase 21 - Distinct Puzzle Ladder Production
-- Final report: `docs/phase-21-distinct-puzzle-ladder-production-final-report.md`
-- Status: Phase 22 ready for executor dispatch
+- Current executor result: Phase 22 - Expressive Mechanics And Content Expansion Lab ready for checker review
+- Final report: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-final-report.md`
 - Active executor phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
 - Guide: `docs/phase-22-expressive-mechanics-and-content-expansion-lab-goal-mode-execution-guide.md`
 - Budget: 24 executor rounds
-- Goal: add region, sightline, anchor-frontier, and high-tier contaminated-record mechanics, then use them to attempt an honest 10-20 case selector without padding or clone content.
+- Result: region, sightline/blocker, anchor-frontier, and internal contaminated-record verifier support are implemented; the selector now has 10 anti-clone-checked player-facing cases without promoted clone content.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
