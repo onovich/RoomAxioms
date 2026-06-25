@@ -21,7 +21,7 @@ describe('novelty claim manifest', () => {
 
     expect(report.ok).toBe(true)
     expect(report.acceptedPuzzleIds).toEqual(['case-004', 'case-011', 'case-012'])
-    expect(report.rejectedPuzzleIds).toEqual(['case-001', 'case-002', 'case-005', 'case-006'])
+    expect(report.rejectedPuzzleIds).toEqual(['case-001', 'case-002', 'case-003', 'case-005', 'case-006'])
   })
 
   it('reports missing required claims', () => {

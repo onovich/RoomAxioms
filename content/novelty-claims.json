@@ -54,6 +54,14 @@
       }
     },
     {
+      "puzzleId": "case-003",
+      "status": "rejected",
+      "novelty": "No accepted Phase 20 novelty claim.",
+      "evidence": {
+        "reviewerNote": "Phase 20 gates rejected it as an exact proof-trace and candidate-shrink clone of case-011."
+      }
+    },
+    {
       "puzzleId": "case-005",
       "status": "rejected",
       "novelty": "No accepted Phase 20 novelty claim.",

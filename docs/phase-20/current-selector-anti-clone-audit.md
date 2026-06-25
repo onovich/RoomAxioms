@@ -20,8 +20,7 @@ Result:
 - `case-001` / `case-005`: exact proof-trace collision.
 - `case-003` / `case-011`: exact proof-trace collision.
 - `case-004` / `case-006`: exact proof-trace collision.
-- Novelty manifest marks `case-001`, `case-002`, `case-005`, and `case-006` as rejected.
-- Novelty manifest has no accepted claim for `case-003`.
+- Novelty manifest marks `case-001`, `case-002`, `case-003`, `case-005`, and `case-006` as rejected.
 
 ## Reviewer-Blocking Evidence
 

@@ -25,6 +25,7 @@ Rejected Phase 19 suspects:
 
 - `case-001`
 - `case-002`
+- `case-003`
 - `case-005`
 - `case-006`
 
