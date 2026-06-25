@@ -33,15 +33,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 17 - MVP Release Closure And Honest Playtest Intake | Close the current 12-case MVP as a release candidate with release checklist, known limitations, honest playtest intake, smoke evidence, and release decision | Phase 16 follow-up | 6 rounds |
 | Phase 18 - Public Playtest Launch Package And Metadata Cleanup | Prepare an honest public playtest launch package, clean internal shipped-case metadata, and validate the release-candidate sharing surface without new product scope | Phase 17 follow-up | 6 rounds |
 | Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates | Replace filler/mirror cases with a real difficulty ladder, add automated content quality gates, and report the generator/authoring capability ceiling honestly | User playtest feedback + content quality follow-up | 14 rounds |
+| Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair | Repair Phase 19's rejected content by adding effective-board, proof-trace, shrink-signature, rule-impact, and novelty-claim gates before rebuilding the selector | User rejection of Phase 19 clone-like cases | 16 rounds |
 
 ## Current Execution State
 
-- Recently accepted: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates, PASS, final commit `c3b47ed`.
-- Current active phase: none.
-- Active guide: none.
-- Executor budget: none active.
-- Executor status: idle; awaiting planner/user decision for the next phase.
-- Final report: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`.
+- Recently accepted: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates, PASS, final commit `c3b47ed`, but the user rejected its newly promoted content as clone-like.
+- Current active phase: Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair.
+- Active guide: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-goal-mode-execution-guide.md`.
+- Executor budget: 16 rounds.
+- Executor status: ready for dispatch.
+- Final report target: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -52,6 +53,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
 - Phase 18 result: public playtest launch package is ready, internal shipped-case metadata is neutralized, the 12-case release candidate is preserved, and difficulty remains uncalibrated until real playtest evidence exists.
 - Phase 19 result: player-facing content is now an 8-case difficulty ladder; the trivial and mirror cases were replaced or removed from the selector; private authoring quality gates now cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
+- Phase 20 planned work: treat the user's rejection of Phase 19 additions as binding product feedback; add anti-clone gates for effective-board reduction, proof-trace fingerprints, candidate-shrink signatures, rule-impact vectors, and novelty claims; repair the selector without padding clone content.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -68,4 +70,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - MVP release closure budget: 6 rounds, covering Phase 17.
 - Public playtest launch package budget: 6 rounds, covering Phase 18.
 - High-quality puzzle ladder budget: 14 rounds, covering Phase 19, completed.
+- Anti-clone ladder repair budget: 16 rounds, covering Phase 20.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

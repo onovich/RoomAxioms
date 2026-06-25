@@ -40,11 +40,11 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 - Last accepted phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates
 - Final report: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`
-- Status: Phase 19 accepted by planner/checker; no next executor phase has been dispatched yet
-- Active executor phase: none
-- Guide: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md`
-- Completed budget: 14 executor rounds
-- Result: the player selector now presents an 8-case ladder; trivial/mirror cases were replaced or removed; quality gates cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
+- Status: Phase 20 ready for executor dispatch after user rejected Phase 19's clone-like promoted content
+- Active executor phase: Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair
+- Guide: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-goal-mode-execution-guide.md`
+- Budget: 16 executor rounds
+- Goal: add effective-board, proof-trace, candidate-shrink, rule-impact, and novelty-claim gates so padded maps and copied deduction flows cannot pass as new cases.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
