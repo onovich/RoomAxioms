@@ -30,6 +30,14 @@ export const rulePresentationSchema = z.strictObject({
   flavor: z.string().refine(hasNonBlankText, 'Rule presentation flavor must not be empty').optional(),
 })
 
+export const regionDefinitionSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  title: z.string().refine(hasNonBlankText, 'Region title must not be empty'),
+  cells: z.array(cellIdSchema).min(1).refine(hasUniqueValues, {
+    message: 'Region cells must be unique',
+  }),
+})
+
 export const globalScopeSchema = z.strictObject({
   kind: z.literal('global'),
 })
@@ -59,9 +67,19 @@ export const forEachCountRuleSchema = z.strictObject({
   presentation: rulePresentationSchema,
 })
 
+export const regionCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('regionCount'),
+  regionId: z.string().regex(ruleIdPattern),
+  target: cellKindSchema,
+  count: comparatorSchema,
+  presentation: rulePresentationSchema,
+})
+
 export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   globalCountRuleSchema,
   forEachCountRuleSchema,
+  regionCountRuleSchema,
 ])
 
 export const puzzleMetadataSchema = z.strictObject({
@@ -92,6 +110,9 @@ export const puzzleDefinitionSchema = z.strictObject({
     .refine(hasUniqueValues, { message: 'Allowed kinds must be unique' })
     .refine((kinds) => kinds.includes('empty'), { message: 'Allowed kinds must include empty' })
     .refine((kinds) => kinds.includes('guest'), { message: 'Allowed kinds must include guest' }),
+  regions: z.array(regionDefinitionSchema).refine((regions) => hasUniqueValues(regions.map((region) => region.id)), {
+    message: 'Region ids must be unique',
+  }).optional(),
   rules: z.array(ruleDefinitionSchema).min(1),
   initialReveals: z.array(cellIdSchema),
   target: z.record(z.string(), cellKindSchema),

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { allCells, neighbors } from '@room-axioms/domain'
+import { allCells, neighbors, regionCells } from '@room-axioms/domain'
 import { cellLabels } from '../data/case004'
 import type { AnalysisResult } from '../logic/analysis'
 import { createHint, kindIsInspectable, type Hint } from '../logic/hints'
@@ -301,6 +301,15 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
       if (rule.type === 'globalCount') {
         classes.push('scope-highlight')
+        return classes
+      }
+
+      if (rule.type === 'regionCount') {
+        const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId)
+        if (region !== undefined && regionCells(region, puzzle.board).includes(cellId)) {
+          classes.push('scope-highlight')
+        }
+        if (hint?.highlight === cellId) classes.push('hint-highlight')
         return classes
       }
 

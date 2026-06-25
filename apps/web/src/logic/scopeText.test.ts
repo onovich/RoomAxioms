@@ -33,6 +33,20 @@ describe('rule text helpers', () => {
     expect(ruleChip(rule)).toBe('上下左右邻格：没有访客')
     expect(rulePlainText(rule)).toBe('访客不在酒瓶的上下左右邻格。')
   })
+
+  it('renders region count rules with the region id', () => {
+    const rule: RuleDefinition = {
+      id: 'ZR1',
+      type: 'regionCount',
+      regionId: 'north-wing',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: 'North wing' },
+    }
+
+    expect(ruleChip(rule)).toBe('north-wing：有 1 名访客')
+    expect(rulePlainText(rule)).toBe('north-wing区域，有 1 名访客。')
+  })
 })
 
 function globalRule(): RuleDefinition {

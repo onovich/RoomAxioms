@@ -74,6 +74,34 @@ describe('constraint compilation and count bounds', () => {
     });
   });
 
+  it('computes region count bounds from named region cells', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [regionCountRule('north-guest', 'north-wing', 'guest', { op: 'eq', value: 1 })],
+    });
+    const initial = createInitialDomains(puzzle);
+    const guestAtA1 = setCellDomain(initial, 'A1', singletonMask('guest'));
+    const domains = setCellDomain(guestAtA1, 'B1', singletonMask('empty'));
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'regionCount',
+      ruleId: 'north-guest',
+      bounds: { minimum: 1, maximum: 2 },
+      possible: true,
+    });
+  });
+
   it('marks forced local subjects impossible when target bounds cannot satisfy the comparator', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -112,6 +140,7 @@ function makePuzzle(input: {
   readonly width: number;
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
+  readonly regions?: PuzzleDefinition['regions'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -120,6 +149,7 @@ function makePuzzle(input: {
     title: 'Solver Constraints Test',
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
+    ...(input.regions === undefined ? {} : { regions: input.regions }),
     rules: input.rules,
     initialReveals: [],
     target: {},
@@ -135,6 +165,22 @@ function globalCountRule(id: string, target: CellKind, count: Comparator): RuleD
   return {
     id,
     type: 'globalCount',
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function regionCountRule(
+  id: string,
+  regionId: string,
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'regionCount',
+    regionId,
     target,
     count,
     presentation: { title: id },

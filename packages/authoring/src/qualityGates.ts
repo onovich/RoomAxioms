@@ -2,6 +2,7 @@ import {
   allCells,
   formatCellId,
   parseCellId,
+  regionCells,
   sortCellIds,
   type BoardSize,
   type CellId,
@@ -1006,6 +1007,7 @@ function puzzleShapeSignature(puzzle: PuzzleDefinition, transform: BoardTransfor
     schemaVersion: puzzle.schemaVersion,
     board: puzzle.board,
     allowedKinds: [...puzzle.allowedKinds].sort(),
+    regions: transformedRegionSignatures(puzzle, transform),
     rules: puzzle.rules.map(ruleSignature).sort(),
     initialReveals: transformedSortedCells(puzzle.initialReveals, puzzle.board, transform),
     target: transformedTargetSignature(puzzle, transform),
@@ -1021,6 +1023,7 @@ function effectivePuzzleShapeSignature(
     schemaVersion: puzzle.schemaVersion,
     board: reduction.effectiveBoard,
     allowedKinds: [...puzzle.allowedKinds].sort(),
+    regions: transformedEffectiveRegionSignatures(puzzle, reduction, transform),
     rules: puzzle.rules.map(ruleSignature).sort(),
     initialReveals: transformedSortedCells(
       normalizedEffectiveInitialReveals(puzzle, reduction),
@@ -1040,6 +1043,15 @@ function ruleSignature(rule: RuleDefinition): string {
     })
   }
 
+  if (rule.type === 'regionCount') {
+    return JSON.stringify({
+      type: rule.type,
+      regionId: rule.regionId,
+      target: rule.target,
+      count: rule.count,
+    })
+  }
+
   return JSON.stringify({
     type: rule.type,
     subject: rule.subject,
@@ -1047,6 +1059,41 @@ function ruleSignature(rule: RuleDefinition): string {
     target: rule.target,
     count: rule.count,
   })
+}
+
+function transformedRegionSignatures(
+  puzzle: PuzzleDefinition,
+  transform: BoardTransformName,
+): readonly string[] {
+  return (puzzle.regions ?? [])
+    .map((region) => JSON.stringify({
+      id: region.id,
+      cells: transformedSortedCells(regionCells(region, puzzle.board), puzzle.board, transform),
+    }))
+    .sort()
+}
+
+function transformedEffectiveRegionSignatures(
+  puzzle: PuzzleDefinition,
+  reduction: EffectiveBoardReduction,
+  transform: BoardTransformName,
+): readonly string[] {
+  const normalizedByOriginal = new Map(
+    reduction.cells.map((cell) => [cell.cellId, cell.normalizedCellId] as const),
+  )
+
+  return (puzzle.regions ?? [])
+    .map((region) => {
+      const normalizedCells = regionCells(region, puzzle.board)
+        .map((cellId) => normalizedByOriginal.get(cellId))
+        .filter(isDefined)
+
+      return JSON.stringify({
+        id: region.id,
+        cells: transformedSortedCells(normalizedCells, reduction.effectiveBoard, transform),
+      })
+    })
+    .sort()
 }
 
 function transformedTargetSignature(
@@ -1305,6 +1352,15 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
   if (rule.type === 'globalCount') {
     return JSON.stringify({
       type: rule.type,
+      target: traceKind(rule.target, mode),
+      count: rule.count,
+    })
+  }
+
+  if (rule.type === 'regionCount') {
+    return JSON.stringify({
+      type: rule.type,
+      regionId: rule.regionId,
       target: traceKind(rule.target, mode),
       count: rule.count,
     })

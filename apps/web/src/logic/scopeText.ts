@@ -5,12 +5,20 @@ export function ruleChip(rule: RuleDefinition): string {
     return countTargetPhrase(rule.target, rule.count.op, rule.count.value)
   }
 
+  if (rule.type === 'regionCount') {
+    return `${rule.regionId}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+  }
+
   return `${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
 }
 
 export function rulePlainText(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
     return `房间里${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  }
+
+  if (rule.type === 'regionCount') {
+    return `${rule.regionId}区域，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.count.op === 'eq' && rule.count.value === 0) {

@@ -90,6 +90,36 @@ describe('global count human techniques', () => {
   });
 });
 
+describe('region count human techniques', () => {
+  it('derives safe cells when a named region guest count is saturated', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [regionCountRule('ZR1', 'north-wing', 'guest', { op: 'eq', value: 1 })],
+      observations: [{ cellId: 'A1', kind: 'guest' }],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle: state.puzzle, observations: state.observations });
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'C1' },
+    ]);
+    expect(forced.safe).toEqual(['B1', 'C1']);
+    expect(deductions.find((deduction) => deduction.technique === 'REGION_COUNT_SATURATED')?.premises)
+      .toEqual(expect.arrayContaining([
+        expect.objectContaining({ kind: 'scope', label: 'ZR1 region north-wing: A1, B1, C1' }),
+      ]));
+  });
+});
+
 describe('local count human techniques', () => {
   it('derives safe cells when a local guest count is saturated', () => {
     const state = makeState({
@@ -263,6 +293,7 @@ function observationFromTarget(puzzle: PuzzleDefinition, cellId: CellId): Observ
 function makeState(input: {
   readonly board?: BoardSize;
   readonly allowedKinds: readonly CellKind[];
+  readonly regions?: PuzzleDefinition['regions'];
   readonly rules: readonly RuleDefinition[];
   readonly observations: readonly Observation[];
 }): KnowledgeState {
@@ -273,6 +304,7 @@ function makeState(input: {
       title: 'Proof Reasoner Test',
       board: input.board ?? { width: 2, height: 2 },
       allowedKinds: input.allowedKinds,
+      ...(input.regions === undefined ? {} : { regions: input.regions }),
       rules: input.rules,
       initialReveals: [],
       target: {},
@@ -293,6 +325,22 @@ function globalCountRule(id: string, target: CellKind, count: Comparator): RuleD
     target,
     count,
     presentation: { title: `${target} count` },
+  };
+}
+
+function regionCountRule(
+  id: string,
+  regionId: string,
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'regionCount',
+    regionId,
+    target,
+    count,
+    presentation: { title: `${regionId} ${target} count` },
   };
 }
 

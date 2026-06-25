@@ -1,5 +1,6 @@
 import type { PuzzleDefinition } from '@room-axioms/domain'
 import { describe, expect, it } from 'vitest'
+import { parsePuzzleDefinition } from './diagnostics.js'
 import { puzzleDefinitionSchema } from './puzzleSchema.js'
 
 const validMinimalPuzzle = {
@@ -84,5 +85,49 @@ describe('puzzleDefinitionSchema', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('accepts named regions and region count rules', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [
+        {
+          id: 'ZR1',
+          type: 'regionCount',
+          regionId: 'north-wing',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'North wing has one guest' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects region count rules that reference unknown regions', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      rules: [
+        {
+          id: 'ZR1',
+          type: 'regionCount',
+          regionId: 'missing-wing',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Missing wing' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.issues.map((issue) => issue.code)).toContain('RULE_REGION_UNKNOWN')
   })
 })

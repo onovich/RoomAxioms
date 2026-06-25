@@ -18,6 +18,7 @@ import type {
   CountBounds,
   ForEachCountConstraint,
   GlobalCountConstraint,
+  RegionCountConstraint,
 } from './constraints.js';
 import type { SolveInput } from './types.js';
 
@@ -176,6 +177,8 @@ function propagateConstraint(
       return propagateGlobalCount(state, trail, constraint);
     case 'forEachCount':
       return propagateForEachCount(state, trail, constraint);
+    case 'regionCount':
+      return propagateRegionCount(state, trail, constraint);
   }
 }
 
@@ -235,6 +238,24 @@ function propagateForEachCount(
   }
 
   return { changed, contradiction: null };
+}
+
+function propagateRegionCount(
+  state: SolverState,
+  trail: Trail,
+  constraint: RegionCountConstraint,
+): ConstraintPropagation {
+  const bounds = countKindBounds(constraint.cells, constraint.rule.target, state.domains as DomainState);
+
+  return enforceTargetCount(
+    state,
+    trail,
+    constraint.cells,
+    constraint.rule.target,
+    constraint.rule.count,
+    bounds,
+    constraint.rule.id,
+  );
 }
 
 function enforceTargetCount(

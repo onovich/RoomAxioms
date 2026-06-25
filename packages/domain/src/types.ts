@@ -70,8 +70,6 @@ export interface ForEachCountRule {
   readonly presentation: RulePresentation
 }
 
-export type RuleDefinition = GlobalCountRule | ForEachCountRule
-
 export interface RegionDefinition {
   readonly id: string
   readonly title: string
@@ -98,6 +96,8 @@ export interface RegionCountRule {
   readonly count: Comparator
   readonly presentation: RulePresentation
 }
+
+export type RuleDefinition = GlobalCountRule | ForEachCountRule | RegionCountRule
 
 export interface LineCountRule {
   readonly id: string

@@ -1,4 +1,4 @@
-import { allCells, assertNever, neighbors } from '@room-axioms/domain';
+import { allCells, assertNever, neighbors, regionCells } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
@@ -6,6 +6,7 @@ import type {
   ForEachCountRule,
   GlobalCountRule,
   PuzzleDefinition,
+  RegionCountRule,
   RuleDefinition,
 } from '@room-axioms/domain';
 
@@ -34,7 +35,13 @@ export interface ForEachCountConstraint {
   readonly entries: readonly ForEachCountEntry[];
 }
 
-export type CompiledConstraint = GlobalCountConstraint | ForEachCountConstraint;
+export interface RegionCountConstraint {
+  readonly kind: 'regionCount';
+  readonly rule: RegionCountRule;
+  readonly cells: readonly CellId[];
+}
+
+export type CompiledConstraint = GlobalCountConstraint | ForEachCountConstraint | RegionCountConstraint;
 
 export interface GlobalCountBounds {
   readonly kind: 'globalCount';
@@ -58,7 +65,14 @@ export interface ForEachCountBounds {
   readonly possible: boolean;
 }
 
-export type ConstraintBounds = GlobalCountBounds | ForEachCountBounds;
+export interface RegionCountBounds {
+  readonly kind: 'regionCount';
+  readonly ruleId: string;
+  readonly bounds: CountBounds;
+  readonly possible: boolean;
+}
+
+export type ConstraintBounds = GlobalCountBounds | ForEachCountBounds | RegionCountBounds;
 
 export function compileConstraints(puzzle: PuzzleDefinition): readonly CompiledConstraint[] {
   return puzzle.rules.map((rule) => compileRule(rule, puzzle));
@@ -90,6 +104,17 @@ export function evaluateConstraintBounds(
         ruleId: constraint.rule.id,
         entries,
         possible: entries.every((entry) => entry.possible),
+      };
+    }
+
+    case 'regionCount': {
+      const bounds = countKindBounds(constraint.cells, constraint.rule.target, domains);
+
+      return {
+        kind: 'regionCount',
+        ruleId: constraint.rule.id,
+        bounds,
+        possible: comparatorCanBeSatisfied(bounds, constraint.rule.count),
       };
     }
 
@@ -148,9 +173,25 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
         })),
       };
 
+    case 'regionCount':
+      return {
+        kind: 'regionCount',
+        rule,
+        cells: cellsForRegionRule(rule, puzzle),
+      };
+
     default:
       return assertNever(rule);
   }
+}
+
+function cellsForRegionRule(rule: RegionCountRule, puzzle: PuzzleDefinition): readonly CellId[] {
+  const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId);
+  if (region === undefined) {
+    throw new Error(`Rule ${rule.id} references unknown region ${rule.regionId}.`);
+  }
+
+  return regionCells(region, puzzle.board);
 }
 
 function evaluateForEachEntryBounds(

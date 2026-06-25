@@ -509,6 +509,13 @@ function renameRuleKinds(
     }
   }
 
+  if (rule.type === 'regionCount') {
+    return {
+      ...rule,
+      target: rename(rule.target),
+    }
+  }
+
   return {
     ...rule,
     subject: rename(rule.subject),

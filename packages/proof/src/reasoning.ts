@@ -1,4 +1,4 @@
-import { allCells, neighbors, sortCellIds } from '@room-axioms/domain';
+import { allCells, neighbors, regionCells, sortCellIds } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
@@ -7,6 +7,7 @@ import type {
   GlobalCountRule,
   Observation,
   PuzzleDefinition,
+  RegionCountRule,
   RuleDefinition,
 } from '@room-axioms/domain';
 
@@ -52,6 +53,13 @@ export function summarizeGlobalCount(state: KnowledgeState, rule: GlobalCountRul
   return summarizeCountInCells(state, rule, allCells(state.puzzle.board));
 }
 
+export function summarizeRegionCount(state: KnowledgeState, rule: RegionCountRule): CountSummary {
+  const region = state.puzzle.regions?.find((candidate) => candidate.id === rule.regionId);
+  if (region === undefined) throw new Error(`Rule ${rule.id} references unknown region ${rule.regionId}.`);
+
+  return summarizeCountInCells(state, rule, regionCells(region, state.puzzle.board));
+}
+
 export function summarizeForEachScope(
   state: KnowledgeState,
   rule: ForEachCountRule,
@@ -62,7 +70,7 @@ export function summarizeForEachScope(
 
 export function summarizeCountInCells(
   state: KnowledgeState,
-  rule: GlobalCountRule | ForEachCountRule,
+  rule: GlobalCountRule | ForEachCountRule | RegionCountRule,
   scopeCellIds: readonly CellId[],
 ): CountSummary {
   const index = createKnowledgeIndex(state);
@@ -117,6 +125,15 @@ export function scopePremise(
   return {
     kind: 'scope',
     label: `${rule.id} ${rule.scope.kind} scope for ${subjectCellId}: ${scopeCellIds.join(', ')}`,
+    cellIds: scopeCellIds,
+    ruleIds: [rule.id],
+  };
+}
+
+export function regionScopePremise(rule: RegionCountRule, scopeCellIds: readonly CellId[]): ProofPremise {
+  return {
+    kind: 'scope',
+    label: `${rule.id} region ${rule.regionId}: ${scopeCellIds.join(', ')}`,
     cellIds: scopeCellIds,
     ruleIds: [rule.id],
   };

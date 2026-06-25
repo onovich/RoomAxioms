@@ -1,4 +1,4 @@
-import { allCells, assertNever, neighbors } from '@room-axioms/domain';
+import { allCells, assertNever, neighbors, regionCells } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
@@ -33,6 +33,21 @@ export function evaluateRule(
       return {
         ruleId: rule.id,
         satisfied: actual.every((count) => compareCount(count, rule.count)),
+        actual,
+      };
+    }
+
+    case 'regionCount': {
+      const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId);
+      if (region === undefined) {
+        throw new Error(`Rule ${rule.id} references unknown region ${rule.regionId}.`);
+      }
+
+      const actual = countCells(regionCells(region, puzzle.board), rule.target, model);
+
+      return {
+        ruleId: rule.id,
+        satisfied: compareCount(actual, rule.count),
         actual,
       };
     }

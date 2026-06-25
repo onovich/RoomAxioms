@@ -4,6 +4,7 @@ import type {
   CellKind,
   ForEachCountRule,
   GlobalCountRule,
+  RegionCountRule,
   RuleDefinition,
 } from '@room-axioms/domain';
 
@@ -13,9 +14,11 @@ import {
   countPremise,
   createKnowledgeIndex,
   rulePremise,
+  regionScopePremise,
   scopePremise,
   summarizeForEachScope,
   summarizeGlobalCount,
+  summarizeRegionCount,
 } from './reasoning.js';
 import type { Deduction, DeductionConclusion, KnowledgeState, ProofPremise } from './types.js';
 
@@ -25,6 +28,8 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
   for (const rule of state.puzzle.rules) {
     if (rule.type === 'globalCount') {
       baseDeductions.push(...deriveGlobalCountDeductions(state, rule));
+    } else if (rule.type === 'regionCount') {
+      baseDeductions.push(...deriveRegionCountDeductions(state, rule));
     } else if (rule.type === 'forEachCount') {
       baseDeductions.push(...deriveLocalCountDeductions(state, rule));
     }
@@ -206,6 +211,45 @@ export function deriveGlobalCountDeductions(
     for (const cellId of summary.unknownCellIds) {
       deductions.push(createDeduction({
         technique: 'GLOBAL_COUNT_ALL_REMAINING',
+        conclusion: targetConclusion(cellId, rule.target),
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  return sortDeductions(state, deductions);
+}
+
+export function deriveRegionCountDeductions(
+  state: KnowledgeState,
+  rule: RegionCountRule,
+): readonly Deduction[] {
+  const summary = summarizeRegionCount(state, rule);
+  const premises = [rulePremise(rule), regionScopePremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const deductions: Deduction[] = [];
+  const upperBound = summary.bounds.upperBound;
+
+  if (
+    rule.target === 'guest' &&
+    upperBound !== null &&
+    summary.knownTargetCellIds.length === upperBound
+  ) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'REGION_COUNT_SATURATED',
+        conclusion: { kind: 'safe', cellId },
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  const remainingRequired = summary.bounds.lowerBound - summary.knownTargetCellIds.length;
+  if (remainingRequired > 0 && remainingRequired === summary.unknownCellIds.length) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'REGION_COUNT_ALL_REMAINING',
         conclusion: targetConclusion(cellId, rule.target),
         ruleIds: [rule.id],
         premises,
@@ -633,4 +677,8 @@ export function isGlobalCountRule(rule: RuleDefinition): rule is GlobalCountRule
 
 export function isForEachCountRule(rule: RuleDefinition): rule is ForEachCountRule {
   return rule.type === 'forEachCount';
+}
+
+export function isRegionCountRule(rule: RuleDefinition): rule is RegionCountRule {
+  return rule.type === 'regionCount';
 }

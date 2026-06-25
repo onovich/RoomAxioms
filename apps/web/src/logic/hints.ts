@@ -47,6 +47,10 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
       return '数量已经够了'
     case 'GLOBAL_COUNT_ALL_REMAINING':
       return '剩下的都必须算上'
+    case 'REGION_COUNT_SATURATED':
+      return '这个区域已经数够了'
+    case 'REGION_COUNT_ALL_REMAINING':
+      return '这个区域剩下的都要算'
     case 'LOCAL_COUNT_SATURATED':
       return '这个范围已经数够了'
     case 'LOCAL_COUNT_ALL_REMAINING':

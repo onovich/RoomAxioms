@@ -4,6 +4,8 @@ import type { SolverOptions, SolverStats } from '@room-axioms/solver';
 export type TechniqueId =
   | 'GLOBAL_COUNT_SATURATED'
   | 'GLOBAL_COUNT_ALL_REMAINING'
+  | 'REGION_COUNT_SATURATED'
+  | 'REGION_COUNT_ALL_REMAINING'
   | 'LOCAL_COUNT_SATURATED'
   | 'LOCAL_COUNT_ALL_REMAINING'
   | 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION'

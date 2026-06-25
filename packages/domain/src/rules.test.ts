@@ -8,6 +8,8 @@ function ruleKind(rule: RuleDefinition): string {
       return `global:${rule.target}:${rule.count.op}:${rule.count.value}`
     case 'forEachCount':
       return `for-each:${rule.subject}:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
+    case 'regionCount':
+      return `region:${rule.regionId}:${rule.target}:${rule.count.op}:${rule.count.value}`
     default:
       return assertNever(rule)
   }
@@ -55,7 +57,7 @@ describe('rule definitions', () => {
     expect(ruleKind(rule)).toBe('for-each:mirror:adjacent:guest:eq:1')
   })
 
-  it('declares additive expressive rule shapes without changing DSL v1 rule definitions', () => {
+  it('supports region count as the first additive production rule shape', () => {
     const regionRule = {
       id: 'ZR1',
       type: 'regionCount',
@@ -63,7 +65,12 @@ describe('rule definitions', () => {
       target: 'guest',
       count: { op: 'eq', value: 2 },
       presentation: { title: 'East wing guests' },
-    } satisfies ExpressiveRuleDefinition
+    } satisfies RuleDefinition
+
+    expect(ruleKind(regionRule)).toBe('region:east-wing:guest:eq:2')
+  })
+
+  it('declares future expressive rule shapes outside production rule definitions', () => {
     const lineRule = {
       id: 'LR1',
       type: 'lineCount',
@@ -89,7 +96,6 @@ describe('rule definitions', () => {
       presentation: { title: 'One record is contaminated' },
     } satisfies ExpressiveRuleDefinition
 
-    expect(expressiveRuleKind(regionRule)).toBe('region:east-wing:guest:eq:2')
     expect(expressiveRuleKind(lineRule)).toBe('line:row:guest:lte:1')
     expect(expressiveRuleKind(anchorRule)).toBe('anchor:known-bottle:ray:guest:eq:1')
     expect(expressiveRuleKind(recordRule)).toBe('records:eq:1:card-a+card-b')

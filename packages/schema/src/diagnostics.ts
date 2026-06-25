@@ -90,6 +90,7 @@ function validatePuzzleSemantics(puzzle: PuzzleDefinition): readonly SchemaIssue
   }
 
   issues.push(...validateInitialReveals(puzzle))
+  issues.push(...validateRegions(puzzle))
   issues.push(...validateRules(puzzle))
 
   return sortIssues(issues)
@@ -142,9 +143,63 @@ function validateInitialReveals(puzzle: PuzzleDefinition): readonly SchemaIssue[
   return issues
 }
 
+function validateRegions(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
+  const issues: SchemaIssue[] = []
+  const seenRegionIds = new Map<string, number>()
+
+  puzzle.regions?.forEach((region, regionIndex) => {
+    const firstRegionIndex = seenRegionIds.get(region.id)
+    if (firstRegionIndex !== undefined) {
+      issues.push(
+        createIssue(
+          'REGION_ID_DUPLICATE',
+          ['regions', regionIndex, 'id'],
+          `Region id ${region.id} is duplicated`,
+          { regionId: region.id, firstIndex: firstRegionIndex },
+        ),
+      )
+    } else {
+      seenRegionIds.set(region.id, regionIndex)
+    }
+
+    const seenCells = new Map<CellId, number>()
+    region.cells.forEach((cellId, cellIndex) => {
+      const canonical = tryCanonicalCellId(cellId, puzzle.board)
+      if (!canonical) {
+        issues.push(
+          createIssue(
+            'REGION_CELL_OUT_OF_BOARD',
+            ['regions', regionIndex, 'cells', cellIndex],
+            `Region ${region.id} contains cell ${cellId} outside the board`,
+            { regionId: region.id, cellId },
+          ),
+        )
+        return
+      }
+
+      const firstCellIndex = seenCells.get(canonical)
+      if (firstCellIndex !== undefined) {
+        issues.push(
+          createIssue(
+            'REGION_CELL_DUPLICATE',
+            ['regions', regionIndex, 'cells', cellIndex],
+            `Region ${region.id} duplicates cell ${canonical}`,
+            { regionId: region.id, cellId: canonical, firstIndex: firstCellIndex },
+          ),
+        )
+      } else {
+        seenCells.set(canonical, cellIndex)
+      }
+    })
+  })
+
+  return issues
+}
+
 function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
   const issues: SchemaIssue[] = []
   const allowedKinds = new Set<CellKind>(puzzle.allowedKinds)
+  const regionIds = new Set((puzzle.regions ?? []).map((region) => region.id))
   const seenRuleIds = new Map<string, number>()
   let hasGuestRule = false
 
@@ -166,6 +221,7 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
     }
 
     issues.push(...validateRuleKindReferences(rule, index, allowedKinds))
+    issues.push(...validateRuleRegionReferences(rule, index, regionIds))
   })
 
   if (!hasGuestRule) {
@@ -209,6 +265,23 @@ function validateRuleKindReferences(
   }
 
   return issues
+}
+
+function validateRuleRegionReferences(
+  rule: RuleDefinition,
+  index: number,
+  regionIds: ReadonlySet<string>,
+): readonly SchemaIssue[] {
+  if (rule.type !== 'regionCount' || regionIds.has(rule.regionId)) return []
+
+  return [
+    createIssue(
+      'RULE_REGION_UNKNOWN',
+      ['rules', index, 'regionId'],
+      `Rule ${rule.id} references unknown region ${rule.regionId}`,
+      { ruleId: rule.id, regionId: rule.regionId },
+    ),
+  ]
 }
 
 function zodIssueToSchemaIssue(issue: ZodIssue): SchemaIssue {

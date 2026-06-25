@@ -51,6 +51,32 @@ describe('solver propagation and trail rollback', () => {
     expect(singletonKind(state.domains.B2)).toBe('guest');
   });
 
+  it('propagates saturated region count upper bounds only inside the named region', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [regionCountRule('north-one-guest', 'north-wing', 'guest', { op: 'eq', value: 1 })],
+    });
+    const state = createSolverState({ puzzle });
+    const trail = createTrail();
+
+    assignCellKind(state, trail, 'A1', 'guest');
+    const result = propagate(state, compileConstraints(puzzle), trail);
+
+    expect(result.ok).toBe(true);
+    expect(singletonKind(state.domains.B1)).toBe('empty');
+    expect(singletonKind(state.domains.C1)).toBe('empty');
+    expect(containsKind(state.domains.A2, 'guest')).toBe(true);
+  });
+
   it('propagates local target exclusion for active subjects', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -172,6 +198,7 @@ function makePuzzle(input: {
   readonly width: number;
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
+  readonly regions?: PuzzleDefinition['regions'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -180,6 +207,7 @@ function makePuzzle(input: {
     title: 'Solver Propagation Test',
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
+    ...(input.regions === undefined ? {} : { regions: input.regions }),
     rules: input.rules,
     initialReveals: [],
     target: {},
@@ -195,6 +223,22 @@ function globalCountRule(id: string, target: CellKind, count: Comparator): RuleD
   return {
     id,
     type: 'globalCount',
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function regionCountRule(
+  id: string,
+  regionId: string,
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'regionCount',
+    regionId,
     target,
     count,
     presentation: { title: id },
