@@ -179,6 +179,29 @@ export interface ProofTraceCloneGroup {
   readonly members: readonly ProofTraceFingerprint[]
 }
 
+export interface CandidateShrinkCheckpoint {
+  readonly label: 'opening' | 'wave' | 'final'
+  readonly waveIndex?: number
+  readonly guestLayoutCount: number
+  readonly greaterThan?: number
+  readonly unique: boolean
+}
+
+export interface CandidateShrinkSignature {
+  readonly puzzleId: string
+  readonly signature: string
+  readonly techniqueSequence: readonly TechniqueId[]
+  readonly checkpoints: readonly CandidateShrinkCheckpoint[]
+  readonly stats: SolverStats
+}
+
+export interface CandidateShrinkCloneGroup {
+  readonly signature: string
+  readonly status: 'reviewer-blocking'
+  readonly puzzleIds: readonly string[]
+  readonly members: readonly CandidateShrinkSignature[]
+}
+
 export interface TechniqueRetentionGateInput {
   readonly puzzleId: string
   readonly retention: AuthoringTechniqueRetentionReport
@@ -425,6 +448,98 @@ export function findProofTraceCloneGroups(
     ))
 }
 
+export function candidateShrinkSignature(
+  puzzle: PuzzleDefinition,
+  options: { readonly solver?: SolverOptions; readonly cap?: number } = {},
+): CandidateShrinkSignature {
+  const solver = options.solver ?? {}
+  const cap = options.cap ?? 1_000
+  const proof = verifyNoGuess(puzzle, { solver })
+  const checkpoints: CandidateShrinkCheckpoint[] = []
+  let observations = targetObservationsForCells(puzzle, puzzle.initialReveals)
+  let stats = zeroStats()
+
+  const opening = candidateShrinkCheckpoint({
+    label: 'opening',
+    puzzle,
+    observations,
+    cap,
+    solver,
+  })
+  checkpoints.push(opening.checkpoint)
+  stats = combineStats(stats, opening.stats)
+
+  for (const wave of proof.waves) {
+    observations = mergeObservationState(puzzle, observations, [
+      ...wave.revealed,
+      ...wave.confirmedGuests.map((cellId) => ({ cellId, kind: 'guest' as const })),
+    ])
+    const afterWave = candidateShrinkCheckpoint({
+      label: 'wave',
+      waveIndex: wave.index,
+      puzzle,
+      observations,
+      cap,
+      solver,
+    })
+    checkpoints.push(afterWave.checkpoint)
+    stats = combineStats(stats, afterWave.stats)
+  }
+
+  const final = candidateShrinkCheckpoint({
+    label: 'final',
+    puzzle,
+    observations,
+    cap,
+    solver,
+  })
+  checkpoints.push(final.checkpoint)
+  stats = combineStats(stats, final.stats)
+
+  const techniqueSequence = proof.waves.flatMap((wave) => (
+    wave.deductions.map((deduction) => deduction.technique)
+  ))
+
+  return {
+    puzzleId: puzzle.id,
+    signature: JSON.stringify({
+      checkpoints: checkpoints.map((checkpoint) => ({
+        label: checkpoint.label,
+        ...(checkpoint.waveIndex === undefined ? {} : { waveIndex: checkpoint.waveIndex }),
+        guestLayoutCount: checkpoint.guestLayoutCount,
+        ...(checkpoint.greaterThan === undefined ? {} : { greaterThan: checkpoint.greaterThan }),
+        unique: checkpoint.unique,
+      })),
+      techniqueSequence,
+    }),
+    techniqueSequence,
+    checkpoints,
+    stats,
+  }
+}
+
+export function findCandidateShrinkCloneGroups(
+  puzzles: readonly PuzzleDefinition[],
+): readonly CandidateShrinkCloneGroup[] {
+  const signatures = puzzles.map((puzzle) => candidateShrinkSignature(puzzle))
+  const bySignature = new Map<string, CandidateShrinkSignature[]>()
+  for (const signature of signatures) {
+    const members = bySignature.get(signature.signature) ?? []
+    members.push(signature)
+    bySignature.set(signature.signature, members)
+  }
+
+  return [...bySignature.entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([signature, members]) => ({
+      signature,
+      status: 'reviewer-blocking' as const,
+      puzzleIds: members.map((member) => member.puzzleId).sort(),
+      members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
+    }))
+    .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
+}
+
 export function evaluateTechniqueRetentionGate(
   input: TechniqueRetentionGateInput,
 ): TechniqueRetentionGateReport {
@@ -592,6 +707,46 @@ function targetObservationsForCells(
     cellId,
     kind: puzzle.target[cellId],
   }))
+}
+
+function candidateShrinkCheckpoint(input: {
+  readonly label: CandidateShrinkCheckpoint['label']
+  readonly waveIndex?: number
+  readonly puzzle: PuzzleDefinition
+  readonly observations: readonly Observation[]
+  readonly cap: number
+  readonly solver: SolverOptions
+}): { readonly checkpoint: CandidateShrinkCheckpoint; readonly stats: SolverStats } {
+  const result = countGuestLayouts(
+    { puzzle: input.puzzle, observations: input.observations },
+    input.cap,
+    input.solver,
+  )
+
+  return {
+    checkpoint: {
+      label: input.label,
+      ...(input.waveIndex === undefined ? {} : { waveIndex: input.waveIndex }),
+      guestLayoutCount: result.count,
+      ...(result.greaterThan === undefined ? {} : { greaterThan: result.greaterThan }),
+      unique: result.count === 1 && result.greaterThan === undefined && !result.stats.truncated,
+    },
+    stats: result.stats,
+  }
+}
+
+function mergeObservationState(
+  puzzle: PuzzleDefinition,
+  current: readonly Observation[],
+  additions: readonly Observation[],
+): readonly Observation[] {
+  const byCell = new Map<CellId, Observation>()
+  for (const observation of current) byCell.set(observation.cellId, observation)
+  for (const observation of additions) byCell.set(observation.cellId, observation)
+
+  return sortCellIds(byCell.keys(), puzzle.board)
+    .map((cellId) => byCell.get(cellId))
+    .filter(isDefined)
 }
 
 function combineStats(left: SolverStats, right: SolverStats): SolverStats {

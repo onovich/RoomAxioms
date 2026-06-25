@@ -29,16 +29,21 @@ export {
 export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
+  candidateShrinkSignature,
   canonicalEffectivePuzzleIsomorphismSignature,
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
   evaluateTechniqueRetentionGate,
+  findCandidateShrinkCloneGroups,
   findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
   findProofTraceCloneGroups,
   proofTraceFingerprint,
   type BoardTransformName,
+  type CandidateShrinkCheckpoint,
+  type CandidateShrinkCloneGroup,
+  type CandidateShrinkSignature,
   type EffectivePuzzleIsomorphismGroup,
   type EffectivePuzzleIsomorphismSignature,
   type ProofTraceCloneGroup,

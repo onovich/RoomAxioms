@@ -6,10 +6,12 @@ import { fileURLToPath } from 'node:url'
 import type { CellKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
 import type { AuthoringCaseValidationReport, AuthoringCliReport } from './contracts.js'
 import {
+  candidateShrinkSignature,
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
   evaluateTechniqueRetentionGate,
+  findCandidateShrinkCloneGroups,
   findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
   findProofTraceCloneGroups,
@@ -341,6 +343,41 @@ describe('proof trace fingerprint', () => {
       matchKind: 'kind-agnostic',
       status: 'reviewer-blocking',
       puzzleIds: ['case-004', 'case-004-label-swap'],
+    }))
+  })
+})
+
+describe('candidate shrink signature', () => {
+  it('records opening, wave, and final guest-layout counts', () => {
+    const signature = candidateShrinkSignature(loadCase(canonicalCleaningCasePath))
+
+    expect(signature.puzzleId).toBe('case-004')
+    expect(signature.checkpoints.map((checkpoint) => checkpoint.label)).toEqual([
+      'opening',
+      'wave',
+      'final',
+    ])
+    expect(signature.checkpoints[0]).toMatchObject({
+      guestLayoutCount: 15,
+      unique: false,
+    })
+    expect(signature.checkpoints[signature.checkpoints.length - 1]).toMatchObject({
+      guestLayoutCount: 1,
+      unique: true,
+    })
+    expect(signature.techniqueSequence).toContain('LOCAL_COUNT_SATURATED')
+  })
+
+  it('blocks identical shrink curves plus technique order for review', () => {
+    const groups = findCandidateShrinkCloneGroups([
+      loadCase(canonicalCleaningCasePath),
+      loadCase(paddedCleaningClonePath),
+      loadCase(differenceCasePath),
+    ])
+
+    expect(groups).toContainEqual(expect.objectContaining({
+      status: 'reviewer-blocking',
+      puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
     }))
   })
 })
