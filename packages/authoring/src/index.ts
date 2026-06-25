@@ -22,6 +22,7 @@ export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
   evaluateCoreQualityGates,
+  evaluateRuleContribution,
   type QualityGateCaseProfile,
   type QualityGateId,
   type QualityGateInput,
@@ -29,6 +30,11 @@ export {
   type QualityGateReport,
   type QualityGateResult,
   type QualityGateStatus,
+  type RuleContributionOptions,
+  type RuleContributionReason,
+  type RuleContributionReport,
+  type RuleContributionResult,
+  type RuleContributionStatus,
 } from './qualityGates.js'
 export { parsedCommandReport, parseErrorReport } from './reports.js'
 export { runAuthoringCli, type RunAuthoringCliOptions } from './runner.js'

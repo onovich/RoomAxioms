@@ -1,4 +1,9 @@
+import { allCells, type CellId, type Observation, type PuzzleDefinition } from '@room-axioms/domain'
 import type { ProvisionalDifficultyScore } from '@room-axioms/generator'
+import { verifyNoGuess } from '@room-axioms/proof'
+import type { TechniqueId } from '@room-axioms/proof'
+import { parsePuzzleDefinition } from '@room-axioms/schema'
+import { countGuestLayouts, isSatisfiable, type SolverOptions, type SolverStats } from '@room-axioms/solver'
 
 import type { AuthoringCaseValidationReport } from './contracts.js'
 
@@ -38,6 +43,44 @@ export interface QualityGateReport {
   readonly profile: QualityGateCaseProfile
   readonly status: QualityGateStatus
   readonly results: readonly QualityGateResult[]
+}
+
+export type RuleContributionReason =
+  | 'target-rejected-without-rule'
+  | 'initial-layout-count-increased'
+  | 'proof-fails-without-rule'
+  | 'final-uniqueness-fails-without-rule'
+  | 'required-technique-disappears'
+  | 'solver-truncated'
+  | 'no-material-change'
+
+export type RuleContributionStatus = 'contributes' | 'redundant' | 'invalid'
+
+export interface RuleContributionOptions {
+  readonly solver?: SolverOptions
+  readonly candidateLayoutCap?: number
+  readonly materialLayoutIncrease?: number
+  readonly requiredTechniqueIds?: readonly TechniqueId[]
+}
+
+export interface RuleContributionResult {
+  readonly ruleId: string
+  readonly status: RuleContributionStatus
+  readonly reasons: readonly RuleContributionReason[]
+  readonly baselineInitialGuestLayouts: number
+  readonly withoutRuleInitialGuestLayouts?: number
+  readonly withoutRuleTargetSatisfiesRules?: boolean
+  readonly withoutRuleProofNoGuess?: boolean
+  readonly withoutRuleHumanExplainable?: boolean
+  readonly withoutRuleGuestLayoutUniqueAtEnd?: boolean
+  readonly missingRequiredTechniqueIds: readonly TechniqueId[]
+  readonly stats: SolverStats
+}
+
+export interface RuleContributionReport {
+  readonly puzzleId: string
+  readonly status: 'pass' | 'warning'
+  readonly results: readonly RuleContributionResult[]
 }
 
 const DEFAULT_QUALITY_GATE_POLICY = {
@@ -85,6 +128,61 @@ export function evaluateCoreQualityGates(input: QualityGateInput): QualityGateRe
     puzzleId,
     profile,
     status: combinedStatus(results),
+    results,
+  }
+}
+
+export function evaluateRuleContribution(
+  puzzle: PuzzleDefinition,
+  options: RuleContributionOptions = {},
+): RuleContributionReport {
+  const solver = options.solver ?? {}
+  const candidateLayoutCap = options.candidateLayoutCap ?? 1_000
+  const materialLayoutIncrease = options.materialLayoutIncrease ?? 0
+  const requiredTechniqueIds = options.requiredTechniqueIds ?? []
+  const baselineInitial = countGuestLayouts(
+    { puzzle, observations: targetObservationsForCells(puzzle, puzzle.initialReveals) },
+    candidateLayoutCap,
+    solver,
+  )
+  const baselineProof = verifyNoGuess(puzzle, { solver })
+  const baselineStats = baselineProof.waves.reduce(
+    (current, wave) => combineStats(current, wave.solverStats),
+    baselineInitial.stats,
+  )
+  const baselineTechniqueIds = new Set<TechniqueId>(baselineProof.metrics.techniqueIds)
+  const results = puzzle.rules.map((rule) => {
+    const withoutRule = {
+      ...puzzle,
+      rules: puzzle.rules.filter((candidate) => candidate.id !== rule.id),
+    }
+    const parsed = parsePuzzleDefinition(withoutRule)
+    if (!parsed.ok || parsed.puzzle === undefined) {
+      return {
+        ruleId: rule.id,
+        status: 'invalid',
+        reasons: ['target-rejected-without-rule'],
+        baselineInitialGuestLayouts: baselineInitial.count,
+        missingRequiredTechniqueIds: [],
+        stats: baselineStats,
+      } satisfies RuleContributionResult
+    }
+
+    return evaluateRuleRemoval({
+      puzzle: parsed.puzzle,
+      ruleId: rule.id,
+      solver,
+      candidateLayoutCap,
+      materialLayoutIncrease,
+      baselineInitialGuestLayouts: baselineInitial.count,
+      baselineTechniqueIds,
+      requiredTechniqueIds,
+    })
+  })
+
+  return {
+    puzzleId: puzzle.id,
+    status: results.some((result) => result.status === 'redundant') ? 'warning' : 'pass',
     results,
   }
 }
@@ -160,4 +258,86 @@ function combinedStatus(results: readonly QualityGateResult[]): QualityGateStatu
   if (results.some((result) => result.status === 'warning')) return 'warning'
 
   return 'pass'
+}
+
+function evaluateRuleRemoval(input: {
+  readonly puzzle: PuzzleDefinition
+  readonly ruleId: string
+  readonly solver: SolverOptions
+  readonly candidateLayoutCap: number
+  readonly materialLayoutIncrease: number
+  readonly baselineInitialGuestLayouts: number
+  readonly baselineTechniqueIds: ReadonlySet<TechniqueId>
+  readonly requiredTechniqueIds: readonly TechniqueId[]
+}): RuleContributionResult {
+  const targetCheck = isSatisfiable(
+    { puzzle: input.puzzle, observations: targetObservationsForCells(input.puzzle, allCells(input.puzzle.board)) },
+    [],
+    input.solver,
+  )
+  const initialLayouts = countGuestLayouts(
+    { puzzle: input.puzzle, observations: targetObservationsForCells(input.puzzle, input.puzzle.initialReveals) },
+    input.candidateLayoutCap,
+    input.solver,
+  )
+  const proof = verifyNoGuess(input.puzzle, { solver: input.solver })
+  const proofStats = proof.waves.reduce(
+    (current, wave) => combineStats(current, wave.solverStats),
+    zeroStats(),
+  )
+  const stats = combineStats(combineStats(targetCheck.stats, initialLayouts.stats), proofStats)
+  const withoutRuleTechniqueIds = new Set<TechniqueId>(proof.metrics.techniqueIds)
+  const missingRequiredTechniqueIds = input.requiredTechniqueIds.filter((techniqueId) => (
+    input.baselineTechniqueIds.has(techniqueId) && !withoutRuleTechniqueIds.has(techniqueId)
+  ))
+  const reasons: RuleContributionReason[] = []
+
+  if (stats.truncated) reasons.push('solver-truncated')
+  if (!targetCheck.satisfiable) reasons.push('target-rejected-without-rule')
+  if (initialLayouts.count > input.baselineInitialGuestLayouts + input.materialLayoutIncrease) {
+    reasons.push('initial-layout-count-increased')
+  }
+  if (!proof.noGuess || !proof.humanExplainable) reasons.push('proof-fails-without-rule')
+  if (!proof.guestLayoutUniqueAtEnd) reasons.push('final-uniqueness-fails-without-rule')
+  if (missingRequiredTechniqueIds.length > 0) reasons.push('required-technique-disappears')
+
+  return {
+    ruleId: input.ruleId,
+    status: reasons.length === 0 ? 'redundant' : 'contributes',
+    reasons: reasons.length === 0 ? ['no-material-change'] : reasons,
+    baselineInitialGuestLayouts: input.baselineInitialGuestLayouts,
+    withoutRuleInitialGuestLayouts: initialLayouts.count,
+    withoutRuleTargetSatisfiesRules: targetCheck.satisfiable && !targetCheck.stats.truncated,
+    withoutRuleProofNoGuess: proof.noGuess,
+    withoutRuleHumanExplainable: proof.humanExplainable,
+    withoutRuleGuestLayoutUniqueAtEnd: proof.guestLayoutUniqueAtEnd,
+    missingRequiredTechniqueIds,
+    stats,
+  }
+}
+
+function targetObservationsForCells(
+  puzzle: PuzzleDefinition,
+  cellIds: readonly CellId[],
+): readonly Observation[] {
+  return cellIds.map((cellId) => ({
+    cellId,
+    kind: puzzle.target[cellId],
+  }))
+}
+
+function combineStats(left: SolverStats, right: SolverStats): SolverStats {
+  return {
+    nodeCount: left.nodeCount + right.nodeCount,
+    propagationCount: left.propagationCount + right.propagationCount,
+    truncated: left.truncated || right.truncated,
+  }
+}
+
+function zeroStats(): SolverStats {
+  return {
+    nodeCount: 0,
+    propagationCount: 0,
+    truncated: false,
+  }
 }
