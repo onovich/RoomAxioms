@@ -17,6 +17,7 @@ import { parsePuzzleDefinition } from '@room-axioms/schema'
 import { countGuestLayouts, isSatisfiable, type SolverOptions, type SolverStats } from '@room-axioms/solver'
 
 import type { AuthoringCaseValidationReport, AuthoringTechniqueRetentionReport } from './contracts.js'
+import { reduceEffectiveBoard, type EffectiveBoardReduction } from './antiClone.js'
 
 export type QualityGateCaseProfile = 'normal' | 'onboarding' | 'internal-fixture'
 
@@ -120,6 +121,20 @@ export interface PuzzleIsomorphismGroup {
   readonly signature: string
   readonly puzzleIds: readonly string[]
   readonly members: readonly PuzzleIsomorphismSignature[]
+}
+
+export interface EffectivePuzzleIsomorphismSignature {
+  readonly puzzleId: string
+  readonly canonicalSignature: string
+  readonly canonicalTransform: BoardTransformName
+  readonly transformSignatures: readonly PuzzleTransformSignature[]
+  readonly reduction: EffectiveBoardReduction
+}
+
+export interface EffectivePuzzleIsomorphismGroup {
+  readonly signature: string
+  readonly puzzleIds: readonly string[]
+  readonly members: readonly EffectivePuzzleIsomorphismSignature[]
 }
 
 export interface TechniqueRetentionGateInput {
@@ -264,6 +279,48 @@ export function findIsomorphicPuzzleGroups(
   const bySignature = new Map<string, PuzzleIsomorphismSignature[]>()
   for (const puzzle of puzzles) {
     const signature = canonicalPuzzleIsomorphismSignature(puzzle)
+    const signatures = bySignature.get(signature.canonicalSignature) ?? []
+    signatures.push(signature)
+    bySignature.set(signature.canonicalSignature, signatures)
+  }
+
+  return [...bySignature.entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([signature, members]) => ({
+      signature,
+      puzzleIds: members.map((member) => member.puzzleId).sort(),
+      members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
+    }))
+    .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
+}
+
+export function canonicalEffectivePuzzleIsomorphismSignature(
+  puzzle: PuzzleDefinition,
+): EffectivePuzzleIsomorphismSignature {
+  const reduction = reduceEffectiveBoard(puzzle)
+  const transformSignatures = availableBoardTransforms(reduction.effectiveBoard).map((transform) => ({
+    transform,
+    signature: effectivePuzzleShapeSignature(puzzle, reduction, transform),
+  }))
+  const canonical = [...transformSignatures].sort((left, right) => (
+    left.signature.localeCompare(right.signature) || left.transform.localeCompare(right.transform)
+  ))[0]
+
+  return {
+    puzzleId: puzzle.id,
+    canonicalSignature: canonical.signature,
+    canonicalTransform: canonical.transform,
+    transformSignatures,
+    reduction,
+  }
+}
+
+export function findEffectiveIsomorphicPuzzleGroups(
+  puzzles: readonly PuzzleDefinition[],
+): readonly EffectivePuzzleIsomorphismGroup[] {
+  const bySignature = new Map<string, EffectivePuzzleIsomorphismSignature[]>()
+  for (const puzzle of puzzles) {
+    const signature = canonicalEffectivePuzzleIsomorphismSignature(puzzle)
     const signatures = bySignature.get(signature.canonicalSignature) ?? []
     signatures.push(signature)
     bySignature.set(signature.canonicalSignature, signatures)
@@ -475,6 +532,25 @@ function puzzleShapeSignature(puzzle: PuzzleDefinition, transform: BoardTransfor
   })
 }
 
+function effectivePuzzleShapeSignature(
+  puzzle: PuzzleDefinition,
+  reduction: EffectiveBoardReduction,
+  transform: BoardTransformName,
+): string {
+  return JSON.stringify({
+    schemaVersion: puzzle.schemaVersion,
+    board: reduction.effectiveBoard,
+    allowedKinds: [...puzzle.allowedKinds].sort(),
+    rules: puzzle.rules.map(ruleSignature).sort(),
+    initialReveals: transformedSortedCells(
+      normalizedEffectiveInitialReveals(puzzle, reduction),
+      reduction.effectiveBoard,
+      transform,
+    ),
+    target: transformedEffectiveTargetSignature(reduction, transform),
+  })
+}
+
 function ruleSignature(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
     return JSON.stringify({
@@ -505,6 +581,40 @@ function transformedTargetSignature(
   return sortCellIds(transformed.keys(), puzzle.board).map((cellId) => (
     `${cellId}:${transformed.get(cellId) ?? 'unknown'}`
   ))
+}
+
+function transformedEffectiveTargetSignature(
+  reduction: EffectiveBoardReduction,
+  transform: BoardTransformName,
+): readonly string[] {
+  const transformed = new Map<CellId, string>()
+  for (const cell of reduction.cells) {
+    transformed.set(
+      transformCellId(cell.normalizedCellId, reduction.effectiveBoard, transform),
+      cell.targetKind,
+    )
+  }
+
+  return sortCellIds(transformed.keys(), reduction.effectiveBoard).map((cellId) => (
+    `${cellId}:${transformed.get(cellId) ?? 'unknown'}`
+  ))
+}
+
+function normalizedEffectiveInitialReveals(
+  puzzle: PuzzleDefinition,
+  reduction: EffectiveBoardReduction,
+): readonly CellId[] {
+  const normalizedByOriginal = new Map(
+    reduction.cells.map((cell) => [cell.cellId, cell.normalizedCellId] as const),
+  )
+
+  return puzzle.initialReveals
+    .map((cellId) => normalizedByOriginal.get(cellId))
+    .filter(isDefined)
+}
+
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined
 }
 
 function transformedSortedCells(

@@ -9,6 +9,7 @@ import {
   evaluateCoreQualityGates,
   evaluateRuleContribution,
   evaluateTechniqueRetentionGate,
+  findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
 } from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
@@ -27,6 +28,10 @@ const canonicalCleaningCasePath = resolve(contentRoot, 'case-004.json')
 const replacementCleaningCasePath = resolve(contentRoot, 'case-006.json')
 const intersectionCasePath = resolve(contentRoot, 'case-011.json')
 const differenceCasePath = resolve(contentRoot, 'case-012.json')
+const paddedCleaningClonePath = resolve(
+  repositoryRoot,
+  'content/experimental/phase-20/padded-case004-right-edge.json',
+)
 
 describe('quality gate contracts', () => {
   it('rejects opening states with a unique guest layout', () => {
@@ -202,6 +207,24 @@ describe('non-isomorphism gate', () => {
     const groups = findIsomorphicPuzzleGroups(shippedCasePaths.map(loadCase))
 
     expect(groups).toEqual([])
+  })
+
+  it('groups padded clones after reducing to the effective board', () => {
+    const groups = findEffectiveIsomorphicPuzzleGroups([
+      loadCase(canonicalCleaningCasePath),
+      loadCase(paddedCleaningClonePath),
+      loadCase(differenceCasePath),
+    ])
+
+    expect(groups).toHaveLength(1)
+    expect(groups[0].puzzleIds).toEqual([
+      'case-004',
+      'phase-20-padded-case004-right-edge',
+    ])
+    expect(
+      groups[0].members.find((member) => member.puzzleId === 'phase-20-padded-case004-right-edge')
+        ?.reduction.irrelevantCells,
+    ).toEqual(['E1', 'E2', 'E3', 'E4'])
   })
 })
 
