@@ -168,6 +168,17 @@ export interface ProofTraceFingerprint {
   readonly transformSignatures: readonly ProofTraceTransformSignature[]
 }
 
+export type ProofTraceCloneMatchKind = 'exact' | 'kind-agnostic'
+export type ProofTraceCloneStatus = 'hard-fail' | 'reviewer-blocking'
+
+export interface ProofTraceCloneGroup {
+  readonly signature: string
+  readonly matchKind: ProofTraceCloneMatchKind
+  readonly status: ProofTraceCloneStatus
+  readonly puzzleIds: readonly string[]
+  readonly members: readonly ProofTraceFingerprint[]
+}
+
 export interface TechniqueRetentionGateInput {
   readonly puzzleId: string
   readonly retention: AuthoringTechniqueRetentionReport
@@ -386,6 +397,32 @@ export function proofTraceFingerprint(puzzle: PuzzleDefinition): ProofTraceFinge
     steps: canonical.steps,
     transformSignatures,
   }
+}
+
+export function findProofTraceCloneGroups(
+  puzzles: readonly PuzzleDefinition[],
+): readonly ProofTraceCloneGroup[] {
+  const fingerprints = puzzles.map(proofTraceFingerprint)
+  const exactGroups = proofTraceGroupsBySignature({
+    fingerprints,
+    matchKind: 'exact',
+    status: 'hard-fail',
+    signatureOf: (fingerprint) => fingerprint.canonicalSignature,
+  })
+  const exactPuzzleSets = new Set(exactGroups.map((group) => group.puzzleIds.join('|')))
+  const kindAgnosticGroups = proofTraceGroupsBySignature({
+    fingerprints,
+    matchKind: 'kind-agnostic',
+    status: 'reviewer-blocking',
+    signatureOf: (fingerprint) => fingerprint.canonicalKindAgnosticSignature,
+  }).filter((group) => !exactPuzzleSets.has(group.puzzleIds.join('|')))
+
+  return [...exactGroups, ...kindAgnosticGroups]
+    .sort((left, right) => (
+      left.status.localeCompare(right.status) ||
+      left.matchKind.localeCompare(right.matchKind) ||
+      left.puzzleIds[0].localeCompare(right.puzzleIds[0])
+    ))
 }
 
 export function evaluateTechniqueRetentionGate(
@@ -663,6 +700,31 @@ function normalizedEffectiveInitialReveals(
   return puzzle.initialReveals
     .map((cellId) => normalizedByOriginal.get(cellId))
     .filter(isDefined)
+}
+
+function proofTraceGroupsBySignature(input: {
+  readonly fingerprints: readonly ProofTraceFingerprint[]
+  readonly matchKind: ProofTraceCloneMatchKind
+  readonly status: ProofTraceCloneStatus
+  readonly signatureOf: (fingerprint: ProofTraceFingerprint) => string
+}): readonly ProofTraceCloneGroup[] {
+  const bySignature = new Map<string, ProofTraceFingerprint[]>()
+  for (const fingerprint of input.fingerprints) {
+    const signature = input.signatureOf(fingerprint)
+    const members = bySignature.get(signature) ?? []
+    members.push(fingerprint)
+    bySignature.set(signature, members)
+  }
+
+  return [...bySignature.entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([signature, members]) => ({
+      signature,
+      matchKind: input.matchKind,
+      status: input.status,
+      puzzleIds: members.map((member) => member.puzzleId).sort(),
+      members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
+    }))
 }
 
 function proofTraceTransformSignature(

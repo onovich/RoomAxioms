@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import type { CellKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
 import type { AuthoringCaseValidationReport, AuthoringCliReport } from './contracts.js'
 import {
   canonicalPuzzleIsomorphismSignature,
@@ -11,6 +12,7 @@ import {
   evaluateTechniqueRetentionGate,
   findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
+  findProofTraceCloneGroups,
   proofTraceFingerprint,
 } from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
@@ -312,6 +314,35 @@ describe('proof trace fingerprint', () => {
     expect(padded.canonicalSignature).toBe(canonical.canonicalSignature)
     expect(padded.canonicalKindAgnosticSignature).toBe(canonical.canonicalKindAgnosticSignature)
   })
+
+  it('hard-fails exact proof-trace clones', () => {
+    const groups = findProofTraceCloneGroups([
+      loadCase(canonicalCleaningCasePath),
+      loadCase(paddedCleaningClonePath),
+      loadCase(differenceCasePath),
+    ])
+
+    expect(groups).toContainEqual(expect.objectContaining({
+      matchKind: 'exact',
+      status: 'hard-fail',
+      puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
+    }))
+  })
+
+  it('blocks object-label-swapped trace clones for reviewer evidence', () => {
+    const source = loadCase(canonicalCleaningCasePath)
+    const swapped = renamePuzzleKinds(source, {
+      bottle: 'mirror',
+      mirror: 'bottle',
+    }, 'case-004-label-swap')
+    const groups = findProofTraceCloneGroups([source, swapped, loadCase(differenceCasePath)])
+
+    expect(groups).toContainEqual(expect.objectContaining({
+      matchKind: 'kind-agnostic',
+      status: 'reviewer-blocking',
+      puzzleIds: ['case-004', 'case-004-label-swap'],
+    }))
+  })
 })
 
 function evaluateCase(
@@ -350,9 +381,50 @@ function requireTechniqueRetention(
   return report.techniqueRetention
 }
 
-function loadCase(casePath: string): import('@room-axioms/domain').PuzzleDefinition {
+function loadCase(casePath: string): PuzzleDefinition {
   const report = runAuthoringCli(['report', casePath])
   expect(report.ok).toBe(true)
 
-  return JSON.parse(readFileSync(casePath, 'utf8')) as import('@room-axioms/domain').PuzzleDefinition
+  return JSON.parse(readFileSync(casePath, 'utf8')) as PuzzleDefinition
+}
+
+function renamePuzzleKinds(
+  puzzle: PuzzleDefinition,
+  replacements: Partial<Record<CellKind, CellKind>>,
+  id: string,
+): PuzzleDefinition {
+  const rename = (kind: CellKind): CellKind => replacements[kind] ?? kind
+
+  return {
+    ...puzzle,
+    id,
+    title: `${puzzle.title} label swap`,
+    caseName: `${puzzle.caseName} label swap`,
+    rules: puzzle.rules.map((rule) => renameRuleKinds(rule, rename)),
+    target: Object.fromEntries(
+      Object.entries(puzzle.target).map(([cellId, kind]) => [cellId, rename(kind)]),
+    ),
+    metadata: {
+      ...puzzle.metadata,
+      notes: 'In-memory test fixture for proof-trace label-swap detection.',
+    },
+  }
+}
+
+function renameRuleKinds(
+  rule: RuleDefinition,
+  rename: (kind: CellKind) => CellKind,
+): RuleDefinition {
+  if (rule.type === 'globalCount') {
+    return {
+      ...rule,
+      target: rename(rule.target),
+    }
+  }
+
+  return {
+    ...rule,
+    subject: rename(rule.subject),
+    target: rename(rule.target),
+  }
 }
