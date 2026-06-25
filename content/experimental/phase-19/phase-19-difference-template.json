@@ -1,0 +1,108 @@
+{
+  "board": {
+    "width": 4,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 2,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cross",
+        "flavor": "Every bottle sees exactly 1 guest orthogonally."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Mirror quiet zone",
+        "flavor": "Every mirror excludes guests from adjacent cells."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Empty quiet line",
+        "flavor": "Every empty room excludes guests from orthogonal cells."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in the room."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 6
+  },
+  "caps": {
+    "maxAttempts": 96,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-19-difference",
+    "titlePrefix": "Phase 19 Difference Sample",
+    "caseNamePrefix": "Phase 19 Difference Sample",
+    "metadata": {
+      "difficulty": 3,
+      "tags": [
+        "experimental",
+        "phase-19",
+        "sampled",
+        "local-scope-difference"
+      ],
+      "author": "internal-phase-19",
+      "status": "draft",
+      "notes": "Private report-only difference sampling template for Phase 19."
+    }
+  }
+}

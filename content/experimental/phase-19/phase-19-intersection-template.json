@@ -1,0 +1,96 @@
+{
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCount": 1,
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror cross",
+        "flavor": "Every mirror sees exactly 1 guest orthogonally."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "lte",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle shared limit",
+        "flavor": "Every bottle has at most 1 guest around it."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Empty cross",
+        "flavor": "Every empty room sees exactly 1 guest orthogonally."
+      }
+    }
+  ],
+  "initialRevealRange": {
+    "min": 2,
+    "max": 4
+  },
+  "caps": {
+    "maxAttempts": 96,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-19-intersection",
+    "titlePrefix": "Phase 19 Intersection Sample",
+    "caseNamePrefix": "Phase 19 Intersection Sample",
+    "metadata": {
+      "difficulty": 3,
+      "tags": [
+        "experimental",
+        "phase-19",
+        "sampled",
+        "local-scope-intersection"
+      ],
+      "author": "internal-phase-19",
+      "status": "draft",
+      "notes": "Private report-only intersection sampling template for Phase 19."
+    }
+  }
+}

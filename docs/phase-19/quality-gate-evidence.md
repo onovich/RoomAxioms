@@ -1,6 +1,6 @@
 # Phase 19 Quality Gate Evidence
 
-Status: Round 5 evidence recorded
+Status: Round 6 evidence recorded
 
 ## Implemented Gate Surfaces
 
@@ -74,6 +74,15 @@ Coverage in `packages/authoring/src/qualityGates.test.ts` and `packages/authorin
 - `case-004` fails the gate when minimization drops required `UNIQUE_TARGET_NEIGHBOR_INTERSECTION`;
 - existing experimental difference fixture now reports `ok: false` when required difference retention fails.
 
+### Private Template Sampling
+
+Recorded in `docs/phase-19/sampling-evidence.md`:
+
+- four private Phase 19 templates under `content/experimental/phase-19`;
+- report-only sampling for local-count/exclusion, intersection, difference, and mixed 4x4 families;
+- zero generated candidates promoted;
+- capped sampling had no solver truncation but accepted no candidates for the recorded seeds.
+
 ## Architecture Notes
 
 - Gates consume authoring/generator/proof/solver/schema public APIs.
@@ -108,6 +117,16 @@ Coverage in `packages/authoring/src/qualityGates.test.ts` and `packages/authorin
 - Focused authoring typecheck: PASS.
 - Focused minimize command for `case-011 --require-technique LOCAL_SCOPE_INTERSECTION`: PASS, `ok: true`, `TECHNIQUE_RETENTION_PASS`.
 - Focused minimize command for `case-012 --require-technique LOCAL_SCOPE_DIFFERENCE`: PASS, `ok: true`, `TECHNIQUE_RETENTION_PASS`.
+- `git diff --check`: PASS, with normal CRLF working-copy warnings only.
+- `Validate.cmd`: PASS.
+  - `pnpm lint`: PASS.
+  - `pnpm typecheck`: PASS.
+  - `pnpm test`: PASS.
+  - `pnpm build`: PASS.
+
+## Round 6 Validation
+
+- Template sampling commands: PASS for four report-only templates, with zero accepted candidates and no solver truncation.
 - `git diff --check`: PASS, with normal CRLF working-copy warnings only.
 - `Validate.cmd`: PASS.
   - `pnpm lint`: PASS.
