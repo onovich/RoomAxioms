@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-24T23:28:25+08:00
+updated_at: 2026-06-25T16:24:29+08:00
 
 planner:
   role: architect
@@ -23,8 +23,8 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none - awaiting real playtest feedback
+  active_goal_guide: docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md
+  active_goal_phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates
   last_planner_dispatch: 2026-06-24T22:38:16+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-18-public-playtest-launch-package-metadata-cleanup-goal-mode-execution-guide.md

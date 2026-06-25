@@ -40,10 +40,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 - Last accepted phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup
 - Final report: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`
-- Status: MVP release candidate ready for real public playtest intake
-- Active executor phase: none
-- Next gate: record real participant feedback before opening a calibration or release-fix phase
-- Evidence: public playtest launch package, neutral shipped metadata, validation, local smoke, online HTTP checks, Pages deploy, and boundary scans passed. No real playtest feedback exists yet, so difficulty remains uncalibrated.
+- Status: Phase 19 ready for executor dispatch after user playtest feedback
+- Active executor phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates
+- Guide: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md`
+- Budget: 14 executor rounds
+- Final report target: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`
+- Evidence baseline: the user playtest found that only `case-004`, `case-011`, and `case-012` are meaningful puzzles; Phase 19 will add quality gates, demote filler/mirror cases, and promote a real difficulty ladder.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

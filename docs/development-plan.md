@@ -32,15 +32,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 16 - Case 012 Release QA And Playtest Calibration | Release QA, copy review, smoke, player-secrecy checks, and honest playtest calibration prep for the newly promoted `case-012` | Phase 15 follow-up | 8 rounds |
 | Phase 17 - MVP Release Closure And Honest Playtest Intake | Close the current 12-case MVP as a release candidate with release checklist, known limitations, honest playtest intake, smoke evidence, and release decision | Phase 16 follow-up | 6 rounds |
 | Phase 18 - Public Playtest Launch Package And Metadata Cleanup | Prepare an honest public playtest launch package, clean internal shipped-case metadata, and validate the release-candidate sharing surface without new product scope | Phase 17 follow-up | 6 rounds |
+| Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates | Replace filler/mirror cases with a real difficulty ladder, add automated content quality gates, and report the generator/authoring capability ceiling honestly | User playtest feedback + content quality follow-up | 14 rounds |
 
 ## Current Execution State
 
 - Recently accepted: Phase 18 - Public Playtest Launch Package And Metadata Cleanup, PASS, final commit `cb2ef96`.
-- Current active phase: none.
-- Active guide: none.
-- Executor budget: none until real participant feedback creates a calibration or release-fix phase.
-- Executor status: paused; public playtest intake is ready.
-- Final report: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`.
+- Current active phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates.
+- Active guide: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md`.
+- Executor budget: 14 rounds.
+- Executor status: ready for dispatch.
+- Final report target: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -50,7 +51,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
 - Phase 18 result: public playtest launch package is ready, internal shipped-case metadata is neutralized, the 12-case release candidate is preserved, and difficulty remains uncalibrated until real playtest evidence exists.
-- Next gate: gather real participant feedback, then decide whether to open a calibration, P0/P1 release-fix, copy/accessibility hardening, or content-expansion phase.
+- Phase 19 planned work: respond to user playtest feedback that most shipped cases are trivial or mirrored; add quality gates, demote filler cases, and promote a real 8-10 case difficulty ladder.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -66,4 +67,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Case-012 release QA and calibration budget: 8 rounds, covering Phase 16.
 - MVP release closure budget: 6 rounds, covering Phase 17.
 - Public playtest launch package budget: 6 rounds, covering Phase 18.
+- High-quality puzzle ladder budget: 14 rounds, covering Phase 19.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
