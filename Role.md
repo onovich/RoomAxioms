@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-25T23:46:48+08:00
+updated_at: 2026-06-26T00:07:25+08:00
 
 planner:
   role: architect
@@ -23,8 +23,8 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
+  active_goal_guide: docs/phase-22-expressive-mechanics-and-content-expansion-lab-goal-mode-execution-guide.md
+  active_goal_phase: Phase 22 - Expressive Mechanics And Content Expansion Lab
   last_planner_dispatch: 2026-06-25T22:13:26+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-21-distinct-puzzle-ladder-production-goal-mode-execution-guide.md
