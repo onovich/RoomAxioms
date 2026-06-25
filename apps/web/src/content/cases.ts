@@ -1,11 +1,6 @@
 import type { PuzzleDefinition } from '@room-axioms/domain'
 
-import case001Fixture from '../../../../content/cases/case-001.json' with { type: 'json' }
-import case002Fixture from '../../../../content/cases/case-002.json' with { type: 'json' }
-import case003Fixture from '../../../../content/cases/case-003.json' with { type: 'json' }
 import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
-import case005Fixture from '../../../../content/cases/case-005.json' with { type: 'json' }
-import case006Fixture from '../../../../content/cases/case-006.json' with { type: 'json' }
 import case011Fixture from '../../../../content/cases/case-011.json' with { type: 'json' }
 import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
 
@@ -21,14 +16,9 @@ export interface CaseSummary {
 }
 
 const caseFixtures = [
-  case001Fixture,
-  case002Fixture,
-  case003Fixture,
   case011Fixture,
   case012Fixture,
   case004Fixture,
-  case005Fixture,
-  case006Fixture,
 ] as const
 
 export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixture) =>

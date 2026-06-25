@@ -6,14 +6,9 @@ import { verifyCaseFixture } from './caseVerification'
 describe('case content verification harness', () => {
   it('loads the shipped cases in stable order', () => {
     expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
-      'case-001',
-      'case-002',
-      'case-003',
       'case-011',
       'case-012',
       'case-004',
-      'case-005',
-      'case-006',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })
@@ -22,12 +17,20 @@ describe('case content verification harness', () => {
     const internalCasePrefix = /^phase-\d+-/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(8)
+    expect(contentCases).toHaveLength(3)
     expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
     expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
-    expect(contentCases.some((puzzle) => ['case-007', 'case-008', 'case-009', 'case-010'].includes(puzzle.id))).toBe(
-      false,
-    )
+    expect(contentCases.some((puzzle) => [
+      'case-001',
+      'case-002',
+      'case-003',
+      'case-005',
+      'case-006',
+      'case-007',
+      'case-008',
+      'case-009',
+      'case-010',
+    ].includes(puzzle.id))).toBe(false)
     expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
       title: '客房 11：交汇视线',
       caseName: '案卷 11 · 交汇视线',
