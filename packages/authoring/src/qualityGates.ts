@@ -95,6 +95,47 @@ export interface RuleContributionReport {
   readonly results: readonly RuleContributionResult[]
 }
 
+export type RuleImpactVectorStatus = 'material' | 'redundant' | 'invalid'
+
+export interface RuleImpactVectorEntry {
+  readonly ruleId: string
+  readonly ruleShape: string
+  readonly status: RuleImpactVectorStatus
+  readonly openingGuestLayoutDelta?: number
+  readonly proofWaveDelta?: number
+  readonly proofDeductionDelta?: number
+  readonly baselineInitialGuestLayouts: number
+  readonly withoutRuleInitialGuestLayouts?: number
+  readonly baselineGuestLayoutUniqueAtEnd: boolean
+  readonly withoutRuleGuestLayoutUniqueAtEnd?: boolean
+  readonly baselineTargetSatisfiesRules: boolean
+  readonly withoutRuleTargetSatisfiesRules?: boolean
+  readonly baselineInitialSatisfiable: boolean
+  readonly withoutRuleInitialSatisfiable?: boolean
+  readonly lostTechniqueIds: readonly TechniqueId[]
+  readonly gainedTechniqueIds: readonly TechniqueId[]
+  readonly stats: SolverStats
+}
+
+export interface RuleImpactVectorReport {
+  readonly puzzleId: string
+  readonly status: 'pass' | 'warning'
+  readonly entries: readonly RuleImpactVectorEntry[]
+}
+
+export interface RuleImpactVectorSignature {
+  readonly puzzleId: string
+  readonly signature: string
+  readonly report: RuleImpactVectorReport
+}
+
+export interface RuleImpactCloneGroup {
+  readonly signature: string
+  readonly status: 'reviewer-blocking'
+  readonly puzzleIds: readonly string[]
+  readonly members: readonly RuleImpactVectorSignature[]
+}
+
 export type BoardTransformName =
   | 'identity'
   | 'mirror-horizontal'
@@ -319,6 +360,103 @@ export function evaluateRuleContribution(
     status: results.some((result) => result.status === 'redundant') ? 'warning' : 'pass',
     results,
   }
+}
+
+export function evaluateRuleImpactVector(
+  puzzle: PuzzleDefinition,
+  options: RuleContributionOptions = {},
+): RuleImpactVectorReport {
+  const solver = options.solver ?? {}
+  const candidateLayoutCap = options.candidateLayoutCap ?? 1_000
+  const baseline = ruleImpactBaseline(puzzle, candidateLayoutCap, solver)
+  const entries = puzzle.rules.map((rule) => {
+    const withoutRule = {
+      ...puzzle,
+      rules: puzzle.rules.filter((candidate) => candidate.id !== rule.id),
+    }
+    const parsed = parsePuzzleDefinition(withoutRule)
+    if (!parsed.ok || parsed.puzzle === undefined) {
+      return {
+        ruleId: rule.id,
+        ruleShape: ruleTraceShape(rule, 'kind-agnostic'),
+        status: 'invalid',
+        baselineInitialGuestLayouts: baseline.initialGuestLayouts,
+        baselineGuestLayoutUniqueAtEnd: baseline.proof.guestLayoutUniqueAtEnd,
+        baselineTargetSatisfiesRules: baseline.targetSatisfiesRules,
+        baselineInitialSatisfiable: baseline.initialSatisfiable,
+        lostTechniqueIds: [],
+        gainedTechniqueIds: [],
+        stats: baseline.stats,
+      } satisfies RuleImpactVectorEntry
+    }
+
+    return ruleImpactEntry({
+      rule,
+      baseline,
+      withoutRule: parsed.puzzle,
+      candidateLayoutCap,
+      solver,
+    })
+  })
+
+  return {
+    puzzleId: puzzle.id,
+    status: entries.some((entry) => entry.status === 'redundant') ? 'warning' : 'pass',
+    entries,
+  }
+}
+
+export function ruleImpactVectorSignature(
+  puzzle: PuzzleDefinition,
+  options: RuleContributionOptions = {},
+): RuleImpactVectorSignature {
+  const report = evaluateRuleImpactVector(puzzle, options)
+
+  return {
+    puzzleId: puzzle.id,
+    signature: JSON.stringify({
+      entries: report.entries
+        .map((entry) => ({
+          ruleShape: entry.ruleShape,
+          status: entry.status,
+          openingGuestLayoutDelta: entry.openingGuestLayoutDelta,
+          proofWaveDelta: entry.proofWaveDelta,
+          proofDeductionDelta: entry.proofDeductionDelta,
+          guestLayoutUniqueChanged:
+            entry.baselineGuestLayoutUniqueAtEnd !== entry.withoutRuleGuestLayoutUniqueAtEnd,
+          targetSatisfiesRulesChanged:
+            entry.baselineTargetSatisfiesRules !== entry.withoutRuleTargetSatisfiesRules,
+          initialSatisfiableChanged:
+            entry.baselineInitialSatisfiable !== entry.withoutRuleInitialSatisfiable,
+          lostTechniqueIds: entry.lostTechniqueIds,
+          gainedTechniqueIds: entry.gainedTechniqueIds,
+        }))
+        .sort((left, right) => left.ruleShape.localeCompare(right.ruleShape)),
+    }),
+    report,
+  }
+}
+
+export function findRuleImpactCloneGroups(
+  puzzles: readonly PuzzleDefinition[],
+): readonly RuleImpactCloneGroup[] {
+  const signatures = puzzles.map((puzzle) => ruleImpactVectorSignature(puzzle))
+  const bySignature = new Map<string, RuleImpactVectorSignature[]>()
+  for (const signature of signatures) {
+    const members = bySignature.get(signature.signature) ?? []
+    members.push(signature)
+    bySignature.set(signature.signature, members)
+  }
+
+  return [...bySignature.entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([signature, members]) => ({
+      signature,
+      status: 'reviewer-blocking' as const,
+      puzzleIds: members.map((member) => member.puzzleId).sort(),
+      members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
+    }))
+    .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
 }
 
 export function canonicalPuzzleIsomorphismSignature(puzzle: PuzzleDefinition): PuzzleIsomorphismSignature {
@@ -641,6 +779,104 @@ function combinedStatus(results: readonly QualityGateResult[]): QualityGateStatu
   if (results.some((result) => result.status === 'warning')) return 'warning'
 
   return 'pass'
+}
+
+interface RuleImpactBaseline {
+  readonly initialGuestLayouts: number
+  readonly targetSatisfiesRules: boolean
+  readonly initialSatisfiable: boolean
+  readonly proof: VerificationReport
+  readonly techniqueIds: ReadonlySet<TechniqueId>
+  readonly stats: SolverStats
+}
+
+function ruleImpactBaseline(
+  puzzle: PuzzleDefinition,
+  candidateLayoutCap: number,
+  solver: SolverOptions,
+): RuleImpactBaseline {
+  const targetCheck = isSatisfiable(
+    { puzzle, observations: targetObservationsForCells(puzzle, allCells(puzzle.board)) },
+    [],
+    solver,
+  )
+  const initialSatisfiability = isSatisfiable(
+    { puzzle, observations: targetObservationsForCells(puzzle, puzzle.initialReveals) },
+    [],
+    solver,
+  )
+  const initialLayouts = countGuestLayouts(
+    { puzzle, observations: targetObservationsForCells(puzzle, puzzle.initialReveals) },
+    candidateLayoutCap,
+    solver,
+  )
+  const proof = verifyNoGuess(puzzle, { solver })
+  const proofStats = proof.waves.reduce(
+    (current, wave) => combineStats(current, wave.solverStats),
+    zeroStats(),
+  )
+
+  return {
+    initialGuestLayouts: initialLayouts.count,
+    targetSatisfiesRules: targetCheck.satisfiable && !targetCheck.stats.truncated,
+    initialSatisfiable: initialSatisfiability.satisfiable && !initialSatisfiability.stats.truncated,
+    proof,
+    techniqueIds: new Set(proof.metrics.techniqueIds),
+    stats: combineStats(
+      combineStats(targetCheck.stats, initialSatisfiability.stats),
+      combineStats(initialLayouts.stats, proofStats),
+    ),
+  }
+}
+
+function ruleImpactEntry(input: {
+  readonly rule: RuleDefinition
+  readonly baseline: RuleImpactBaseline
+  readonly withoutRule: PuzzleDefinition
+  readonly candidateLayoutCap: number
+  readonly solver: SolverOptions
+}): RuleImpactVectorEntry {
+  const without = ruleImpactBaseline(input.withoutRule, input.candidateLayoutCap, input.solver)
+  const withoutTechniqueIds = without.techniqueIds
+  const lostTechniqueIds = [...input.baseline.techniqueIds]
+    .filter((techniqueId) => !withoutTechniqueIds.has(techniqueId))
+    .sort()
+  const gainedTechniqueIds = [...withoutTechniqueIds]
+    .filter((techniqueId) => !input.baseline.techniqueIds.has(techniqueId))
+    .sort()
+  const openingGuestLayoutDelta = without.initialGuestLayouts - input.baseline.initialGuestLayouts
+  const proofWaveDelta = without.proof.metrics.waveCount - input.baseline.proof.metrics.waveCount
+  const proofDeductionDelta = without.proof.metrics.deductionCount - input.baseline.proof.metrics.deductionCount
+  const changed = [
+    openingGuestLayoutDelta !== 0,
+    proofWaveDelta !== 0,
+    proofDeductionDelta !== 0,
+    input.baseline.proof.guestLayoutUniqueAtEnd !== without.proof.guestLayoutUniqueAtEnd,
+    input.baseline.targetSatisfiesRules !== without.targetSatisfiesRules,
+    input.baseline.initialSatisfiable !== without.initialSatisfiable,
+    lostTechniqueIds.length > 0,
+    gainedTechniqueIds.length > 0,
+  ].some(Boolean)
+
+  return {
+    ruleId: input.rule.id,
+    ruleShape: ruleTraceShape(input.rule, 'kind-agnostic'),
+    status: changed ? 'material' : 'redundant',
+    openingGuestLayoutDelta,
+    proofWaveDelta,
+    proofDeductionDelta,
+    baselineInitialGuestLayouts: input.baseline.initialGuestLayouts,
+    withoutRuleInitialGuestLayouts: without.initialGuestLayouts,
+    baselineGuestLayoutUniqueAtEnd: input.baseline.proof.guestLayoutUniqueAtEnd,
+    withoutRuleGuestLayoutUniqueAtEnd: without.proof.guestLayoutUniqueAtEnd,
+    baselineTargetSatisfiesRules: input.baseline.targetSatisfiesRules,
+    withoutRuleTargetSatisfiesRules: without.targetSatisfiesRules,
+    baselineInitialSatisfiable: input.baseline.initialSatisfiable,
+    withoutRuleInitialSatisfiable: without.initialSatisfiable,
+    lostTechniqueIds,
+    gainedTechniqueIds,
+    stats: combineStats(input.baseline.stats, without.stats),
+  }
 }
 
 function evaluateRuleRemoval(input: {

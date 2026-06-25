@@ -10,11 +10,13 @@ import {
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
+  evaluateRuleImpactVector,
   evaluateTechniqueRetentionGate,
   findCandidateShrinkCloneGroups,
   findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
   findProofTraceCloneGroups,
+  findRuleImpactCloneGroups,
   proofTraceFingerprint,
 } from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
@@ -177,6 +179,54 @@ describe('rule contribution gate', () => {
       reasons: ['no-material-change'],
     })
   })
+})
+
+describe('rule impact vector', () => {
+  it('reports redundant decorative rules with zero impact deltas', () => {
+    const puzzle = loadCase(intersectionCasePath)
+    const report = evaluateRuleImpactVector({
+      ...puzzle,
+      rules: [
+        ...puzzle.rules,
+        {
+          id: 'DECORATIVE_BIN_COUNT',
+          type: 'globalCount',
+          target: 'bin',
+          count: {
+            op: 'eq',
+            value: 4,
+          },
+          presentation: {
+            title: 'Decorative bin count',
+            flavor: 'A maintainer-facing fixture rule that should not affect guest reasoning.',
+          },
+        },
+      ],
+    })
+    const decorativeImpact = report.entries.find((entry) => entry.ruleId === 'DECORATIVE_BIN_COUNT')
+
+    expect(report.status).toBe('warning')
+    expect(decorativeImpact).toMatchObject({
+      status: 'redundant',
+      openingGuestLayoutDelta: 0,
+      proofWaveDelta: 0,
+      proofDeductionDelta: 0,
+      lostTechniqueIds: [],
+      gainedTechniqueIds: [],
+    })
+  })
+
+  it('groups identical rule-impact vectors as reviewer-blocking clone evidence', () => {
+    const groups = findRuleImpactCloneGroups([
+      loadCase(canonicalCleaningCasePath),
+      loadCase(paddedCleaningClonePath),
+    ])
+
+    expect(groups).toContainEqual(expect.objectContaining({
+      status: 'reviewer-blocking',
+      puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
+    }))
+  }, 20_000)
 })
 
 describe('non-isomorphism gate', () => {
