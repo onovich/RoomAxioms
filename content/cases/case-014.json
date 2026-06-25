@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "case-014",
+  "title": "客房 14：暗瓶缺口",
+  "caseName": "案卷 14 · 暗瓶缺口",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字账",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "镜面静区",
+        "flavor": "每面镜子周围一圈里，没有未登记住客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "空房静线",
+        "flavor": "每个空房间的上下左右邻格里，没有未登记住客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2",
+    "B3",
+    "D3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "mirror",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bottle",
+    "C3": "bottle",
+    "D3": "empty",
+    "A4": "bin",
+    "B4": "guest",
+    "C4": "guest",
+    "D4": "bin"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "mvp",
+      "mid-band",
+      "local-scope-difference",
+      "hidden-bottle"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Maintainer-authored hidden-bottle difference case with no global guest count. Difficulty remains provisional until real playtest calibration."
+  }
+}

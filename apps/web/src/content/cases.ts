@@ -4,6 +4,7 @@ import case004Fixture from '../../../../content/cases/case-004.json' with { type
 import case011Fixture from '../../../../content/cases/case-011.json' with { type: 'json' }
 import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
 import case013Fixture from '../../../../content/cases/case-013.json' with { type: 'json' }
+import case014Fixture from '../../../../content/cases/case-014.json' with { type: 'json' }
 
 export const DEFAULT_CASE_ID = 'case-004'
 
@@ -20,6 +21,7 @@ const caseFixtures = [
   case011Fixture,
   case013Fixture,
   case012Fixture,
+  case014Fixture,
   case004Fixture,
 ] as const
 

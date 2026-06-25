@@ -51,6 +51,19 @@
       }
     },
     {
+      "puzzleId": "case-014",
+      "status": "accepted",
+      "novelty": "Hidden-bottle 4x4 difference case with no global guest count; local quiet-zone deductions reveal the bottom-row guest pair.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 21 because anti-clone review found no collision with the current selector including case-013; unlike case-012, this case uses a larger board, no global guest count, and bottom-row B4/C4 guests unlocked by hidden bottle structure.",
+        "gateEvidence": [
+          "phase-21-s3-promotion",
+          "LOCAL_COUNT_SATURATED",
+          "LOCAL_SCOPE_DIFFERENCE"
+        ]
+      }
+    },
+    {
       "puzzleId": "case-001",
       "status": "rejected",
       "novelty": "No accepted Phase 20 novelty claim.",

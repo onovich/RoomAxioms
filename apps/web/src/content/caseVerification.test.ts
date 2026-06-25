@@ -9,6 +9,7 @@ describe('case content verification harness', () => {
       'case-011',
       'case-013',
       'case-012',
+      'case-014',
       'case-004',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
@@ -18,7 +19,7 @@ describe('case content verification harness', () => {
     const internalCasePrefix = /^phase-\d+-/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(4)
+    expect(contentCases).toHaveLength(5)
     expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
     expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
     expect(contentCases.some((puzzle) => [
@@ -231,6 +232,45 @@ describe('case content verification harness', () => {
       runtime: {
         status: 'ready',
         candidateGuestLayouts: 2,
+        guestLayoutUnique: false,
+        noGuess: true,
+        humanExplainable: true,
+        warningCodes: [],
+      },
+    })
+    expect(report.stats.truncated).toBe(false)
+  })
+
+  it('records the promoted case-014 hidden-bottle difference evidence', () => {
+    const report = verifyCaseFixture(getCaseById('case-014'))
+
+    expect(report.passed).toBe(true)
+    expect(report.issues).toEqual([])
+    expect(report).toMatchObject({
+      id: 'case-014',
+      title: '客房 14：暗瓶缺口',
+      initial: {
+        revealedCells: ['A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'B3', 'D3'],
+        satisfiable: true,
+        candidateGuestLayouts: 4,
+      },
+      final: {
+        unique: true,
+        guestCells: ['B4', 'C4'],
+      },
+      proof: {
+        noGuess: true,
+        humanExplainable: true,
+        guestLayoutUniqueAtEnd: true,
+        finalGuestCells: ['B4', 'C4'],
+        waveCount: 1,
+        deductionCount: 8,
+        techniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
+        issueCodes: [],
+      },
+      runtime: {
+        status: 'ready',
+        candidateGuestLayouts: 4,
         guestLayoutUnique: false,
         noGuess: true,
         humanExplainable: true,
