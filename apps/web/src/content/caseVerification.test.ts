@@ -6,11 +6,11 @@ import { verifyCaseFixture } from './caseVerification'
 describe('case content verification harness', () => {
   it('loads the shipped cases in stable order', () => {
     expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
+      'case-004',
       'case-011',
       'case-013',
       'case-012',
       'case-014',
-      'case-004',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })

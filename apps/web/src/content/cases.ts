@@ -18,11 +18,11 @@ export interface CaseSummary {
 }
 
 const caseFixtures = [
+  case004Fixture,
   case011Fixture,
   case013Fixture,
   case012Fixture,
   case014Fixture,
-  case004Fixture,
 ] as const
 
 export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixture) =>
