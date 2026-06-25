@@ -20,6 +20,16 @@ export {
 } from './contracts.js'
 export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
+export {
+  evaluateCoreQualityGates,
+  type QualityGateCaseProfile,
+  type QualityGateId,
+  type QualityGateInput,
+  type QualityGatePolicy,
+  type QualityGateReport,
+  type QualityGateResult,
+  type QualityGateStatus,
+} from './qualityGates.js'
 export { parsedCommandReport, parseErrorReport } from './reports.js'
 export { runAuthoringCli, type RunAuthoringCliOptions } from './runner.js'
 export { sampleCommand } from './sampleCommand.js'
