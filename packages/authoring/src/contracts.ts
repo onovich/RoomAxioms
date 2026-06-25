@@ -1,5 +1,6 @@
 import type { GeneratorRunReport, ProvisionalDifficultyScore, RevealMinimizationReport } from '@room-axioms/generator'
 import type { TechniqueId } from '@room-axioms/proof'
+import type { AntiCloneReport } from './antiCloneReport.js'
 
 export const AUTHORING_PACKAGE_NAME = '@room-axioms/authoring' as const
 
@@ -11,6 +12,7 @@ export type AuthoringCommandName =
   | 'score'
   | 'minimize'
   | 'sample'
+  | 'anti-clone'
 
 export type AuthoringOutputFormat = 'json'
 
@@ -23,9 +25,10 @@ export interface AuthoringCliOptions {
 export type AuthoringCliCommand =
   | CasePathCommand
   | SampleCommand
+  | AntiCloneCommand
 
 export interface CasePathCommand {
-  readonly name: Exclude<AuthoringCommandName, 'sample'>
+  readonly name: Exclude<AuthoringCommandName, 'sample' | 'anti-clone'>
   readonly casePath: string
   readonly options: AuthoringCliOptions
 }
@@ -34,6 +37,13 @@ export interface SampleCommand {
   readonly name: 'sample'
   readonly seed: number
   readonly templatePath: string
+  readonly options: AuthoringCliOptions
+}
+
+export interface AntiCloneCommand {
+  readonly name: 'anti-clone'
+  readonly casePaths: readonly string[]
+  readonly noveltyManifestPath?: string
   readonly options: AuthoringCliOptions
 }
 
@@ -72,6 +82,7 @@ export interface AuthoringCliReport {
     | 'scored'
     | 'minimized'
     | 'sampled'
+    | 'anti-clone-reported'
     | 'error'
   readonly diagnostics: readonly AuthoringCliDiagnostic[]
   readonly validation?: AuthoringCaseValidationReport
@@ -79,6 +90,7 @@ export interface AuthoringCliReport {
   readonly minimization?: RevealMinimizationReport
   readonly techniqueRetention?: AuthoringTechniqueRetentionReport
   readonly sample?: GeneratorRunReport
+  readonly antiClone?: AntiCloneReport
 }
 
 export interface AuthoringCliDiagnostic {

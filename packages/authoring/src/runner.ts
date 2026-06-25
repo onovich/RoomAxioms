@@ -1,4 +1,5 @@
 import type { AuthoringCliReport } from './contracts.js'
+import { antiCloneCommand } from './antiCloneCommand.js'
 import { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 import { parseAuthoringArgs } from './parser.js'
 import { parsedCommandReport, parseErrorReport } from './reports.js'
@@ -26,6 +27,9 @@ export function runAuthoringCli(
   }
   if (parsed.command.name === 'sample') {
     return sampleCommand(parsed.command, { cwd: options.cwd })
+  }
+  if (parsed.command.name === 'anti-clone') {
+    return antiCloneCommand(parsed.command, { cwd: options.cwd })
   }
 
   return parsedCommandReport(parsed.command)

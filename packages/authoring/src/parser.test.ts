@@ -16,6 +16,14 @@ const sampleTemplatePath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-10/phase-10-sample-template.json',
 )
+const case004Path = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/cases/case-004.json',
+)
+const paddedCase004Path = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-20/padded-case004-right-edge.json',
+)
 
 describe('authoring CLI parser', () => {
   it('parses case-path commands with structured JSON output options', () => {
@@ -87,6 +95,29 @@ describe('authoring CLI parser', () => {
         options: {
           format: 'json',
           requiredTechniqueIds: ['LOCAL_SCOPE_DIFFERENCE', 'LOCAL_SCOPE_INTERSECTION'],
+        },
+      },
+    })
+  })
+
+  it('parses anti-clone command inputs and novelty manifest flag', () => {
+    expect(parseAuthoringArgs([
+      'anti-clone',
+      'content/cases/case-004.json',
+      'content/experimental/phase-20/padded-case004-right-edge.json',
+      '--novelty-manifest',
+      'content/novelty-claims.json',
+    ])).toEqual({
+      ok: true,
+      command: {
+        name: 'anti-clone',
+        casePaths: [
+          'content/cases/case-004.json',
+          'content/experimental/phase-20/padded-case004-right-edge.json',
+        ],
+        noveltyManifestPath: 'content/novelty-claims.json',
+        options: {
+          format: 'json',
         },
       },
     })
@@ -267,4 +298,17 @@ describe('authoring CLI parser', () => {
     })
     expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('TECHNIQUE_RETENTION_FAILED')
   })
+
+  it('reports anti-clone hard failures from the CLI', () => {
+    const report = runAuthoringCli(['anti-clone', case004Path, paddedCase004Path])
+
+    expect(report.ok).toBe(false)
+    expect(report.status).toBe('anti-clone-reported')
+    expect(report.antiClone).toMatchObject({
+      status: 'fail',
+      puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
+    })
+    expect(report.antiClone?.hardFailureCount).toBeGreaterThan(0)
+    expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('ANTI_CLONE_BLOCKED')
+  }, 30_000)
 })

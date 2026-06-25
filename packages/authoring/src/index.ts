@@ -7,8 +7,18 @@ export {
   type EffectiveCellReason,
 } from './antiClone.js'
 export {
+  evaluateAntiCloneReport,
+  type AntiCloneEvidenceGroup,
+  type AntiCloneEvidenceKind,
+  type AntiCloneReport,
+  type AntiCloneReportOptions,
+  type AntiCloneReportStatus,
+} from './antiCloneReport.js'
+export { antiCloneCommand, type AntiCloneCommandOptions } from './antiCloneCommand.js'
+export {
   AUTHORING_CLI_VERSION,
   AUTHORING_PACKAGE_NAME,
+  type AntiCloneCommand,
   type AuthoringCaseValidationReport,
   type AuthoringCliCommand,
   type AuthoringCliDiagnostic,

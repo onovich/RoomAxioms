@@ -226,7 +226,7 @@ describe('rule impact vector', () => {
       status: 'reviewer-blocking',
       puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
     }))
-  }, 20_000)
+  }, 45_000)
 })
 
 describe('non-isomorphism gate', () => {

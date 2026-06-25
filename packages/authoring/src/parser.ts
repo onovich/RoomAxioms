@@ -21,13 +21,17 @@ export function parseAuthoringArgs(args: readonly string[]): AuthoringCliParseRe
     return parseError('UNKNOWN_COMMAND', `Unknown authoring command: ${rawCommand ?? '<missing>'}.`, rawCommand)
   }
 
+  if (rawCommand === 'anti-clone') {
+    return parseAntiCloneCommand(rest)
+  }
+
   return rawCommand === 'sample'
     ? parseSampleCommand(rest)
     : parseCasePathCommand(rawCommand, rest)
 }
 
 function parseCasePathCommand(
-  name: Exclude<AuthoringCommandName, 'sample'>,
+  name: Exclude<AuthoringCommandName, 'sample' | 'anti-clone'>,
   args: readonly string[],
 ): AuthoringCliParseResult {
   const { options, positionals, error } = parseOptions(args)
@@ -42,6 +46,25 @@ function parseCasePathCommand(
     command: {
       name,
       casePath,
+      options,
+    },
+  }
+}
+
+function parseAntiCloneCommand(args: readonly string[]): AuthoringCliParseResult {
+  const { options, flags, positionals, error } = parseOptions(args)
+  if (error !== undefined) return { ok: false, error }
+  if (positionals.length < 2) {
+    return parseError('MISSING_CASE_PATH', 'anti-clone requires at least two case JSON paths.')
+  }
+
+  const noveltyManifestPath = flags.get('novelty-manifest')
+  return {
+    ok: true,
+    command: {
+      name: 'anti-clone',
+      casePaths: positionals,
+      ...(noveltyManifestPath === undefined ? {} : { noveltyManifestPath }),
       options,
     },
   }
@@ -104,7 +127,7 @@ function parseOptions(args: readonly string[]): OptionParseResult {
       index += 1
       continue
     }
-    if (arg === '--seed' || arg === '--template') {
+    if (arg === '--seed' || arg === '--template' || arg === '--novelty-manifest') {
       const value = args[index + 1]
       if (value === undefined || value.startsWith('--')) {
         return withOptionError('MISSING_FLAG_VALUE', `${arg} requires a value.`, arg)
@@ -159,7 +182,9 @@ function isTechniqueId(value: string): value is TechniqueId {
 }
 
 function isCommandName(value: string | undefined): value is AuthoringCommandName {
-  return value === 'sample' || (value !== undefined && CASE_PATH_COMMANDS.has(value as AuthoringCommandName))
+  return value === 'sample' ||
+    value === 'anti-clone' ||
+    (value !== undefined && CASE_PATH_COMMANDS.has(value as AuthoringCommandName))
 }
 
 function parseError(
@@ -195,5 +220,6 @@ function withOptionError(
 }
 
 export function commandInputPath(command: AuthoringCliCommand): string | undefined {
+  if (command.name === 'anti-clone') return command.casePaths[0]
   return command.name === 'sample' ? command.templatePath : command.casePath
 }
