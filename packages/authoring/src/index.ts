@@ -50,6 +50,18 @@ export {
   type NoveltyClaimReport,
   type NoveltyClaimStatus,
 } from './noveltyClaims.js'
+export {
+  evaluateReviewerManifest,
+  type ReviewerManifest,
+  type ReviewerManifestBucket,
+  type ReviewerManifestCase,
+  type ReviewerManifestDecision,
+  type ReviewerManifestGateEvidence,
+  type ReviewerManifestGateStatus,
+  type ReviewerManifestIssue,
+  type ReviewerManifestIssueCode,
+  type ReviewerManifestReport,
+} from './reviewerManifest.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
   candidateShrinkSignature,
