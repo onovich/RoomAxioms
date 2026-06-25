@@ -96,6 +96,33 @@ describe('solver propagation and trail rollback', () => {
     expect(containsKind(state.domains.A2, 'guest')).toBe(true);
   });
 
+  it('propagates anchor target exclusion after the anchor subject is forced', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'bottle', 'guest'],
+      anchors: [
+        {
+          id: 'known-bottle',
+          title: 'Known bottle',
+          subject: 'bottle',
+        },
+      ],
+      rules: [anchorCountRule('bottle-no-guests', 'known-bottle', 'orthogonal', 'guest', { op: 'eq', value: 0 })],
+    });
+    const state = createSolverState({ puzzle });
+    const trail = createTrail();
+
+    assignCellKind(state, trail, 'B2', 'bottle');
+    const result = propagate(state, compileConstraints(puzzle), trail);
+
+    expect(result.ok).toBe(true);
+    expect(containsKind(state.domains.B1, 'guest')).toBe(false);
+    expect(containsKind(state.domains.A2, 'guest')).toBe(false);
+    expect(containsKind(state.domains.C2, 'guest')).toBe(false);
+    expect(containsKind(state.domains.B3, 'guest')).toBe(false);
+  });
+
   it('propagates local target exclusion for active subjects', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -218,6 +245,7 @@ function makePuzzle(input: {
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
   readonly regions?: PuzzleDefinition['regions'];
+  readonly anchors?: PuzzleDefinition['anchors'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -227,6 +255,7 @@ function makePuzzle(input: {
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
     ...(input.regions === undefined ? {} : { regions: input.regions }),
+    ...(input.anchors === undefined ? {} : { anchors: input.anchors }),
     rules: input.rules,
     initialReveals: [],
     target: {},
@@ -276,6 +305,24 @@ function lineCountRule(
     type: 'lineCount',
     ...(origin === undefined ? {} : { origin }),
     scope,
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function anchorCountRule(
+  id: string,
+  anchorId: string,
+  scope: 'adjacent' | 'orthogonal',
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'anchorCount',
+    anchorId,
+    scope: { kind: scope },
     target,
     count,
     presentation: { title: id },

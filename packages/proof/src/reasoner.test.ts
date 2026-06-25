@@ -150,6 +150,43 @@ describe('line count human techniques', () => {
   });
 });
 
+describe('anchor count human techniques', () => {
+  it('activates only after the anchor subject is observed', () => {
+    const puzzleInput = {
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bottle', 'guest'] as const,
+      anchors: [
+        {
+          id: 'known-bottle',
+          title: 'Known bottle',
+          subject: 'bottle' as const,
+        },
+      ],
+      rules: [anchorCountRule('AR1', 'known-bottle', 'orthogonal', 'guest', { op: 'eq', value: 0 })],
+    };
+    const hiddenState = makeState({
+      ...puzzleInput,
+      observations: [],
+    });
+    const revealedState = makeState({
+      ...puzzleInput,
+      observations: [{ cellId: 'B2', kind: 'bottle' }],
+    });
+    const hiddenDeductions = deriveHumanDeductions(hiddenState);
+    const revealedDeductions = deriveHumanDeductions(revealedState);
+    const forced = findForcedCells({ puzzle: revealedState.puzzle, observations: revealedState.observations });
+
+    expect(conclusionsFor(hiddenDeductions, 'ANCHOR_COUNT_SATURATED')).toEqual([]);
+    expect(conclusionsFor(revealedDeductions, 'ANCHOR_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'C2' },
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(forced.safe).toEqual(['B1', 'A2', 'C2', 'B3']);
+  });
+});
+
 describe('local count human techniques', () => {
   it('derives safe cells when a local guest count is saturated', () => {
     const state = makeState({
@@ -324,6 +361,7 @@ function makeState(input: {
   readonly board?: BoardSize;
   readonly allowedKinds: readonly CellKind[];
   readonly regions?: PuzzleDefinition['regions'];
+  readonly anchors?: PuzzleDefinition['anchors'];
   readonly rules: readonly RuleDefinition[];
   readonly observations: readonly Observation[];
 }): KnowledgeState {
@@ -335,6 +373,7 @@ function makeState(input: {
       board: input.board ?? { width: 2, height: 2 },
       allowedKinds: input.allowedKinds,
       ...(input.regions === undefined ? {} : { regions: input.regions }),
+      ...(input.anchors === undefined ? {} : { anchors: input.anchors }),
       rules: input.rules,
       initialReveals: [],
       target: {},
@@ -389,6 +428,24 @@ function lineCountRule(
     target,
     count,
     presentation: { title: `${target} line count` },
+  };
+}
+
+function anchorCountRule(
+  id: string,
+  anchorId: string,
+  scope: 'orthogonal' | 'adjacent',
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'anchorCount',
+    anchorId,
+    scope: { kind: scope },
+    target,
+    count,
+    presentation: { title: `${anchorId} ${target} count` },
   };
 }
 

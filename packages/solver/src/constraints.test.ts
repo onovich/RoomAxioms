@@ -164,6 +164,37 @@ describe('constraint compilation and count bounds', () => {
     });
   });
 
+  it('computes anchor count bounds from declared anchor subjects', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'bottle', 'guest'],
+      anchors: [
+        {
+          id: 'known-bottle',
+          title: 'Known bottle',
+          subject: 'bottle',
+        },
+      ],
+      rules: [anchorCountRule('bottle-no-guests', 'known-bottle', 'orthogonal', 'guest', { op: 'eq', value: 0 })],
+    });
+    const initial = createInitialDomains(puzzle);
+    const bottleAtB2 = setCellDomain(initial, 'B2', singletonMask('bottle'));
+    const guestAtB1 = setCellDomain(bottleAtB2, 'B1', singletonMask('guest'));
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, guestAtB1);
+
+    if (bounds.kind !== 'anchorCount') throw new Error('Expected anchorCount bounds');
+    expect(bounds.entries.find((entry) => entry.cellId === 'B2')).toMatchObject({
+      cellId: 'B2',
+      subjectPossible: true,
+      subjectForced: true,
+      targetBounds: { minimum: 1, maximum: 4 },
+      possible: false,
+    });
+    expect(bounds.possible).toBe(false);
+  });
+
   it('marks forced local subjects impossible when target bounds cannot satisfy the comparator', () => {
     const puzzle = makePuzzle({
       width: 2,
@@ -203,6 +234,7 @@ function makePuzzle(input: {
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
   readonly regions?: PuzzleDefinition['regions'];
+  readonly anchors?: PuzzleDefinition['anchors'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -212,6 +244,7 @@ function makePuzzle(input: {
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
     ...(input.regions === undefined ? {} : { regions: input.regions }),
+    ...(input.anchors === undefined ? {} : { anchors: input.anchors }),
     rules: input.rules,
     initialReveals: [],
     target: {},
@@ -261,6 +294,24 @@ function lineCountRule(
     type: 'lineCount',
     ...(origin === undefined ? {} : { origin }),
     scope,
+    target,
+    count,
+    presentation: { title: id },
+  };
+}
+
+function anchorCountRule(
+  id: string,
+  anchorId: string,
+  scope: 'adjacent' | 'orthogonal',
+  target: CellKind,
+  count: Comparator,
+): RuleDefinition {
+  return {
+    id,
+    type: 'anchorCount',
+    anchorId,
+    scope: { kind: scope },
     target,
     count,
     presentation: { title: id },

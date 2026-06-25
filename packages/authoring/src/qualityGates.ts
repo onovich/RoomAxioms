@@ -1062,6 +1062,16 @@ function ruleSignature(rule: RuleDefinition): string {
     })
   }
 
+  if (rule.type === 'anchorCount') {
+    return JSON.stringify({
+      type: rule.type,
+      anchorId: rule.anchorId,
+      scope: rule.scope.kind,
+      target: rule.target,
+      count: rule.count,
+    })
+  }
+
   return JSON.stringify({
     type: rule.type,
     subject: rule.subject,
@@ -1386,6 +1396,16 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
             stopAtKinds: rule.scope.stopAtKinds?.map((kind) => traceKind(kind, mode)).sort(),
           }
         : rule.scope,
+      target: traceKind(rule.target, mode),
+      count: rule.count,
+    })
+  }
+
+  if (rule.type === 'anchorCount') {
+    return JSON.stringify({
+      type: rule.type,
+      anchorId: rule.anchorId,
+      scope: rule.scope.kind,
       target: traceKind(rule.target, mode),
       count: rule.count,
     })

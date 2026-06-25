@@ -37,6 +37,23 @@ export function evaluateRule(
       };
     }
 
+    case 'anchorCount': {
+      const anchor = puzzle.anchors?.find((candidate) => candidate.id === rule.anchorId);
+      if (anchor === undefined) {
+        throw new Error(`Rule ${rule.id} references unknown anchor ${rule.anchorId}.`);
+      }
+
+      const actual = allCells(puzzle.board)
+        .filter((cellId) => model.cells[cellId] === anchor.subject)
+        .map((cellId) => countCells(anchorScopeCells(rule, cellId, puzzle), rule.target, model));
+
+      return {
+        ruleId: rule.id,
+        satisfied: actual.every((count) => compareCount(count, rule.count)),
+        actual,
+      };
+    }
+
     case 'regionCount': {
       const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId);
       if (region === undefined) {
@@ -101,6 +118,18 @@ function lineScopeCells(
   }
 
   return visible;
+}
+
+function anchorScopeCells(
+  rule: Extract<RuleDefinition, { readonly type: 'anchorCount' }>,
+  cellId: CellId,
+  puzzle: PuzzleDefinition,
+): readonly CellId[] {
+  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+    return neighbors(cellId, rule.scope.kind, puzzle.board);
+  }
+
+  throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
 }
 
 function compareCount(actual: number, comparator: Comparator): boolean {

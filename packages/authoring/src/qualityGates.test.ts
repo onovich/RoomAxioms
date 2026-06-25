@@ -529,6 +529,13 @@ function renameRuleKinds(
     }
   }
 
+  if (rule.type === 'anchorCount') {
+    return {
+      ...rule,
+      target: rename(rule.target),
+    }
+  }
+
   return {
     ...rule,
     subject: rename(rule.subject),

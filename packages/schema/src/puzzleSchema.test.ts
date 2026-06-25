@@ -188,4 +188,55 @@ describe('puzzleDefinitionSchema', () => {
       'LINE_RAY_ORIGIN_MISSING',
     ])
   })
+
+  it('accepts anchors and anchor count rules', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      allowedKinds: ['empty', 'bottle', 'guest'],
+      anchors: [
+        {
+          id: 'known-bottle',
+          title: 'Known bottle',
+          subject: 'bottle',
+        },
+      ],
+      rules: [
+        {
+          id: 'AR1',
+          type: 'anchorCount',
+          anchorId: 'known-bottle',
+          scope: { kind: 'orthogonal' },
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+          presentation: { title: 'Bottle keeps guests away' },
+        },
+      ],
+      target: {
+        ...validMinimalPuzzle.target,
+        A1: 'bottle',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects anchor count rules that reference unknown anchors', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      rules: [
+        {
+          id: 'AR1',
+          type: 'anchorCount',
+          anchorId: 'missing-anchor',
+          scope: { kind: 'orthogonal' },
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+          presentation: { title: 'Missing anchor' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.issues.map((issue) => issue.code)).toContain('RULE_ANCHOR_UNKNOWN')
+  })
 })

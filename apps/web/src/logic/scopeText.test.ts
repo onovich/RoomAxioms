@@ -61,6 +61,21 @@ describe('rule text helpers', () => {
     expect(ruleChip(rule)).toBe('第 2 行：最多有 1 名访客')
     expect(rulePlainText(rule)).toBe('第 2 行，最多有 1 名访客。')
   })
+
+  it('renders anchor count rules with the anchor id', () => {
+    const rule: RuleDefinition = {
+      id: 'AR1',
+      type: 'anchorCount',
+      anchorId: 'known-bottle',
+      scope: { kind: 'orthogonal' },
+      target: 'guest',
+      count: { op: 'eq', value: 0 },
+      presentation: { title: 'Anchor' },
+    }
+
+    expect(ruleChip(rule)).toBe('known-bottle 的上下左右邻格：没有访客')
+    expect(rulePlainText(rule)).toBe('known-bottle 的上下左右邻格，没有访客。')
+  })
 })
 
 function globalRule(): RuleDefinition {

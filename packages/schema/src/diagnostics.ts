@@ -91,6 +91,7 @@ function validatePuzzleSemantics(puzzle: PuzzleDefinition): readonly SchemaIssue
 
   issues.push(...validateInitialReveals(puzzle))
   issues.push(...validateRegions(puzzle))
+  issues.push(...validateAnchors(puzzle))
   issues.push(...validateRules(puzzle))
 
   return sortIssues(issues)
@@ -196,10 +197,46 @@ function validateRegions(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
   return issues
 }
 
+function validateAnchors(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
+  const issues: SchemaIssue[] = []
+  const allowedKinds = new Set<CellKind>(puzzle.allowedKinds)
+  const seenAnchorIds = new Map<string, number>()
+
+  puzzle.anchors?.forEach((anchor, anchorIndex) => {
+    const firstIndex = seenAnchorIds.get(anchor.id)
+    if (firstIndex !== undefined) {
+      issues.push(
+        createIssue(
+          'ANCHOR_ID_DUPLICATE',
+          ['anchors', anchorIndex, 'id'],
+          `Anchor id ${anchor.id} is duplicated`,
+          { anchorId: anchor.id, firstIndex },
+        ),
+      )
+    } else {
+      seenAnchorIds.set(anchor.id, anchorIndex)
+    }
+
+    if (!allowedKinds.has(anchor.subject)) {
+      issues.push(
+        createIssue(
+          'ANCHOR_KIND_NOT_ALLOWED',
+          ['anchors', anchorIndex, 'subject'],
+          `Anchor ${anchor.id} references subject kind ${anchor.subject} outside allowedKinds`,
+          { anchorId: anchor.id, kind: anchor.subject },
+        ),
+      )
+    }
+  })
+
+  return issues
+}
+
 function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
   const issues: SchemaIssue[] = []
   const allowedKinds = new Set<CellKind>(puzzle.allowedKinds)
   const regionIds = new Set((puzzle.regions ?? []).map((region) => region.id))
+  const anchorIds = new Set((puzzle.anchors ?? []).map((anchor) => anchor.id))
   const seenRuleIds = new Map<string, number>()
   let hasGuestRule = false
 
@@ -222,6 +259,7 @@ function validateRules(puzzle: PuzzleDefinition): readonly SchemaIssue[] {
 
     issues.push(...validateRuleKindReferences(rule, index, allowedKinds))
     issues.push(...validateRuleRegionReferences(rule, index, regionIds))
+    issues.push(...validateRuleAnchorReferences(rule, index, anchorIds))
     issues.push(...validateRuleLineReferences(rule, index, puzzle))
   })
 
@@ -296,6 +334,23 @@ function validateRuleRegionReferences(
       ['rules', index, 'regionId'],
       `Rule ${rule.id} references unknown region ${rule.regionId}`,
       { ruleId: rule.id, regionId: rule.regionId },
+    ),
+  ]
+}
+
+function validateRuleAnchorReferences(
+  rule: RuleDefinition,
+  index: number,
+  anchorIds: ReadonlySet<string>,
+): readonly SchemaIssue[] {
+  if (rule.type !== 'anchorCount' || anchorIds.has(rule.anchorId)) return []
+
+  return [
+    createIssue(
+      'RULE_ANCHOR_UNKNOWN',
+      ['rules', index, 'anchorId'],
+      `Rule ${rule.id} references unknown anchor ${rule.anchorId}`,
+      { ruleId: rule.id, anchorId: rule.anchorId },
     ),
   ]
 }

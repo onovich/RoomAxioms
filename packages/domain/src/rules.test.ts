@@ -12,6 +12,8 @@ function ruleKind(rule: RuleDefinition): string {
       return `region:${rule.regionId}:${rule.target}:${rule.count.op}:${rule.count.value}`
     case 'lineCount':
       return `line:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
+    case 'anchorCount':
+      return `anchor:${rule.anchorId}:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
     default:
       return assertNever(rule)
   }
@@ -85,7 +87,7 @@ describe('rule definitions', () => {
     expect(ruleKind(lineRule)).toBe('line:row:guest:lte:1')
   })
 
-  it('declares future expressive rule shapes outside production rule definitions', () => {
+  it('supports anchor count as an additive production rule shape', () => {
     const anchorRule = {
       id: 'AR1',
       type: 'anchorCount',
@@ -94,7 +96,12 @@ describe('rule definitions', () => {
       target: 'guest',
       count: { op: 'eq', value: 1 },
       presentation: { title: 'Bottle sightline' },
-    } satisfies ExpressiveRuleDefinition
+    } satisfies RuleDefinition
+
+    expect(ruleKind(anchorRule)).toBe('anchor:known-bottle:ray:guest:eq:1')
+  })
+
+  it('declares future expressive rule shapes outside production rule definitions', () => {
     const recordRule = {
       id: 'CR1',
       type: 'recordSet',
@@ -103,7 +110,6 @@ describe('rule definitions', () => {
       presentation: { title: 'One record is contaminated' },
     } satisfies ExpressiveRuleDefinition
 
-    expect(expressiveRuleKind(anchorRule)).toBe('anchor:known-bottle:ray:guest:eq:1')
     expect(expressiveRuleKind(recordRule)).toBe('records:eq:1:card-a+card-b')
   })
 })

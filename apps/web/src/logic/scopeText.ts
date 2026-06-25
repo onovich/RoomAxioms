@@ -13,6 +13,10 @@ export function ruleChip(rule: RuleDefinition): string {
     return `${lineLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
   }
 
+  if (rule.type === 'anchorCount') {
+    return `${rule.anchorId} 的${anchorScopeLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+  }
+
   return `${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
 }
 
@@ -27,6 +31,10 @@ export function rulePlainText(rule: RuleDefinition): string {
 
   if (rule.type === 'lineCount') {
     return `${lineLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  }
+
+  if (rule.type === 'anchorCount') {
+    return `${rule.anchorId} 的${anchorScopeLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.count.op === 'eq' && rule.count.value === 0) {
@@ -67,6 +75,11 @@ function lineLabel(rule: Extract<RuleDefinition, { readonly type: 'lineCount' }>
     case 'ray':
       return `${rule.origin ?? '起点'} 向${directionLabel(rule.scope.direction)}的视线`
   }
+}
+
+function anchorScopeLabel(rule: Extract<RuleDefinition, { readonly type: 'anchorCount' }>): string {
+  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') return scopeLabel(rule.scope.kind)
+  return rule.scope.kind
 }
 
 function directionLabel(direction: 'north' | 'south' | 'east' | 'west'): string {

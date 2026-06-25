@@ -3,6 +3,7 @@ import type {
   CellId,
   CellKind,
   Comparator,
+  AnchorCountRule,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
@@ -65,6 +66,14 @@ export function summarizeLineCount(state: KnowledgeState, rule: LineCountRule): 
   return summarizeCountInCells(state, rule, lineScopeCells(state, rule));
 }
 
+export function summarizeAnchorScope(
+  state: KnowledgeState,
+  rule: AnchorCountRule,
+  anchorCellId: CellId,
+): CountSummary {
+  return summarizeCountInCells(state, rule, anchorScopeCells(state.puzzle, rule, anchorCellId));
+}
+
 export function summarizeForEachScope(
   state: KnowledgeState,
   rule: ForEachCountRule,
@@ -75,7 +84,7 @@ export function summarizeForEachScope(
 
 export function summarizeCountInCells(
   state: KnowledgeState,
-  rule: GlobalCountRule | ForEachCountRule | RegionCountRule | LineCountRule,
+  rule: GlobalCountRule | ForEachCountRule | RegionCountRule | LineCountRule | AnchorCountRule,
   scopeCellIds: readonly CellId[],
 ): CountSummary {
   const index = createKnowledgeIndex(state);
@@ -158,6 +167,19 @@ export function lineScopePremise(rule: LineCountRule, scopeCellIds: readonly Cel
   };
 }
 
+export function anchorScopePremise(
+  rule: AnchorCountRule,
+  anchorCellId: CellId,
+  scopeCellIds: readonly CellId[],
+): ProofPremise {
+  return {
+    kind: 'scope',
+    label: `${rule.id} anchor ${rule.anchorId} scope for ${anchorCellId}: ${scopeCellIds.join(', ')}`,
+    cellIds: scopeCellIds,
+    ruleIds: [rule.id],
+  };
+}
+
 export function countPremise(summary: CountSummary): ProofPremise {
   return {
     kind: 'count',
@@ -197,6 +219,18 @@ function lineScopeCells(state: KnowledgeState, rule: LineCountRule): readonly Ce
   }
 
   return visible;
+}
+
+function anchorScopeCells(
+  puzzle: KnowledgeState['puzzle'],
+  rule: AnchorCountRule,
+  anchorCellId: CellId,
+): readonly CellId[] {
+  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+    return neighbors(anchorCellId, rule.scope.kind, puzzle.board);
+  }
+
+  throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
 }
 
 export function comparatorBounds(comparator: Comparator): CountBounds {

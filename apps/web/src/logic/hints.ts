@@ -55,6 +55,10 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
       return '这条线已经数够了'
     case 'LINE_COUNT_ALL_REMAINING':
       return '这条线剩下的都要算'
+    case 'ANCHOR_COUNT_SATURATED':
+      return '锚点周围已经数够了'
+    case 'ANCHOR_COUNT_ALL_REMAINING':
+      return '锚点周围剩下的都要算'
     case 'LOCAL_COUNT_SATURATED':
       return '这个范围已经数够了'
     case 'LOCAL_COUNT_ALL_REMAINING':

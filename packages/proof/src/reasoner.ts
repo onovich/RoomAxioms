@@ -2,6 +2,8 @@ import { sortCellIds } from '@room-axioms/domain';
 import type {
   CellId,
   CellKind,
+  AnchorCountRule,
+  AnchorDefinition,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
@@ -12,6 +14,7 @@ import type {
 import { createDeduction, normalizeProofPremises } from './graph.js';
 import {
   comparatorBounds,
+  anchorScopePremise,
   countPremise,
   createKnowledgeIndex,
   lineScopePremise,
@@ -19,6 +22,7 @@ import {
   regionScopePremise,
   scopePremise,
   summarizeForEachScope,
+  summarizeAnchorScope,
   summarizeGlobalCount,
   summarizeLineCount,
   summarizeRegionCount,
@@ -35,6 +39,8 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
       baseDeductions.push(...deriveRegionCountDeductions(state, rule));
     } else if (rule.type === 'lineCount') {
       baseDeductions.push(...deriveLineCountDeductions(state, rule));
+    } else if (rule.type === 'anchorCount') {
+      baseDeductions.push(...deriveAnchorCountDeductions(state, rule));
     } else if (rule.type === 'forEachCount') {
       baseDeductions.push(...deriveLocalCountDeductions(state, rule));
     }
@@ -47,6 +53,10 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
     if (rule.type === 'forEachCount') {
       derivedLocalDeductions.push(
         ...deriveLocalCountDeductions(state, rule, intersectionDeductions),
+      );
+    } else if (rule.type === 'anchorCount') {
+      derivedLocalDeductions.push(
+        ...deriveAnchorCountDeductions(state, rule, intersectionDeductions),
       );
     }
   }
@@ -304,6 +314,55 @@ export function deriveLineCountDeductions(
   return sortDeductions(state, deductions);
 }
 
+export function deriveAnchorCountDeductions(
+  state: KnowledgeState,
+  rule: AnchorCountRule,
+  objectDeductions: readonly Deduction[] = [],
+): readonly Deduction[] {
+  const anchor = anchorForRule(state, rule);
+  const deductions: Deduction[] = [];
+
+  for (const anchorFact of knownSubjectFacts(state, anchor.subject, objectDeductions)) {
+    const summary = summarizeAnchorScope(state, rule, anchorFact.cellId);
+    const premises = [
+      rulePremise(rule),
+      anchorFact.premise,
+      anchorScopePremise(rule, anchorFact.cellId, summary.scopeCellIds),
+      countPremise(summary),
+    ];
+    const upperBound = summary.bounds.upperBound;
+
+    if (
+      rule.target === 'guest' &&
+      upperBound !== null &&
+      summary.knownTargetCellIds.length === upperBound
+    ) {
+      for (const cellId of summary.unknownCellIds) {
+        deductions.push(createDeduction({
+          technique: 'ANCHOR_COUNT_SATURATED',
+          conclusion: { kind: 'safe', cellId },
+          ruleIds: [rule.id],
+          premises,
+        }));
+      }
+    }
+
+    const remainingRequired = summary.bounds.lowerBound - summary.knownTargetCellIds.length;
+    if (remainingRequired > 0 && remainingRequired === summary.unknownCellIds.length) {
+      for (const cellId of summary.unknownCellIds) {
+        deductions.push(createDeduction({
+          technique: 'ANCHOR_COUNT_ALL_REMAINING',
+          conclusion: targetConclusion(cellId, rule.target),
+          ruleIds: [rule.id],
+          premises,
+        }));
+      }
+    }
+  }
+
+  return sortDeductions(state, mergeDeductions(deductions));
+}
+
 export function deriveLocalCountDeductions(
   state: KnowledgeState,
   rule: ForEachCountRule,
@@ -432,6 +491,15 @@ export function deriveKnownSafeFromObjectDeductions(
 function targetConclusion(cellId: CellId, target: CellKind): DeductionConclusion {
   if (target === 'guest') return { kind: 'guest', cellId };
   return { kind: 'object', cellId, object: target };
+}
+
+function anchorForRule(state: KnowledgeState, rule: AnchorCountRule): AnchorDefinition {
+  const anchor = state.puzzle.anchors?.find((candidate) => candidate.id === rule.anchorId);
+  if (anchor === undefined) {
+    throw new Error(`Rule ${rule.id} references unknown anchor ${rule.anchorId}.`);
+  }
+
+  return anchor;
 }
 
 interface KnownSubjectFact {
@@ -729,4 +797,8 @@ export function isRegionCountRule(rule: RuleDefinition): rule is RegionCountRule
 
 export function isLineCountRule(rule: RuleDefinition): rule is LineCountRule {
   return rule.type === 'lineCount';
+}
+
+export function isAnchorCountRule(rule: RuleDefinition): rule is AnchorCountRule {
+  return rule.type === 'anchorCount';
 }

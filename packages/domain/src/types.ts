@@ -108,8 +108,6 @@ export interface LineCountRule {
   readonly presentation: RulePresentation
 }
 
-export type RuleDefinition = GlobalCountRule | ForEachCountRule | RegionCountRule | LineCountRule
-
 export interface AnchorCountRule {
   readonly id: string
   readonly type: 'anchorCount'
@@ -119,6 +117,13 @@ export interface AnchorCountRule {
   readonly count: Comparator
   readonly presentation: RulePresentation
 }
+
+export type RuleDefinition =
+  | GlobalCountRule
+  | ForEachCountRule
+  | RegionCountRule
+  | LineCountRule
+  | AnchorCountRule
 
 export interface RecordSetRule {
   readonly id: string

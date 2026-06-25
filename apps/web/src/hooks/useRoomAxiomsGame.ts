@@ -338,6 +338,22 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         return classes
       }
 
+      if (rule.type === 'anchorCount') {
+        const anchor = puzzle.anchors?.find((candidate) => candidate.id === rule.anchorId)
+        const visibleAnchors = anchor === undefined
+          ? []
+          : [...revealed].filter((id) => observations.get(id) === anchor.subject)
+        if (visibleAnchors.includes(cellId)) classes.push('subject-highlight')
+        if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+          const scopeKind = rule.scope.kind
+          if (visibleAnchors.some((anchorCell) => neighbors(anchorCell, scopeKind, puzzle.board).includes(cellId))) {
+            classes.push('scope-highlight')
+          }
+        }
+        if (hint?.highlight === cellId) classes.push('hint-highlight')
+        return classes
+      }
+
       const visibleSubjects = [...revealed].filter((id) => observations.get(id) === rule.subject)
       if (visibleSubjects.includes(cellId)) classes.push('subject-highlight')
       if (visibleSubjects.some((subject) => neighbors(subject, rule.scope.kind, puzzle.board).includes(cellId))) {

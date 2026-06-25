@@ -3,6 +3,8 @@ import type {
   CellId,
   CellKind,
   Comparator,
+  AnchorCountRule,
+  AnchorDefinition,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
@@ -36,6 +38,13 @@ export interface ForEachCountConstraint {
   readonly entries: readonly ForEachCountEntry[];
 }
 
+export interface AnchorCountConstraint {
+  readonly kind: 'anchorCount';
+  readonly rule: AnchorCountRule;
+  readonly anchor: AnchorDefinition;
+  readonly entries: readonly ForEachCountEntry[];
+}
+
 export interface RegionCountConstraint {
   readonly kind: 'regionCount';
   readonly rule: RegionCountRule;
@@ -52,6 +61,7 @@ export interface LineCountConstraint {
 export type CompiledConstraint =
   | GlobalCountConstraint
   | ForEachCountConstraint
+  | AnchorCountConstraint
   | RegionCountConstraint
   | LineCountConstraint;
 
@@ -77,6 +87,13 @@ export interface ForEachCountBounds {
   readonly possible: boolean;
 }
 
+export interface AnchorCountBounds {
+  readonly kind: 'anchorCount';
+  readonly ruleId: string;
+  readonly entries: readonly ForEachCountEntryBounds[];
+  readonly possible: boolean;
+}
+
 export interface RegionCountBounds {
   readonly kind: 'regionCount';
   readonly ruleId: string;
@@ -91,7 +108,12 @@ export interface LineCountBounds {
   readonly possible: boolean;
 }
 
-export type ConstraintBounds = GlobalCountBounds | ForEachCountBounds | RegionCountBounds | LineCountBounds;
+export type ConstraintBounds =
+  | GlobalCountBounds
+  | ForEachCountBounds
+  | AnchorCountBounds
+  | RegionCountBounds
+  | LineCountBounds;
 
 export function compileConstraints(puzzle: PuzzleDefinition): readonly CompiledConstraint[] {
   return puzzle.rules.map((rule) => compileRule(rule, puzzle));
@@ -115,11 +137,24 @@ export function evaluateConstraintBounds(
 
     case 'forEachCount': {
       const entries = constraint.entries.map((entry) =>
-        evaluateForEachEntryBounds(entry, constraint.rule, domains),
+        evaluateForEachEntryBounds(entry, constraint.rule.subject, constraint.rule.target, constraint.rule.count, domains),
       );
 
       return {
         kind: 'forEachCount',
+        ruleId: constraint.rule.id,
+        entries,
+        possible: entries.every((entry) => entry.possible),
+      };
+    }
+
+    case 'anchorCount': {
+      const entries = constraint.entries.map((entry) =>
+        evaluateForEachEntryBounds(entry, constraint.anchor.subject, constraint.rule.target, constraint.rule.count, domains),
+      );
+
+      return {
+        kind: 'anchorCount',
         ruleId: constraint.rule.id,
         entries,
         possible: entries.every((entry) => entry.possible),
@@ -203,6 +238,19 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
         })),
       };
 
+    case 'anchorCount': {
+      const anchor = anchorForRule(rule, puzzle);
+      return {
+        kind: 'anchorCount',
+        rule,
+        anchor,
+        entries: allCells(puzzle.board).map((cellId) => ({
+          cellId,
+          neighbors: cellsForAnchorRule(rule, cellId, puzzle),
+        })),
+      };
+    }
+
     case 'regionCount':
       return {
         kind: 'regionCount',
@@ -223,6 +271,27 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
     default:
       return assertNever(rule);
   }
+}
+
+function anchorForRule(rule: AnchorCountRule, puzzle: PuzzleDefinition): AnchorDefinition {
+  const anchor = puzzle.anchors?.find((candidate) => candidate.id === rule.anchorId);
+  if (anchor === undefined) {
+    throw new Error(`Rule ${rule.id} references unknown anchor ${rule.anchorId}.`);
+  }
+
+  return anchor;
+}
+
+function cellsForAnchorRule(
+  rule: AnchorCountRule,
+  cellId: CellId,
+  puzzle: PuzzleDefinition,
+): readonly CellId[] {
+  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+    return neighbors(cellId, rule.scope.kind, puzzle.board);
+  }
+
+  throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
 }
 
 function cellsForRegionRule(rule: RegionCountRule, puzzle: PuzzleDefinition): readonly CellId[] {
@@ -304,14 +373,16 @@ function cellsForLineRule(
 
 function evaluateForEachEntryBounds(
   entry: ForEachCountEntry,
-  rule: ForEachCountRule,
+  subject: CellKind,
+  target: CellKind,
+  count: Comparator,
   domains: DomainState,
 ): ForEachCountEntryBounds {
   const subjectMask = domains[entry.cellId];
-  const subjectPossible = subjectMask !== undefined && containsKind(subjectMask, rule.subject);
-  const subjectForced = subjectMask !== undefined && isSingleton(subjectMask) && containsKind(subjectMask, rule.subject);
-  const targetBounds = countKindBounds(entry.neighbors, rule.target, domains);
-  const targetCanSatisfy = comparatorCanBeSatisfied(targetBounds, rule.count);
+  const subjectPossible = subjectMask !== undefined && containsKind(subjectMask, subject);
+  const subjectForced = subjectMask !== undefined && isSingleton(subjectMask) && containsKind(subjectMask, subject);
+  const targetBounds = countKindBounds(entry.neighbors, target, domains);
+  const targetCanSatisfy = comparatorCanBeSatisfied(targetBounds, count);
 
   return {
     cellId: entry.cellId,

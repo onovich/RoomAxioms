@@ -18,6 +18,7 @@ import {
 import type {
   CompiledConstraint,
   CountBounds,
+  AnchorCountConstraint,
   ForEachCountConstraint,
   GlobalCountConstraint,
   LineCountConstraint,
@@ -180,6 +181,8 @@ function propagateConstraint(
       return propagateGlobalCount(state, trail, constraint);
     case 'forEachCount':
       return propagateForEachCount(state, trail, constraint);
+    case 'anchorCount':
+      return propagateAnchorCount(state, trail, constraint);
     case 'regionCount':
       return propagateRegionCount(state, trail, constraint);
     case 'lineCount':
@@ -237,6 +240,66 @@ function propagateForEachCount(
       constraint.rule.count,
       targetBounds,
       constraint.rule.id,
+    );
+    if (enforced.contradiction !== null) return enforced;
+    changed = changed || enforced.changed;
+  }
+
+  return { changed, contradiction: null };
+}
+
+function propagateAnchorCount(
+  state: SolverState,
+  trail: Trail,
+  constraint: AnchorCountConstraint,
+): ConstraintPropagation {
+  return propagateSubjectScopedCount(
+    state,
+    trail,
+    constraint.entries,
+    constraint.anchor.subject,
+    constraint.rule.target,
+    constraint.rule.count,
+    constraint.rule.id,
+  );
+}
+
+function propagateSubjectScopedCount(
+  state: SolverState,
+  trail: Trail,
+  entries: readonly ForEachCountConstraint['entries'][number][],
+  subject: Parameters<typeof containsKind>[1],
+  target: Parameters<typeof containsKind>[1],
+  comparator: Parameters<typeof comparatorCanBeSatisfied>[1],
+  ruleId: string,
+): ConstraintPropagation {
+  let changed = false;
+
+  for (const entry of entries) {
+    const subjectMask = state.domains[entry.cellId];
+    if (!containsKind(subjectMask, subject)) continue;
+
+    const subjectForced = subjectMask === singletonMask(subject);
+    const targetBounds = countKindBounds(entry.neighbors, target, state.domains as DomainState);
+    const targetCanSatisfy = comparatorCanBeSatisfied(targetBounds, comparator);
+
+    if (!subjectForced && !targetCanSatisfy) {
+      const removed = removeCellKind(state, trail, entry.cellId, subject);
+      if (removed.contradiction !== null) return { changed: removed.changed, contradiction: removed.contradiction };
+      changed = changed || removed.changed;
+      continue;
+    }
+
+    if (!subjectForced) continue;
+
+    const enforced = enforceTargetCount(
+      state,
+      trail,
+      entry.neighbors,
+      target,
+      comparator,
+      targetBounds,
+      ruleId,
     );
     if (enforced.contradiction !== null) return enforced;
     changed = changed || enforced.changed;

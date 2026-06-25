@@ -38,6 +38,12 @@ export const regionDefinitionSchema = z.strictObject({
   }),
 })
 
+export const anchorDefinitionSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  title: z.string().refine(hasNonBlankText, 'Anchor title must not be empty'),
+  subject: cellKindSchema,
+})
+
 export const globalScopeSchema = z.strictObject({
   kind: z.literal('global'),
 })
@@ -104,11 +110,22 @@ export const lineCountRuleSchema = z.strictObject({
   presentation: rulePresentationSchema,
 })
 
+export const anchorCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('anchorCount'),
+  anchorId: z.string().regex(ruleIdPattern),
+  scope: localScopeSchema,
+  target: cellKindSchema,
+  count: comparatorSchema,
+  presentation: rulePresentationSchema,
+})
+
 export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   globalCountRuleSchema,
   forEachCountRuleSchema,
   regionCountRuleSchema,
   lineCountRuleSchema,
+  anchorCountRuleSchema,
 ])
 
 export const puzzleMetadataSchema = z.strictObject({
@@ -141,6 +158,9 @@ export const puzzleDefinitionSchema = z.strictObject({
     .refine((kinds) => kinds.includes('guest'), { message: 'Allowed kinds must include guest' }),
   regions: z.array(regionDefinitionSchema).refine((regions) => hasUniqueValues(regions.map((region) => region.id)), {
     message: 'Region ids must be unique',
+  }).optional(),
+  anchors: z.array(anchorDefinitionSchema).refine((anchors) => hasUniqueValues(anchors.map((anchor) => anchor.id)), {
+    message: 'Anchor ids must be unique',
   }).optional(),
   rules: z.array(ruleDefinitionSchema).min(1),
   initialReveals: z.array(cellIdSchema),
