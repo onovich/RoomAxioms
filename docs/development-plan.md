@@ -36,12 +36,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently accepted: Phase 18 - Public Playtest Launch Package And Metadata Cleanup, PASS, final commit `cb2ef96`.
-- Current active phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates.
-- Active guide: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md`.
-- Executor budget: 14 rounds.
-- Executor status: ready for dispatch.
-- Final report target: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`.
+- Recently accepted: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates, PASS, final commit `c3b47ed`.
+- Current active phase: none.
+- Active guide: none.
+- Executor budget: none active.
+- Executor status: idle; awaiting planner/user decision for the next phase.
+- Final report: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`.
 - Promoted content: `content/cases/case-011.json` and `content/cases/case-012.json`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -51,7 +51,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 16 result: case-012 release QA, authoring retention, runtime secrecy tests, responsive/keyboard smoke evidence, playtest protocol, and empty honest feedback log are complete. No new cases or broad feature expansion were added.
 - Phase 17 result: current 12-case MVP is documented as a release candidate with checklist, known limitations, release decision, playtest intake protocol, empty honest feedback log, smoke evidence, and boundary scans complete. No P0/P1 release blocker was found.
 - Phase 18 result: public playtest launch package is ready, internal shipped-case metadata is neutralized, the 12-case release candidate is preserved, and difficulty remains uncalibrated until real playtest evidence exists.
-- Phase 19 planned work: respond to user playtest feedback that most shipped cases are trivial or mirrored; add quality gates, demote filler cases, and promote a real 8-10 case difficulty ladder.
+- Phase 19 result: player-facing content is now an 8-case difficulty ladder; the trivial and mirror cases were replaced or removed from the selector; private authoring quality gates now cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Total Budget
@@ -67,5 +67,5 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Case-012 release QA and calibration budget: 8 rounds, covering Phase 16.
 - MVP release closure budget: 6 rounds, covering Phase 17.
 - Public playtest launch package budget: 6 rounds, covering Phase 18.
-- High-quality puzzle ladder budget: 14 rounds, covering Phase 19.
+- High-quality puzzle ladder budget: 14 rounds, covering Phase 19, completed.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

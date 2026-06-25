@@ -14,12 +14,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Human reasoning and proof verification in `packages/proof` as `@room-axioms/proof`
 - Internal generator spike prototypes in `packages/generator` as private `@room-axioms/generator`
 - Private authoring CLI in `packages/authoring` as `@room-axioms/authoring`
-- Twelve validated shipped cases in `content/cases/case-001.json` through `case-012.json`
+- Eight validated shipped cases in `content/cases`
 - Private Phase 12 experimental difference fixture in `content/experimental/phase-12`
 - Private Phase 13 experimental difference candidates in `content/experimental/phase-13`
 - Private Phase 14 difference-retention candidates and evidence in `content/experimental/phase-14` and `docs/phase-14`
 - Private Phase 15 retained-difference candidates and promotion evidence in `content/experimental/phase-15` and `docs/phase-15`
-- Data-driven content loading with `case-004` as the default case
+- Data-driven 8-case difficulty ladder with `case-004` as the default case
 - Rule panel, board interactions, evidence log, hints, developer verification layer, mobile tabs
 - GitHub Pages workflow for `http://blog.onovich.com/RoomAxioms/`
 - Original design handoff preserved under `docs/room-axioms-handoff`
@@ -38,14 +38,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last accepted phase: Phase 18 - Public Playtest Launch Package And Metadata Cleanup
-- Final report: `docs/phase-18-public-playtest-launch-package-metadata-cleanup-final-report.md`
-- Status: Phase 19 ready for executor dispatch after user playtest feedback
-- Active executor phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates
+- Last accepted phase: Phase 19 - High-Quality Puzzle Ladder And Generator Quality Gates
+- Final report: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`
+- Status: Phase 19 accepted by planner/checker; no next executor phase has been dispatched yet
+- Active executor phase: none
 - Guide: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-goal-mode-execution-guide.md`
-- Budget: 14 executor rounds
-- Final report target: `docs/phase-19-high-quality-puzzle-ladder-generator-quality-gates-final-report.md`
-- Evidence baseline: the user playtest found that only `case-004`, `case-011`, and `case-012` are meaningful puzzles; Phase 19 will add quality gates, demote filler/mirror cases, and promote a real difficulty ladder.
+- Completed budget: 14 executor rounds
+- Result: the player selector now presents an 8-case ladder; trivial/mirror cases were replaced or removed; quality gates cover opening ambiguity, proof waves, deduction count, rule contribution, non-isomorphism, and technique retention.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
