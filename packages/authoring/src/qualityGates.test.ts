@@ -8,6 +8,7 @@ import {
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
+  evaluateTechniqueRetentionGate,
   findIsomorphicPuzzleGroups,
 } from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
@@ -25,6 +26,7 @@ const mirroredCleaningCasePaths = [
   resolve(contentRoot, 'case-007.json'),
 ]
 const intersectionCasePath = resolve(contentRoot, 'case-011.json')
+const differenceCasePath = resolve(contentRoot, 'case-012.json')
 
 describe('quality gate contracts', () => {
   it('rejects opening states with a unique guest layout', () => {
@@ -209,6 +211,71 @@ describe('non-isomorphism gate', () => {
   })
 })
 
+describe('technique retention gate', () => {
+  it('passes when an intersection case retains its required technique after minimization', () => {
+    const gate = evaluateTechniqueRetentionGate({
+      puzzleId: 'case-011',
+      retention: requireTechniqueRetention(runAuthoringCli([
+        'minimize',
+        intersectionCasePath,
+        '--require-technique',
+        'LOCAL_SCOPE_INTERSECTION',
+      ])),
+    })
+
+    expect(gate).toMatchObject({
+      puzzleId: 'case-011',
+      status: 'pass',
+      requiredTechniqueIds: ['LOCAL_SCOPE_INTERSECTION'],
+      missingRequiredTechniqueIds: [],
+    })
+  })
+
+  it('passes mixed retention when a difference case keeps all required techniques', () => {
+    const gate = evaluateTechniqueRetentionGate({
+      puzzleId: 'case-012',
+      retention: requireTechniqueRetention(runAuthoringCli([
+        'minimize',
+        differenceCasePath,
+        '--require-technique',
+        'LOCAL_COUNT_SATURATED',
+        '--require-technique',
+        'LOCAL_SCOPE_DIFFERENCE',
+      ])),
+    })
+
+    expect(gate).toMatchObject({
+      puzzleId: 'case-012',
+      status: 'pass',
+      requiredTechniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
+      missingRequiredTechniqueIds: [],
+    })
+  })
+
+  it('fails when minimization drops a required mixed-case technique', () => {
+    const report = runAuthoringCli([
+      'minimize',
+      canonicalCleaningCasePath,
+      '--require-technique',
+      'LOCAL_COUNT_SATURATED',
+      '--require-technique',
+      'UNIQUE_TARGET_NEIGHBOR_INTERSECTION',
+    ])
+    const gate = evaluateTechniqueRetentionGate({
+      puzzleId: 'case-004',
+      retention: requireTechniqueRetention(report),
+    })
+
+    expect(report.ok).toBe(false)
+    expect(gate).toMatchObject({
+      puzzleId: 'case-004',
+      status: 'fail',
+      requiredTechniqueIds: ['LOCAL_COUNT_SATURATED', 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
+      missingRequiredTechniqueIds: ['UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
+    })
+  })
+})
+
 function evaluateCase(
   casePath: string,
   profile: Parameters<typeof evaluateCoreQualityGates>[0]['profile'] = 'normal',
@@ -233,6 +300,16 @@ function requireValidation(report: AuthoringCliReport): AuthoringCaseValidationR
   }
 
   return report.validation
+}
+
+function requireTechniqueRetention(
+  report: AuthoringCliReport,
+): NonNullable<AuthoringCliReport['techniqueRetention']> {
+  if (report.techniqueRetention === undefined) {
+    throw new Error('Expected technique retention output.')
+  }
+
+  return report.techniqueRetention
 }
 
 function loadCase(casePath: string): import('@room-axioms/domain').PuzzleDefinition {

@@ -24,6 +24,7 @@ export {
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
+  evaluateTechniqueRetentionGate,
   findIsomorphicPuzzleGroups,
   type BoardTransformName,
   type PuzzleIsomorphismGroup,
@@ -41,6 +42,8 @@ export {
   type RuleContributionReport,
   type RuleContributionResult,
   type RuleContributionStatus,
+  type TechniqueRetentionGateInput,
+  type TechniqueRetentionGateReport,
 } from './qualityGates.js'
 export { parsedCommandReport, parseErrorReport } from './reports.js'
 export { runAuthoringCli, type RunAuthoringCliOptions } from './runner.js'

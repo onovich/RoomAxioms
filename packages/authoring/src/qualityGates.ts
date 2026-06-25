@@ -16,7 +16,7 @@ import type { TechniqueId } from '@room-axioms/proof'
 import { parsePuzzleDefinition } from '@room-axioms/schema'
 import { countGuestLayouts, isSatisfiable, type SolverOptions, type SolverStats } from '@room-axioms/solver'
 
-import type { AuthoringCaseValidationReport } from './contracts.js'
+import type { AuthoringCaseValidationReport, AuthoringTechniqueRetentionReport } from './contracts.js'
 
 export type QualityGateCaseProfile = 'normal' | 'onboarding' | 'internal-fixture'
 
@@ -120,6 +120,21 @@ export interface PuzzleIsomorphismGroup {
   readonly signature: string
   readonly puzzleIds: readonly string[]
   readonly members: readonly PuzzleIsomorphismSignature[]
+}
+
+export interface TechniqueRetentionGateInput {
+  readonly puzzleId: string
+  readonly retention: AuthoringTechniqueRetentionReport
+}
+
+export interface TechniqueRetentionGateReport {
+  readonly puzzleId: string
+  readonly status: QualityGateStatus
+  readonly message: string
+  readonly beforeTechniqueIds: readonly TechniqueId[]
+  readonly afterTechniqueIds: readonly TechniqueId[]
+  readonly requiredTechniqueIds: readonly TechniqueId[]
+  readonly missingRequiredTechniqueIds: readonly TechniqueId[]
 }
 
 const DEFAULT_QUALITY_GATE_POLICY = {
@@ -262,6 +277,36 @@ export function findIsomorphicPuzzleGroups(
       members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
     }))
     .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
+}
+
+export function evaluateTechniqueRetentionGate(
+  input: TechniqueRetentionGateInput,
+): TechniqueRetentionGateReport {
+  const { retention } = input
+  if (retention.requiredTechniqueIds.length === 0) {
+    return {
+      puzzleId: input.puzzleId,
+      status: 'warning',
+      message: 'No proof techniques were required for retention.',
+      beforeTechniqueIds: retention.beforeTechniqueIds,
+      afterTechniqueIds: retention.afterTechniqueIds,
+      requiredTechniqueIds: [],
+      missingRequiredTechniqueIds: [],
+    }
+  }
+
+  const missingRequiredTechniqueIds = retention.missingRequiredTechniqueIds
+  return {
+    puzzleId: input.puzzleId,
+    status: missingRequiredTechniqueIds.length === 0 ? 'pass' : 'fail',
+    message: missingRequiredTechniqueIds.length === 0
+      ? 'All required proof techniques were retained after minimization.'
+      : `Required proof techniques were lost after minimization: ${missingRequiredTechniqueIds.join(', ')}.`,
+    beforeTechniqueIds: retention.beforeTechniqueIds,
+    afterTechniqueIds: retention.afterTechniqueIds,
+    requiredTechniqueIds: retention.requiredTechniqueIds,
+    missingRequiredTechniqueIds,
+  }
 }
 
 function numericMinimumGate(input: {

@@ -1,6 +1,6 @@
 # Phase 19 Quality Gate Evidence
 
-Status: Round 4 evidence recorded
+Status: Round 5 evidence recorded
 
 ## Implemented Gate Surfaces
 
@@ -59,12 +59,28 @@ Coverage in `packages/authoring/src/qualityGates.test.ts`:
 
 Report: `docs/phase-19/non-isomorphism-report.md`.
 
+### Technique Retention Gate
+
+Implemented in `packages/authoring/src/qualityGates.ts` and enforced by `packages/authoring/src/caseCommands.ts`:
+
+- `evaluateTechniqueRetentionGate` checks required proof techniques after reveal minimization.
+- `minimize --require-technique <TECHNIQUE_ID>` now returns `ok: false` when required techniques are lost after minimization.
+- Cases with no required technique list remain reportable, but promoted candidate checks should provide the expected technique list.
+
+Coverage in `packages/authoring/src/qualityGates.test.ts` and `packages/authoring/src/parser.test.ts`:
+
+- `case-011` retains `LOCAL_SCOPE_INTERSECTION`;
+- `case-012` retains mixed `LOCAL_COUNT_SATURATED` and `LOCAL_SCOPE_DIFFERENCE`;
+- `case-004` fails the gate when minimization drops required `UNIQUE_TARGET_NEIGHBOR_INTERSECTION`;
+- existing experimental difference fixture now reports `ok: false` when required difference retention fails.
+
 ## Architecture Notes
 
 - Gates consume authoring/generator/proof/solver/schema public APIs.
 - Gates do not duplicate CSP solving, proof deduction, or schema parsing semantics.
 - Rule contribution is report-only during discovery; final promoted cases should not carry multiple redundant rules.
 - Non-isomorphism detection is an offline authoring gate and is not wired into player runtime UI.
+- Technique retention is evaluated from proof metrics and does not introduce new proof techniques or solver behavior.
 
 ## Round 3 Validation
 
@@ -79,6 +95,19 @@ Report: `docs/phase-19/non-isomorphism-report.md`.
 ## Round 4 Validation
 
 - Focused authoring tests: PASS, `2` files and `26` tests.
+- `git diff --check`: PASS, with normal CRLF working-copy warnings only.
+- `Validate.cmd`: PASS.
+  - `pnpm lint`: PASS.
+  - `pnpm typecheck`: PASS.
+  - `pnpm test`: PASS.
+  - `pnpm build`: PASS.
+
+## Round 5 Validation
+
+- Focused authoring tests: PASS, `2` files and `29` tests.
+- Focused authoring typecheck: PASS.
+- Focused minimize command for `case-011 --require-technique LOCAL_SCOPE_INTERSECTION`: PASS, `ok: true`, `TECHNIQUE_RETENTION_PASS`.
+- Focused minimize command for `case-012 --require-technique LOCAL_SCOPE_DIFFERENCE`: PASS, `ok: true`, `TECHNIQUE_RETENTION_PASS`.
 - `git diff --check`: PASS, with normal CRLF working-copy warnings only.
 - `Validate.cmd`: PASS.
   - `pnpm lint`: PASS.

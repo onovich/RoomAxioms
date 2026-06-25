@@ -11,6 +11,7 @@ import {
   type AuthoringTechniqueRetentionReport,
   type CasePathCommand,
 } from './contracts.js'
+import { evaluateTechniqueRetentionGate } from './qualityGates.js'
 import { loadAuthoringCase, solverCaps } from './validation.js'
 
 export interface AuthoringCaseCommandOptions {
@@ -73,7 +74,13 @@ export function minimizeCaseCommand(
     minimization.proofAfter.metrics.techniqueIds,
     command.options.requiredTechniqueIds ?? [],
   )
-  const ok = minimization.proofAfter.noGuess && minimization.proofAfter.guestLayoutUniqueAtEnd
+  const techniqueRetentionGate = evaluateTechniqueRetentionGate({
+    puzzleId: loaded.puzzle.id,
+    retention: techniqueRetention,
+  })
+  const ok = minimization.proofAfter.noGuess &&
+    minimization.proofAfter.guestLayoutUniqueAtEnd &&
+    techniqueRetentionGate.status !== 'fail'
 
   return {
     ...baseReport,

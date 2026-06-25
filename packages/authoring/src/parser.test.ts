@@ -257,7 +257,7 @@ describe('authoring CLI parser', () => {
       'LOCAL_SCOPE_DIFFERENCE',
     ])
 
-    expect(report.ok).toBe(true)
+    expect(report.ok).toBe(false)
     expect(report.techniqueRetention).toMatchObject({
       beforeTechniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
       afterTechniqueIds: ['LOCAL_COUNT_SATURATED'],
