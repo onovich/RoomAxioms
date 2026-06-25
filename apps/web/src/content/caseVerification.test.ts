@@ -9,30 +9,25 @@ describe('case content verification harness', () => {
       'case-001',
       'case-002',
       'case-003',
+      'case-011',
+      'case-012',
       'case-004',
       'case-005',
       'case-006',
-      'case-007',
-      'case-008',
-      'case-009',
-      'case-010',
-      'case-011',
-      'case-012',
     ])
     expect(DEFAULT_CASE_ID).toBe('case-004')
   })
 
   it('keeps selector summaries stable and free of hidden case data', () => {
+    const internalCasePrefix = /^phase-\d+-/
+
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(12)
-    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-12-'))).toBe(false)
-    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-13-'))).toBe(false)
-    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-14-'))).toBe(false)
-    expect(contentCases.some((puzzle) => puzzle.id.startsWith('phase-15-'))).toBe(false)
-    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-12-'))).toBe(false)
-    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-13-'))).toBe(false)
-    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-14-'))).toBe(false)
-    expect(caseSummaries.some((summary) => summary.id.startsWith('phase-15-'))).toBe(false)
+    expect(contentCases).toHaveLength(8)
+    expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
+    expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
+    expect(contentCases.some((puzzle) => ['case-007', 'case-008', 'case-009', 'case-010'].includes(puzzle.id))).toBe(
+      false,
+    )
     expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
       title: '客房 11：交汇视线',
       caseName: '案卷 11 · 交汇视线',
@@ -71,6 +66,9 @@ describe('case content verification harness', () => {
       runtimeNoGuess: true,
       noTruncation: true,
     })
+    expect(report.initial.candidateGuestLayouts).toBeGreaterThan(1)
+    expect(report.proof.waveCount).toBeGreaterThan(0)
+    expect(report.proof.deductionCount).toBeGreaterThan(0)
   })
 
   it('records the stable case-004 report shape for future MVP cases', () => {

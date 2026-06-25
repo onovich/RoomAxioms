@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "case-005",
-  "title": "客房 05：西翼清扫",
-  "caseName": "案卷 05 · 西翼清扫",
+  "title": "\u5ba2\u623f 05\uff1a\u957f\u8fb9\u8bb0\u5f55",
+  "caseName": "\u6848\u5377 05 \u00b7 \u957f\u8fb9\u8bb0\u5f55",
   "board": {
-    "width": 4,
-    "height": 4
+    "width": 5,
+    "height": 3
   },
   "allowedKinds": [
     "empty",
@@ -17,66 +17,23 @@
   "rules": [
     {
       "id": "R1",
-      "type": "globalCount",
-      "target": "bin",
-      "count": {
-        "op": "eq",
-        "value": 1
-      },
-      "presentation": {
-        "title": "清扫容器",
-        "flavor": "房间里恰好有 1 个垃圾桶。"
-      }
-    },
-    {
-      "id": "R2",
-      "type": "globalCount",
-      "target": "guest",
-      "count": {
-        "op": "eq",
-        "value": 2
-      },
-      "presentation": {
-        "title": "未登记住客",
-        "flavor": "房间里恰好有 2 名访客。"
-      }
-    },
-    {
-      "id": "R3",
       "type": "forEachCount",
       "subject": "bottle",
       "scope": {
         "kind": "orthogonal"
       },
-      "target": "bin",
+      "target": "guest",
       "count": {
         "op": "eq",
         "value": 1
       },
       "presentation": {
-        "title": "酒瓶清扫",
-        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。"
+        "title": "\u9152\u74f6\u5341\u5b57\u7ebf",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6070\u597d\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     },
     {
-      "id": "R4",
-      "type": "forEachCount",
-      "subject": "bin",
-      "scope": {
-        "kind": "adjacent"
-      },
-      "target": "guest",
-      "count": {
-        "op": "eq",
-        "value": 0
-      },
-      "presentation": {
-        "title": "清扫安全区",
-        "flavor": "每个垃圾桶周围一圈里，没有访客。"
-      }
-    },
-    {
-      "id": "R5",
+      "id": "R2",
       "type": "forEachCount",
       "subject": "mirror",
       "scope": {
@@ -85,17 +42,17 @@
       "target": "guest",
       "count": {
         "op": "eq",
-        "value": 1
+        "value": 0
       },
       "presentation": {
-        "title": "镜面登记",
-        "flavor": "每面镜子周围一圈里，恰好有 1 名访客。"
+        "title": "\u955c\u9762\u9759\u533a",
+        "flavor": "\u6bcf\u9762\u955c\u5b50\u5468\u56f4\u4e00\u5708\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     },
     {
-      "id": "R6",
+      "id": "R3",
       "type": "forEachCount",
-      "subject": "bottle",
+      "subject": "empty",
       "scope": {
         "kind": "orthogonal"
       },
@@ -105,42 +62,58 @@
         "value": 0
       },
       "presentation": {
-        "title": "酒瓶禁区",
-        "flavor": "每个酒瓶的上下左右邻格里，没有访客。"
+        "title": "\u7a7a\u623f\u9759\u7ebf",
+        "flavor": "\u6bcf\u4e2a\u7a7a\u623f\u95f4\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "\u4f4f\u5ba2\u603b\u6570",
+        "flavor": "\u8fd9\u95f4\u5ba2\u623f\u91cc\u5171\u6709 2 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     }
   ],
   "initialReveals": [
+    "A1",
+    "B1",
     "C1",
-    "B2",
-    "D2"
+    "E1",
+    "E2",
+    "E3"
   ],
   "target": {
-    "A1": "guest",
+    "A1": "empty",
     "B1": "mirror",
-    "C1": "bottle",
+    "C1": "empty",
     "D1": "empty",
+    "E1": "bin",
     "A2": "empty",
     "B2": "bottle",
-    "C2": "bin",
-    "D2": "bottle",
-    "A3": "empty",
-    "B3": "mirror",
-    "C3": "empty",
-    "D3": "mirror",
-    "A4": "empty",
-    "B4": "empty",
-    "C4": "guest",
-    "D4": "empty"
+    "C2": "bottle",
+    "D2": "empty",
+    "E2": "bin",
+    "A3": "bottle",
+    "B3": "guest",
+    "C3": "guest",
+    "D3": "bottle",
+    "E3": "bin"
   },
   "metadata": {
-    "difficulty": 2,
+    "difficulty": 4,
     "tags": [
-      "intersection",
-      "local-count",
-      "mirror-variant"
+      "mvp",
+      "quality-ladder",
+      "local-count"
     ],
-    "author": "internal",
-    "status": "validated"
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Wider local-count ladder case. Difficulty remains provisional until real playtest calibration."
   }
 }

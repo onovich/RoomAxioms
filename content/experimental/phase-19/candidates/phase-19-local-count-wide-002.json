@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "id": "case-001",
-  "title": "\u5ba2\u623f 01\uff1a\u9759\u7ebf\u8ba1\u6570",
-  "caseName": "\u6848\u5377 01 \u00b7 \u9759\u7ebf\u8ba1\u6570",
+  "id": "phase-19-local-count-wide-002",
+  "title": "Local Count Wide Draft 002",
+  "caseName": "Phase 19 Local Count Wide Draft 002",
   "board": {
-    "width": 4,
+    "width": 5,
     "height": 3
   },
   "allowedKinds": [
     "empty",
     "bottle",
+    "bin",
     "mirror",
     "guest"
   ],
@@ -27,8 +28,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "\u9152\u74f6\u5341\u5b57\u7ebf",
-        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6070\u597d\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+        "title": "Bottle cross",
+        "flavor": "Every bottle sees exactly 1 guest orthogonally."
       }
     },
     {
@@ -44,8 +45,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "\u955c\u9762\u9759\u533a",
-        "flavor": "\u6bcf\u9762\u955c\u5b50\u5468\u56f4\u4e00\u5708\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+        "title": "Mirror quiet zone",
+        "flavor": "Every mirror excludes guests from adjacent cells."
       }
     },
     {
@@ -61,8 +62,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "\u7a7a\u623f\u9759\u7ebf",
-        "flavor": "\u6bcf\u4e2a\u7a7a\u623f\u95f4\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+        "title": "Empty quiet line",
+        "flavor": "Every empty room excludes guests from orthogonal cells."
       }
     },
     {
@@ -74,39 +75,46 @@
         "value": 2
       },
       "presentation": {
-        "title": "\u4f4f\u5ba2\u603b\u6570",
-        "flavor": "\u8fd9\u95f4\u5ba2\u623f\u91cc\u5171\u6709 2 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+        "title": "Guest total",
+        "flavor": "Exactly 2 guests are in the room."
       }
     }
   ],
   "initialReveals": [
     "A1",
     "B1",
-    "C1"
+    "C1",
+    "E1",
+    "E2",
+    "E3"
   ],
   "target": {
     "A1": "empty",
     "B1": "mirror",
     "C1": "empty",
     "D1": "empty",
+    "E1": "bin",
     "A2": "empty",
     "B2": "bottle",
     "C2": "bottle",
     "D2": "empty",
+    "E2": "bin",
     "A3": "bottle",
     "B3": "guest",
     "C3": "guest",
-    "D3": "bottle"
+    "D3": "bottle",
+    "E3": "bin"
   },
   "metadata": {
-    "difficulty": 2,
+    "difficulty": 3,
     "tags": [
-      "mvp",
-      "quality-ladder",
+      "experimental",
+      "phase-19",
+      "candidate",
       "local-count"
     ],
     "author": "room-axioms-maintainers",
-    "status": "validated",
-    "notes": "First local-count ladder case. Difficulty remains provisional until real playtest calibration."
+    "status": "draft",
+    "notes": "Private Phase 19 widened local-count candidate; not shipped until promotion gates pass."
   }
 }

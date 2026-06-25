@@ -11,6 +11,7 @@ All files are private experimental candidates under `content/experimental/phase-
 | `phase-19-local-count-compact-001` | local-count / first deduction | 7 | 1 | 6 | `LOCAL_COUNT_SATURATED` | 13.07 | 3 | false |
 | `phase-19-local-count-wide-001` | local-count / first deduction | 3 | 1 | 7 | `LOCAL_COUNT_SATURATED` | 12.79 | 3 | false |
 | `phase-19-intersection-wide-001` | local-scope intersection | 2 | 1 | 5 | `LOCAL_SCOPE_INTERSECTION` | 10.66 | 3 | false |
+| `phase-19-local-count-wide-002` | local-count / wider edge | 10 | 1 | 6 | `LOCAL_COUNT_SATURATED` | 17.71 | 4 | false |
 | `phase-19-mixed-wide-001` | mixed 5x4 | 15 | 1 | 13 | `KNOWN_SAFE_FROM_NON_GUEST_OBJECT`, `LOCAL_COUNT_SATURATED`, `UNIQUE_TARGET_NEIGHBOR_INTERSECTION` | 23.40 | 5 | false |
 
 ## Validation Commands
@@ -33,6 +34,7 @@ Result: PASS, `ok: true`, `TECHNIQUE_RETENTION_PASS`.
 ## Promotion Notes
 
 - `phase-19-local-count-compact-001` and `phase-19-local-count-wide-001` can replace opening-trivial cases as first-deduction local-count entries.
+- `phase-19-local-count-wide-002` can provide a wider local-count step between the early local-count entries and mixed higher-band cases.
 - `phase-19-intersection-wide-001` can sit near `case-011` as a non-isomorphic intersection entry.
 - `phase-19-mixed-wide-001` can sit near `case-004` as a non-isomorphic mixed higher-band entry.
 - No experimental candidate is promoted by this document alone; promotion happens in the selector round after final ladder selection.

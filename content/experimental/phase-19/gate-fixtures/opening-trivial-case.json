@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "case-008",
-  "title": "客房 08：两把钥匙",
-  "caseName": "案卷 08 · 两把钥匙",
+  "id": "phase-19-opening-trivial-fixture",
+  "title": "\u5185\u90e8\u6837\u4f8b\uff1a\u5f00\u5c40\u552f\u4e00",
+  "caseName": "\u5185\u90e8\u6837\u4f8b \u00b7 \u5f00\u5c40\u552f\u4e00",
   "board": {
     "width": 3,
     "height": 3
@@ -18,11 +18,11 @@
       "target": "guest",
       "count": {
         "op": "eq",
-        "value": 2
+        "value": 1
       },
       "presentation": {
-        "title": "未登记住客",
-        "flavor": "房间里恰好有 2 名访客。"
+        "title": "\u672a\u767b\u8bb0\u4f4f\u5ba2",
+        "flavor": "\u623f\u95f4\u91cc\u6070\u597d\u6709 1 \u540d\u4f4f\u5ba2\u3002"
       }
     }
   ],
@@ -33,7 +33,8 @@
     "A2",
     "C2",
     "A3",
-    "B3"
+    "B3",
+    "C3"
   ],
   "target": {
     "A1": "empty",
@@ -44,15 +45,16 @@
     "C2": "empty",
     "A3": "empty",
     "B3": "empty",
-    "C3": "guest"
+    "C3": "empty"
   },
   "metadata": {
     "difficulty": 1,
     "tags": [
-      "tutorial",
-      "two-guests"
+      "internal-fixture",
+      "quality-gate"
     ],
-    "author": "internal",
-    "status": "validated"
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Private fixture for opening-quality gate regression tests; not player-facing."
   }
 }

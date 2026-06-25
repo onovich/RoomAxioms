@@ -1,20 +1,73 @@
 {
   "schemaVersion": 1,
   "id": "case-003",
-  "title": "客房 03：镜面便条",
-  "caseName": "案卷 03 · 镜面便条",
+  "title": "\u5ba2\u623f 03\uff1a\u4ea4\u53c9\u6838\u5bf9",
+  "caseName": "\u6848\u5377 03 \u00b7 \u4ea4\u53c9\u6838\u5bf9",
   "board": {
-    "width": 3,
+    "width": 4,
     "height": 3
   },
   "allowedKinds": [
     "empty",
+    "bottle",
+    "bin",
     "mirror",
     "guest"
   ],
   "rules": [
     {
       "id": "R1",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u955c\u9762\u5341\u5b57\u7ebf",
+        "flavor": "\u6bcf\u9762\u955c\u5b50\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6070\u597d\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "lte",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u9152\u74f6\u5171\u4eab\u9650\u5236",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u5468\u56f4\u4e00\u5708\u91cc\uff0c\u6700\u591a\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "\u7a7a\u623f\u5341\u5b57\u7ebf",
+        "flavor": "\u6bcf\u4e2a\u7a7a\u623f\u95f4\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6070\u597d\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
+      }
+    },
+    {
+      "id": "R4",
       "type": "globalCount",
       "target": "guest",
       "count": {
@@ -22,56 +75,41 @@
         "value": 1
       },
       "presentation": {
-        "title": "未登记住客",
-        "flavor": "房间里恰好有 1 名访客。"
-      }
-    },
-    {
-      "id": "R2",
-      "type": "forEachCount",
-      "subject": "mirror",
-      "scope": {
-        "kind": "adjacent"
-      },
-      "target": "guest",
-      "count": {
-        "op": "eq",
-        "value": 1
-      },
-      "presentation": {
-        "title": "镜面登记",
-        "flavor": "每面镜子周围一圈里，恰好有 1 名访客。"
+        "title": "\u4f4f\u5ba2\u603b\u6570",
+        "flavor": "\u8fd9\u95f4\u5ba2\u623f\u91cc\u5171\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     }
   ],
   "initialReveals": [
-    "A1",
     "B1",
-    "C1",
-    "A2",
-    "C2",
-    "A3",
-    "B3",
-    "C3"
+    "D1",
+    "B2",
+    "D2",
+    "D3"
   ],
   "target": {
-    "A1": "mirror",
-    "B1": "empty",
-    "C1": "empty",
+    "A1": "guest",
+    "B1": "mirror",
+    "C1": "bin",
+    "D1": "bin",
     "A2": "empty",
-    "B2": "guest",
-    "C2": "empty",
-    "A3": "empty",
-    "B3": "empty",
-    "C3": "empty"
+    "B2": "bottle",
+    "C2": "bin",
+    "D2": "bin",
+    "A3": "bin",
+    "B3": "bottle",
+    "C3": "bin",
+    "D3": "bin"
   },
   "metadata": {
-    "difficulty": 1,
+    "difficulty": 3,
     "tags": [
-      "tutorial",
-      "adjacent"
+      "mvp",
+      "quality-ladder",
+      "local-scope-intersection"
     ],
-    "author": "internal",
-    "status": "validated"
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Wider local-scope-intersection ladder case. Difficulty remains provisional until real playtest calibration."
   }
 }

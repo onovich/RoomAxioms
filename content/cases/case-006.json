@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "case-006",
-  "title": "客房 06：南侧账册",
-  "caseName": "案卷 06 · 南侧账册",
+  "title": "\u5ba2\u623f 06\uff1a\u540e\u5385\u6e05\u5355",
+  "caseName": "\u6848\u5377 06 \u00b7 \u540e\u5385\u6e05\u5355",
   "board": {
-    "width": 4,
+    "width": 5,
     "height": 4
   },
   "allowedKinds": [
@@ -24,8 +24,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "清扫容器",
-        "flavor": "房间里恰好有 1 个垃圾桶。"
+        "title": "\u6e05\u626b\u5bb9\u5668",
+        "flavor": "\u8fd9\u95f4\u5ba2\u623f\u91cc\u6070\u597d\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
       }
     },
     {
@@ -37,8 +37,8 @@
         "value": 2
       },
       "presentation": {
-        "title": "未登记住客",
-        "flavor": "房间里恰好有 2 名访客。"
+        "title": "\u4f4f\u5ba2\u603b\u6570",
+        "flavor": "\u8fd9\u95f4\u5ba2\u623f\u91cc\u5171\u6709 2 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     },
     {
@@ -54,8 +54,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "酒瓶清扫",
-        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 个垃圾桶。"
+        "title": "\u9152\u74f6\u6e05\u626b",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6070\u597d\u6709 1 \u4e2a\u5783\u573e\u6876\u3002"
       }
     },
     {
@@ -71,8 +71,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "清扫安全区",
-        "flavor": "每个垃圾桶周围一圈里，没有访客。"
+        "title": "\u6e05\u626b\u5b89\u5168\u533a",
+        "flavor": "\u6bcf\u4e2a\u5783\u573e\u6876\u5468\u56f4\u4e00\u5708\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     },
     {
@@ -88,8 +88,8 @@
         "value": 1
       },
       "presentation": {
-        "title": "镜面登记",
-        "flavor": "每面镜子周围一圈里，恰好有 1 名访客。"
+        "title": "\u955c\u9762\u767b\u8bb0",
+        "flavor": "\u6bcf\u9762\u955c\u5b50\u5468\u56f4\u4e00\u5708\u91cc\uff0c\u6070\u597d\u6709 1 \u540d\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     },
     {
@@ -105,42 +105,51 @@
         "value": 0
       },
       "presentation": {
-        "title": "酒瓶禁区",
-        "flavor": "每个酒瓶的上下左右邻格里，没有访客。"
+        "title": "\u9152\u74f6\u7981\u533a",
+        "flavor": "\u6bcf\u4e2a\u9152\u74f6\u7684\u4e0a\u4e0b\u5de6\u53f3\u90bb\u683c\u91cc\uff0c\u6ca1\u6709\u672a\u767b\u8bb0\u4f4f\u5ba2\u3002"
       }
     }
   ],
   "initialReveals": [
-    "A3",
-    "C3",
-    "B4"
+    "B1",
+    "E1",
+    "A2",
+    "C2",
+    "E2",
+    "E3",
+    "E4"
   ],
   "target": {
     "A1": "empty",
-    "B1": "guest",
-    "C1": "empty",
-    "D1": "empty",
-    "A2": "mirror",
-    "B2": "empty",
-    "C2": "mirror",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "guest",
+    "E1": "empty",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "bottle",
     "D2": "empty",
-    "A3": "bottle",
-    "B3": "bin",
-    "C3": "bottle",
+    "E2": "empty",
+    "A3": "mirror",
+    "B3": "empty",
+    "C3": "mirror",
     "D3": "empty",
+    "E3": "empty",
     "A4": "empty",
-    "B4": "bottle",
-    "C4": "mirror",
-    "D4": "guest"
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty",
+    "E4": "empty"
   },
   "metadata": {
-    "difficulty": 2,
+    "difficulty": 5,
     "tags": [
-      "intersection",
-      "local-count",
-      "vertical-variant"
+      "mvp",
+      "quality-ladder",
+      "mixed"
     ],
-    "author": "internal",
-    "status": "validated"
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Larger mixed ladder case. Difficulty remains provisional until real playtest calibration."
   }
 }

@@ -1,6 +1,6 @@
 # Phase 19 Non-Isomorphism Report
 
-Status: Round 4 evidence recorded
+Status: Round 11 promotion update recorded
 
 ## Gate Method
 
@@ -25,22 +25,37 @@ The signature intentionally ignores:
 - rule presentation copy;
 - metadata tags, author, notes, and status.
 
-## Shipped Duplicate Class
+## Pre-Promotion Duplicate Class
 
-The full shipped-case scan identifies this duplicate class:
+The Round 4 shipped-case scan identified this duplicate class before content replacement:
 
 - representative to keep or reskin: `case-004`;
 - duplicate/mirror variants to demote or replace: `case-005`, `case-006`, `case-007`.
 
 These cases share the same 4x4 structure, rules, reveal pattern, and target layout up to board symmetry. They should not all remain normal player-facing ladder entries.
 
+## Post-Promotion Shipped Scan
+
+Round 11 replaces `case-005` and `case-006`, removes `case-007` through `case-010` from the shipped content directory, and updates the web selector to load 8 ladder cases:
+
+- `case-001`
+- `case-002`
+- `case-003`
+- `case-011`
+- `case-012`
+- `case-004`
+- `case-005`
+- `case-006`
+
+`findIsomorphicPuzzleGroups(shippedCasePaths.map(loadCase))` now returns no duplicate groups in `packages/authoring/src/qualityGates.test.ts`.
+
 ## Regression Coverage
 
 Covered in `packages/authoring/src/qualityGates.test.ts`:
 
-- `case-005`, `case-006`, and `case-007` have the same canonical signature as `case-004`;
-- scanning all shipped `content/cases/case-*.json` files includes the `case-004` through `case-007` duplicate group;
-- `case-011` is not grouped with the cleaning-case duplicate class.
+- exact duplicate structures share canonical signatures even when id/copy/metadata differ;
+- promoted replacement cases are not grouped with retained `case-004`;
+- scanning all shipped `content/cases/case-*.json` files returns no duplicate groups after promotion.
 
 ## Architecture Notes
 

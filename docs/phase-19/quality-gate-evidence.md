@@ -1,6 +1,6 @@
 # Phase 19 Quality Gate Evidence
 
-Status: Rounds 7-10 evidence recorded
+Status: Round 11 selector promotion in progress
 
 ## Implemented Gate Surfaces
 
@@ -53,9 +53,9 @@ Implemented in `packages/authoring/src/qualityGates.ts`:
 
 Coverage in `packages/authoring/src/qualityGates.test.ts`:
 
-- `case-005`, `case-006`, and `case-007` match `case-004` under canonical signatures;
-- full shipped-case scan reports the `case-004` through `case-007` duplicate class;
-- `case-011` is not grouped with that duplicate class.
+- exact structural duplicate fixtures share canonical signatures;
+- promoted replacement cases are not grouped with retained `case-004`;
+- the full shipped-case scan reports no duplicate classes after Round 11 promotion.
 
 Report: `docs/phase-19/non-isomorphism-report.md`.
 
@@ -88,6 +88,7 @@ Recorded in `docs/phase-19/sampling-evidence.md`:
 Recorded in `docs/phase-19/candidate-pool-evidence.md`:
 
 - two local-count first-deduction candidates;
+- one wider local-count candidate;
 - one non-isomorphic local-scope-intersection candidate;
 - one non-isomorphic mixed 5x4 candidate;
 - all accepted candidates pass authoring report and score with no truncation;
@@ -149,7 +150,19 @@ Recorded in `docs/phase-19/candidate-pool-evidence.md`:
 - `phase-19-local-count-compact-001`: report PASS, score PASS, no truncation.
 - `phase-19-local-count-wide-001`: report PASS, score PASS, no truncation.
 - `phase-19-intersection-wide-001`: report PASS, score PASS, minimize `--require-technique LOCAL_SCOPE_INTERSECTION` PASS.
+- `phase-19-local-count-wide-002`: report PASS, score PASS, no truncation.
 - `phase-19-mixed-wide-001`: report PASS, score PASS, no truncation.
+- `git diff --check`: PASS, with normal CRLF working-copy warnings only.
+- `Validate.cmd`: PASS.
+  - `pnpm lint`: PASS.
+  - `pnpm typecheck`: PASS.
+  - `pnpm test`: PASS.
+  - `pnpm build`: PASS.
+
+## Round 11 Selector Promotion Validation
+
+- Web content/runtime focused tests: PASS, `11` files and `61` tests.
+- Authoring focused tests: PASS, `2` files and `29` tests.
 - `git diff --check`: PASS, with normal CRLF working-copy warnings only.
 - `Validate.cmd`: PASS.
   - `pnpm lint`: PASS.
