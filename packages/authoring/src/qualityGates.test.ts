@@ -11,6 +11,7 @@ import {
   evaluateTechniqueRetentionGate,
   findEffectiveIsomorphicPuzzleGroups,
   findIsomorphicPuzzleGroups,
+  proofTraceFingerprint,
 } from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
 
@@ -290,6 +291,26 @@ describe('technique retention gate', () => {
       requiredTechniqueIds: ['LOCAL_COUNT_SATURATED', 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
       missingRequiredTechniqueIds: ['UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
     })
+  })
+})
+
+describe('proof trace fingerprint', () => {
+  it('records the public proof technique sequence and normalized target kinds', () => {
+    const fingerprint = proofTraceFingerprint(loadCase(canonicalCleaningCasePath))
+
+    expect(fingerprint.puzzleId).toBe('case-004')
+    expect(fingerprint.techniqueSequence).toContain('LOCAL_COUNT_SATURATED')
+    expect(fingerprint.techniqueSequence).toContain('UNIQUE_TARGET_NEIGHBOR_INTERSECTION')
+    expect(fingerprint.steps.some((step) => step.targetKindRole === 'object')).toBe(true)
+    expect(fingerprint.steps.every((step) => step.cellId.length > 0)).toBe(true)
+  })
+
+  it('matches a padded board clone after effective-coordinate normalization', () => {
+    const canonical = proofTraceFingerprint(loadCase(canonicalCleaningCasePath))
+    const padded = proofTraceFingerprint(loadCase(paddedCleaningClonePath))
+
+    expect(padded.canonicalSignature).toBe(canonical.canonicalSignature)
+    expect(padded.canonicalKindAgnosticSignature).toBe(canonical.canonicalKindAgnosticSignature)
   })
 })
 

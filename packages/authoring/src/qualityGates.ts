@@ -12,7 +12,7 @@ import {
 } from '@room-axioms/domain'
 import type { ProvisionalDifficultyScore } from '@room-axioms/generator'
 import { verifyNoGuess } from '@room-axioms/proof'
-import type { TechniqueId } from '@room-axioms/proof'
+import type { Deduction, ProofPremise, TechniqueId, VerificationReport } from '@room-axioms/proof'
 import { parsePuzzleDefinition } from '@room-axioms/schema'
 import { countGuestLayouts, isSatisfiable, type SolverOptions, type SolverStats } from '@room-axioms/solver'
 
@@ -135,6 +135,37 @@ export interface EffectivePuzzleIsomorphismGroup {
   readonly signature: string
   readonly puzzleIds: readonly string[]
   readonly members: readonly EffectivePuzzleIsomorphismSignature[]
+}
+
+export interface ProofTraceStepFingerprint {
+  readonly waveIndex: number
+  readonly stepIndex: number
+  readonly technique: TechniqueId
+  readonly conclusionKind: Deduction['conclusion']['kind']
+  readonly cellId: CellId
+  readonly targetKind: string
+  readonly targetKindRole: string
+  readonly ruleShape: readonly string[]
+  readonly kindAgnosticRuleShape: readonly string[]
+  readonly premiseShape: readonly string[]
+}
+
+export interface ProofTraceTransformSignature {
+  readonly transform: BoardTransformName
+  readonly signature: string
+  readonly kindAgnosticSignature: string
+  readonly techniqueSequence: readonly TechniqueId[]
+  readonly steps: readonly ProofTraceStepFingerprint[]
+}
+
+export interface ProofTraceFingerprint {
+  readonly puzzleId: string
+  readonly canonicalSignature: string
+  readonly canonicalKindAgnosticSignature: string
+  readonly canonicalTransform: BoardTransformName
+  readonly techniqueSequence: readonly TechniqueId[]
+  readonly steps: readonly ProofTraceStepFingerprint[]
+  readonly transformSignatures: readonly ProofTraceTransformSignature[]
 }
 
 export interface TechniqueRetentionGateInput {
@@ -334,6 +365,27 @@ export function findEffectiveIsomorphicPuzzleGroups(
       members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
     }))
     .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
+}
+
+export function proofTraceFingerprint(puzzle: PuzzleDefinition): ProofTraceFingerprint {
+  const reduction = reduceEffectiveBoard(puzzle)
+  const proof = verifyNoGuess(puzzle)
+  const transformSignatures = availableBoardTransforms(reduction.effectiveBoard).map((transform) => (
+    proofTraceTransformSignature(puzzle, proof, reduction, transform)
+  ))
+  const canonical = [...transformSignatures].sort((left, right) => (
+    left.signature.localeCompare(right.signature) || left.transform.localeCompare(right.transform)
+  ))[0]
+
+  return {
+    puzzleId: puzzle.id,
+    canonicalSignature: canonical.signature,
+    canonicalKindAgnosticSignature: canonical.kindAgnosticSignature,
+    canonicalTransform: canonical.transform,
+    techniqueSequence: canonical.techniqueSequence,
+    steps: canonical.steps,
+    transformSignatures,
+  }
 }
 
 export function evaluateTechniqueRetentionGate(
@@ -611,6 +663,214 @@ function normalizedEffectiveInitialReveals(
   return puzzle.initialReveals
     .map((cellId) => normalizedByOriginal.get(cellId))
     .filter(isDefined)
+}
+
+function proofTraceTransformSignature(
+  puzzle: PuzzleDefinition,
+  proof: VerificationReport,
+  reduction: EffectiveBoardReduction,
+  transform: BoardTransformName,
+): ProofTraceTransformSignature {
+  const steps = proofTraceSteps(puzzle, proof, reduction, transform)
+  const techniqueSequence = steps.map((step) => step.technique)
+
+  return {
+    transform,
+    signature: JSON.stringify({
+      steps: steps.map((step) => ({
+        waveIndex: step.waveIndex,
+        stepIndex: step.stepIndex,
+        technique: step.technique,
+        conclusionKind: step.conclusionKind,
+        cellId: step.cellId,
+        targetKind: step.targetKind,
+        ruleShape: step.ruleShape,
+        premiseShape: step.premiseShape,
+      })),
+    }),
+    kindAgnosticSignature: JSON.stringify({
+      steps: steps.map((step) => ({
+        waveIndex: step.waveIndex,
+        stepIndex: step.stepIndex,
+        technique: step.technique,
+        conclusionKind: step.conclusionKind,
+        cellId: step.cellId,
+        targetKindRole: step.targetKindRole,
+        ruleShape: step.kindAgnosticRuleShape,
+        premiseShape: step.premiseShape,
+      })),
+    }),
+    techniqueSequence,
+    steps,
+  }
+}
+
+function proofTraceSteps(
+  puzzle: PuzzleDefinition,
+  proof: VerificationReport,
+  reduction: EffectiveBoardReduction,
+  transform: BoardTransformName,
+): readonly ProofTraceStepFingerprint[] {
+  const ruleById = new Map(puzzle.rules.map((rule) => [rule.id, rule] as const))
+  const normalizedByOriginal = new Map(
+    reduction.cells.map((cell) => [cell.cellId, cell.normalizedCellId] as const),
+  )
+  const steps: ProofTraceStepFingerprint[] = []
+  let stepIndex = 0
+
+  for (const wave of proof.waves) {
+    for (const deduction of wave.deductions) {
+      const cellId = transformedEffectiveCellId(
+        deduction.conclusion.cellId,
+        normalizedByOriginal,
+        reduction.effectiveBoard,
+        transform,
+      )
+      if (cellId === undefined) {
+        throw new Error(`Proof conclusion ${deduction.conclusion.cellId} is outside the effective board.`)
+      }
+      const targetKind = deductionTargetKind(puzzle, deduction, wave.revealed)
+      const ruleShape = deduction.ruleIds
+        .map((ruleId) => ruleById.get(ruleId))
+        .filter(isDefined)
+        .map((rule) => ruleTraceShape(rule, 'exact'))
+        .sort()
+      const kindAgnosticRuleShape = deduction.ruleIds
+        .map((ruleId) => ruleById.get(ruleId))
+        .filter(isDefined)
+        .map((rule) => ruleTraceShape(rule, 'kind-agnostic'))
+        .sort()
+
+      steps.push({
+        waveIndex: wave.index,
+        stepIndex,
+        technique: deduction.technique,
+        conclusionKind: deduction.conclusion.kind,
+        cellId,
+        targetKind,
+        targetKindRole: traceKind(targetKind, 'kind-agnostic'),
+        ruleShape,
+        kindAgnosticRuleShape,
+        premiseShape: deduction.premises
+          .map((premise) => premiseTraceShape({
+            premise,
+            ruleById,
+            normalizedByOriginal,
+            board: reduction.effectiveBoard,
+            transform,
+            conclusionCellId: cellId,
+          }))
+          .sort(),
+      })
+      stepIndex += 1
+    }
+  }
+
+  return steps
+}
+
+function deductionTargetKind(
+  puzzle: PuzzleDefinition,
+  deduction: Deduction,
+  revealed: readonly Observation[],
+): string {
+  if (deduction.conclusion.kind === 'guest') return 'guest'
+  if (deduction.conclusion.kind === 'object') return deduction.conclusion.object
+
+  return revealed.find((observation) => observation.cellId === deduction.conclusion.cellId)?.kind
+    ?? puzzle.target[deduction.conclusion.cellId]
+    ?? 'unknown'
+}
+
+function premiseTraceShape(input: {
+  readonly premise: ProofPremise
+  readonly ruleById: ReadonlyMap<string, RuleDefinition>
+  readonly normalizedByOriginal: ReadonlyMap<CellId, CellId>
+  readonly board: BoardSize
+  readonly transform: BoardTransformName
+  readonly conclusionCellId: CellId
+}): string {
+  const rules = (input.premise.ruleIds ?? [])
+    .map((ruleId) => input.ruleById.get(ruleId))
+    .filter(isDefined)
+    .map((rule) => ruleTraceShape(rule, 'kind-agnostic'))
+    .sort()
+  const cellOffsets = input.premise.kind === 'count'
+    ? []
+    : relativePremiseCellShape({
+      cellIds: input.premise.cellIds ?? [],
+      normalizedByOriginal: input.normalizedByOriginal,
+      board: input.board,
+      transform: input.transform,
+      conclusionCellId: input.conclusionCellId,
+    })
+
+  return JSON.stringify({
+    kind: input.premise.kind,
+    rules,
+    cellOffsets,
+  })
+}
+
+function relativePremiseCellShape(input: {
+  readonly cellIds: readonly CellId[]
+  readonly normalizedByOriginal: ReadonlyMap<CellId, CellId>
+  readonly board: BoardSize
+  readonly transform: BoardTransformName
+  readonly conclusionCellId: CellId
+}): readonly string[] {
+  const conclusion = parseCellId(input.conclusionCellId, input.board)
+
+  return input.cellIds
+    .map((cellId) => transformedEffectiveCellId(
+      cellId,
+      input.normalizedByOriginal,
+      input.board,
+      input.transform,
+    ))
+    .filter(isDefined)
+    .map((cellId) => {
+      const coord = parseCellId(cellId, input.board)
+      return `${coord.x - conclusion.x},${coord.y - conclusion.y}`
+    })
+    .sort()
+}
+
+function transformedEffectiveCellId(
+  cellId: CellId,
+  normalizedByOriginal: ReadonlyMap<CellId, CellId>,
+  board: BoardSize,
+  transform: BoardTransformName,
+): CellId | undefined {
+  const normalized = normalizedByOriginal.get(cellId)
+  if (normalized === undefined) return undefined
+
+  return transformCellId(normalized, board, transform)
+}
+
+function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): string {
+  if (rule.type === 'globalCount') {
+    return JSON.stringify({
+      type: rule.type,
+      target: traceKind(rule.target, mode),
+      count: rule.count,
+    })
+  }
+
+  return JSON.stringify({
+    type: rule.type,
+    subject: traceKind(rule.subject, mode),
+    scope: rule.scope.kind,
+    target: traceKind(rule.target, mode),
+    count: rule.count,
+  })
+}
+
+function traceKind(kind: string, mode: 'exact' | 'kind-agnostic'): string {
+  if (mode === 'exact') return kind
+  if (kind === 'guest' || kind === 'empty' || kind === 'unknown') return kind
+
+  return 'object'
 }
 
 function isDefined<T>(value: T | undefined): value is T {
