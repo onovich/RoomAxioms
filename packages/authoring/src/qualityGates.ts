@@ -1,4 +1,15 @@
-import { allCells, type CellId, type Observation, type PuzzleDefinition } from '@room-axioms/domain'
+import {
+  allCells,
+  formatCellId,
+  parseCellId,
+  sortCellIds,
+  type BoardSize,
+  type CellId,
+  type Coord,
+  type Observation,
+  type PuzzleDefinition,
+  type RuleDefinition,
+} from '@room-axioms/domain'
 import type { ProvisionalDifficultyScore } from '@room-axioms/generator'
 import { verifyNoGuess } from '@room-axioms/proof'
 import type { TechniqueId } from '@room-axioms/proof'
@@ -81,6 +92,34 @@ export interface RuleContributionReport {
   readonly puzzleId: string
   readonly status: 'pass' | 'warning'
   readonly results: readonly RuleContributionResult[]
+}
+
+export type BoardTransformName =
+  | 'identity'
+  | 'mirror-horizontal'
+  | 'mirror-vertical'
+  | 'rotate-180'
+  | 'rotate-90'
+  | 'rotate-270'
+  | 'transpose-main'
+  | 'transpose-anti'
+
+export interface PuzzleIsomorphismSignature {
+  readonly puzzleId: string
+  readonly canonicalSignature: string
+  readonly canonicalTransform: BoardTransformName
+  readonly transformSignatures: readonly PuzzleTransformSignature[]
+}
+
+export interface PuzzleTransformSignature {
+  readonly transform: BoardTransformName
+  readonly signature: string
+}
+
+export interface PuzzleIsomorphismGroup {
+  readonly signature: string
+  readonly puzzleIds: readonly string[]
+  readonly members: readonly PuzzleIsomorphismSignature[]
 }
 
 const DEFAULT_QUALITY_GATE_POLICY = {
@@ -185,6 +224,44 @@ export function evaluateRuleContribution(
     status: results.some((result) => result.status === 'redundant') ? 'warning' : 'pass',
     results,
   }
+}
+
+export function canonicalPuzzleIsomorphismSignature(puzzle: PuzzleDefinition): PuzzleIsomorphismSignature {
+  const transformSignatures = availableBoardTransforms(puzzle.board).map((transform) => ({
+    transform,
+    signature: puzzleShapeSignature(puzzle, transform),
+  }))
+  const canonical = [...transformSignatures].sort((left, right) => (
+    left.signature.localeCompare(right.signature) || left.transform.localeCompare(right.transform)
+  ))[0]
+
+  return {
+    puzzleId: puzzle.id,
+    canonicalSignature: canonical.signature,
+    canonicalTransform: canonical.transform,
+    transformSignatures,
+  }
+}
+
+export function findIsomorphicPuzzleGroups(
+  puzzles: readonly PuzzleDefinition[],
+): readonly PuzzleIsomorphismGroup[] {
+  const bySignature = new Map<string, PuzzleIsomorphismSignature[]>()
+  for (const puzzle of puzzles) {
+    const signature = canonicalPuzzleIsomorphismSignature(puzzle)
+    const signatures = bySignature.get(signature.canonicalSignature) ?? []
+    signatures.push(signature)
+    bySignature.set(signature.canonicalSignature, signatures)
+  }
+
+  return [...bySignature.entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([signature, members]) => ({
+      signature,
+      puzzleIds: members.map((member) => member.puzzleId).sort(),
+      members: [...members].sort((left, right) => left.puzzleId.localeCompare(right.puzzleId)),
+    }))
+    .sort((left, right) => left.puzzleIds[0].localeCompare(right.puzzleIds[0]))
 }
 
 function numericMinimumGate(input: {
@@ -340,4 +417,95 @@ function zeroStats(): SolverStats {
     propagationCount: 0,
     truncated: false,
   }
+}
+
+function puzzleShapeSignature(puzzle: PuzzleDefinition, transform: BoardTransformName): string {
+  return JSON.stringify({
+    schemaVersion: puzzle.schemaVersion,
+    board: puzzle.board,
+    allowedKinds: [...puzzle.allowedKinds].sort(),
+    rules: puzzle.rules.map(ruleSignature).sort(),
+    initialReveals: transformedSortedCells(puzzle.initialReveals, puzzle.board, transform),
+    target: transformedTargetSignature(puzzle, transform),
+  })
+}
+
+function ruleSignature(rule: RuleDefinition): string {
+  if (rule.type === 'globalCount') {
+    return JSON.stringify({
+      type: rule.type,
+      target: rule.target,
+      count: rule.count,
+    })
+  }
+
+  return JSON.stringify({
+    type: rule.type,
+    subject: rule.subject,
+    scope: rule.scope.kind,
+    target: rule.target,
+    count: rule.count,
+  })
+}
+
+function transformedTargetSignature(
+  puzzle: PuzzleDefinition,
+  transform: BoardTransformName,
+): readonly string[] {
+  const transformed = new Map<CellId, string>()
+  for (const cellId of allCells(puzzle.board)) {
+    transformed.set(transformCellId(cellId, puzzle.board, transform), puzzle.target[cellId])
+  }
+
+  return sortCellIds(transformed.keys(), puzzle.board).map((cellId) => (
+    `${cellId}:${transformed.get(cellId) ?? 'unknown'}`
+  ))
+}
+
+function transformedSortedCells(
+  cellIds: readonly CellId[],
+  size: BoardSize,
+  transform: BoardTransformName,
+): readonly CellId[] {
+  return sortCellIds(cellIds.map((cellId) => transformCellId(cellId, size, transform)), size)
+}
+
+function transformCellId(cellId: CellId, size: BoardSize, transform: BoardTransformName): CellId {
+  return formatCellId(transformCoord(parseCellId(cellId, size), size, transform), size)
+}
+
+function transformCoord(coord: Coord, size: BoardSize, transform: BoardTransformName): Coord {
+  switch (transform) {
+    case 'identity':
+      return coord
+    case 'mirror-horizontal':
+      return { x: size.width - 1 - coord.x, y: coord.y }
+    case 'mirror-vertical':
+      return { x: coord.x, y: size.height - 1 - coord.y }
+    case 'rotate-180':
+      return { x: size.width - 1 - coord.x, y: size.height - 1 - coord.y }
+    case 'rotate-90':
+      return { x: size.width - 1 - coord.y, y: coord.x }
+    case 'rotate-270':
+      return { x: coord.y, y: size.height - 1 - coord.x }
+    case 'transpose-main':
+      return { x: coord.y, y: coord.x }
+    case 'transpose-anti':
+      return { x: size.width - 1 - coord.y, y: size.height - 1 - coord.x }
+  }
+}
+
+function availableBoardTransforms(size: BoardSize): readonly BoardTransformName[] {
+  const transforms: BoardTransformName[] = [
+    'identity',
+    'mirror-horizontal',
+    'mirror-vertical',
+    'rotate-180',
+  ]
+
+  if (size.width === size.height) {
+    transforms.push('rotate-90', 'rotate-270', 'transpose-main', 'transpose-anti')
+  }
+
+  return transforms
 }

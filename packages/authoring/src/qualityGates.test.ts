@@ -1,14 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import type { AuthoringCaseValidationReport, AuthoringCliReport } from './contracts.js'
-import { evaluateCoreQualityGates, evaluateRuleContribution } from './qualityGates.js'
+import {
+  canonicalPuzzleIsomorphismSignature,
+  evaluateCoreQualityGates,
+  evaluateRuleContribution,
+  findIsomorphicPuzzleGroups,
+} from './qualityGates.js'
 import { runAuthoringCli } from './runner.js'
 
 const contentRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../content/cases')
+const shippedCasePaths = readdirSync(contentRoot)
+  .filter((fileName) => /^case-\d+\.json$/.test(fileName))
+  .sort()
+  .map((fileName) => resolve(contentRoot, fileName))
 const trivialCasePath = resolve(contentRoot, 'case-001.json')
+const canonicalCleaningCasePath = resolve(contentRoot, 'case-004.json')
+const mirroredCleaningCasePaths = [
+  resolve(contentRoot, 'case-005.json'),
+  resolve(contentRoot, 'case-006.json'),
+  resolve(contentRoot, 'case-007.json'),
+]
 const intersectionCasePath = resolve(contentRoot, 'case-011.json')
 
 describe('quality gate contracts', () => {
@@ -149,6 +164,48 @@ describe('rule contribution gate', () => {
       status: 'redundant',
       reasons: ['no-material-change'],
     })
+  })
+})
+
+describe('non-isomorphism gate', () => {
+  it('assigns equivalent canonical signatures to mirrored cleaning variants', () => {
+    const canonical = canonicalPuzzleIsomorphismSignature(loadCase(canonicalCleaningCasePath))
+    const variants = mirroredCleaningCasePaths.map((casePath) => canonicalPuzzleIsomorphismSignature(loadCase(casePath)))
+
+    expect(variants.map((variant) => variant.canonicalSignature)).toEqual([
+      canonical.canonicalSignature,
+      canonical.canonicalSignature,
+      canonical.canonicalSignature,
+    ])
+  })
+
+  it('groups shipped mirror variants without grouping the retained intersection case', () => {
+    const puzzles = [
+      loadCase(canonicalCleaningCasePath),
+      ...mirroredCleaningCasePaths.map(loadCase),
+      loadCase(intersectionCasePath),
+    ]
+    const groups = findIsomorphicPuzzleGroups(puzzles)
+
+    expect(groups).toHaveLength(1)
+    expect(groups[0].puzzleIds).toEqual(['case-004', 'case-005', 'case-006', 'case-007'])
+    expect(groups[0].members.map((member) => member.puzzleId)).toEqual([
+      'case-004',
+      'case-005',
+      'case-006',
+      'case-007',
+    ])
+  })
+
+  it('finds the known duplicate cleaning class when scanning all shipped cases', () => {
+    const groups = findIsomorphicPuzzleGroups(shippedCasePaths.map(loadCase))
+
+    expect(groups.map((group) => group.puzzleIds)).toContainEqual([
+      'case-004',
+      'case-005',
+      'case-006',
+      'case-007',
+    ])
   })
 })
 

@@ -21,8 +21,14 @@ export {
 export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
+  canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateRuleContribution,
+  findIsomorphicPuzzleGroups,
+  type BoardTransformName,
+  type PuzzleIsomorphismGroup,
+  type PuzzleIsomorphismSignature,
+  type PuzzleTransformSignature,
   type QualityGateCaseProfile,
   type QualityGateId,
   type QualityGateInput,

@@ -1,6 +1,6 @@
 # Phase 19 Quality Gate Evidence
 
-Status: Round 3 evidence recorded
+Status: Round 4 evidence recorded
 
 ## Implemented Gate Surfaces
 
@@ -42,15 +42,43 @@ Coverage in `packages/authoring/src/qualityGates.test.ts`:
 - redundant duplicate rule detection;
 - decorative non-guest rule detection.
 
+### Non-Isomorphism Gate
+
+Implemented in `packages/authoring/src/qualityGates.ts`:
+
+- `canonicalPuzzleIsomorphismSignature` computes a canonical structure signature across board symmetries.
+- `findIsomorphicPuzzleGroups` groups cases that share a canonical signature.
+- The signature includes board dimensions, allowed kinds, normalized rule constraints, initial reveal cells, and target layout.
+- The signature ignores id, title, case name, rule presentation copy, and metadata.
+
+Coverage in `packages/authoring/src/qualityGates.test.ts`:
+
+- `case-005`, `case-006`, and `case-007` match `case-004` under canonical signatures;
+- full shipped-case scan reports the `case-004` through `case-007` duplicate class;
+- `case-011` is not grouped with that duplicate class.
+
+Report: `docs/phase-19/non-isomorphism-report.md`.
+
 ## Architecture Notes
 
 - Gates consume authoring/generator/proof/solver/schema public APIs.
 - Gates do not duplicate CSP solving, proof deduction, or schema parsing semantics.
 - Rule contribution is report-only during discovery; final promoted cases should not carry multiple redundant rules.
+- Non-isomorphism detection is an offline authoring gate and is not wired into player runtime UI.
 
 ## Round 3 Validation
 
 - Focused authoring tests: PASS, `2` files and `23` tests.
+- `git diff --check`: PASS, with normal CRLF working-copy warnings only.
+- `Validate.cmd`: PASS.
+  - `pnpm lint`: PASS.
+  - `pnpm typecheck`: PASS.
+  - `pnpm test`: PASS.
+  - `pnpm build`: PASS.
+
+## Round 4 Validation
+
+- Focused authoring tests: PASS, `2` files and `26` tests.
 - `git diff --check`: PASS, with normal CRLF working-copy warnings only.
 - `Validate.cmd`: PASS.
   - `pnpm lint`: PASS.
