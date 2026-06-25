@@ -3,6 +3,7 @@ import type { PuzzleDefinition } from '@room-axioms/domain'
 import case004Fixture from '../../../../content/cases/case-004.json' with { type: 'json' }
 import case011Fixture from '../../../../content/cases/case-011.json' with { type: 'json' }
 import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
+import case013Fixture from '../../../../content/cases/case-013.json' with { type: 'json' }
 
 export const DEFAULT_CASE_ID = 'case-004'
 
@@ -17,6 +18,7 @@ export interface CaseSummary {
 
 const caseFixtures = [
   case011Fixture,
+  case013Fixture,
   case012Fixture,
   case004Fixture,
 ] as const

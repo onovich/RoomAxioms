@@ -7,6 +7,7 @@ describe('case content verification harness', () => {
   it('loads the shipped cases in stable order', () => {
     expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
       'case-011',
+      'case-013',
       'case-012',
       'case-004',
     ])
@@ -17,7 +18,7 @@ describe('case content verification harness', () => {
     const internalCasePrefix = /^phase-\d+-/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
-    expect(contentCases).toHaveLength(3)
+    expect(contentCases).toHaveLength(4)
     expect(contentCases.some((puzzle) => internalCasePrefix.test(puzzle.id))).toBe(false)
     expect(caseSummaries.some((summary) => internalCasePrefix.test(summary.id))).toBe(false)
     expect(contentCases.some((puzzle) => [
@@ -186,6 +187,45 @@ describe('case content verification harness', () => {
         waveCount: 1,
         deductionCount: 7,
         techniqueIds: ['LOCAL_COUNT_SATURATED', 'LOCAL_SCOPE_DIFFERENCE'],
+        issueCodes: [],
+      },
+      runtime: {
+        status: 'ready',
+        candidateGuestLayouts: 2,
+        guestLayoutUnique: false,
+        noGuess: true,
+        humanExplainable: true,
+        warningCodes: [],
+      },
+    })
+    expect(report.stats.truncated).toBe(false)
+  })
+
+  it('records the promoted case-013 crossing-ledger evidence', () => {
+    const report = verifyCaseFixture(getCaseById('case-013'))
+
+    expect(report.passed).toBe(true)
+    expect(report.issues).toEqual([])
+    expect(report).toMatchObject({
+      id: 'case-013',
+      title: '客房 13：交叉账簿',
+      initial: {
+        revealedCells: ['A1', 'B1', 'C1', 'B2'],
+        satisfiable: true,
+        candidateGuestLayouts: 2,
+      },
+      final: {
+        unique: true,
+        guestCells: ['C2', 'B3'],
+      },
+      proof: {
+        noGuess: true,
+        humanExplainable: true,
+        guestLayoutUniqueAtEnd: true,
+        finalGuestCells: ['C2', 'B3'],
+        waveCount: 1,
+        deductionCount: 3,
+        techniqueIds: ['LOCAL_SCOPE_DIFFERENCE', 'LOCAL_SCOPE_INTERSECTION'],
         issueCodes: [],
       },
       runtime: {

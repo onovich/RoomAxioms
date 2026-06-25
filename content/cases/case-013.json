@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "case-013",
+  "title": "客房 13：交叉账簿",
+  "caseName": "案卷 13 · 交叉账簿",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "酒瓶十字账",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 2 名未登记住客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "镜面环账",
+        "flavor": "每面镜子周围一圈里，恰好有 1 名未登记住客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "酒瓶环账",
+        "flavor": "每个酒瓶周围一圈里，恰好有 2 名未登记住客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "guest",
+    "A3": "empty",
+    "B3": "guest",
+    "C3": "bottle"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "mvp",
+      "mid-band",
+      "local-scope-intersection",
+      "local-scope-difference"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Maintainer-authored mid-band crossing-ledger case. Difficulty remains provisional until real playtest calibration."
+  }
+}

@@ -38,6 +38,19 @@
       }
     },
     {
+      "puzzleId": "case-013",
+      "status": "accepted",
+      "novelty": "Crossing-ledger 3x3 case that combines local-scope difference with local-scope intersection across bottle and mirror neighborhoods.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 21 because anti-clone review found no structural collision with case-011, case-012, or case-004; the final guest pair C2/B3 is not the case-011 single-guest intersection or the case-012 corridor pair.",
+        "gateEvidence": [
+          "phase-21-s2-promotion",
+          "LOCAL_SCOPE_INTERSECTION",
+          "LOCAL_SCOPE_DIFFERENCE"
+        ]
+      }
+    },
+    {
       "puzzleId": "case-001",
       "status": "rejected",
       "novelty": "No accepted Phase 20 novelty claim.",
