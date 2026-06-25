@@ -34,18 +34,18 @@ describe('rule text helpers', () => {
     expect(rulePlainText(rule)).toBe('访客不在酒瓶的上下左右邻格。')
   })
 
-  it('renders region count rules with the region id', () => {
+  it('renders region count rules with the player-facing title', () => {
     const rule: RuleDefinition = {
       id: 'ZR1',
       type: 'regionCount',
       regionId: 'north-wing',
       target: 'guest',
       count: { op: 'eq', value: 1 },
-      presentation: { title: 'North wing' },
+      presentation: { title: '北翼静区' },
     }
 
-    expect(ruleChip(rule)).toBe('north-wing：有 1 名访客')
-    expect(rulePlainText(rule)).toBe('north-wing区域，有 1 名访客。')
+    expect(ruleChip(rule)).toBe('北翼静区：有 1 名访客')
+    expect(rulePlainText(rule)).toBe('北翼静区区域，有 1 名访客。')
   })
 
   it('renders line count rules with row labels', () => {
@@ -62,7 +62,7 @@ describe('rule text helpers', () => {
     expect(rulePlainText(rule)).toBe('第 2 行，最多有 1 名访客。')
   })
 
-  it('renders anchor count rules with the anchor id', () => {
+  it('renders anchor count rules with the player-facing title', () => {
     const rule: RuleDefinition = {
       id: 'AR1',
       type: 'anchorCount',
@@ -70,11 +70,28 @@ describe('rule text helpers', () => {
       scope: { kind: 'orthogonal' },
       target: 'guest',
       count: { op: 'eq', value: 0 },
-      presentation: { title: 'Anchor' },
+      presentation: { title: '酒瓶锚点' },
     }
 
-    expect(ruleChip(rule)).toBe('known-bottle 的上下左右邻格：没有访客')
-    expect(rulePlainText(rule)).toBe('known-bottle 的上下左右邻格，没有访客。')
+    expect(ruleChip(rule)).toBe('酒瓶锚点的上下左右邻格：没有访客')
+    expect(rulePlainText(rule)).toBe('酒瓶锚点的上下左右邻格，没有访客。')
+  })
+
+  it('prefers reviewed presentation flavor for shipped rule text', () => {
+    const rule: RuleDefinition = {
+      id: 'ZR2',
+      type: 'regionCount',
+      regionId: 'north-wing',
+      target: 'guest',
+      count: { op: 'eq', value: 0 },
+      presentation: {
+        title: '北翼静区',
+        flavor: '北翼静区里没有未登记访客。',
+      },
+    }
+
+    expect(rulePlainText(rule)).toBe('北翼静区里没有未登记访客。')
+    expect(ruleSemantics(rule)).toBe('北翼静区里没有未登记访客。')
   })
 
   it('renders record-set rules without internal assignment details', () => {

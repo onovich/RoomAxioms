@@ -56,17 +56,14 @@ describe('MVP content runtime smoke', () => {
   })
 
   it('keeps rule reading copy plain and free of abstract scope terms', () => {
-    const localRuleTexts = contentCases.flatMap((puzzle) =>
-      puzzle.rules
-        .filter((rule) => rule.type === 'forEachCount')
-        .map((rule) => ruleSemantics(rule)),
-    )
+    const ruleTexts = contentCases.flatMap((puzzle) => puzzle.rules.map((rule) => ruleSemantics(rule)))
 
-    expect(localRuleTexts.length).toBeGreaterThan(0)
-    expect(localRuleTexts.some((text) => text.includes('上下左右邻格'))).toBe(true)
-    expect(localRuleTexts.some((text) => text.includes('周围一圈'))).toBe(true)
-    expect(localRuleTexts.every((text) => !text.includes('正交'))).toBe(true)
-    expect(localRuleTexts.every((text) => !text.includes('邻接'))).toBe(true)
+    expect(ruleTexts.length).toBeGreaterThan(0)
+    expect(ruleTexts.every((text) => !/[A-Za-z]/.test(text))).toBe(true)
+    expect(ruleTexts.some((text) => text.includes('上下左右邻格'))).toBe(true)
+    expect(ruleTexts.some((text) => text.includes('周围一圈'))).toBe(true)
+    expect(ruleTexts.every((text) => !text.includes('正交'))).toBe(true)
+    expect(ruleTexts.every((text) => !text.includes('邻接'))).toBe(true)
   })
 
   it('keeps shipped case and rule presentation copy Chinese and plain', () => {

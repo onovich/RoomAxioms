@@ -33,6 +33,11 @@ Resolution:
 Round 1 only handles mandatory low-risk fixes. Later Phase 23 rounds must continue auditing:
 
 - shipped case names and summaries;
-- generated rule text from `apps/web/src/logic/scopeText.ts`;
 - visible selector grouping labels introduced for baseline / target 4+ / super-hard;
 - any new Phase 23 case copy before promotion.
+
+Round 2 tightened generated rule text:
+
+- `rulePlainText` now prefers reviewed `presentation.flavor` for player-facing rule cards.
+- Region and anchor fallback text uses `presentation.title` instead of internal ids such as `north-edge` or `bottle-anchor`.
+- Runtime smoke now checks `ruleSemantics` across every shipped rule, not only legacy `forEachCount` rules.

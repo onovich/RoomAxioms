@@ -6,7 +6,7 @@ export function ruleChip(rule: RuleDefinition): string {
   }
 
   if (rule.type === 'regionCount') {
-    return `${rule.regionId}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+    return `${rule.presentation.title}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
   }
 
   if (rule.type === 'lineCount') {
@@ -14,7 +14,7 @@ export function ruleChip(rule: RuleDefinition): string {
   }
 
   if (rule.type === 'anchorCount') {
-    return `${rule.anchorId} 的${anchorScopeLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+    return `${rule.presentation.title}的${anchorScopeLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
   }
 
   if (rule.type === 'recordSet') {
@@ -25,12 +25,14 @@ export function ruleChip(rule: RuleDefinition): string {
 }
 
 export function rulePlainText(rule: RuleDefinition): string {
+  if (rule.presentation.flavor !== undefined) return rule.presentation.flavor
+
   if (rule.type === 'globalCount') {
     return `房间里${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'regionCount') {
-    return `${rule.regionId}区域，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${rule.presentation.title}区域，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'lineCount') {
@@ -38,7 +40,7 @@ export function rulePlainText(rule: RuleDefinition): string {
   }
 
   if (rule.type === 'anchorCount') {
-    return `${rule.anchorId} 的${anchorScopeLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${rule.presentation.title}的${anchorScopeLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'recordSet') {
