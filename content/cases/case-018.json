@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "case-018",
+  "title": "客房 18：北角锚点",
+  "caseName": "案卷 18 · 北角锚点",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-edge",
+      "title": "北沿区",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    },
+    {
+      "id": "south-edge",
+      "title": "南沿区",
+      "cells": [
+        "A3",
+        "B3",
+        "C3"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "id": "bottle-anchor",
+      "title": "酒瓶锚点",
+      "subject": "bottle"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "north-edge",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北沿静区",
+        "flavor": "北沿区里没有未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "regionCount",
+      "regionId": "south-edge",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "南沿账目",
+        "flavor": "南沿区里恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "anchorCount",
+      "anchorId": "bottle-anchor",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字锚点",
+        "flavor": "每个已确认酒瓶的上下左右邻格里，恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "B3",
+    "C3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "bottle",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "guest",
+    "A3": "guest",
+    "B3": "empty",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "anchor-frontier",
+      "region"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Anchor-frontier case with a hidden north-corner bottle. Difficulty remains provisional until real playtest calibration."
+  }
+}

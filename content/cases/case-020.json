@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "id": "case-020",
+  "title": "客房 20：竖井镜线",
+  "caseName": "案卷 20 · 竖井镜线",
+  "board": {
+    "width": 3,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-lip",
+      "title": "北侧台面",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "id": "bottle-anchor",
+      "title": "酒瓶锚点",
+      "subject": "bottle"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "north-lip",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北侧静区",
+        "flavor": "北侧台面里没有未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "lineCount",
+      "origin": "B1",
+      "scope": {
+        "kind": "ray",
+        "direction": "south",
+        "stopAtKinds": [
+          "mirror"
+        ]
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "南向镜线",
+        "flavor": "从上方中列向下看，遇到镜子前恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "anchorCount",
+      "anchorId": "bottle-anchor",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字锚点",
+        "flavor": "每个已确认酒瓶的上下左右邻格里，恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "C1",
+    "B3",
+    "A4"
+  ],
+  "target": {
+    "A1": "bottle",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "guest",
+    "B2": "guest",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "mirror",
+    "C3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "sightline",
+      "blocker",
+      "anchor-frontier",
+      "region"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Vertical sightline blocker case with anchor-frontier pressure and a lower-corner cleared space. Difficulty remains provisional until real playtest calibration."
+  }
+}

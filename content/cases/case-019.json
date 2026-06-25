@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "id": "case-019",
+  "title": "客房 19：东架锚线",
+  "caseName": "案卷 19 · 东架锚线",
+  "board": {
+    "width": 4,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "east-shelf",
+      "title": "东侧架",
+      "cells": [
+        "C1",
+        "D1"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "id": "bottle-anchor",
+      "title": "酒瓶锚点",
+      "subject": "bottle"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "east-shelf",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "东侧架静区",
+        "flavor": "东侧架里没有未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "anchorCount",
+      "anchorId": "bottle-anchor",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字锚点",
+        "flavor": "每个已确认酒瓶的上下左右邻格里，恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "lineCount",
+      "scope": {
+        "kind": "row",
+        "index": 2
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "南排账目",
+        "flavor": "第 3 行里恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "D1",
+    "B3",
+    "C3",
+    "D3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "bottle",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "guest",
+    "D2": "empty",
+    "A3": "guest",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "anchor-frontier",
+      "line-count",
+      "region"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Anchor-line frontier case on a wider room. Difficulty remains provisional until real playtest calibration."
+  }
+}

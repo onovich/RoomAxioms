@@ -64,6 +64,84 @@
       }
     },
     {
+      "puzzleId": "case-015",
+      "status": "accepted",
+      "novelty": "Mixed north-edge region and east-column ledger case where a safe reveal unlocks an anchor-frontier final layout.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 22 because the opening has four guest layouts, uses region and line-count deductions, and reaches the A2/C3 guest pair without matching the Phase 20/21 baselines.",
+        "gateEvidence": [
+          "phase-22-promotion",
+          "REGION_COUNT_SATURATED",
+          "LINE_COUNT_ALL_REMAINING",
+          "anchor-frontier"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-016",
+      "status": "rejected",
+      "novelty": "Rejected Phase 22 candidate.",
+      "evidence": {
+        "reviewerNote": "Rejected during Phase 22 promotion sweep because anti-clone reported an exact proof-trace collision with case-018."
+      }
+    },
+    {
+      "puzzleId": "case-017",
+      "status": "accepted",
+      "novelty": "Horizontal sightline-blocker case where an observed mirror cuts the ray and a separate region reveal closes the final anchor pressure.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 22 because the opening has seven guest layouts and the blocker ray materially changes the line scope before final uniqueness.",
+        "gateEvidence": [
+          "phase-22-promotion",
+          "LINE_COUNT_ALL_REMAINING",
+          "REGION_COUNT_SATURATED",
+          "sightline-blocker"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-018",
+      "status": "accepted",
+      "novelty": "North-corner anchor-frontier case with a hidden bottle reveal and a different final guest pair from case-016.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 22 because the anchor rule is necessary to close C2/A3 after a region reveal, while the final layout avoids the prior A2/C3 pattern.",
+        "gateEvidence": [
+          "phase-22-promotion",
+          "REGION_COUNT_SATURATED",
+          "REGION_COUNT_ALL_REMAINING",
+          "anchor-frontier"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-019",
+      "status": "accepted",
+      "novelty": "Wider anchor-line frontier case where an east-shelf safe reveal and south-row line pressure converge on C2/A3.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 22 because the 4x3 board, five opening layouts, and east-shelf anchor placement differ from the 3x3 anchor case.",
+        "gateEvidence": [
+          "phase-22-promotion",
+          "REGION_COUNT_SATURATED",
+          "LINE_COUNT_ALL_REMAINING",
+          "anchor-frontier"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-020",
+      "status": "accepted",
+      "novelty": "Vertical sightline-blocker case where a southward mirror ray and north-lip reveal produce the A2/B2 guest pair on a 3x4 board.",
+      "evidence": {
+        "reviewerNote": "Promoted in Phase 22 as the second blocker case; its vertical ray, 3x4 geometry, and A2/B2 final pair distinguish it from case-017.",
+        "gateEvidence": [
+          "phase-22-promotion",
+          "LINE_COUNT_ALL_REMAINING",
+          "REGION_COUNT_SATURATED",
+          "sightline-blocker"
+        ]
+      }
+    },
+    {
       "puzzleId": "case-001",
       "status": "rejected",
       "novelty": "No accepted Phase 20 novelty claim.",

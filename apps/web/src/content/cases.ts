@@ -5,6 +5,11 @@ import case011Fixture from '../../../../content/cases/case-011.json' with { type
 import case012Fixture from '../../../../content/cases/case-012.json' with { type: 'json' }
 import case013Fixture from '../../../../content/cases/case-013.json' with { type: 'json' }
 import case014Fixture from '../../../../content/cases/case-014.json' with { type: 'json' }
+import case015Fixture from '../../../../content/cases/case-015.json' with { type: 'json' }
+import case017Fixture from '../../../../content/cases/case-017.json' with { type: 'json' }
+import case018Fixture from '../../../../content/cases/case-018.json' with { type: 'json' }
+import case019Fixture from '../../../../content/cases/case-019.json' with { type: 'json' }
+import case020Fixture from '../../../../content/cases/case-020.json' with { type: 'json' }
 
 export const DEFAULT_CASE_ID = 'case-004'
 
@@ -21,8 +26,13 @@ const caseFixtures = [
   case004Fixture,
   case011Fixture,
   case013Fixture,
+  case015Fixture,
   case012Fixture,
   case014Fixture,
+  case017Fixture,
+  case018Fixture,
+  case019Fixture,
+  case020Fixture,
 ] as const
 
 export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixture) =>

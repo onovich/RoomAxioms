@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "case-016",
+  "title": "客房 16：双区暗瓶",
+  "caseName": "案卷 16 · 双区暗瓶",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-edge",
+      "title": "北沿区",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    },
+    {
+      "id": "south-edge",
+      "title": "南沿区",
+      "cells": [
+        "A3",
+        "B3",
+        "C3"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "north-edge",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北沿静区",
+        "flavor": "北沿区里没有未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "regionCount",
+      "regionId": "south-edge",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "南沿账目",
+        "flavor": "南沿区里恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字账",
+        "flavor": "每个酒瓶的上下左右邻格里，恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "C1",
+    "A3",
+    "B3"
+  ],
+  "target": {
+    "A1": "bottle",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "guest",
+    "B2": "empty",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "region",
+      "reveal-frontier"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "validated",
+    "notes": "Region-frontier case with a hidden bottle reveal. Difficulty remains provisional until real playtest calibration."
+  }
+}
