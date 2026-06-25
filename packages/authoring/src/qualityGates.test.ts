@@ -10,6 +10,7 @@ import {
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
   evaluateDegeneracyGates,
+  evaluateRuleFamilyDiversityGate,
   evaluateRuleContribution,
   evaluateRuleImpactVector,
   evaluateTechniqueRetentionGate,
@@ -202,7 +203,6 @@ describe('rule contribution gate', () => {
       ...puzzle,
       rules: [duplicatedRule, ...puzzle.rules],
     })
-
     expect(report.status).toBe('warning')
     expect(report.results.find((result) => result.ruleId === 'R1_DUPLICATE')).toMatchObject({
       status: 'redundant',
@@ -286,6 +286,59 @@ describe('rule impact vector', () => {
       puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
     }))
   }, 45_000)
+})
+
+describe('rule family diversity gate', () => {
+  it('fails cases carried by a single material rule family', () => {
+    const report = evaluateRuleFamilyDiversityGate(singleFamilyCase())
+
+    expect(report).toMatchObject({
+      puzzleId: 'single-family-gate-fixture',
+      status: 'fail',
+      materialFamilyCount: 1,
+      materialFamilies: ['global'],
+      reasons: expect.arrayContaining(['single-material-family']),
+    })
+  })
+
+  it('passes cases with two material rule families and no redundant rules', () => {
+    const report = evaluateRuleFamilyDiversityGate(mixedFamilyCase())
+
+    expect(report).toMatchObject({
+      puzzleId: 'mixed-family-gate-fixture',
+      status: 'pass',
+      materialFamilyCount: 2,
+      materialFamilies: ['global', 'region'],
+      redundantRuleIds: [],
+    })
+  })
+
+  it('reports redundant rules even when another hard family gate fails', () => {
+    const puzzle = loadCase(intersectionCasePath)
+    const report = evaluateRuleFamilyDiversityGate({
+      ...puzzle,
+      rules: [
+        ...puzzle.rules,
+        {
+          id: 'DECORATIVE_BIN_COUNT',
+          type: 'globalCount',
+          target: 'bin',
+          count: {
+            op: 'eq',
+            value: 4,
+          },
+          presentation: {
+            title: 'Decorative bin count',
+            flavor: 'A maintainer-facing fixture rule that should not affect guest reasoning.',
+          },
+        },
+      ],
+    })
+
+    expect(report.status).toBe('fail')
+    expect(report.redundantRuleIds).toEqual(['DECORATIVE_BIN_COUNT'])
+    expect(report.reasons).toContain('redundant-rules')
+  })
 })
 
 describe('non-isomorphism gate', () => {
@@ -602,6 +655,62 @@ function healthyRegionCase(): PuzzleDefinition {
       D2: 'empty',
     },
     metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function singleFamilyCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'single-family-gate-fixture',
+    title: 'Single family gate fixture',
+    board: { width: 3, height: 1 },
+    allowedKinds: ['empty', 'guest'],
+    rules: [{
+      id: 'G1',
+      type: 'globalCount',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: 'One guest' },
+    }],
+    initialReveals: ['A1', 'C1'],
+    target: { A1: 'empty', B1: 'guest', C1: 'empty' },
+    metadata: { difficulty: 4, tags: ['family-fixture'], status: 'draft' },
+  }
+}
+
+function mixedFamilyCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'mixed-family-gate-fixture',
+    title: 'Mixed family gate fixture',
+    board: { width: 2, height: 2 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [{ id: 'top-row', title: 'Top row', cells: ['A1', 'B1'] }],
+    rules: [
+      {
+        id: 'G1',
+        type: 'globalCount',
+        target: 'guest',
+        count: { op: 'eq', value: 2 },
+        presentation: { title: 'Two guests' },
+      },
+      {
+        id: 'R1',
+        type: 'regionCount',
+        regionId: 'top-row',
+        target: 'guest',
+        count: { op: 'eq', value: 1 },
+        presentation: { title: 'Top row has one guest' },
+      },
+    ],
+    initialReveals: [],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      A2: 'guest',
+      B2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['family-fixture'], status: 'draft' },
   }
 }
 

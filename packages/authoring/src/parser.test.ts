@@ -372,5 +372,6 @@ describe('authoring CLI parser', () => {
       status: 'hard-fail',
       puzzleIds: ['case-015'],
     }))
+    expect(report.antiClone?.ruleFamilyDiversity).toBeDefined()
   }, 60_000)
 })

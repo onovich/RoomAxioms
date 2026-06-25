@@ -64,6 +64,45 @@ export interface DegeneracyGateReport {
   readonly results: readonly DegeneracyGateResult[]
 }
 
+export type MaterialRuleFamily =
+  | 'global'
+  | 'region'
+  | 'line'
+  | 'anchor'
+  | 'foreach'
+  | 'record-set'
+
+export type RuleFamilyDiversityReason =
+  | 'no-material-rule'
+  | 'single-material-family'
+  | 'insufficient-material-families'
+  | 'redundant-rules'
+  | 'solver-truncated'
+
+export interface RuleFamilyDiversityOptions extends RuleContributionOptions {
+  readonly minMaterialFamilies?: number
+}
+
+export interface RuleFamilyDiversityEntry {
+  readonly ruleId: string
+  readonly ruleType: RuleDefinition['type']
+  readonly family: MaterialRuleFamily
+  readonly status: RuleImpactVectorStatus
+}
+
+export interface RuleFamilyDiversityReport {
+  readonly puzzleId: string
+  readonly status: QualityGateStatus
+  readonly minMaterialFamilies: number
+  readonly materialFamilyCount: number
+  readonly materialFamilies: readonly MaterialRuleFamily[]
+  readonly materialRuleIds: readonly string[]
+  readonly redundantRuleIds: readonly string[]
+  readonly reasons: readonly RuleFamilyDiversityReason[]
+  readonly entries: readonly RuleFamilyDiversityEntry[]
+  readonly message: string
+}
+
 export interface QualityGatePolicy {
   readonly minInitialGuestLayouts: number
   readonly minProofWaveCount: number
@@ -488,6 +527,70 @@ export function evaluateRuleImpactVector(
     puzzleId: puzzle.id,
     status: entries.some((entry) => entry.status === 'redundant') ? 'warning' : 'pass',
     entries,
+  }
+}
+
+export function evaluateRuleFamilyDiversityGate(
+  puzzle: PuzzleDefinition,
+  options: RuleFamilyDiversityOptions = {},
+): RuleFamilyDiversityReport {
+  const minMaterialFamilies = options.minMaterialFamilies ?? 2
+  const report = evaluateRuleImpactVector(puzzle, options)
+  const ruleById = new Map(puzzle.rules.map((rule) => [rule.id, rule]))
+  const entries = report.entries
+    .map((entry) => {
+      const rule = ruleById.get(entry.ruleId)
+      if (rule === undefined) return undefined
+
+      return {
+        ruleId: entry.ruleId,
+        ruleType: rule.type,
+        family: materialRuleFamily(rule),
+        status: entry.status === 'invalid' ? 'material' : entry.status,
+      } satisfies RuleFamilyDiversityEntry
+    })
+    .filter(isDefined)
+  const materialEntries = entries.filter((entry) => entry.status === 'material')
+  const materialFamilies = [...new Set(materialEntries.map((entry) => entry.family))].sort()
+  const materialRuleIds = materialEntries.map((entry) => entry.ruleId).sort()
+  const redundantRuleIds = entries
+    .filter((entry) => entry.status === 'redundant')
+    .map((entry) => entry.ruleId)
+    .sort()
+  const reasons: RuleFamilyDiversityReason[] = []
+
+  if (materialFamilies.length === 0) {
+    reasons.push('no-material-rule')
+  } else if (materialFamilies.length === 1) {
+    reasons.push('single-material-family')
+  } else if (materialFamilies.length < minMaterialFamilies) {
+    reasons.push('insufficient-material-families')
+  }
+  if (redundantRuleIds.length > 0) reasons.push('redundant-rules')
+  if (report.entries.some((entry) => entry.stats.truncated)) reasons.push('solver-truncated')
+
+  const hardReasons = new Set<RuleFamilyDiversityReason>([
+    'no-material-rule',
+    'single-material-family',
+    'insufficient-material-families',
+  ])
+  const status: QualityGateStatus = reasons.some((reason) => hardReasons.has(reason))
+    ? 'fail'
+    : reasons.length > 0
+      ? 'warning'
+      : 'pass'
+
+  return {
+    puzzleId: puzzle.id,
+    status,
+    minMaterialFamilies,
+    materialFamilyCount: materialFamilies.length,
+    materialFamilies,
+    materialRuleIds,
+    redundantRuleIds,
+    reasons,
+    entries,
+    message: ruleFamilyDiversityMessage(status, materialFamilies.length, minMaterialFamilies, redundantRuleIds.length),
   }
 }
 
@@ -962,6 +1065,39 @@ function ruleImpactEntry(input: {
     gainedTechniqueIds,
     stats: combineStats(input.baseline.stats, without.stats),
   }
+}
+
+function materialRuleFamily(rule: RuleDefinition): MaterialRuleFamily {
+  switch (rule.type) {
+    case 'globalCount':
+      return 'global'
+    case 'regionCount':
+      return 'region'
+    case 'lineCount':
+      return 'line'
+    case 'anchorCount':
+      return 'anchor'
+    case 'forEachCount':
+      return 'foreach'
+    case 'recordSet':
+      return 'record-set'
+  }
+}
+
+function ruleFamilyDiversityMessage(
+  status: QualityGateStatus,
+  materialFamilyCount: number,
+  minMaterialFamilies: number,
+  redundantRuleCount: number,
+): string {
+  if (status === 'fail') {
+    return `Only ${materialFamilyCount} material rule family/families were found; expected at least ${minMaterialFamilies}.`
+  }
+  if (status === 'warning') {
+    return `${redundantRuleCount} redundant rule(s) need reviewer attention.`
+  }
+
+  return `Material rules span ${materialFamilyCount} rule families.`
 }
 
 function evaluateRuleRemoval(input: {

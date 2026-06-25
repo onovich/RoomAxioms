@@ -1,6 +1,6 @@
 # Phase 23 Degeneracy Gate Design
 
-Status: Round 4 authoring API plus opt-in anti-clone enforcement
+Status: Round 5 authoring API plus opt-in anti-clone enforcement
 
 ## Purpose
 
@@ -40,7 +40,12 @@ Added in-memory authoring tests for:
 - blocker-aware singleton ray/sightline fail;
 - near line-count giveaway warning;
 - healthy region scope pass.
+- single-family material-rule fail;
+- mixed-family material-rule pass;
+- decorative/redundant rule warning.
 
 ## Follow-Up
 
-Rounds 4-5 should integrate this signal into richer authoring reports and candidate promotion evidence, then add checks for one-rule-family closure and previous redundant/padded clone signals as explicit Phase 23 gates.
+Round 5 added `evaluateRuleFamilyDiversityGate(puzzle)`. It uses the existing rule-impact vector to count only material rule families and warn on redundant rules. `anti-clone --include-degeneracy` now also includes this evidence, so Phase 23 candidate checks reject one-family closures before they can be dressed up as hard cases.
+
+Rounds 6-8 should integrate these signals into richer authoring reports and the difficulty rubric v2.
