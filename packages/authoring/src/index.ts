@@ -1,4 +1,12 @@
 export {
+  reduceEffectiveBoard,
+  type EffectiveBoardBounds,
+  type EffectiveBoardReduction,
+  type EffectiveBoardReductionOptions,
+  type EffectiveCell,
+  type EffectiveCellReason,
+} from './antiClone.js'
+export {
   AUTHORING_CLI_VERSION,
   AUTHORING_PACKAGE_NAME,
   type AuthoringCaseValidationReport,

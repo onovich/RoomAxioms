@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-20-padded-case004-right-edge",
+  "title": "Phase 20 Fixture: Padded Case 004 Right Edge",
+  "caseName": "Phase 20 Fixture - Padded Case 004 Right Edge",
+  "board": {
+    "width": 5,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Cleaning containers",
+        "flavor": "There is exactly 1 bin in this room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "Guest count",
+        "flavor": "There are exactly 2 unregistered guests in this room."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle cleanup",
+        "flavor": "Each bottle has exactly 1 bin in its orthogonal neighborhood."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Safe cleanup zone",
+        "flavor": "Each bin has no guests in its adjacent neighborhood."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Mirror registration",
+        "flavor": "Each mirror has exactly 1 guest in its adjacent neighborhood."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "Bottle exclusion",
+        "flavor": "Each bottle has no guests in its orthogonal neighborhood."
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "E1",
+    "A2",
+    "C2",
+    "E2",
+    "E3",
+    "E4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "mirror",
+    "D1": "guest",
+    "E1": "empty",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "bottle",
+    "D2": "empty",
+    "E2": "empty",
+    "A3": "mirror",
+    "B3": "empty",
+    "C3": "mirror",
+    "D3": "empty",
+    "E3": "empty",
+    "A4": "empty",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty",
+    "E4": "empty"
+  },
+  "metadata": {
+    "difficulty": 5,
+    "tags": [
+      "experimental",
+      "phase-20",
+      "anti-clone-fixture"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Internal fixture for effective-board reduction. It intentionally pads case-004 with a revealed safe right edge."
+  }
+}
