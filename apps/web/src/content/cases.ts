@@ -13,6 +13,8 @@ import case021Fixture from '../../../../content/cases/case-021.json' with { type
 
 export const DEFAULT_CASE_ID = 'case-004'
 
+export type CaseTier = 'baseline' | 'target-4' | 'super-hard'
+
 export interface CaseSummary {
   readonly id: string
   readonly title: string
@@ -20,6 +22,7 @@ export interface CaseSummary {
   readonly difficulty: PuzzleDefinition['metadata']['difficulty']
   readonly tags: readonly string[]
   readonly board: PuzzleDefinition['board']
+  readonly tier: CaseTier
 }
 
 const caseFixtures = [
@@ -39,6 +42,10 @@ export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixtu
   fixture as PuzzleDefinition,
 )
 
+const caseTierById: Partial<Record<string, CaseTier>> = {
+  'case-021': 'target-4',
+}
+
 export const caseSummaries: readonly CaseSummary[] = contentCases.map((puzzle) => ({
   id: puzzle.id,
   title: puzzle.title,
@@ -46,6 +53,7 @@ export const caseSummaries: readonly CaseSummary[] = contentCases.map((puzzle) =
   difficulty: puzzle.metadata.difficulty,
   tags: puzzle.metadata.tags,
   board: puzzle.board,
+  tier: caseTierById[puzzle.id] ?? 'baseline',
 }))
 
 export function getCaseById(caseId: string): PuzzleDefinition {

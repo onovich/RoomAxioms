@@ -1,5 +1,5 @@
 import { Lightbulb, RotateCcw } from 'lucide-react'
-import type { CaseSummary } from '../../content/cases'
+import type { CaseSummary, CaseTier } from '../../content/cases'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 
 interface TopBarProps {
@@ -11,6 +11,7 @@ interface TopBarProps {
 
 export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProps) {
   const guestMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
+  const caseGroups = groupCasesByTier(cases)
 
   return (
     <header className="topbar">
@@ -31,10 +32,14 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
                 onChange={(event) => onSelectCase(event.target.value)}
                 aria-label="Select case"
               >
-                {cases.map((caseItem) => (
-                  <option value={caseItem.id} key={caseItem.id}>
-                    {caseItem.caseName}
-                  </option>
+                {caseGroups.map((group) => (
+                  <optgroup label={group.label} key={group.tier}>
+                    {group.cases.map((caseItem) => (
+                      <option value={caseItem.id} key={caseItem.id}>
+                        {caseItem.caseName}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </label>
@@ -57,6 +62,26 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
       </div>
     </header>
   )
+}
+
+const CASE_TIER_ORDER: readonly CaseTier[] = ['baseline', 'target-4', 'super-hard']
+
+const CASE_TIER_LABELS = {
+  baseline: '基础 / 机制样例',
+  'target-4': '4+ 候选',
+  'super-hard': '6-7 高难候选',
+} as const satisfies Record<CaseTier, string>
+
+function groupCasesByTier(cases: readonly CaseSummary[]): readonly {
+  readonly tier: CaseTier
+  readonly label: string
+  readonly cases: readonly CaseSummary[]
+}[] {
+  return CASE_TIER_ORDER.map((tier) => ({
+    tier,
+    label: CASE_TIER_LABELS[tier],
+    cases: cases.filter((caseItem) => caseItem.tier === tier),
+  })).filter((group) => group.cases.length > 0)
 }
 
 function ProgressStat({ label, value }: { readonly label: string; readonly value: string | number }) {

@@ -44,9 +44,18 @@ describe('case content verification harness', () => {
       difficulty: 3,
     })
     for (const summary of caseSummaries) {
-      expect(Object.keys(summary).sort()).toEqual(['board', 'caseName', 'difficulty', 'id', 'tags', 'title'])
+      expect(Object.keys(summary).sort()).toEqual(['board', 'caseName', 'difficulty', 'id', 'tags', 'tier', 'title'])
     }
     expect(caseSummaries.some((summary) => summary.id === DEFAULT_CASE_ID)).toBe(true)
+  })
+
+  it('separates baseline cases from Phase 23 target-4 candidates', () => {
+    expect(caseSummaries.filter((summary) => summary.tier === 'target-4').map((summary) => summary.id)).toEqual([
+      'case-021',
+    ])
+    expect(caseSummaries.filter((summary) => summary.tier === 'super-hard')).toEqual([])
+    expect(caseSummaries.find((summary) => summary.id === DEFAULT_CASE_ID)?.tier).toBe('baseline')
+    expect(caseSummaries.every((summary) => summary.tier !== 'target-4' || summary.tags.includes('target-4'))).toBe(true)
   })
 
   it('keeps shipped case metadata free of internal phase labels', () => {
