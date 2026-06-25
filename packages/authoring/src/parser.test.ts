@@ -20,6 +20,10 @@ const case004Path = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/cases/case-004.json',
 )
+const case015Path = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/cases/case-015.json',
+)
 const paddedCase004Path = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-20/padded-case004-right-edge.json',
@@ -120,6 +124,28 @@ describe('authoring CLI parser', () => {
           'content/experimental/phase-20/padded-case004-right-edge.json',
         ],
         noveltyManifestPath: 'content/novelty-claims.json',
+        options: {
+          format: 'json',
+        },
+      },
+    })
+  })
+
+  it('parses anti-clone degeneracy gate opt-in', () => {
+    expect(parseAuthoringArgs([
+      'anti-clone',
+      'content/cases/case-015.json',
+      'content/cases/case-004.json',
+      '--include-degeneracy',
+    ])).toEqual({
+      ok: true,
+      command: {
+        name: 'anti-clone',
+        casePaths: [
+          'content/cases/case-015.json',
+          'content/cases/case-004.json',
+        ],
+        includeDegeneracy: true,
         options: {
           format: 'json',
         },
@@ -331,5 +357,20 @@ describe('authoring CLI parser', () => {
     })
     expect(report.antiClone?.hardFailureCount).toBeGreaterThan(0)
     expect(report.diagnostics.map((diagnostic) => diagnostic.code)).toContain('ANTI_CLONE_BLOCKED')
+  }, 60_000)
+
+  it('reports opt-in degeneracy failures from the anti-clone CLI', () => {
+    const report = runAuthoringCli(['anti-clone', case015Path, case004Path, '--include-degeneracy'])
+
+    expect(report.ok).toBe(false)
+    expect(report.status).toBe('anti-clone-reported')
+    expect(report.antiClone?.degeneracy?.find((entry) => entry.puzzleId === 'case-015')).toMatchObject({
+      status: 'fail',
+    })
+    expect(report.antiClone?.evidenceGroups).toContainEqual(expect.objectContaining({
+      kind: 'degeneracy',
+      status: 'hard-fail',
+      puzzleIds: ['case-015'],
+    }))
   }, 60_000)
 })

@@ -1,10 +1,13 @@
 import type { PuzzleDefinition } from '@room-axioms/domain'
 
 import {
+  evaluateDegeneracyGates,
   findCandidateShrinkCloneGroups,
   findEffectiveIsomorphicPuzzleGroups,
   findProofTraceCloneGroups,
   findRuleImpactCloneGroups,
+  type DegeneracyGateReport,
+  type DegeneracyGateResult,
 } from './qualityGates.js'
 import {
   evaluateNoveltyClaimManifest,
@@ -18,6 +21,7 @@ export type AntiCloneEvidenceKind =
   | 'proof-trace'
   | 'candidate-shrink'
   | 'rule-impact'
+  | 'degeneracy'
 
 export interface AntiCloneEvidenceGroup {
   readonly kind: AntiCloneEvidenceKind
@@ -32,6 +36,7 @@ export interface AntiCloneReport {
   readonly hardFailureCount: number
   readonly reviewerBlockingCount: number
   readonly evidenceGroups: readonly AntiCloneEvidenceGroup[]
+  readonly degeneracy?: readonly DegeneracyGateReport[]
   readonly novelty?: NoveltyClaimReport
   readonly rejectedRequiredPuzzleIds: readonly string[]
   readonly needsReviewRequiredPuzzleIds: readonly string[]
@@ -39,6 +44,7 @@ export interface AntiCloneReport {
 
 export interface AntiCloneReportOptions {
   readonly noveltyManifest?: NoveltyClaimManifest
+  readonly includeDegeneracy?: boolean
 }
 
 export function evaluateAntiCloneReport(
@@ -63,17 +69,24 @@ export function evaluateAntiCloneReport(
     .filter((group) => group.status === 'hard-fail')
   const proofTraceReviewerBlocks = proofTraceCloneGroups
     .filter((group) => group.status === 'reviewer-blocking')
+  const degeneracyReports = options.includeDegeneracy === true
+    ? puzzles.map((puzzle) => evaluateDegeneracyGates(puzzle))
+    : []
+  const degeneracyHardFailures = degeneracyFindings(degeneracyReports, 'fail')
+  const degeneracyReviewerBlocks = degeneracyFindings(degeneracyReports, 'warning')
   const noveltyIssueCount = novelty?.issues.length ?? 0
   const hardFailureCount =
     effectiveIsomorphismGroups.length +
     proofTraceHardFailures.length +
     noveltyIssueCount +
-    rejectedRequiredPuzzleIds.length
+    rejectedRequiredPuzzleIds.length +
+    degeneracyHardFailures.length
   const reviewerBlockingCount =
     proofTraceReviewerBlocks.length +
     candidateShrinkCloneGroups.length +
     ruleImpactCloneGroups.length +
-    needsReviewRequiredPuzzleIds.length
+    needsReviewRequiredPuzzleIds.length +
+    degeneracyReviewerBlocks.length
   const evidenceGroups: AntiCloneEvidenceGroup[] = [
     ...effectiveIsomorphismGroups.map((group) => ({
       kind: 'effective-isomorphism' as const,
@@ -96,6 +109,8 @@ export function evaluateAntiCloneReport(
       status: 'reviewer-blocking' as const,
       puzzleIds: group.puzzleIds,
     })),
+    ...degeneracyEvidenceGroups(degeneracyHardFailures, 'hard-fail'),
+    ...degeneracyEvidenceGroups(degeneracyReviewerBlocks, 'reviewer-blocking'),
   ]
 
   return {
@@ -108,8 +123,39 @@ export function evaluateAntiCloneReport(
     hardFailureCount,
     reviewerBlockingCount,
     evidenceGroups,
+    ...(options.includeDegeneracy === true ? { degeneracy: degeneracyReports } : {}),
     ...(novelty === undefined ? {} : { novelty }),
     rejectedRequiredPuzzleIds,
     needsReviewRequiredPuzzleIds,
   }
+}
+
+interface DegeneracyFinding {
+  readonly report: DegeneracyGateReport
+  readonly result: DegeneracyGateResult
+}
+
+function degeneracyFindings(
+  reports: readonly DegeneracyGateReport[],
+  status: DegeneracyGateResult['status'],
+): DegeneracyFinding[] {
+  return reports.flatMap((report) => report.results
+    .filter((result) => result.status === status)
+    .map((result) => ({ report, result })))
+}
+
+function degeneracyEvidenceGroups(
+  findings: readonly DegeneracyFinding[],
+  status: AntiCloneEvidenceGroup['status'],
+): AntiCloneEvidenceGroup[] {
+  return findings.map(({ report, result }) => ({
+    kind: 'degeneracy',
+    status,
+    puzzleIds: [report.puzzleId],
+    matchKind: [
+      result.scopeKind,
+      result.ruleId,
+      ...result.reasons,
+    ].join(':'),
+  }))
 }

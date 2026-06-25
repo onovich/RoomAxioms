@@ -44,6 +44,7 @@ export interface AntiCloneCommand {
   readonly name: 'anti-clone'
   readonly casePaths: readonly string[]
   readonly noveltyManifestPath?: string
+  readonly includeDegeneracy?: boolean
   readonly options: AuthoringCliOptions
 }
 

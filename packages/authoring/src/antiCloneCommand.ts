@@ -59,7 +59,10 @@ export function antiCloneCommand(
     }
   }
 
-  const antiClone = evaluateAntiCloneReport(puzzles, { noveltyManifest })
+  const antiClone = evaluateAntiCloneReport(puzzles, {
+    noveltyManifest,
+    includeDegeneracy: command.includeDegeneracy,
+  })
   return {
     version: AUTHORING_CLI_VERSION,
     ok: antiClone.status === 'pass',

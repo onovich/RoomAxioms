@@ -59,12 +59,14 @@ function parseAntiCloneCommand(args: readonly string[]): AuthoringCliParseResult
   }
 
   const noveltyManifestPath = flags.get('novelty-manifest')
+  const includeDegeneracy = flags.has('include-degeneracy')
   return {
     ok: true,
     command: {
       name: 'anti-clone',
       casePaths: positionals,
       ...(noveltyManifestPath === undefined ? {} : { noveltyManifestPath }),
+      ...(includeDegeneracy ? { includeDegeneracy } : {}),
       options,
     },
   }
@@ -118,6 +120,10 @@ function parseOptions(args: readonly string[]): OptionParseResult {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
     if (arg === '--json') continue
+    if (arg === '--include-degeneracy') {
+      flags.set('include-degeneracy', 'true')
+      continue
+    }
     if (arg === '--output') {
       const value = args[index + 1]
       if (value === undefined || value.startsWith('--')) {
