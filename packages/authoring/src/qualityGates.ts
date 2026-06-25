@@ -1,11 +1,15 @@
 import {
   allCells,
   formatCellId,
+  lineCells,
   parseCellId,
+  rayCells,
   regionCells,
   sortCellIds,
   type BoardSize,
   type CellId,
+  type CellKind,
+  type Comparator,
   type Coord,
   type Observation,
   type PuzzleDefinition,
@@ -29,6 +33,36 @@ export type QualityGateId =
   | 'non-onboarding-trivial-closure'
 
 export type QualityGateStatus = 'pass' | 'warning' | 'fail'
+
+export type DegeneracyGateStatus = 'pass' | 'warning' | 'fail'
+export type DegeneracyScopeKind = 'region' | 'line'
+export type DegeneracyReason =
+  | 'singleton-effective-scope'
+  | 'direct-count-giveaway'
+  | 'near-count-giveaway'
+
+export interface DegeneracyGateOptions {
+  readonly nearGiveawaySlack?: number
+}
+
+export interface DegeneracyGateResult {
+  readonly ruleId: string
+  readonly ruleType: 'regionCount' | 'lineCount'
+  readonly scopeKind: DegeneracyScopeKind
+  readonly status: DegeneracyGateStatus
+  readonly reasons: readonly DegeneracyReason[]
+  readonly scopeCellCount: number
+  readonly unknownCellCount: number
+  readonly observedTargetCount: number
+  readonly requiredTargetCount: number
+  readonly message: string
+}
+
+export interface DegeneracyGateReport {
+  readonly puzzleId: string
+  readonly status: DegeneracyGateStatus
+  readonly results: readonly DegeneracyGateResult[]
+}
 
 export interface QualityGatePolicy {
   readonly minInitialGuestLayouts: number
@@ -304,6 +338,56 @@ export function evaluateCoreQualityGates(input: QualityGateInput): QualityGateRe
     puzzleId,
     profile,
     status: combinedStatus(results),
+    results,
+  }
+}
+
+export function evaluateDegeneracyGates(
+  puzzle: PuzzleDefinition,
+  options: DegeneracyGateOptions = {},
+): DegeneracyGateReport {
+  const nearGiveawaySlack = options.nearGiveawaySlack ?? 1
+  const results = puzzle.rules
+    .map((rule) => {
+      if (rule.type === 'regionCount') {
+        const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId)
+        if (region === undefined) return undefined
+
+        return scopeDegeneracyResult({
+          puzzle,
+          ruleId: rule.id,
+          ruleType: rule.type,
+          scopeKind: 'region',
+          scopeCells: regionCells(region, puzzle.board),
+          target: rule.target,
+          count: rule.count,
+          nearGiveawaySlack,
+        })
+      }
+
+      if (rule.type === 'lineCount') {
+        const scopeCells = lineCountScopeCells(puzzle, rule)
+        if (scopeCells === undefined) return undefined
+
+        return scopeDegeneracyResult({
+          puzzle,
+          ruleId: rule.id,
+          ruleType: rule.type,
+          scopeKind: 'line',
+          scopeCells,
+          target: rule.target,
+          count: rule.count,
+          nearGiveawaySlack,
+        })
+      }
+
+      return undefined
+    })
+    .filter(isDefined)
+
+  return {
+    puzzleId: puzzle.id,
+    status: combinedDegeneracyStatus(results),
     results,
   }
 }
@@ -934,6 +1018,103 @@ function evaluateRuleRemoval(input: {
     missingRequiredTechniqueIds,
     stats,
   }
+}
+
+function lineCountScopeCells(
+  puzzle: PuzzleDefinition,
+  rule: Extract<RuleDefinition, { readonly type: 'lineCount' }>,
+): readonly CellId[] | undefined {
+  switch (rule.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(rule.scope, puzzle.board)
+    case 'ray': {
+      if (rule.origin === undefined) return undefined
+
+      const blockerKinds = new Set(rule.scope.stopAtKinds ?? [])
+      const observedStopCells = puzzle.initialReveals.filter((cellId) => blockerKinds.has(puzzle.target[cellId]))
+
+      return rayCells(rule.origin, rule.scope.direction, puzzle.board, { stopCells: observedStopCells })
+    }
+  }
+}
+
+function scopeDegeneracyResult(input: {
+  readonly puzzle: PuzzleDefinition
+  readonly ruleId: string
+  readonly ruleType: 'regionCount' | 'lineCount'
+  readonly scopeKind: DegeneracyScopeKind
+  readonly scopeCells: readonly CellId[]
+  readonly target: CellKind
+  readonly count: Comparator
+  readonly nearGiveawaySlack: number
+}): DegeneracyGateResult {
+  const initialReveals = new Set(input.puzzle.initialReveals)
+  const unknownCellCount = input.scopeCells.filter((cellId) => !initialReveals.has(cellId)).length
+  const observedTargetCount = input.scopeCells
+    .filter((cellId) => initialReveals.has(cellId) && input.puzzle.target[cellId] === input.target)
+    .length
+  const requiredTargetCount = Math.max(0, input.count.value - observedTargetCount)
+  const reasons: DegeneracyReason[] = []
+
+  if (unknownCellCount <= 1) reasons.push('singleton-effective-scope')
+
+  if (input.target === 'guest' && (input.count.op === 'eq' || input.count.op === 'gte') && requiredTargetCount > 0) {
+    if (requiredTargetCount >= unknownCellCount) {
+      reasons.push('direct-count-giveaway')
+    } else if (unknownCellCount - requiredTargetCount <= input.nearGiveawaySlack) {
+      reasons.push('near-count-giveaway')
+    }
+  }
+
+  const status: DegeneracyGateStatus = reasons.some((reason) => (
+    reason === 'singleton-effective-scope' || reason === 'direct-count-giveaway'
+  ))
+    ? 'fail'
+    : reasons.length > 0
+      ? 'warning'
+      : 'pass'
+
+  return {
+    ruleId: input.ruleId,
+    ruleType: input.ruleType,
+    scopeKind: input.scopeKind,
+    status,
+    reasons,
+    scopeCellCount: input.scopeCells.length,
+    unknownCellCount,
+    observedTargetCount,
+    requiredTargetCount,
+    message: degeneracyMessage(input.scopeKind, status, reasons, unknownCellCount, requiredTargetCount),
+  }
+}
+
+function combinedDegeneracyStatus(results: readonly DegeneracyGateResult[]): DegeneracyGateStatus {
+  if (results.some((result) => result.status === 'fail')) return 'fail'
+  if (results.some((result) => result.status === 'warning')) return 'warning'
+  return 'pass'
+}
+
+function degeneracyMessage(
+  scopeKind: DegeneracyScopeKind,
+  status: DegeneracyGateStatus,
+  reasons: readonly DegeneracyReason[],
+  unknownCellCount: number,
+  requiredTargetCount: number,
+): string {
+  if (status === 'pass') {
+    return `${scopeKind} rule has ${unknownCellCount} effective unknown cells and is not a direct giveaway.`
+  }
+
+  if (reasons.includes('direct-count-giveaway')) {
+    return `${scopeKind} rule requires ${requiredTargetCount} guest(s) from ${unknownCellCount} effective unknown cell(s).`
+  }
+
+  if (reasons.includes('near-count-giveaway')) {
+    return `${scopeKind} rule is one cell away from directly identifying every remaining guest.`
+  }
+
+  return `${scopeKind} rule has only ${unknownCellCount} effective unknown cell(s).`
 }
 
 function targetObservationsForCells(

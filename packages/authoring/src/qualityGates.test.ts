@@ -9,6 +9,7 @@ import {
   candidateShrinkSignature,
   canonicalPuzzleIsomorphismSignature,
   evaluateCoreQualityGates,
+  evaluateDegeneracyGates,
   evaluateRuleContribution,
   evaluateRuleImpactVector,
   evaluateTechniqueRetentionGate,
@@ -115,6 +116,64 @@ describe('quality gate contracts', () => {
     expect(report.results).toContainEqual(expect.objectContaining({
       id: 'non-onboarding-trivial-closure',
       status: 'warning',
+    }))
+  })
+})
+
+describe('degeneracy gates', () => {
+  it('fails singleton region scopes that behave like direct reveals', () => {
+    const report = evaluateDegeneracyGates(singletonRegionCase())
+
+    expect(report).toMatchObject({
+      puzzleId: 'degenerate-region-singleton',
+      status: 'fail',
+    })
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'ZR1',
+      scopeKind: 'region',
+      status: 'fail',
+      reasons: expect.arrayContaining(['singleton-effective-scope', 'direct-count-giveaway']),
+      unknownCellCount: 1,
+      requiredTargetCount: 1,
+    }))
+  })
+
+  it('fails blocker sightlines with one effective unknown guest cell', () => {
+    const report = evaluateDegeneracyGates(singletonSightlineCase())
+
+    expect(report.status).toBe('fail')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'LR1',
+      scopeKind: 'line',
+      status: 'fail',
+      reasons: expect.arrayContaining(['singleton-effective-scope', 'direct-count-giveaway']),
+      scopeCellCount: 1,
+      unknownCellCount: 1,
+    }))
+  })
+
+  it('warns when a line count is only one cell away from a direct guest giveaway', () => {
+    const report = evaluateDegeneracyGates(nearGiveawayLineCase())
+
+    expect(report.status).toBe('warning')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'LR1',
+      status: 'warning',
+      reasons: ['near-count-giveaway'],
+      unknownCellCount: 3,
+      requiredTargetCount: 2,
+    }))
+  })
+
+  it('passes dense region scopes with enough effective ambiguity', () => {
+    const report = evaluateDegeneracyGates(healthyRegionCase())
+
+    expect(report.status).toBe('pass')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'ZR1',
+      status: 'pass',
+      unknownCellCount: 4,
+      requiredTargetCount: 2,
     }))
   })
 })
@@ -448,6 +507,102 @@ function evaluateCase(
     ...(score.score === undefined ? {} : { score: score.score }),
     profile,
   })
+}
+
+function singletonRegionCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'degenerate-region-singleton',
+    title: 'Degenerate region singleton',
+    board: { width: 2, height: 1 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [{ id: 'east-room', title: '东侧房间', cells: ['A1', 'B1'] }],
+    rules: [{
+      id: 'ZR1',
+      type: 'regionCount',
+      regionId: 'east-room',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: '东侧房间' },
+    }],
+    initialReveals: ['A1'],
+    target: { A1: 'empty', B1: 'guest' },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function singletonSightlineCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'degenerate-sightline-singleton',
+    title: 'Degenerate sightline singleton',
+    board: { width: 3, height: 1 },
+    allowedKinds: ['empty', 'mirror', 'guest'],
+    rules: [{
+      id: 'LR1',
+      type: 'lineCount',
+      origin: 'A1',
+      scope: { kind: 'ray', direction: 'east', stopAtKinds: ['mirror'] },
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: '向右视线' },
+    }],
+    initialReveals: ['C1'],
+    target: { A1: 'empty', B1: 'guest', C1: 'mirror' },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function nearGiveawayLineCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'near-line-giveaway',
+    title: 'Near line giveaway',
+    board: { width: 3, height: 1 },
+    allowedKinds: ['empty', 'guest'],
+    rules: [{
+      id: 'LR1',
+      type: 'lineCount',
+      scope: { kind: 'row', index: 0 },
+      target: 'guest',
+      count: { op: 'eq', value: 2 },
+      presentation: { title: '第一行账目' },
+    }],
+    initialReveals: [],
+    target: { A1: 'guest', B1: 'guest', C1: 'empty' },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function healthyRegionCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'healthy-region-scope',
+    title: 'Healthy region scope',
+    board: { width: 4, height: 2 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [{ id: 'middle-band', title: '中带区域', cells: ['A2', 'B2', 'C2', 'D2'] }],
+    rules: [{
+      id: 'ZR1',
+      type: 'regionCount',
+      regionId: 'middle-band',
+      target: 'guest',
+      count: { op: 'eq', value: 2 },
+      presentation: { title: '中带区域' },
+    }],
+    initialReveals: ['A1', 'B1'],
+    target: {
+      A1: 'empty',
+      B1: 'empty',
+      C1: 'empty',
+      D1: 'empty',
+      A2: 'guest',
+      B2: 'empty',
+      C2: 'guest',
+      D2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
 }
 
 function requireValidation(report: AuthoringCliReport): AuthoringCaseValidationReport {
