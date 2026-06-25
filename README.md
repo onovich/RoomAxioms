@@ -38,13 +38,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last accepted phase: Phase 20 - Anti-Clone Puzzle Quality And Ladder Repair
-- Final report: `docs/phase-20-anti-clone-puzzle-quality-and-ladder-repair-final-report.md`
-- Status: Phase 21 ready for executor dispatch
-- Active executor phase: Phase 21 - Distinct Puzzle Ladder Production
+- Last accepted phase: Phase 21 - Distinct Puzzle Ladder Production
+- Final report: `docs/phase-21-distinct-puzzle-ladder-production-final-report.md`
+- Status: Phase 21 accepted by planner/checker; no next executor phase has been dispatched yet
+- Active executor phase: none
 - Guide: `docs/phase-21-distinct-puzzle-ladder-production-goal-mode-execution-guide.md`
-- Budget: 16 executor rounds
-- Goal: expand beyond the smaller honest selector only with cases designed from distinct proof skeletons and accepted by the anti-clone gates; do not pad the selector with clones.
+- Completed budget: 16 executor rounds
+- Result: the player selector now contains five anti-clone-accepted cases: `case-004`, `case-011`, `case-013`, `case-012`, and `case-014`; rejected Phase 19 clone cases remain out of the selector.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
