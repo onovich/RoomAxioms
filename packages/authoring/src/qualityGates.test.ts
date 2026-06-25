@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import type { CellKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
+import { parsePuzzleDefinition } from '@room-axioms/schema'
 import type { AuthoringCaseValidationReport, AuthoringCliReport } from './contracts.js'
 import {
   candidateShrinkSignature,
@@ -733,10 +734,13 @@ function requireTechniqueRetention(
 }
 
 function loadCase(casePath: string): PuzzleDefinition {
-  const report = runAuthoringCli(['report', casePath])
-  expect(report.ok).toBe(true)
+  const parsed = parsePuzzleDefinition(JSON.parse(readFileSync(casePath, 'utf8')) as unknown)
+  expect(parsed.ok).toBe(true)
+  if (parsed.puzzle === undefined) {
+    throw new Error(`Expected parsed puzzle for ${casePath}`)
+  }
 
-  return JSON.parse(readFileSync(casePath, 'utf8')) as PuzzleDefinition
+  return parsed.puzzle
 }
 
 function renamePuzzleKinds(

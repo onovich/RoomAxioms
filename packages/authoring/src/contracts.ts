@@ -165,7 +165,44 @@ export interface AuthoringCaseValidationReport {
     }[]
     readonly stats: AuthoringSolverStatsReport
   }
+  readonly difficultyReview?: AuthoringDifficultyReviewReport
   readonly recommendation: AuthoringRecommendation
+}
+
+export type AuthoringDifficultyReviewBucket =
+  | 'tutorial-or-baseline'
+  | 'target-4'
+  | 'super-hard-6-7'
+
+export interface AuthoringDifficultyReviewReport {
+  readonly puzzleId: string
+  readonly recommendedBucket: AuthoringDifficultyReviewBucket
+  readonly boardUnknownCellCount: number
+  readonly effectiveUnknownCellCount: number
+  readonly effectiveCellCount: number
+  readonly irrelevantCellCount: number
+  readonly openingRevealCount: number
+  readonly proofWaveCount: number
+  readonly deductionCount: number
+  readonly frontierUnlockCount: number
+  readonly sharedVariableOverlapCount: number
+  readonly techniqueIds: readonly string[]
+  readonly materialRuleFamilyCount: number
+  readonly materialRuleFamilies: readonly string[]
+  readonly materialRuleIds: readonly string[]
+  readonly redundantRuleIds: readonly string[]
+  readonly degeneracy: {
+    readonly status: 'pass' | 'warning' | 'fail'
+    readonly failureCount: number
+    readonly warningCount: number
+  }
+  readonly targetFour: AuthoringDifficultyThresholdReport
+  readonly superHard: AuthoringDifficultyThresholdReport
+}
+
+export interface AuthoringDifficultyThresholdReport {
+  readonly pass: boolean
+  readonly missing: readonly string[]
 }
 
 export interface AuthoringSchemaIssueReport {

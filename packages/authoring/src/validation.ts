@@ -1,5 +1,5 @@
 import { allCells, type CellId, type Observation, type PuzzleDefinition } from '@room-axioms/domain'
-import { verifyNoGuess } from '@room-axioms/proof'
+import { verifyNoGuess, type VerificationReport } from '@room-axioms/proof'
 import { parsePuzzleDefinition, type SchemaIssue } from '@room-axioms/schema'
 import {
   countGuestLayouts,
@@ -15,12 +15,17 @@ import {
   type AuthoringCaseValidationReport,
   type AuthoringCliDiagnostic,
   type AuthoringCliReport,
+  type AuthoringDifficultyReviewBucket,
+  type AuthoringDifficultyReviewReport,
+  type AuthoringDifficultyThresholdReport,
   type AuthoringRecommendation,
   type AuthoringSchemaIssueReport,
   type AuthoringSolverCapsReport,
   type AuthoringSolverStatsReport,
   type CasePathCommand,
 } from './contracts.js'
+import { reduceEffectiveBoard } from './antiClone.js'
+import { evaluateDegeneracyGates, evaluateRuleFamilyDiversityGate } from './qualityGates.js'
 
 export const DEFAULT_CAPS = {
   maxNodes: 20_000,
@@ -178,6 +183,7 @@ function validatePuzzleInput(
     (current, wave) => combineStats(current, wave.solverStats),
     zeroStats(),
   )
+  const difficultyReview = authoringDifficultyReview(puzzle, proof, solver)
   const recommendation = recommendationFor({
     targetRulesOk: targetRules.satisfiable,
     targetRulesStats: targetRules.stats,
@@ -239,6 +245,7 @@ function validatePuzzleInput(
               stats: statsReport(recordSets.stats),
             },
           }),
+      difficultyReview,
       recommendation,
     },
   }
@@ -348,6 +355,144 @@ function statsReport(stats: SolverStats): AuthoringSolverStatsReport {
     propagationCount: stats.propagationCount,
     truncated: stats.truncated,
   }
+}
+
+function authoringDifficultyReview(
+  puzzle: PuzzleDefinition,
+  proof: VerificationReport,
+  solver: ReturnType<typeof solverCaps>,
+): AuthoringDifficultyReviewReport {
+  const initialRevealSet = new Set(puzzle.initialReveals)
+  const effectiveBoard = reduceEffectiveBoard(puzzle, { solver })
+  const boardUnknownCellCount = allCells(puzzle.board).length - puzzle.initialReveals.length
+  const effectiveUnknownCellCount = effectiveBoard.effectiveCells
+    .filter((cellId) => !initialRevealSet.has(cellId))
+    .length
+  const degeneracy = evaluateDegeneracyGates(puzzle)
+  const ruleFamily = evaluateRuleFamilyDiversityGate(puzzle, {
+    solver,
+    candidateLayoutCap: DEFAULT_CAPS.candidateLayoutCap,
+  })
+  const proofWaveCount = proof.metrics.waveCount
+  const deductionCount = proof.metrics.deductionCount
+  const frontierUnlockCount = proof.waves
+    .filter((wave) => wave.index > 0 && wave.deductions.length > 0)
+    .length
+  const sharedVariableOverlapCount = proof.waves.reduce((count, wave) => (
+    count + wave.deductions.filter(hasSharedVariableOverlap).length
+  ), 0)
+  const degeneracyFailureCount = degeneracy.results.filter((result) => result.status === 'fail').length
+  const degeneracyWarningCount = degeneracy.results.filter((result) => result.status === 'warning').length
+  const base = {
+    effectiveUnknownCellCount,
+    proofWaveCount,
+    deductionCount,
+    materialRuleFamilyCount: ruleFamily.materialFamilyCount,
+    redundantRuleCount: ruleFamily.redundantRuleIds.length,
+    degeneracyStatus: degeneracy.status,
+    frontierUnlockCount,
+    sharedVariableOverlapCount,
+  }
+  const targetFour = thresholdReport(base, {
+    effectiveUnknownCellCount: 10,
+    proofWaveCount: 4,
+    deductionCount: 8,
+    materialRuleFamilyCount: 3,
+    frontierUnlockCount: 1,
+    sharedVariableOverlapCount: 1,
+  })
+  const superHard = thresholdReport(base, {
+    effectiveUnknownCellCount: 14,
+    proofWaveCount: 6,
+    deductionCount: 12,
+    materialRuleFamilyCount: 4,
+    frontierUnlockCount: 2,
+    sharedVariableOverlapCount: 1,
+  })
+
+  return {
+    puzzleId: puzzle.id,
+    recommendedBucket: recommendedDifficultyBucket(targetFour, superHard),
+    boardUnknownCellCount,
+    effectiveUnknownCellCount,
+    effectiveCellCount: effectiveBoard.effectiveCells.length,
+    irrelevantCellCount: effectiveBoard.irrelevantCells.length,
+    openingRevealCount: puzzle.initialReveals.length,
+    proofWaveCount,
+    deductionCount,
+    frontierUnlockCount,
+    sharedVariableOverlapCount,
+    techniqueIds: proof.metrics.techniqueIds,
+    materialRuleFamilyCount: ruleFamily.materialFamilyCount,
+    materialRuleFamilies: ruleFamily.materialFamilies,
+    materialRuleIds: ruleFamily.materialRuleIds,
+    redundantRuleIds: ruleFamily.redundantRuleIds,
+    degeneracy: {
+      status: degeneracy.status,
+      failureCount: degeneracyFailureCount,
+      warningCount: degeneracyWarningCount,
+    },
+    targetFour,
+    superHard,
+  }
+}
+
+function hasSharedVariableOverlap(deduction: VerificationReport['waves'][number]['deductions'][number]): boolean {
+  return new Set(deduction.ruleIds).size >= 2 ||
+    deduction.premises.some((premise) => (
+      (premise.ruleIds?.length ?? 0) >= 2 && (premise.cellIds?.length ?? 0) > 0
+    ))
+}
+
+interface DifficultyThresholdBase {
+  readonly effectiveUnknownCellCount: number
+  readonly proofWaveCount: number
+  readonly deductionCount: number
+  readonly materialRuleFamilyCount: number
+  readonly redundantRuleCount: number
+  readonly degeneracyStatus: 'pass' | 'warning' | 'fail'
+  readonly frontierUnlockCount: number
+  readonly sharedVariableOverlapCount: number
+}
+
+interface DifficultyThresholdPolicy {
+  readonly effectiveUnknownCellCount: number
+  readonly proofWaveCount: number
+  readonly deductionCount: number
+  readonly materialRuleFamilyCount: number
+  readonly frontierUnlockCount: number
+  readonly sharedVariableOverlapCount: number
+}
+
+function thresholdReport(
+  base: DifficultyThresholdBase,
+  policy: DifficultyThresholdPolicy,
+): AuthoringDifficultyThresholdReport {
+  const missing: string[] = []
+
+  if (base.effectiveUnknownCellCount < policy.effectiveUnknownCellCount) missing.push('effective-unknown-cell-count')
+  if (base.proofWaveCount < policy.proofWaveCount) missing.push('proof-wave-count')
+  if (base.deductionCount < policy.deductionCount) missing.push('deduction-count')
+  if (base.materialRuleFamilyCount < policy.materialRuleFamilyCount) missing.push('material-rule-family-count')
+  if (base.frontierUnlockCount < policy.frontierUnlockCount) missing.push('frontier-unlock-count')
+  if (base.sharedVariableOverlapCount < policy.sharedVariableOverlapCount) missing.push('shared-variable-overlap-count')
+  if (base.redundantRuleCount > 0) missing.push('redundant-rule-count')
+  if (base.degeneracyStatus !== 'pass') missing.push('degeneracy-status')
+
+  return {
+    pass: missing.length === 0,
+    missing,
+  }
+}
+
+function recommendedDifficultyBucket(
+  targetFour: AuthoringDifficultyThresholdReport,
+  superHard: AuthoringDifficultyThresholdReport,
+): AuthoringDifficultyReviewBucket {
+  if (superHard.pass) return 'super-hard-6-7'
+  if (targetFour.pass) return 'target-4'
+
+  return 'tutorial-or-baseline'
 }
 
 function combineStats(left: SolverStats, right: SolverStats): SolverStats {

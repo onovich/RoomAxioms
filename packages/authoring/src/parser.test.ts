@@ -263,6 +263,26 @@ describe('authoring CLI parser', () => {
     expect(report.ok).toBe(true)
     expect(report.status).toBe('reported')
     expect(report.validation?.recommendation).toBe('ready-for-experimental-review')
+    expect(report.validation?.difficultyReview).toMatchObject({
+      puzzleId: 'phase-10-local-scope-intersection-001',
+      recommendedBucket: 'tutorial-or-baseline',
+      effectiveUnknownCellCount: expect.any(Number),
+      proofWaveCount: expect.any(Number),
+      deductionCount: expect.any(Number),
+      materialRuleFamilyCount: expect.any(Number),
+      degeneracy: {
+        status: expect.any(String),
+        failureCount: expect.any(Number),
+        warningCount: expect.any(Number),
+      },
+      targetFour: {
+        pass: false,
+      },
+      superHard: {
+        pass: false,
+      },
+    })
+    expect(report.validation?.difficultyReview?.targetFour.missing).toContain('proof-wave-count')
   })
 
   it('reports possible false-record assignments for contaminated fixtures', () => {
