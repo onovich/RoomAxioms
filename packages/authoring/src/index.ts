@@ -27,6 +27,16 @@ export {
   type SampleCommand,
 } from './contracts.js'
 export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
+export {
+  evaluateNoveltyClaimManifest,
+  type NoveltyClaim,
+  type NoveltyClaimEvidence,
+  type NoveltyClaimIssue,
+  type NoveltyClaimIssueCode,
+  type NoveltyClaimManifest,
+  type NoveltyClaimReport,
+  type NoveltyClaimStatus,
+} from './noveltyClaims.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
   candidateShrinkSignature,

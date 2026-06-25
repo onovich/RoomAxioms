@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "claims": [
+    {
+      "puzzleId": "case-004",
+      "status": "accepted",
+      "novelty": "Mixed cleaning-chain baseline: bin placement and local guest exclusions combine into a multi-step proof before final guest uniqueness.",
+      "evidence": {
+        "reviewerNote": "Preserved as a useful baseline by Phase 20 planning; not a Phase 19 replacement.",
+        "gateEvidence": [
+          "phase-20-baseline-preserved",
+          "mixed-technique-proof"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-011",
+      "status": "accepted",
+      "novelty": "Local-scope intersection baseline with a compact proof that demonstrates shared-neighborhood reasoning.",
+      "evidence": {
+        "reviewerNote": "Preserved as one of the useful non-trivial baselines identified before Phase 20.",
+        "gateEvidence": [
+          "phase-20-baseline-preserved",
+          "LOCAL_SCOPE_INTERSECTION"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-012",
+      "status": "accepted",
+      "novelty": "Retained local-scope difference baseline where difference reasoning unlocks later proof progress.",
+      "evidence": {
+        "reviewerNote": "Preserved because Phase 15/16 retention evidence showed LOCAL_SCOPE_DIFFERENCE remained meaningful.",
+        "gateEvidence": [
+          "phase-15-retention-pass",
+          "LOCAL_SCOPE_DIFFERENCE"
+        ]
+      }
+    },
+    {
+      "puzzleId": "case-001",
+      "status": "rejected",
+      "novelty": "No accepted Phase 20 novelty claim.",
+      "evidence": {
+        "reviewerNote": "User rejected it as clone-like with the same deduction answer pattern as case-012."
+      }
+    },
+    {
+      "puzzleId": "case-002",
+      "status": "rejected",
+      "novelty": "No accepted Phase 20 novelty claim.",
+      "evidence": {
+        "reviewerNote": "User rejected it as clone-like with the same deduction answer pattern as case-012."
+      }
+    },
+    {
+      "puzzleId": "case-005",
+      "status": "rejected",
+      "novelty": "No accepted Phase 20 novelty claim.",
+      "evidence": {
+        "reviewerNote": "User rejected it as clone-like with the same deduction answer pattern as case-012."
+      }
+    },
+    {
+      "puzzleId": "case-006",
+      "status": "rejected",
+      "novelty": "No accepted Phase 20 novelty claim.",
+      "evidence": {
+        "reviewerNote": "User rejected it as effectively case-004 with four irrelevant right-side cells."
+      }
+    }
+  ]
+}
