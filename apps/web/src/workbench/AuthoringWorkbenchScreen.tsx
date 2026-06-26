@@ -13,6 +13,7 @@ import {
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
+  patchWorkbenchRulePresentation,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -31,10 +32,14 @@ export default function AuthoringWorkbenchScreen() {
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(defaultCase))
   const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
+  const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
   const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
+  const [ruleTitleText, setRuleTitleText] = useState('')
+  const [ruleFlavorText, setRuleFlavorText] = useState('')
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
@@ -43,6 +48,9 @@ export default function AuthoringWorkbenchScreen() {
   const selectedCell = selectedCellId === undefined
     ? undefined
     : model.boardCells.find((cell) => cell.id === selectedCellId)
+  const selectedRule = selectedRuleId === undefined
+    ? undefined
+    : model.ruleSummaries.find((rule) => rule.id === selectedRuleId)
   const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
 
   function loadCase(caseId: string): void {
@@ -51,10 +59,14 @@ export default function AuthoringWorkbenchScreen() {
     setDraft(createWorkbenchDraftFromPuzzle(item.puzzle))
     setDiagnostics(undefined)
     setSelectedCellId(undefined)
+    setSelectedRuleId(undefined)
     setActiveKind('empty')
     setBoardWidthText(String(item.puzzle.board.width))
     setBoardHeightText(String(item.puzzle.board.height))
+    setRuleTitleText('')
+    setRuleFlavorText('')
     setPatchStatus({ kind: 'idle' })
+    setRulePatchStatus({ kind: 'idle' })
   }
 
   function resetCurrentCase(): void {
@@ -65,10 +77,14 @@ export default function AuthoringWorkbenchScreen() {
     setDraft(updateDraftJsonText(draft, jsonText))
     setDiagnostics(undefined)
     setSelectedCellId(undefined)
+    setSelectedRuleId(undefined)
     setActiveKind('empty')
     setBoardWidthText('')
     setBoardHeightText('')
+    setRuleTitleText('')
+    setRuleFlavorText('')
     setPatchStatus({ kind: 'idle' })
+    setRulePatchStatus({ kind: 'idle' })
   }
 
   function runDiagnostics(): void {
@@ -79,6 +95,13 @@ export default function AuthoringWorkbenchScreen() {
     setSelectedCellId(cell.id)
     setActiveKind(cell.kind)
     setPatchStatus({ kind: 'idle' })
+  }
+
+  function selectRule(rule: WorkbenchRuleSummary): void {
+    setSelectedRuleId(rule.id)
+    setRuleTitleText(rule.title)
+    setRuleFlavorText(rule.flavor ?? '')
+    setRulePatchStatus({ kind: 'idle' })
   }
 
   function applyTargetCellPatch(): void {
@@ -151,6 +174,34 @@ export default function AuthoringWorkbenchScreen() {
     setDraft(nextDraft)
     setDiagnostics(undefined)
     setPatchStatus({ kind: 'applied', message })
+  }
+
+  function applyRulePresentationPatch(): void {
+    if (selectedRuleId === undefined) return
+
+    const patch = patchWorkbenchRulePresentation(draft, {
+      ruleId: selectedRuleId,
+      title: ruleTitleText,
+      flavor: ruleFlavorText.trim() === '' ? undefined : ruleFlavorText,
+    })
+    if (!patch.ok) {
+      setRulePatchStatus({
+        kind: 'rejected',
+        message: `${selectedRuleId} 的规则文案未应用。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    const nextRule = patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
+    setDraft(patch.state)
+    setDiagnostics(undefined)
+    setRuleTitleText(nextRule?.presentation.title ?? ruleTitleText)
+    setRuleFlavorText(nextRule?.presentation.flavor ?? '')
+    setRulePatchStatus({
+      kind: 'applied',
+      message: `${selectedRuleId} 的标题和说明已更新；完整诊断已标记为待重新运行。`,
+    })
   }
 
   return (
@@ -286,10 +337,25 @@ export default function AuthoringWorkbenchScreen() {
             <h3>规则</h3>
             <div className="workbench-rule-list">
               {model.ruleSummaries.map((rule) => (
-                <RuleSummary key={rule.id} rule={rule} />
+                <RuleSummary
+                  key={rule.id}
+                  rule={rule}
+                  selected={selectedRuleId === rule.id}
+                  onSelect={selectRule}
+                />
               ))}
             </div>
           </section>
+          <RuleCopyEditor
+            selectedRule={selectedRule}
+            titleText={ruleTitleText}
+            flavorText={ruleFlavorText}
+            patchStatus={rulePatchStatus}
+            canPatch={parsedPuzzle !== undefined && selectedRule !== undefined}
+            onTitleChange={setRuleTitleText}
+            onFlavorChange={setRuleFlavorText}
+            onApply={applyRulePresentationPatch}
+          />
           <section className="workbench-section">
             <h3>导出</h3>
             <pre className="export-preview">{model.exported.ok ? model.exported.jsonText : 'JSON 当前无效'}</pre>
@@ -411,6 +477,55 @@ function PatchStatus({ status }: { readonly status: DraftPatchStatus }) {
       <b>{status.message}</b>
       {status.kind === 'rejected' ? <IssueList issues={status.issues} /> : null}
     </div>
+  )
+}
+
+function RuleCopyEditor({
+  selectedRule,
+  titleText,
+  flavorText,
+  patchStatus,
+  canPatch,
+  onTitleChange,
+  onFlavorChange,
+  onApply,
+}: {
+  readonly selectedRule: WorkbenchRuleSummary | undefined
+  readonly titleText: string
+  readonly flavorText: string
+  readonly patchStatus: DraftPatchStatus
+  readonly canPatch: boolean
+  readonly onTitleChange: (value: string) => void
+  readonly onFlavorChange: (value: string) => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="workbench-section rule-copy-editor">
+      <h3>{selectedRule === undefined ? '规则文案' : `${selectedRule.id} · ${ruleTypeLabel(selectedRule.type)}`}</h3>
+      <label>
+        标题
+        <input
+          type="text"
+          value={titleText}
+          disabled={!canPatch}
+          onChange={(event) => onTitleChange(event.target.value)}
+          placeholder="选择一条规则后编辑标题"
+        />
+      </label>
+      <label>
+        说明
+        <textarea
+          value={flavorText}
+          disabled={!canPatch}
+          onChange={(event) => onFlavorChange(event.target.value)}
+          placeholder="可留空；这里写给玩家看的自然语言说明"
+        />
+      </label>
+      <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
+        应用文案
+      </button>
+      <PatchStatus status={patchStatus} />
+    </section>
   )
 }
 
@@ -601,15 +716,28 @@ function diagnosticsStatusLabel(status: AuthoringDiagnosticsGroup['status']): st
   }
 }
 
-function RuleSummary({ rule }: { readonly rule: WorkbenchRuleSummary }) {
+function RuleSummary({
+  rule,
+  selected,
+  onSelect,
+}: {
+  readonly rule: WorkbenchRuleSummary
+  readonly selected: boolean
+  readonly onSelect: (rule: WorkbenchRuleSummary) => void
+}) {
   return (
-    <article className="workbench-rule-card">
+    <button
+      className={`workbench-rule-card ${selected ? 'selected' : ''}`}
+      type="button"
+      onClick={() => onSelect(rule)}
+      aria-pressed={selected}
+    >
       <div>
         <b>{rule.id} · {rule.title}</b>
         <span>{ruleTypeLabel(rule.type)}</span>
       </div>
       {rule.flavor === undefined ? null : <p>{rule.flavor}</p>}
-    </article>
+    </button>
   )
 }
 

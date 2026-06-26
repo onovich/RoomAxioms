@@ -13,6 +13,7 @@ import {
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
+  patchWorkbenchRulePresentation,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -212,6 +213,49 @@ describe('authoring workbench shell model', () => {
         }),
       ],
     })
+  })
+
+  it('patches rule presentation copy through schema-validated draft state', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchRulePresentation(draft, {
+      ruleId: 'R1',
+      title: '这条规则已经改名',
+      flavor: '这是一条给作者检查的玩家可见说明。',
+    })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Rule presentation patch failed.')
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, patch.state)
+    expect(model.ruleSummaries.find((rule) => rule.id === 'R1')).toMatchObject({
+      title: '这条规则已经改名',
+      flavor: '这是一条给作者检查的玩家可见说明。',
+    })
+    expect(model.exported.ok).toBe(true)
+    if (!model.exported.ok) throw new Error('Rule presentation export failed.')
+    expect(model.exported.puzzle?.rules.find((rule) => rule.id === 'R1')?.presentation).toEqual({
+      title: '这条规则已经改名',
+      flavor: '这是一条给作者检查的玩家可见说明。',
+    })
+  })
+
+  it('rejects blank rule presentation titles without mutating the draft', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchRulePresentation(draft, {
+      ruleId: 'R1',
+      title: '   ',
+    })
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'PRESENTATION_TITLE_EMPTY',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
   })
 
   it('runs grouped authoring diagnostics on demand for a valid draft', () => {

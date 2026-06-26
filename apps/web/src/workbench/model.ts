@@ -2,9 +2,11 @@ import {
   exportDraftJson,
   importPuzzleToDraftState,
   patchDraftBoardSize,
+  patchDraftRulePresentation,
   patchDraftTargetCell,
   parseDraftJson,
   toggleDraftInitialReveal,
+  type PatchDraftRulePresentationInput,
   type WorkbenchDraftExportResult,
   type WorkbenchDraftPatchResult,
   type WorkbenchDraftParseResult,
@@ -119,6 +121,13 @@ export function toggleWorkbenchInitialReveal(
   cellId: CellId,
 ): WorkbenchDraftPatchResult {
   return toggleDraftInitialReveal(draft, cellId)
+}
+
+export function patchWorkbenchRulePresentation(
+  draft: WorkbenchDraftState,
+  input: PatchDraftRulePresentationInput,
+): WorkbenchDraftPatchResult {
+  return patchDraftRulePresentation(draft, input)
 }
 
 export function workbenchCellKindOptions(
