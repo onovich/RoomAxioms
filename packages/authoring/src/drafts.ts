@@ -1,4 +1,14 @@
-import { allCells, type BoardSize, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
+import {
+  allCells,
+  type AnchorDefinition,
+  type BoardSize,
+  type CellId,
+  type CellKind,
+  type PuzzleDefinition,
+  type RecordDefinition,
+  type RegionDefinition,
+  type RuleDefinition,
+} from '@room-axioms/domain'
 import { parsePuzzleDefinition, type SchemaIssue } from '@room-axioms/schema'
 
 export type WorkbenchDraftSourceKind = 'empty' | 'json-text' | 'puzzle'
@@ -209,6 +219,62 @@ export function patchDraftRulePresentation(
   }))
 }
 
+export function patchDraftAllowedKinds(
+  state: WorkbenchDraftState,
+  allowedKinds: readonly CellKind[],
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    allowedKinds: [...allowedKinds],
+  }))
+}
+
+export function patchDraftRegions(
+  state: WorkbenchDraftState,
+  regions: readonly RegionDefinition[],
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    regions: regions.map((region) => ({
+      ...region,
+      cells: [...region.cells],
+    })),
+  }))
+}
+
+export function patchDraftAnchors(
+  state: WorkbenchDraftState,
+  anchors: readonly AnchorDefinition[],
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    anchors: anchors.map((anchor) => ({ ...anchor })),
+  }))
+}
+
+export function patchDraftRecords(
+  state: WorkbenchDraftState,
+  records: readonly RecordDefinition[],
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    records: records.map((record) => ({
+      ...record,
+      ruleIds: [...record.ruleIds],
+    })),
+  }))
+}
+
+export function patchDraftRules(
+  state: WorkbenchDraftState,
+  rules: readonly RuleDefinition[],
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    rules: rules.map(cloneRuleDefinition),
+  }))
+}
+
 export function selectDraftCell(
   state: WorkbenchDraftState,
   selectedCellId: CellId | undefined,
@@ -330,6 +396,13 @@ function resizePuzzleBoard(puzzle: PuzzleDefinition, board: BoardSize): PuzzleDe
     })).filter((region) => region.cells.length > 0),
     initialReveals: puzzle.initialReveals.filter((cellId) => newCellSet.has(cellId)),
     target,
+  }
+}
+
+function cloneRuleDefinition(rule: RuleDefinition): RuleDefinition {
+  return {
+    ...rule,
+    presentation: { ...rule.presentation },
   }
 }
 

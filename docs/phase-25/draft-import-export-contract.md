@@ -30,12 +30,18 @@ The current first slice supports:
 - toggling initial reveals with `toggleDraftInitialReveal`;
 - changing title, case name, difficulty metadata, tags, author, status, and notes
   with `patchDraftMetadata`;
-- changing rule title/flavor copy with `patchDraftRulePresentation`.
+- changing rule title/flavor copy with `patchDraftRulePresentation`;
+- replacing `allowedKinds` with `patchDraftAllowedKinds`;
+- replacing named regions/scopes with `patchDraftRegions`;
+- replacing anchors with `patchDraftAnchors`;
+- replacing contaminated-record definitions with `patchDraftRecords`;
+- replacing the rule list with `patchDraftRules`.
 
 These helpers are immutable and DOM-free. Patch helpers validate the candidate
 through Puzzle Schema v1 before returning an updated state; invalid edits return
-issues and preserve the previous state. Later rounds can add region, anchor,
-record, and structured rule patch helpers on top of the same state shape.
+issues and preserve the previous state. Collection helpers intentionally replace
+whole collections so the first web workbench can use simple structured forms
+plus raw JSON fallback without duplicating schema semantics in React.
 
 ## Export
 

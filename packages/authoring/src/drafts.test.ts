@@ -8,9 +8,14 @@ import {
   exportDraftJson,
   importJsonTextToDraftState,
   importPuzzleToDraftState,
+  patchDraftAllowedKinds,
+  patchDraftAnchors,
   patchDraftBoardSize,
   patchDraftMetadata,
+  patchDraftRecords,
+  patchDraftRegions,
   patchDraftRulePresentation,
+  patchDraftRules,
   patchDraftTargetCell,
   parseDraftJson,
   selectDraftCell,
@@ -24,7 +29,13 @@ const fixturePath = resolve(
   '../../../content/experimental/phase-10/phase-10-local-scope-intersection-001.json',
 )
 
+const overlapFixturePath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-24/phase-24-overlap-cross-001.json',
+)
+
 const fixtureText = readFileSync(fixturePath, 'utf8')
+const overlapFixtureText = readFileSync(overlapFixturePath, 'utf8')
 
 describe('workbench draft state', () => {
   it('creates an empty serializable draft state', () => {
@@ -186,6 +197,60 @@ describe('workbench draft state', () => {
     expect(rulePatch.state.dirty).toBe(true)
   })
 
+  it('patches authoring collections through schema-validated draft JSON', () => {
+    const state = importJsonTextToDraftState(overlapFixtureText)
+    const regionsPatch = patchDraftRegions(state, [
+      { id: 'north-strip', title: 'North strip renamed', cells: ['A1', 'B1', 'A2'] },
+      { id: 'west-strip', title: 'West strip renamed', cells: ['A1', 'A2', 'B1'] },
+    ])
+    expect(regionsPatch.ok).toBe(true)
+    if (!regionsPatch.ok) throw new Error('Regions patch failed.')
+
+    const allowedKindsPatch = patchDraftAllowedKinds(regionsPatch.state, ['empty', 'bottle', 'guest'])
+    expect(allowedKindsPatch.ok).toBe(true)
+    if (!allowedKindsPatch.ok) throw new Error('Allowed kinds patch failed.')
+
+    const anchorsPatch = patchDraftAnchors(allowedKindsPatch.state, [
+      { id: 'known-bottle', title: 'Known bottle', subject: 'bottle' },
+    ])
+    expect(anchorsPatch.ok).toBe(true)
+    if (!anchorsPatch.ok) throw new Error('Anchors patch failed.')
+
+    const recordsPatch = patchDraftRecords(anchorsPatch.state, [])
+    expect(recordsPatch.ok).toBe(true)
+    if (!recordsPatch.ok) throw new Error('Records patch failed.')
+
+    const rulesPatch = patchDraftRules(recordsPatch.state, recordsPatch.puzzle.rules.map((rule) => (
+      rule.id === 'R2'
+        ? {
+            ...rule,
+            presentation: {
+              ...rule.presentation,
+              title: 'Plain bottle rule',
+            },
+          }
+        : rule
+    )))
+    expect(rulesPatch.ok).toBe(true)
+    if (!rulesPatch.ok) throw new Error('Rules patch failed.')
+
+    expect(rulesPatch.puzzle.regions?.map((region) => region.title)).toEqual([
+      'North strip renamed',
+      'West strip renamed',
+    ])
+    expect(rulesPatch.puzzle.anchors).toEqual([
+      { id: 'known-bottle', title: 'Known bottle', subject: 'bottle' },
+    ])
+    expect(rulesPatch.puzzle.records).toEqual([])
+    expect(rulesPatch.puzzle.rules.find((rule) => rule.id === 'R2')?.presentation.title).toBe('Plain bottle rule')
+    expect(exportDraftJson(rulesPatch.state)).toMatchObject({
+      ok: true,
+      puzzle: {
+        id: 'phase-24-overlap-cross-001',
+      },
+    })
+  })
+
   it('patches target cells and initial reveals while rejecting invalid guest reveals', () => {
     const state = importJsonTextToDraftState(fixtureText)
     const targetPatch = patchDraftTargetCell(state, 'A1', 'guest')
@@ -237,5 +302,41 @@ describe('workbench draft state', () => {
       ],
     })
     expect(patch.state).toBe(state)
+  })
+
+  it('preserves state when collection patches fail schema or semantic validation', () => {
+    const state = importJsonTextToDraftState(overlapFixtureText)
+
+    const invalidKinds = patchDraftAllowedKinds(state, ['empty', 'bottle'])
+    expect(invalidKinds.ok).toBe(false)
+    expect(invalidKinds.state).toBe(state)
+    expect(invalidKinds.issues.length).toBeGreaterThan(0)
+
+    const invalidRegions = patchDraftRegions(state, [
+      { id: 'unused-region', title: 'Unused region', cells: ['A1'] },
+    ])
+    expect(invalidRegions.ok).toBe(false)
+    expect(invalidRegions.state).toBe(state)
+    expect(invalidRegions.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'RULE_REGION_UNKNOWN',
+      }),
+    ]))
+
+    const invalidRecords = patchDraftRecords(state, [
+      { id: 'bad-record', title: 'Bad record', ruleIds: ['missing-rule'] },
+    ])
+    expect(invalidRecords.ok).toBe(false)
+    expect(invalidRecords.state).toBe(state)
+    expect(invalidRecords.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'RECORD_RULE_UNKNOWN',
+      }),
+    ]))
+
+    const invalidRules = patchDraftRules(state, [])
+    expect(invalidRules.ok).toBe(false)
+    expect(invalidRules.state).toBe(state)
+    expect(invalidRules.issues.length).toBeGreaterThan(0)
   })
 })
