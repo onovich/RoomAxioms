@@ -8,7 +8,13 @@ import {
   getWorkbenchCaseImportById,
   workbenchCaseLibrary,
 } from './caseLibrary'
-import { createWorkbenchDraftFromPuzzle, createWorkbenchShellModel, evaluateWorkbenchDiagnostics } from './model'
+import {
+  createWorkbenchDraftFromPuzzle,
+  createWorkbenchShellModel,
+  evaluateWorkbenchDiagnostics,
+  patchWorkbenchTargetCell,
+  workbenchCellKindOptions,
+} from './model'
 import { AUTHORING_WORKBENCH_HASH, shouldShowAuthoringWorkbench } from './route'
 
 describe('authoring workbench private route', () => {
@@ -97,6 +103,59 @@ describe('authoring workbench shell model', () => {
     })
     expect(model.boardCells).toEqual([])
     expect(model.ruleSummaries).toEqual([])
+  })
+
+  it('patches target cell facts through schema-validated draft state', () => {
+    const defaultCase = getCaseById(DEFAULT_CASE_ID)
+    const draft = createWorkbenchDraftFromPuzzle(defaultCase)
+    const patch = patchWorkbenchTargetCell(draft, 'A1', 'guest')
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Target patch failed.')
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, patch.state)
+    expect(model.boardCells.find((cell) => cell.id === 'A1')).toMatchObject({
+      id: 'A1',
+      kind: 'guest',
+      guestTarget: true,
+      initiallyRevealed: false,
+    })
+    expect(model.exportStatus).toMatchObject({
+      ok: true,
+      issueCount: 0,
+    })
+    expect(model.exported).toMatchObject({
+      ok: true,
+      puzzle: {
+        target: {
+          A1: 'guest',
+        },
+      },
+    })
+  })
+
+  it('returns patch issues without mutating the draft when target edits break schema semantics', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchTargetCell(draft, 'B1', 'guest')
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'INITIAL_REVEAL_GUEST',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
+  })
+
+  it('offers allowed target object options while preserving the currently selected kind', () => {
+    const experimental = getWorkbenchCaseImportById('phase-24-comparative-balance-001').puzzle
+
+    expect(workbenchCellKindOptions(experimental, undefined)).toEqual(['empty', 'guest'])
+    expect(workbenchCellKindOptions(experimental, 'mirror')).toEqual(['empty', 'mirror', 'guest'])
+    expect(workbenchCellKindOptions(undefined, undefined)).toEqual(['empty', 'bottle', 'bin', 'mirror', 'guest'])
   })
 
   it('runs grouped authoring diagnostics on demand for a valid draft', () => {

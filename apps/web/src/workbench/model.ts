@@ -1,8 +1,10 @@
 import {
   exportDraftJson,
   importPuzzleToDraftState,
+  patchDraftTargetCell,
   parseDraftJson,
   type WorkbenchDraftExportResult,
+  type WorkbenchDraftPatchResult,
   type WorkbenchDraftParseResult,
   type WorkbenchDraftState,
 } from '@room-axioms/authoring/drafts'
@@ -13,6 +15,8 @@ import {
 import { allCells, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
 
 import type { WorkbenchCaseImport, WorkbenchCaseSource } from './caseLibrary'
+
+export const WORKBENCH_CELL_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin', 'mirror', 'guest']
 
 export interface WorkbenchCaseOption {
   readonly id: string
@@ -91,6 +95,24 @@ export function evaluateWorkbenchDiagnostics(
     draft: parse.puzzle,
     sourcePath: `<workbench:${selectedCaseId}>`,
   })
+}
+
+export function patchWorkbenchTargetCell(
+  draft: WorkbenchDraftState,
+  cellId: CellId,
+  kind: CellKind,
+): WorkbenchDraftPatchResult {
+  return patchDraftTargetCell(draft, cellId, kind)
+}
+
+export function workbenchCellKindOptions(
+  puzzle: PuzzleDefinition | undefined,
+  currentKind: CellKind | undefined,
+): readonly CellKind[] {
+  const available = new Set<CellKind>(puzzle?.allowedKinds ?? WORKBENCH_CELL_KIND_OPTIONS)
+  if (currentKind !== undefined) available.add(currentKind)
+
+  return WORKBENCH_CELL_KIND_OPTIONS.filter((kind) => available.has(kind))
 }
 
 function caseOption(item: WorkbenchCaseImport): WorkbenchCaseOption {

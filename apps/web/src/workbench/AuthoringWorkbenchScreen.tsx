@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
-import type { CellKind, PuzzleDefinition } from '@room-axioms/domain'
+import type { CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
@@ -12,24 +12,42 @@ import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
+  patchWorkbenchTargetCell,
+  workbenchCellKindOptions,
+  type WorkbenchBoardCell,
   type WorkbenchRuleSummary,
 } from './model'
+
+type CellPatchStatus =
+  | { readonly kind: 'idle' }
+  | { readonly kind: 'applied'; readonly message: string }
+  | { readonly kind: 'rejected'; readonly message: string; readonly issues: readonly string[] }
 
 export default function AuthoringWorkbenchScreen() {
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle))
   const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
+  const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
+  const [activeKind, setActiveKind] = useState<CellKind>('empty')
+  const [patchStatus, setPatchStatus] = useState<CellPatchStatus>({ kind: 'idle' })
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
   )
   const parsedPuzzle = model.parse.ok ? model.parse.puzzle : undefined
+  const selectedCell = selectedCellId === undefined
+    ? undefined
+    : model.boardCells.find((cell) => cell.id === selectedCellId)
+  const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
 
   function loadCase(caseId: string): void {
     const item = getWorkbenchCaseImportById(caseId)
     setSelectedCaseId(caseId)
     setDraft(createWorkbenchDraftFromPuzzle(item.puzzle))
     setDiagnostics(undefined)
+    setSelectedCellId(undefined)
+    setActiveKind('empty')
+    setPatchStatus({ kind: 'idle' })
   }
 
   function resetCurrentCase(): void {
@@ -39,10 +57,40 @@ export default function AuthoringWorkbenchScreen() {
   function updateDraftText(jsonText: string): void {
     setDraft(updateDraftJsonText(draft, jsonText))
     setDiagnostics(undefined)
+    setSelectedCellId(undefined)
+    setActiveKind('empty')
+    setPatchStatus({ kind: 'idle' })
   }
 
   function runDiagnostics(): void {
     setDiagnostics(evaluateWorkbenchDiagnostics(draft, selectedCaseId))
+  }
+
+  function selectBoardCell(cell: WorkbenchBoardCell): void {
+    setSelectedCellId(cell.id)
+    setActiveKind(cell.kind)
+    setPatchStatus({ kind: 'idle' })
+  }
+
+  function applyTargetCellPatch(): void {
+    if (selectedCellId === undefined) return
+
+    const patch = patchWorkbenchTargetCell(draft, selectedCellId, activeKind)
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${selectedCellId} 不能改成${kindLabel(activeKind)}。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setDraft(patch.state)
+    setDiagnostics(undefined)
+    setPatchStatus({
+      kind: 'applied',
+      message: `${selectedCellId} 已改成${kindLabel(activeKind)}；完整诊断已标记为待重新运行。`,
+    })
   }
 
   return (
@@ -118,21 +166,35 @@ export default function AuthoringWorkbenchScreen() {
               style={{ '--workbench-board-width': parsedPuzzle.board.width } as CSSProperties}
             >
               {model.boardCells.map((cell) => (
-                <div
+                <button
+                  type="button"
                   key={cell.id}
                   className={[
                     'workbench-cell',
                     cell.initiallyRevealed ? 'revealed' : '',
                     cell.guestTarget ? 'guest-target' : '',
+                    selectedCellId === cell.id ? 'selected' : '',
                   ].filter(Boolean).join(' ')}
+                  onClick={() => selectBoardCell(cell)}
+                  aria-pressed={selectedCellId === cell.id}
+                  aria-label={`${cell.id} ${kindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
                 >
                   <span className="coord">{cell.id}</span>
                   <b>{kindLabel(cell.kind)}</b>
                   {cell.initiallyRevealed ? <small>初始</small> : null}
-                </div>
+                </button>
               ))}
             </div>
           )}
+          <CellFactEditor
+            selectedCell={selectedCell}
+            activeKind={activeKind}
+            kindOptions={kindOptions}
+            patchStatus={patchStatus}
+            canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
+            onKindChange={setActiveKind}
+            onApply={applyTargetCellPatch}
+          />
         </section>
 
         <aside className="panel workbench-panel">
@@ -165,6 +227,69 @@ export default function AuthoringWorkbenchScreen() {
           </section>
         </aside>
       </main>
+    </div>
+  )
+}
+
+function CellFactEditor({
+  selectedCell,
+  activeKind,
+  kindOptions,
+  patchStatus,
+  canPatch,
+  onKindChange,
+  onApply,
+}: {
+  readonly selectedCell: WorkbenchBoardCell | undefined
+  readonly activeKind: CellKind
+  readonly kindOptions: readonly CellKind[]
+  readonly patchStatus: CellPatchStatus
+  readonly canPatch: boolean
+  readonly onKindChange: (kind: CellKind) => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="cell-editor" aria-label="目标格编辑">
+      <div>
+        <span className="eyebrow">Cell facts</span>
+        <h3>{selectedCell === undefined ? '选择一个格子' : `${selectedCell.id} · ${kindLabel(selectedCell.kind)}`}</h3>
+        <p>
+          {selectedCell === undefined
+            ? '点击棋盘格后可修改目标对象；修改只进入当前草稿。'
+            : selectedCell.initiallyRevealed
+              ? '这个格子是初始揭示，改成访客会被语义检查拒绝。'
+              : '修改目标对象后，需要重新运行完整诊断。'}
+        </p>
+      </div>
+      <div className="cell-editor-controls">
+        <label>
+          对象
+          <select
+            value={activeKind}
+            onChange={(event) => onKindChange(event.target.value as CellKind)}
+            disabled={!canPatch}
+          >
+            {kindOptions.map((kind) => (
+              <option key={kind} value={kind}>{kindLabel(kind)}</option>
+            ))}
+          </select>
+        </label>
+        <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
+          应用对象
+        </button>
+      </div>
+      <PatchStatus status={patchStatus} />
+    </section>
+  )
+}
+
+function PatchStatus({ status }: { readonly status: CellPatchStatus }) {
+  if (status.kind === 'idle') return null
+
+  return (
+    <div className={`patch-status ${status.kind}`}>
+      <b>{status.message}</b>
+      {status.kind === 'rejected' ? <IssueList issues={status.issues} /> : null}
     </div>
   )
 }
