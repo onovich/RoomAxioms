@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-26T14:53:15+08:00
+updated_at: 2026-06-26T15:35:01+08:00
 
 planner:
   role: architect
@@ -47,3 +47,10 @@ idempotency:
   last_hotfix_at: 2026-06-26T14:53:15+08:00
   last_hotfix_pages_run: 28222143394
   last_hotfix_online_asset: assets/index-EsNgcmc8.js
+  last_checkpoint_status: pass
+  last_checkpoint_phase: Phase 24 interrupt - case-021 content-quality salvage
+  last_checkpoint_commit: 24fa876
+  last_checkpoint_at: 2026-06-26T15:35:01+08:00
+  last_checkpoint_report: docs/phase-24/case-021-salvage-and-copy-audit.md
+  last_checkpoint_pages_run: 28223774790
+  last_checkpoint_online_asset: assets/index-BtdSrXDx.js

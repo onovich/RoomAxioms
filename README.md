@@ -47,6 +47,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Active budget: 24 executor rounds
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, promoted `case-021` as the only honest target-4 case, and documented that deeper puzzles are blocked under the current mechanics/content method; Phase 24 now expands rule grammar to address that blocker.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
+- Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and online Pages now serves the `case-021` title `中线垃圾桶链`.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
