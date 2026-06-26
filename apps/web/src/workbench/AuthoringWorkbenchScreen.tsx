@@ -13,6 +13,7 @@ import {
   completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
   createWorkbenchDiagnosticsState,
+  createWorkbenchDiagnosticsOverview,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
@@ -28,6 +29,7 @@ import {
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
   type WorkbenchBoardCell,
+  type WorkbenchDiagnosticsOverview,
   type WorkbenchDiagnosticsState,
   type WorkbenchRuleSummary,
 } from './model'
@@ -794,6 +796,7 @@ function DiagnosticsSummary({
     <section className="workbench-section">
       <h3>诊断 · {diagnosticsStatusText(report.status)}</h3>
       <DiagnosticsStateNotice state={state} parseOk={parseOk} />
+      <DiagnosticsOverview overview={createWorkbenchDiagnosticsOverview(report)} />
       <div className="diagnostics-group-list">
         {report.groups.map((group) => (
           <article key={group.id} className={`diagnostics-group ${group.status}`}>
@@ -813,6 +816,26 @@ function DiagnosticsSummary({
         ))}
       </div>
     </section>
+  )
+}
+
+function DiagnosticsOverview({
+  overview,
+}: {
+  readonly overview: WorkbenchDiagnosticsOverview | undefined
+}) {
+  if (overview === undefined) return null
+
+  return (
+    <div className="diagnostics-overview">
+      {overview.metrics.map((metric) => (
+        <article key={metric.id} className={`diagnostics-metric ${metric.tone}`}>
+          <span>{metric.label}</span>
+          <strong>{metric.value}</strong>
+          {metric.detail === undefined ? null : <small>{metric.detail}</small>}
+        </article>
+      ))}
+    </div>
   )
 }
 

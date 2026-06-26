@@ -1475,6 +1475,54 @@ h3 {
   color: #f1c0bd;
 }
 
+.diagnostics-overview {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+
+.diagnostics-metric {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px;
+}
+
+.diagnostics-metric.pass {
+  border-left-color: var(--safe);
+}
+
+.diagnostics-metric.warning {
+  border-left-color: var(--accent);
+}
+
+.diagnostics-metric.fail {
+  border-left-color: var(--danger);
+}
+
+.diagnostics-metric span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.diagnostics-metric strong {
+  color: var(--text);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.diagnostics-metric small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .diagnostics-group {
   background: var(--surface-0);
   border: 1px solid var(--border);

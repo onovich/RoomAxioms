@@ -118,6 +118,22 @@ export type WorkbenchDiagnosticsState =
       readonly report?: AuthoringDraftDiagnosticsReport
     }
 
+export type WorkbenchDiagnosticsOverviewTone = 'pass' | 'info' | 'warning' | 'fail'
+
+export interface WorkbenchDiagnosticsOverviewMetric {
+  readonly id: string
+  readonly label: string
+  readonly value: string
+  readonly tone: WorkbenchDiagnosticsOverviewTone
+  readonly detail?: string
+}
+
+export interface WorkbenchDiagnosticsOverview {
+  readonly metrics: readonly WorkbenchDiagnosticsOverviewMetric[]
+  readonly capWarnings: readonly string[]
+  readonly techniqueIds: readonly string[]
+}
+
 export function createWorkbenchDraftFromPuzzle(puzzle: PuzzleDefinition): WorkbenchDraftState {
   return importPuzzleToDraftState(puzzle, {
     label: puzzle.id,
@@ -244,6 +260,109 @@ export function diagnosticsReportForState(
     case 'idle':
     case 'unavailable':
       return undefined
+  }
+}
+
+export function createWorkbenchDiagnosticsOverview(
+  report: AuthoringDraftDiagnosticsReport | undefined,
+): WorkbenchDiagnosticsOverview | undefined {
+  if (report === undefined) return undefined
+
+  const validation = report.validation
+  const proof = validation.proof
+  const initialLayouts = validation.initialGuestLayouts
+  const difficulty = validation.difficultyReview
+  const quality = report.quality
+  const copyWarningCount = report.copyWarnings.length
+  const cloneStatus = report.cloneRisk?.status
+
+  return {
+    metrics: [
+      {
+        id: 'recommendation',
+        label: '建议',
+        value: recommendationLabel(validation.recommendation),
+        tone: recommendationTone(validation.recommendation),
+        detail: statusLabel(report.status),
+      },
+      {
+        id: 'candidate-layouts',
+        label: '候选布局',
+        value: initialLayouts === undefined
+          ? '未评估'
+          : initialLayouts.greaterThan === undefined
+            ? String(initialLayouts.count)
+            : `>${initialLayouts.greaterThan}`,
+        tone: initialLayouts === undefined
+          ? 'info'
+          : initialLayouts.stats.truncated || initialLayouts.greaterThan !== undefined
+            ? 'warning'
+            : initialLayouts.count > 0
+              ? 'pass'
+              : 'fail',
+        detail: initialLayouts === undefined
+          ? '草稿需要先通过 schema。'
+          : `节点 ${initialLayouts.stats.nodeCount}，传播 ${initialLayouts.stats.propagationCount}`,
+      },
+      {
+        id: 'proof',
+        label: '人类证明',
+        value: proof === undefined ? '未评估' : `${proof.waveCount} 波 / ${proof.deductionCount} 步`,
+        tone: proof === undefined
+          ? 'info'
+          : proof.noGuess && proof.humanExplainable && proof.guestLayoutUniqueAtEnd
+            ? 'pass'
+            : 'fail',
+        detail: proof === undefined
+          ? '草稿需要先通过 schema。'
+          : `${proof.techniqueIds.length} 类技术；最终访客 ${proof.finalGuestCells?.join(', ') ?? '未定'}`,
+      },
+      {
+        id: 'quality',
+        label: '质量门',
+        value: quality === undefined ? '未评估' : gateLabel(quality.degeneracy.status),
+        tone: quality === undefined ? 'info' : gateTone(quality.degeneracy.status),
+        detail: quality === undefined
+          ? '草稿需要先通过 schema。'
+          : `${quality.effectiveBoard.irrelevantCells.length} 个无效格；${quality.ruleContribution.results.filter((result) => result.status === 'redundant').length} 条冗余嫌疑`,
+      },
+      {
+        id: 'clone-risk',
+        label: '克隆风险',
+        value: cloneStatus === undefined ? '未比较' : cloneRiskLabel(cloneStatus),
+        tone: cloneStatus === undefined ? 'info' : cloneRiskTone(cloneStatus),
+        detail: cloneStatus === undefined
+          ? '本次诊断未提供对照谜题。'
+          : `${report.cloneRisk?.hardFailureCount ?? 0} 个硬失败，${report.cloneRisk?.reviewerBlockingCount ?? 0} 个复核阻断`,
+      },
+      {
+        id: 'difficulty',
+        label: '难度',
+        value: difficulty === undefined ? '未评估' : difficultyBucketLabel(difficulty.recommendedBucket),
+        tone: difficulty === undefined ? 'info' : 'warning',
+        detail: difficulty === undefined
+          ? '草稿需要先通过 schema。'
+          : `未校准；${difficulty.proofWaveCount} 波，${difficulty.deductionCount} 步，${difficulty.materialRuleFamilyCount} 个有效规则族`,
+      },
+      {
+        id: 'copy',
+        label: '文案警告',
+        value: String(copyWarningCount),
+        tone: copyWarningCount === 0 ? 'pass' : 'warning',
+        detail: copyWarningCount === 0 ? '没有发现内部术语或高亮依赖警告。' : '需要复核玩家是否能只靠文本理解规则。',
+      },
+      {
+        id: 'performance',
+        label: '上限/截断',
+        value: report.performance.truncated ? `${report.performance.capWarnings.length} 项` : '清晰',
+        tone: report.performance.truncated ? 'warning' : 'pass',
+        detail: report.performance.truncated
+          ? report.performance.capWarnings.join(', ')
+          : `caps ${validation.caps.maxNodes}/${validation.caps.maxModels}/${validation.caps.maxGuestLayouts}`,
+      },
+    ],
+    capWarnings: report.performance.capWarnings,
+    techniqueIds: proof?.techniqueIds ?? [],
   }
 }
 
@@ -394,6 +513,120 @@ function ruleSummary(rule: PuzzleDefinition['rules'][number]): WorkbenchRuleSumm
     type: rule.type,
     title: rule.presentation.title,
     ...(rule.presentation.flavor === undefined ? {} : { flavor: rule.presentation.flavor }),
+  }
+}
+
+function recommendationLabel(recommendation: AuthoringDraftDiagnosticsReport['validation']['recommendation']): string {
+  switch (recommendation) {
+    case 'ready-for-experimental-review':
+      return '可进入私下复核'
+    case 'repair-schema':
+      return '修 schema'
+    case 'repair-target-rules':
+      return '修目标/规则'
+    case 'repair-initial-satisfiability':
+      return '修初始可满足性'
+    case 'repair-proof':
+      return '修证明链'
+    case 'repair-final-uniqueness':
+      return '修最终唯一性'
+    case 'raise-caps-or-simplify':
+      return '提高上限或简化'
+  }
+}
+
+function recommendationTone(
+  recommendation: AuthoringDraftDiagnosticsReport['validation']['recommendation'],
+): WorkbenchDiagnosticsOverviewTone {
+  switch (recommendation) {
+    case 'ready-for-experimental-review':
+      return 'pass'
+    case 'raise-caps-or-simplify':
+      return 'warning'
+    case 'repair-schema':
+    case 'repair-target-rules':
+    case 'repair-initial-satisfiability':
+    case 'repair-proof':
+    case 'repair-final-uniqueness':
+      return 'fail'
+  }
+}
+
+function statusLabel(status: AuthoringDraftDiagnosticsReport['status']): string {
+  switch (status) {
+    case 'invalid-draft':
+      return '草稿无效'
+    case 'valid-unsatisfiable':
+      return '不可满足'
+    case 'valid-not-unique':
+      return '未唯一'
+    case 'valid-not-human-explainable':
+      return '证明不足'
+    case 'valid-degenerate':
+      return '退化'
+    case 'valid-review-needed':
+      return '需要复核'
+    case 'valid-ready-for-private-review':
+      return '可私下复核'
+  }
+}
+
+function gateLabel(status: 'pass' | 'warning' | 'fail'): string {
+  switch (status) {
+    case 'pass':
+      return '通过'
+    case 'warning':
+      return '需复核'
+    case 'fail':
+      return '失败'
+  }
+}
+
+function gateTone(status: 'pass' | 'warning' | 'fail'): WorkbenchDiagnosticsOverviewTone {
+  switch (status) {
+    case 'pass':
+      return 'pass'
+    case 'warning':
+      return 'warning'
+    case 'fail':
+      return 'fail'
+  }
+}
+
+function cloneRiskLabel(status: NonNullable<AuthoringDraftDiagnosticsReport['cloneRisk']>['status']): string {
+  switch (status) {
+    case 'pass':
+      return '通过'
+    case 'reviewer-blocking':
+      return '复核阻断'
+    case 'fail':
+      return '失败'
+  }
+}
+
+function cloneRiskTone(
+  status: NonNullable<AuthoringDraftDiagnosticsReport['cloneRisk']>['status'],
+): WorkbenchDiagnosticsOverviewTone {
+  switch (status) {
+    case 'pass':
+      return 'pass'
+    case 'reviewer-blocking':
+      return 'warning'
+    case 'fail':
+      return 'fail'
+  }
+}
+
+function difficultyBucketLabel(
+  bucket: NonNullable<AuthoringDraftDiagnosticsReport['validation']['difficultyReview']>['recommendedBucket'],
+): string {
+  switch (bucket) {
+    case 'tutorial-or-baseline':
+      return '基础/教学'
+    case 'target-4':
+      return '目标 4'
+    case 'super-hard-6-7':
+      return '超难 6-7'
   }
 }
 

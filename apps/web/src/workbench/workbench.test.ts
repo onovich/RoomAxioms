@@ -13,6 +13,7 @@ import {
   completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
   createWorkbenchDiagnosticsState,
+  createWorkbenchDiagnosticsOverview,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
@@ -426,6 +427,66 @@ describe('authoring workbench shell model', () => {
       'copy',
       'performance',
     ])
+  }, 30_000)
+
+  it('projects diagnostics into overview metrics without rerunning analysis in the view', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    const overview = createWorkbenchDiagnosticsOverview(diagnostics)
+
+    expect(overview?.metrics.map((metric) => metric.id)).toEqual([
+      'recommendation',
+      'candidate-layouts',
+      'proof',
+      'quality',
+      'clone-risk',
+      'difficulty',
+      'copy',
+      'performance',
+    ])
+    expect(overview?.metrics.find((metric) => metric.id === 'proof')).toMatchObject({
+      label: '人类证明',
+    })
+    expect(overview?.metrics.find((metric) => metric.id === 'difficulty')).toMatchObject({
+      tone: 'warning',
+    })
+  }, 30_000)
+
+  it('surfaces capped candidate counts and truncation warnings in the diagnostics overview', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    if (diagnostics === undefined) throw new Error('Expected diagnostics report.')
+    const cappedDiagnostics = {
+      ...diagnostics,
+      validation: {
+        ...diagnostics.validation,
+        initialGuestLayouts: {
+          count: 100,
+          greaterThan: 100,
+          stats: {
+            nodeCount: 12,
+            propagationCount: 34,
+            truncated: true,
+          },
+        },
+      },
+      performance: {
+        truncated: true,
+        capWarnings: ['initial-layout-count-truncated', 'initial-layout-count-capped'],
+      },
+    }
+    const overview = createWorkbenchDiagnosticsOverview(cappedDiagnostics)
+
+    expect(overview?.metrics.find((metric) => metric.id === 'candidate-layouts')).toMatchObject({
+      value: '>100',
+      tone: 'warning',
+    })
+    expect(overview?.metrics.find((metric) => metric.id === 'performance')).toMatchObject({
+      value: '2 项',
+      tone: 'warning',
+      detail: 'initial-layout-count-truncated, initial-layout-count-capped',
+    })
+    expect(overview?.capWarnings).toEqual(['initial-layout-count-truncated', 'initial-layout-count-capped'])
   }, 30_000)
 
   it('tracks current and stale workbench diagnostics around draft edits', () => {
