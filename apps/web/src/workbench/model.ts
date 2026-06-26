@@ -17,9 +17,11 @@ import {
   type WorkbenchDraftState,
 } from '@room-axioms/authoring/drafts'
 import {
+  DEFAULT_CAPS,
   evaluateDraftDiagnostics,
   type AuthoringDiagnosticsGroup,
   type AuthoringDiagnosticsItem,
+  type AuthoringDraftDiagnosticsInput,
   type AuthoringDraftDiagnosticsReport,
 } from '@room-axioms/authoring/diagnostics'
 import {
@@ -152,6 +154,8 @@ export interface WorkbenchDiagnosticsGroupDetail {
   readonly hiddenItemCount: number
 }
 
+export type WorkbenchDiagnosticsCaps = Required<NonNullable<AuthoringDraftDiagnosticsInput['caps']>>
+
 export function createWorkbenchDraftFromPuzzle(puzzle: PuzzleDefinition): WorkbenchDraftState {
   return importPuzzleToDraftState(puzzle, {
     label: puzzle.id,
@@ -181,6 +185,7 @@ export function createWorkbenchShellModel(
 export function evaluateWorkbenchDiagnostics(
   draft: WorkbenchDraftState,
   selectedCaseId: string,
+  caps: WorkbenchDiagnosticsCaps = defaultWorkbenchDiagnosticsCaps(),
 ): AuthoringDraftDiagnosticsReport | undefined {
   const parse = parseDraftJson(draft.jsonText)
   if (!parse.ok) return undefined
@@ -188,7 +193,12 @@ export function evaluateWorkbenchDiagnostics(
   return evaluateDraftDiagnostics({
     draft: parse.puzzle,
     sourcePath: `<workbench:${selectedCaseId}>`,
+    caps,
   })
+}
+
+export function defaultWorkbenchDiagnosticsCaps(): WorkbenchDiagnosticsCaps {
+  return { ...DEFAULT_CAPS }
 }
 
 export function createWorkbenchDiagnosticsState(): WorkbenchDiagnosticsState {

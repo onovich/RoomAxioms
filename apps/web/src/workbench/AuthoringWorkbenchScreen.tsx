@@ -18,6 +18,7 @@ import {
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
+  defaultWorkbenchDiagnosticsCaps,
   diagnosticsReportForState,
   evaluateWorkbenchDiagnostics,
   failWorkbenchDiagnostics,
@@ -32,6 +33,7 @@ import {
   type WorkbenchBoardCell,
   type WorkbenchDiagnosticsGroupDetail,
   type WorkbenchDiagnosticsOverview,
+  type WorkbenchDiagnosticsCaps,
   type WorkbenchDiagnosticsState,
   type WorkbenchRuleSummary,
 } from './model'
@@ -47,6 +49,9 @@ export default function AuthoringWorkbenchScreen() {
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(defaultCase))
   const [diagnosticsState, setDiagnosticsState] = useState<WorkbenchDiagnosticsState>(
     () => createWorkbenchDiagnosticsState(),
+  )
+  const [diagnosticsCaps, setDiagnosticsCaps] = useState<WorkbenchDiagnosticsCaps>(
+    () => defaultWorkbenchDiagnosticsCaps(),
   )
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
@@ -119,15 +124,28 @@ export default function AuthoringWorkbenchScreen() {
   function runDiagnostics(): void {
     const started = beginWorkbenchDiagnostics(diagnosticsState)
     const requestId = started.requestId
+    const caps = diagnosticsCaps
     setDiagnosticsState(started)
     globalThis.setTimeout(() => {
       try {
-        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId)
+        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId, caps)
         setDiagnosticsState((current) => completeWorkbenchDiagnostics(current, requestId, report))
       } catch (error) {
         setDiagnosticsState((current) => failWorkbenchDiagnostics(current, requestId, error))
       }
     }, 0)
+  }
+
+  function updateDiagnosticsCap(field: keyof WorkbenchDiagnosticsCaps, value: number): void {
+    if (!Number.isInteger(value) || value < 1) return
+    setDiagnosticsCaps((current) => ({
+      ...current,
+      [field]: value,
+    }))
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(
+      current,
+      'Diagnostics caps changed. Re-run diagnostics before trusting these results.',
+    ))
   }
 
   function selectBoardCell(cell: WorkbenchBoardCell): void {
@@ -444,6 +462,11 @@ export default function AuthoringWorkbenchScreen() {
           <ImportExportSummary
             selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
             exportStatus={model.exportStatus}
+          />
+          <DiagnosticsCapsEditor
+            caps={diagnosticsCaps}
+            disabled={diagnosticsState.status === 'running'}
+            onCapChange={updateDiagnosticsCap}
           />
           <DiagnosticsSummary state={diagnosticsState} parseOk={model.parse.ok} />
           <section className="workbench-section">
@@ -774,6 +797,75 @@ function ImportExportSummary({
         </div>
       </dl>
     </section>
+  )
+}
+
+function DiagnosticsCapsEditor({
+  caps,
+  disabled,
+  onCapChange,
+}: {
+  readonly caps: WorkbenchDiagnosticsCaps
+  readonly disabled: boolean
+  readonly onCapChange: (field: keyof WorkbenchDiagnosticsCaps, value: number) => void
+}) {
+  return (
+    <section className="workbench-section diagnostics-caps-editor">
+      <h3>诊断上限</h3>
+      <p>这些上限只影响本次 workbench 诊断；如果结果出现截断，请提高上限或简化草稿后重跑。</p>
+      <div className="diagnostics-caps-grid">
+        <DiagnosticsCapInput
+          label="节点"
+          value={caps.maxNodes}
+          disabled={disabled}
+          onChange={(value) => onCapChange('maxNodes', value)}
+        />
+        <DiagnosticsCapInput
+          label="模型"
+          value={caps.maxModels}
+          disabled={disabled}
+          onChange={(value) => onCapChange('maxModels', value)}
+        />
+        <DiagnosticsCapInput
+          label="访客布局"
+          value={caps.maxGuestLayouts}
+          disabled={disabled}
+          onChange={(value) => onCapChange('maxGuestLayouts', value)}
+        />
+        <DiagnosticsCapInput
+          label="候选计数"
+          value={caps.candidateLayoutCap}
+          disabled={disabled}
+          onChange={(value) => onCapChange('candidateLayoutCap', value)}
+        />
+      </div>
+    </section>
+  )
+}
+
+function DiagnosticsCapInput({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  readonly label: string
+  readonly value: number
+  readonly disabled: boolean
+  readonly onChange: (value: number) => void
+}) {
+  return (
+    <label>
+      {label}
+      <input
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
   )
 }
 

@@ -18,6 +18,7 @@ import {
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
+  defaultWorkbenchDiagnosticsCaps,
   diagnosticsReportForState,
   evaluateWorkbenchDiagnostics,
   failWorkbenchDiagnostics,
@@ -488,6 +489,25 @@ describe('authoring workbench shell model', () => {
       detail: 'initial-layout-count-truncated, initial-layout-count-capped',
     })
     expect(overview?.capWarnings).toEqual(['initial-layout-count-truncated', 'initial-layout-count-capped'])
+  }, 30_000)
+
+  it('runs diagnostics with editable caps from the workbench entrypoint', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const caps = {
+      ...defaultWorkbenchDiagnosticsCaps(),
+      candidateLayoutCap: 1,
+    }
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID, caps)
+
+    expect(diagnostics?.validation.caps).toEqual(caps)
+    expect(diagnostics?.validation.initialGuestLayouts?.greaterThan).toBe(1)
+    expect(diagnostics?.performance).toMatchObject({
+      truncated: true,
+      capWarnings: expect.arrayContaining(['initial-layout-count-capped']),
+    })
+    expect(createWorkbenchDiagnosticsOverview(diagnostics)?.metrics.find((metric) => metric.id === 'performance')).toMatchObject({
+      tone: 'warning',
+    })
   }, 30_000)
 
   it('projects diagnostics group details with bounded items and refs', () => {
