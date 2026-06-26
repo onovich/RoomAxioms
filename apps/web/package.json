@@ -12,6 +12,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@room-axioms/authoring": "workspace:*",
     "@room-axioms/domain": "workspace:*",
     "@room-axioms/proof": "workspace:*",
     "@room-axioms/solver": "workspace:*",

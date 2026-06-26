@@ -10,6 +10,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@room-axioms/authoring':
+        specifier: workspace:*
+        version: link:../../packages/authoring
       '@room-axioms/domain':
         specifier: workspace:*
         version: link:../../packages/domain
