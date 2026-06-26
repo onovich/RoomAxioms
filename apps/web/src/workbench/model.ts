@@ -12,10 +12,14 @@ import {
 } from '@room-axioms/authoring/diagnostics'
 import { allCells, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
 
+import type { WorkbenchCaseImport, WorkbenchCaseSource } from './caseLibrary'
+
 export interface WorkbenchCaseOption {
   readonly id: string
   readonly label: string
   readonly difficulty: PuzzleDefinition['metadata']['difficulty']
+  readonly source: WorkbenchCaseSource
+  readonly sourcePath: string
 }
 
 export interface WorkbenchBoardCell {
@@ -32,11 +36,19 @@ export interface WorkbenchRuleSummary {
   readonly flavor?: string
 }
 
+export interface WorkbenchExportStatus {
+  readonly ok: boolean
+  readonly fileName: string
+  readonly message: string
+  readonly issueCount: number
+}
+
 export interface WorkbenchShellModel {
   readonly selectedCaseId: string
   readonly draft: WorkbenchDraftState
   readonly parse: WorkbenchDraftParseResult
   readonly exported: WorkbenchDraftExportResult
+  readonly exportStatus: WorkbenchExportStatus
   readonly caseOptions: readonly WorkbenchCaseOption[]
   readonly boardCells: readonly WorkbenchBoardCell[]
   readonly ruleSummaries: readonly WorkbenchRuleSummary[]
@@ -49,7 +61,7 @@ export function createWorkbenchDraftFromPuzzle(puzzle: PuzzleDefinition): Workbe
 }
 
 export function createWorkbenchShellModel(
-  cases: readonly PuzzleDefinition[],
+  cases: readonly WorkbenchCaseImport[],
   selectedCaseId: string,
   draft: WorkbenchDraftState,
 ): WorkbenchShellModel {
@@ -61,6 +73,7 @@ export function createWorkbenchShellModel(
     draft,
     parse,
     exported,
+    exportStatus: exportStatus(exported, selectedCaseId),
     caseOptions: cases.map(caseOption),
     boardCells: parse.ok ? boardCells(parse.puzzle) : [],
     ruleSummaries: parse.ok ? parse.puzzle.rules.map(ruleSummary) : [],
@@ -80,11 +93,33 @@ export function evaluateWorkbenchDiagnostics(
   })
 }
 
-function caseOption(puzzle: PuzzleDefinition): WorkbenchCaseOption {
+function caseOption(item: WorkbenchCaseImport): WorkbenchCaseOption {
+  const puzzle = item.puzzle
+
   return {
     id: puzzle.id,
     label: puzzle.caseName ?? puzzle.title,
     difficulty: puzzle.metadata.difficulty,
+    source: item.source,
+    sourcePath: item.sourcePath,
+  }
+}
+
+function exportStatus(exported: WorkbenchDraftExportResult, selectedCaseId: string): WorkbenchExportStatus {
+  if (!exported.ok) {
+    return {
+      ok: false,
+      fileName: `${selectedCaseId}-invalid-draft.json`,
+      message: 'JSON 当前无效，修复解析或 schema 问题后才能导出。',
+      issueCount: exported.issues.length,
+    }
+  }
+
+  return {
+    ok: true,
+    fileName: `${exported.puzzle?.id ?? selectedCaseId}-workbench-draft.json`,
+    message: '导出只生成本地 JSON，不会写入 content/cases 或玩家选择器。',
+    issueCount: 0,
   }
 }
 

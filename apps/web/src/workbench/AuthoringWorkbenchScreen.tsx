@@ -6,7 +6,8 @@ import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/auth
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
 import type { CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
-import { contentCases, DEFAULT_CASE_ID, getCaseById } from '../content/cases'
+import { DEFAULT_CASE_ID } from '../content/cases'
+import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchShellModel,
@@ -16,18 +17,18 @@ import {
 
 export default function AuthoringWorkbenchScreen() {
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
-  const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID)))
+  const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle))
   const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
   const model = useMemo(
-    () => createWorkbenchShellModel(contentCases, selectedCaseId, draft),
+    () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
   )
   const parsedPuzzle = model.parse.ok ? model.parse.puzzle : undefined
 
   function loadCase(caseId: string): void {
-    const puzzle = getCaseById(caseId)
+    const item = getWorkbenchCaseImportById(caseId)
     setSelectedCaseId(caseId)
-    setDraft(createWorkbenchDraftFromPuzzle(puzzle))
+    setDraft(createWorkbenchDraftFromPuzzle(item.puzzle))
     setDiagnostics(undefined)
   }
 
@@ -59,7 +60,7 @@ export default function AuthoringWorkbenchScreen() {
           <select value={selectedCaseId} onChange={(event) => loadCase(event.target.value)}>
             {model.caseOptions.map((option) => (
               <option key={option.id} value={option.id}>
-                {option.id} · 难度 {option.difficulty} · {option.label}
+                {sourceLabel(option.source)} · {option.id} · 难度 {option.difficulty} · {option.label}
               </option>
             ))}
           </select>
@@ -72,7 +73,7 @@ export default function AuthoringWorkbenchScreen() {
           <a
             className="primary-button"
             href={model.exported.ok ? draftDownloadHref(model.exported.jsonText) : undefined}
-            download={`${parsedPuzzle?.id ?? 'room-axioms-draft'}.json`}
+            download={model.exportStatus.fileName}
             aria-disabled={!model.exported.ok}
           >
             <FileDown size={16} aria-hidden="true" />
@@ -145,6 +146,10 @@ export default function AuthoringWorkbenchScreen() {
             </button>
           </div>
           <WorkbenchStatus puzzle={parsedPuzzle} draft={draft} exportOk={model.exported.ok} />
+          <ImportExportSummary
+            selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
+            exportStatus={model.exportStatus}
+          />
           <DiagnosticsSummary report={diagnostics} parseOk={model.parse.ok} />
           <section className="workbench-section">
             <h3>规则</h3>
@@ -161,6 +166,38 @@ export default function AuthoringWorkbenchScreen() {
         </aside>
       </main>
     </div>
+  )
+}
+
+function ImportExportSummary({
+  selectedOption,
+  exportStatus,
+}: {
+  readonly selectedOption: ReturnType<typeof createWorkbenchShellModel>['caseOptions'][number] | undefined
+  readonly exportStatus: ReturnType<typeof createWorkbenchShellModel>['exportStatus']
+}) {
+  return (
+    <section className="workbench-section">
+      <h3>导入 / 导出</h3>
+      <dl className="import-export-grid">
+        <div>
+          <dt>来源</dt>
+          <dd>{selectedOption === undefined ? '未知' : sourceLabel(selectedOption.source)}</dd>
+        </div>
+        <div>
+          <dt>路径</dt>
+          <dd>{selectedOption?.sourcePath ?? '手写 JSON'}</dd>
+        </div>
+        <div>
+          <dt>文件名</dt>
+          <dd>{exportStatus.fileName}</dd>
+        </div>
+        <div>
+          <dt>状态</dt>
+          <dd>{exportStatus.issueCount > 0 ? `${exportStatus.message} (${exportStatus.issueCount})` : exportStatus.message}</dd>
+        </div>
+      </dl>
+    </section>
   )
 }
 
@@ -225,6 +262,15 @@ function diagnosticsStatusText(status: AuthoringDraftDiagnosticsReport['status']
       return '需复核'
     case 'valid-ready-for-private-review':
       return '可进入私下复核'
+  }
+}
+
+function sourceLabel(source: WorkbenchCaseSource): string {
+  switch (source) {
+    case 'shipped':
+      return '已发布'
+    case 'experimental':
+      return '实验'
   }
 }
 

@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { updateDraftJsonText } from '@room-axioms/authoring/drafts'
 
 import { contentCases, DEFAULT_CASE_ID, getCaseById } from '../content/cases'
+import {
+  experimentalWorkbenchCases,
+  getWorkbenchCaseImportById,
+  workbenchCaseLibrary,
+} from './caseLibrary'
 import { createWorkbenchDraftFromPuzzle, createWorkbenchShellModel, evaluateWorkbenchDiagnostics } from './model'
 import { AUTHORING_WORKBENCH_HASH, shouldShowAuthoringWorkbench } from './route'
 
@@ -20,7 +25,7 @@ describe('authoring workbench shell model', () => {
   it('imports a shipped case as an editable draft without changing shipped selector data', () => {
     const defaultCase = getCaseById(DEFAULT_CASE_ID)
     const draft = createWorkbenchDraftFromPuzzle(defaultCase)
-    const model = createWorkbenchShellModel(contentCases, DEFAULT_CASE_ID, draft)
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, draft)
 
     expect(model.selectedCaseId).toBe(DEFAULT_CASE_ID)
     expect(model.parse).toMatchObject({
@@ -37,13 +42,44 @@ describe('authoring workbench shell model', () => {
     })
     expect(model.boardCells).toHaveLength(defaultCase.board.width * defaultCase.board.height)
     expect(model.ruleSummaries.map((rule) => rule.id)).toEqual(defaultCase.rules.map((rule) => rule.id))
-    expect(model.caseOptions.map((option) => option.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
+    expect(model.caseOptions.map((option) => option.id)).toEqual(workbenchCaseLibrary.map((item) => item.puzzle.id))
+    expect(model.caseOptions.find((option) => option.id === DEFAULT_CASE_ID)).toMatchObject({
+      source: 'shipped',
+      sourcePath: 'content/cases/case-004.json',
+    })
+    expect(model.exportStatus).toMatchObject({
+      ok: true,
+      fileName: 'case-004-workbench-draft.json',
+      issueCount: 0,
+    })
+  })
+
+  it('imports selected experimental fixtures privately without changing the player case selector', () => {
+    const experimentalCaseIds = experimentalWorkbenchCases.map((item) => item.puzzle.id)
+    const playerCaseIds = contentCases.map((puzzle) => puzzle.id)
+    const experimentalImport = getWorkbenchCaseImportById('phase-24-comparative-balance-001')
+    const draft = createWorkbenchDraftFromPuzzle(experimentalImport.puzzle)
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, experimentalImport.puzzle.id, draft)
+
+    expect(experimentalCaseIds).toContain('phase-24-comparative-balance-001')
+    expect(playerCaseIds).not.toContain('phase-24-comparative-balance-001')
+    expect(model.parse).toMatchObject({
+      ok: true,
+      puzzle: {
+        id: 'phase-24-comparative-balance-001',
+      },
+    })
+    expect(model.caseOptions.find((option) => option.id === 'phase-24-comparative-balance-001')).toMatchObject({
+      source: 'experimental',
+      sourcePath: 'content/experimental/phase-24/phase-24-comparative-balance-001.json',
+    })
+    expect(model.exportStatus.fileName).toBe('phase-24-comparative-balance-001-workbench-draft.json')
   })
 
   it('keeps invalid JSON editable while withholding full diagnostics until parse succeeds', () => {
     const defaultCase = getCaseById(DEFAULT_CASE_ID)
     const draft = updateDraftJsonText(createWorkbenchDraftFromPuzzle(defaultCase), '{ "id": "broken"')
-    const model = createWorkbenchShellModel(contentCases, DEFAULT_CASE_ID, draft)
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, draft)
 
     expect(model.parse).toMatchObject({
       ok: false,
@@ -54,6 +90,11 @@ describe('authoring workbench shell model', () => {
       ],
     })
     expect(evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)).toBeUndefined()
+    expect(model.exportStatus).toMatchObject({
+      ok: false,
+      fileName: 'case-004-invalid-draft.json',
+      issueCount: 1,
+    })
     expect(model.boardCells).toEqual([])
     expect(model.ruleSummaries).toEqual([])
   })
