@@ -10,10 +10,12 @@ import {
 } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
+  patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -252,6 +254,71 @@ describe('authoring workbench shell model', () => {
       issues: [
         expect.objectContaining({
           code: 'PRESENTATION_TITLE_EMPTY',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
+  })
+
+  it('patches region and anchor collections through schema-validated draft state', () => {
+    const fixture = getWorkbenchCaseImportById('case-017').puzzle
+    const draft = createWorkbenchDraftFromPuzzle(fixture)
+    const collections = JSON.parse(createWorkbenchScopeCollectionsJson(fixture)) as {
+      regions: Array<{ id: string; title: string; cells: string[] }>
+      anchors: Array<{ id: string; title: string; subject: string }>
+    }
+    const patch = patchWorkbenchScopeCollectionsJson(draft, JSON.stringify({
+      regions: collections.regions.map((region, index) => (
+        index === 0 ? { ...region, title: '改名后的区域' } : region
+      )),
+      anchors: collections.anchors.map((anchor, index) => (
+        index === 0 ? { ...anchor, title: '改名后的参照物' } : anchor
+      )),
+    }, null, 2))
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Scope collections patch failed.')
+
+    expect(patch.puzzle.regions?.[0]?.title).toBe('改名后的区域')
+    expect(patch.puzzle.anchors?.[0]?.title).toBe('改名后的参照物')
+    expect(createWorkbenchShellModel(workbenchCaseLibrary, fixture.id, patch.state).exported).toMatchObject({
+      ok: true,
+      puzzle: {
+        id: fixture.id,
+      },
+    })
+  })
+
+  it('rejects scope collections that break rule references without mutating the draft', () => {
+    const fixture = getWorkbenchCaseImportById('case-017').puzzle
+    const draft = createWorkbenchDraftFromPuzzle(fixture)
+    const patch = patchWorkbenchScopeCollectionsJson(draft, JSON.stringify({
+      regions: [],
+      anchors: fixture.anchors ?? [],
+    }, null, 2))
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'RULE_REGION_UNKNOWN',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
+  })
+
+  it('returns scope collection JSON parse issues before touching the draft', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchScopeCollectionsJson(draft, '{ "regions": ')
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'SCOPE_COLLECTIONS_JSON_PARSE_FAILED',
         }),
       ],
     })

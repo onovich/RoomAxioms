@@ -1,7 +1,10 @@
 import {
   exportDraftJson,
+  formatDraftJson,
   importPuzzleToDraftState,
+  patchDraftAnchors,
   patchDraftBoardSize,
+  patchDraftRegions,
   patchDraftRulePresentation,
   patchDraftTargetCell,
   parseDraftJson,
@@ -16,7 +19,16 @@ import {
   evaluateDraftDiagnostics,
   type AuthoringDraftDiagnosticsReport,
 } from '@room-axioms/authoring/diagnostics'
-import { allCells, type BoardSize, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
+import {
+  allCells,
+  type AnchorDefinition,
+  type BoardSize,
+  type CellId,
+  type CellKind,
+  type PuzzleDefinition,
+  type RegionDefinition,
+} from '@room-axioms/domain'
+import type { SchemaIssue } from '@room-axioms/schema'
 
 import type { WorkbenchCaseImport, WorkbenchCaseSource } from './caseLibrary'
 
@@ -42,6 +54,11 @@ export interface WorkbenchRuleSummary {
   readonly type: PuzzleDefinition['rules'][number]['type']
   readonly title: string
   readonly flavor?: string
+}
+
+export interface WorkbenchScopeCollectionsDraft {
+  readonly regions: readonly RegionDefinition[]
+  readonly anchors: readonly AnchorDefinition[]
 }
 
 export interface WorkbenchExportStatus {
@@ -130,6 +147,43 @@ export function patchWorkbenchRulePresentation(
   return patchDraftRulePresentation(draft, input)
 }
 
+export function createWorkbenchScopeCollectionsJson(
+  puzzle: PuzzleDefinition | undefined,
+): string {
+  return formatDraftJson({
+    regions: puzzle?.regions ?? [],
+    anchors: puzzle?.anchors ?? [],
+  })
+}
+
+export function patchWorkbenchScopeCollectionsJson(
+  draft: WorkbenchDraftState,
+  jsonText: string,
+): WorkbenchDraftPatchResult {
+  const parsed = parseScopeCollectionsJson(jsonText)
+  if (!parsed.ok) {
+    return {
+      ok: false,
+      state: draft,
+      issues: parsed.issues,
+    }
+  }
+
+  const regionsPatch = patchDraftRegions(draft, parsed.value.regions)
+  if (!regionsPatch.ok) return regionsPatch
+
+  const anchorsPatch = patchDraftAnchors(regionsPatch.state, parsed.value.anchors)
+  if (!anchorsPatch.ok) {
+    return {
+      ok: false,
+      state: draft,
+      issues: anchorsPatch.issues,
+    }
+  }
+
+  return anchorsPatch
+}
+
 export function workbenchCellKindOptions(
   puzzle: PuzzleDefinition | undefined,
   currentKind: CellKind | undefined,
@@ -188,4 +242,59 @@ function ruleSummary(rule: PuzzleDefinition['rules'][number]): WorkbenchRuleSumm
     title: rule.presentation.title,
     ...(rule.presentation.flavor === undefined ? {} : { flavor: rule.presentation.flavor }),
   }
+}
+
+function parseScopeCollectionsJson(jsonText: string): {
+  readonly ok: true
+  readonly value: WorkbenchScopeCollectionsDraft
+} | {
+  readonly ok: false
+  readonly issues: readonly SchemaIssue[]
+} {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(jsonText) as unknown
+  } catch (error) {
+    return {
+      ok: false,
+      issues: [scopeIssue(
+        'SCOPE_COLLECTIONS_JSON_PARSE_FAILED',
+        [],
+        error instanceof Error ? error.message : 'Unable to parse scope collections JSON.',
+      )],
+    }
+  }
+
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return {
+      ok: false,
+      issues: [scopeIssue('SCOPE_COLLECTIONS_JSON_INVALID', [], 'Scope collections JSON must be an object.')],
+    }
+  }
+
+  const collections = parsed as Partial<WorkbenchScopeCollectionsDraft>
+  const issues: SchemaIssue[] = []
+  if (!Array.isArray(collections.regions)) {
+    issues.push(scopeIssue('SCOPE_COLLECTIONS_REGIONS_INVALID', ['regions'], 'regions must be an array.'))
+  }
+  if (!Array.isArray(collections.anchors)) {
+    issues.push(scopeIssue('SCOPE_COLLECTIONS_ANCHORS_INVALID', ['anchors'], 'anchors must be an array.'))
+  }
+  if (issues.length > 0) return { ok: false, issues }
+
+  return {
+    ok: true,
+    value: {
+      regions: collections.regions as readonly RegionDefinition[],
+      anchors: collections.anchors as readonly AnchorDefinition[],
+    },
+  }
+}
+
+function scopeIssue(
+  code: string,
+  path: readonly (string | number)[],
+  message: string,
+): SchemaIssue {
+  return { code, path, message }
 }

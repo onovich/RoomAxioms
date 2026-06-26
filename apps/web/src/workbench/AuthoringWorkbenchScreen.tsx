@@ -10,10 +10,12 @@ import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
+  patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -36,10 +38,12 @@ export default function AuthoringWorkbenchScreen() {
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [scopePatchStatus, setScopePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
   const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
   const [ruleTitleText, setRuleTitleText] = useState('')
   const [ruleFlavorText, setRuleFlavorText] = useState('')
+  const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
@@ -65,8 +69,10 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText(String(item.puzzle.board.height))
     setRuleTitleText('')
     setRuleFlavorText('')
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(item.puzzle))
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
+    setScopePatchStatus({ kind: 'idle' })
   }
 
   function resetCurrentCase(): void {
@@ -83,8 +89,10 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText('')
     setRuleTitleText('')
     setRuleFlavorText('')
+    setScopeCollectionsText('')
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
+    setScopePatchStatus({ kind: 'idle' })
   }
 
   function runDiagnostics(): void {
@@ -167,6 +175,7 @@ export default function AuthoringWorkbenchScreen() {
     }
     setBoardWidthText(String(patch.puzzle.board.width))
     setBoardHeightText(String(patch.puzzle.board.height))
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
     applySuccessfulPatch(patch.state, `棋盘尺寸已改为 ${board.width} × ${board.height}；完整诊断已标记为待重新运行。`)
   }
 
@@ -201,6 +210,31 @@ export default function AuthoringWorkbenchScreen() {
     setRulePatchStatus({
       kind: 'applied',
       message: `${selectedRuleId} 的标题和说明已更新；完整诊断已标记为待重新运行。`,
+    })
+  }
+
+  function resetScopeCollectionsEditor(): void {
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(parsedPuzzle))
+    setScopePatchStatus({ kind: 'idle' })
+  }
+
+  function applyScopeCollectionsPatch(): void {
+    const patch = patchWorkbenchScopeCollectionsJson(draft, scopeCollectionsText)
+    if (!patch.ok) {
+      setScopePatchStatus({
+        kind: 'rejected',
+        message: '区域与参照物集合未应用。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setDraft(patch.state)
+    setDiagnostics(undefined)
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
+    setScopePatchStatus({
+      kind: 'applied',
+      message: '区域与参照物集合已更新；完整诊断已标记为待重新运行。',
     })
   }
 
@@ -355,6 +389,14 @@ export default function AuthoringWorkbenchScreen() {
             onTitleChange={setRuleTitleText}
             onFlavorChange={setRuleFlavorText}
             onApply={applyRulePresentationPatch}
+          />
+          <ScopeCollectionsEditor
+            jsonText={scopeCollectionsText}
+            patchStatus={scopePatchStatus}
+            canPatch={parsedPuzzle !== undefined}
+            onJsonTextChange={setScopeCollectionsText}
+            onReset={resetScopeCollectionsEditor}
+            onApply={applyScopeCollectionsPatch}
           />
           <section className="workbench-section">
             <h3>导出</h3>
@@ -524,6 +566,45 @@ function RuleCopyEditor({
       <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
         应用文案
       </button>
+      <PatchStatus status={patchStatus} />
+    </section>
+  )
+}
+
+function ScopeCollectionsEditor({
+  jsonText,
+  patchStatus,
+  canPatch,
+  onJsonTextChange,
+  onReset,
+  onApply,
+}: {
+  readonly jsonText: string
+  readonly patchStatus: DraftPatchStatus
+  readonly canPatch: boolean
+  readonly onJsonTextChange: (value: string) => void
+  readonly onReset: () => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="workbench-section scope-collections-editor">
+      <h3>区域 / 参照物</h3>
+      <p>编辑 regions 与 anchors 集合；规则引用是否仍然有效会由 schema 复验。</p>
+      <textarea
+        value={jsonText}
+        spellCheck={false}
+        disabled={!canPatch}
+        onChange={(event) => onJsonTextChange(event.target.value)}
+        aria-label="Regions and anchors JSON"
+      />
+      <div className="scope-editor-actions">
+        <button className="small-button" type="button" onClick={onReset} disabled={!canPatch}>
+          从草稿重载
+        </button>
+        <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
+          应用集合
+        </button>
+      </div>
       <PatchStatus status={patchStatus} />
     </section>
   )

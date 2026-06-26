@@ -1594,6 +1594,36 @@ h3 {
   justify-self: start;
 }
 
+.scope-collections-editor {
+  display: grid;
+  gap: 9px;
+}
+
+.scope-collections-editor p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.scope-collections-editor textarea {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: #d8d2c5;
+  font: 10px/1.45 ui-monospace, Consolas, monospace;
+  min-height: 150px;
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
+}
+
+.scope-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .workbench-issues {
   color: #f0beb9;
   font: 12px/1.5 ui-monospace, Consolas, monospace;
