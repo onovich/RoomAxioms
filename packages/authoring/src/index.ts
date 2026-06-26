@@ -50,6 +50,7 @@ export {
   type AuthoringDraftDiagnosticsInput,
   type AuthoringDraftDiagnosticsReport,
   type AuthoringDraftDiagnosticsStatus,
+  type AuthoringDraftQualityReport,
 } from './diagnostics.js'
 export {
   evaluateNoveltyClaimManifest,

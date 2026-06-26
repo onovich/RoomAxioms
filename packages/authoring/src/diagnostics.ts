@@ -8,7 +8,7 @@ import {
   type SolverStats,
 } from '@room-axioms/solver'
 
-import { reduceEffectiveBoard } from './antiClone.js'
+import { reduceEffectiveBoard, type EffectiveBoardReduction } from './antiClone.js'
 import { evaluateAntiCloneReport, type AntiCloneReport } from './antiCloneReport.js'
 import type {
   AuthoringCaseValidationReport,
@@ -21,7 +21,14 @@ import type {
   AuthoringSolverStatsReport,
 } from './contracts.js'
 import type { NoveltyClaimManifest } from './noveltyClaims.js'
-import { evaluateDegeneracyGates, evaluateRuleFamilyDiversityGate } from './qualityGates.js'
+import {
+  evaluateDegeneracyGates,
+  evaluateRuleContribution,
+  evaluateRuleFamilyDiversityGate,
+  type DegeneracyGateReport,
+  type RuleContributionReport,
+  type RuleFamilyDiversityReport,
+} from './qualityGates.js'
 
 export const DEFAULT_CAPS = {
   maxNodes: 20_000,
@@ -65,11 +72,23 @@ export interface AuthoringDraftDiagnosticsReport {
   readonly puzzle?: PuzzleDefinition
   readonly puzzleId?: string
   readonly validation: AuthoringCaseValidationReport
+  readonly quality?: AuthoringDraftQualityReport
   readonly cloneRisk?: AntiCloneReport
   readonly copyWarnings: readonly AuthoringCopyWarning[]
   readonly performance: {
     readonly truncated: boolean
     readonly capWarnings: readonly string[]
+  }
+}
+
+export interface AuthoringDraftQualityReport {
+  readonly effectiveBoard: EffectiveBoardReduction
+  readonly degeneracy: DegeneracyGateReport
+  readonly ruleContribution: RuleContributionReport
+  readonly ruleFamilyDiversity: RuleFamilyDiversityReport
+  readonly difficulty: {
+    readonly calibratedWithRealPlaytest: false
+    readonly warning: string
   }
 }
 
@@ -81,6 +100,7 @@ export function evaluateDraftDiagnostics(
   const caps = normalizeCaps(input.caps)
   const result = validatePuzzleInput(input.draft, sourcePath, resolvedPath, caps)
   const puzzle = result.puzzle
+  const quality = puzzle === undefined ? undefined : evaluateDraftQuality(puzzle, caps)
   const copyWarnings = puzzle === undefined ? [] : evaluateCopyWarnings(puzzle)
   const cloneRisk = puzzle !== undefined && (input.comparisonPuzzles?.length ?? 0) > 0
     ? evaluateAntiCloneReport([puzzle, ...(input.comparisonPuzzles ?? [])], {
@@ -89,7 +109,7 @@ export function evaluateDraftDiagnostics(
       })
     : undefined
   const capWarnings = capWarningsFor(result.validation)
-  const status = diagnosticsStatus(result.validation, copyWarnings, cloneRisk)
+  const status = diagnosticsStatus(result.validation, quality, copyWarnings, cloneRisk)
 
   return {
     ok: status === 'valid-ready-for-private-review',
@@ -97,6 +117,7 @@ export function evaluateDraftDiagnostics(
     ...(puzzle === undefined ? {} : { puzzle }),
     ...(result.validation.puzzleId === undefined ? {} : { puzzleId: result.validation.puzzleId }),
     validation: result.validation,
+    ...(quality === undefined ? {} : { quality }),
     ...(cloneRisk === undefined ? {} : { cloneRisk }),
     copyWarnings,
     performance: {
@@ -258,6 +279,7 @@ function normalizeCaps(caps: Partial<AuthoringSolverCapsReport> | undefined): Au
 
 function diagnosticsStatus(
   validation: AuthoringCaseValidationReport,
+  quality: AuthoringDraftQualityReport | undefined,
   copyWarnings: readonly AuthoringCopyWarning[],
   cloneRisk: AntiCloneReport | undefined,
 ): AuthoringDraftDiagnosticsStatus {
@@ -269,9 +291,10 @@ function diagnosticsStatus(
   if (validation.proof?.noGuess === false || validation.proof?.humanExplainable === false) {
     return 'valid-not-human-explainable'
   }
-  if (validation.difficultyReview?.degeneracy.status === 'fail') return 'valid-degenerate'
+  if (quality?.degeneracy.status === 'fail') return 'valid-degenerate'
   if (
     validation.recommendation !== 'ready-for-experimental-review' ||
+    quality?.ruleContribution.status === 'warning' ||
     copyWarnings.length > 0 ||
     cloneRisk?.status === 'fail' ||
     cloneRisk?.status === 'reviewer-blocking'
@@ -280,6 +303,30 @@ function diagnosticsStatus(
   }
 
   return 'valid-ready-for-private-review'
+}
+
+function evaluateDraftQuality(
+  puzzle: PuzzleDefinition,
+  caps: AuthoringSolverCapsReport,
+): AuthoringDraftQualityReport {
+  const solver = solverCaps(caps)
+
+  return {
+    effectiveBoard: reduceEffectiveBoard(puzzle, { solver }),
+    degeneracy: evaluateDegeneracyGates(puzzle),
+    ruleContribution: evaluateRuleContribution(puzzle, {
+      solver,
+      candidateLayoutCap: caps.candidateLayoutCap,
+    }),
+    ruleFamilyDiversity: evaluateRuleFamilyDiversityGate(puzzle, {
+      solver,
+      candidateLayoutCap: caps.candidateLayoutCap,
+    }),
+    difficulty: {
+      calibratedWithRealPlaytest: false,
+      warning: 'Difficulty signals are authoring heuristics only and are not calibrated with real playtest data.',
+    },
+  }
 }
 
 function capWarningsFor(validation: AuthoringCaseValidationReport): readonly string[] {

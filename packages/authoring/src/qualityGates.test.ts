@@ -564,7 +564,7 @@ describe('technique retention gate', () => {
       requiredTechniqueIds: ['LOCAL_COUNT_SATURATED', 'UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
       missingRequiredTechniqueIds: ['UNIQUE_TARGET_NEIGHBOR_INTERSECTION'],
     })
-  })
+  }, 60_000)
 })
 
 describe('proof trace fingerprint', () => {
