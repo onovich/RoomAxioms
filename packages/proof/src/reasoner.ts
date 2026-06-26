@@ -4,11 +4,13 @@ import type {
   CellKind,
   AnchorCountRule,
   AnchorDefinition,
+  ConditionalCountRule,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
   RegionCountRule,
   RuleDefinition,
+  ScopeOverlapCountRule,
 } from '@room-axioms/domain';
 
 import { createDeduction, normalizeProofPremises } from './graph.js';
@@ -16,16 +18,20 @@ import {
   comparatorBounds,
   anchorScopePremise,
   countPremise,
+  countScopePremise,
   createKnowledgeIndex,
   lineScopePremise,
   rulePremise,
   regionScopePremise,
   scopePremise,
+  scopeOverlapPremise,
+  summarizeConditionalClause,
   summarizeForEachScope,
   summarizeAnchorScope,
   summarizeGlobalCount,
   summarizeLineCount,
   summarizeRegionCount,
+  summarizeScopeOverlapCount,
 } from './reasoning.js';
 import type { Deduction, DeductionConclusion, KnowledgeState, ProofPremise } from './types.js';
 
@@ -39,6 +45,10 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
       baseDeductions.push(...deriveRegionCountDeductions(state, rule));
     } else if (rule.type === 'lineCount') {
       baseDeductions.push(...deriveLineCountDeductions(state, rule));
+    } else if (rule.type === 'scopeOverlapCount') {
+      baseDeductions.push(...deriveScopeOverlapCountDeductions(state, rule));
+    } else if (rule.type === 'conditionalCount') {
+      baseDeductions.push(...deriveConditionalCountDeductions(state, rule));
     } else if (rule.type === 'anchorCount') {
       baseDeductions.push(...deriveAnchorCountDeductions(state, rule));
     } else if (rule.type === 'forEachCount') {
@@ -305,6 +315,99 @@ export function deriveLineCountDeductions(
       deductions.push(createDeduction({
         technique: 'LINE_COUNT_ALL_REMAINING',
         conclusion: targetConclusion(cellId, rule.target),
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  return sortDeductions(state, deductions);
+}
+
+export function deriveScopeOverlapCountDeductions(
+  state: KnowledgeState,
+  rule: ScopeOverlapCountRule,
+): readonly Deduction[] {
+  const summary = summarizeScopeOverlapCount(state, rule);
+  const premises = [rulePremise(rule), scopeOverlapPremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const deductions: Deduction[] = [];
+  const upperBound = summary.bounds.upperBound;
+
+  if (
+    rule.target === 'guest' &&
+    upperBound !== null &&
+    summary.knownTargetCellIds.length === upperBound
+  ) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'SCOPE_OVERLAP_COUNT_SATURATED',
+        conclusion: { kind: 'safe', cellId },
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  const remainingRequired = summary.bounds.lowerBound - summary.knownTargetCellIds.length;
+  if (remainingRequired > 0 && remainingRequired === summary.unknownCellIds.length) {
+    for (const cellId of summary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'SCOPE_OVERLAP_COUNT_ALL_REMAINING',
+        conclusion: targetConclusion(cellId, rule.target),
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  return sortDeductions(state, deductions);
+}
+
+export function deriveConditionalCountDeductions(
+  state: KnowledgeState,
+  rule: ConditionalCountRule,
+): readonly Deduction[] {
+  const conditionSummary = summarizeConditionalClause(state, rule.id, rule.condition);
+  if (!conditionIsForcedTrue(conditionSummary, rule.condition.count)) return [];
+
+  const thenSummary = summarizeConditionalClause(state, rule.id, rule.then);
+  const premises = [
+    rulePremise(rule),
+    countScopePremise(rule.id, rule.condition.scope, conditionSummary.scopeCellIds),
+    countPremise(conditionSummary),
+    {
+      kind: 'count' as const,
+      label: `${rule.id} condition is forced true from current observations`,
+      cellIds: conditionSummary.scopeCellIds,
+      ruleIds: [rule.id],
+    },
+    countScopePremise(rule.id, rule.then.scope, thenSummary.scopeCellIds),
+    countPremise(thenSummary),
+  ];
+  const deductions: Deduction[] = [];
+  const upperBound = thenSummary.bounds.upperBound;
+
+  if (
+    rule.then.target === 'guest' &&
+    upperBound !== null &&
+    thenSummary.knownTargetCellIds.length === upperBound
+  ) {
+    for (const cellId of thenSummary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'CONDITIONAL_COUNT_SATURATED',
+        conclusion: { kind: 'safe', cellId },
+        ruleIds: [rule.id],
+        premises,
+      }));
+    }
+  }
+
+  const remainingRequired = thenSummary.bounds.lowerBound - thenSummary.knownTargetCellIds.length;
+  if (remainingRequired > 0 && remainingRequired === thenSummary.unknownCellIds.length) {
+    for (const cellId of thenSummary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'CONDITIONAL_COUNT_ALL_REMAINING',
+        conclusion: targetConclusion(cellId, rule.then.target),
         ruleIds: [rule.id],
         premises,
       }));
@@ -717,6 +820,37 @@ function possibleRequiredTargetScopes(
   }
 
   return scopes;
+}
+
+function conditionIsForcedTrue(
+  summary: ReturnType<typeof summarizeConditionalClause>,
+  comparator: ConditionalCountRule['condition']['count'],
+): boolean {
+  const minimum = summary.knownTargetCellIds.length;
+  const maximum = summary.knownTargetCellIds.length + summary.unknownCellIds.length;
+
+  for (let count = minimum; count <= maximum; count += 1) {
+    if (!countSatisfiesComparator(count, comparator)) return false;
+  }
+
+  return true;
+}
+
+function countSatisfiesComparator(count: number, comparator: ConditionalCountRule['condition']['count']): boolean {
+  switch (comparator.op) {
+    case 'eq':
+      return count === comparator.value;
+    case 'neq':
+      return count !== comparator.value;
+    case 'gt':
+      return count > comparator.value;
+    case 'gte':
+      return count >= comparator.value;
+    case 'lt':
+      return count < comparator.value;
+    case 'lte':
+      return count <= comparator.value;
+  }
 }
 
 function intersectCellSets(cellSets: readonly (readonly CellId[])[]): readonly CellId[] {

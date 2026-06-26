@@ -55,6 +55,14 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
       return '这条线已经数够了'
     case 'LINE_COUNT_ALL_REMAINING':
       return '这条线剩下的都要算'
+    case 'SCOPE_OVERLAP_COUNT_SATURATED':
+      return '重叠范围已经数够了'
+    case 'SCOPE_OVERLAP_COUNT_ALL_REMAINING':
+      return '重叠范围剩下的都要算'
+    case 'CONDITIONAL_COUNT_SATURATED':
+      return '条件成立后已经数够了'
+    case 'CONDITIONAL_COUNT_ALL_REMAINING':
+      return '条件成立后剩下的都要算'
     case 'ANCHOR_COUNT_SATURATED':
       return '锚点周围已经数够了'
     case 'ANCHOR_COUNT_ALL_REMAINING':

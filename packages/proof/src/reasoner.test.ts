@@ -150,6 +150,126 @@ describe('line count human techniques', () => {
   });
 });
 
+describe('scope overlap count human techniques', () => {
+  it('derives safe cells when the derived overlap guest count is saturated', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'north', title: 'North', cells: ['A1', 'B1', 'C1', 'A2'] },
+        { id: 'west', title: 'West', cells: ['A1', 'A2', 'A3', 'B1'] },
+      ],
+      rules: [
+        {
+          id: 'OR1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'north' },
+          right: { kind: 'region', regionId: 'west' },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'overlap guest count' },
+        },
+      ],
+      observations: [{ cellId: 'A1', kind: 'guest' }],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle: state.puzzle, observations: state.observations });
+
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+    ]);
+    expect(forced.safe).toEqual(['B1', 'A2']);
+  });
+
+  it('derives guests when all remaining overlap cells are required', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'north', title: 'North', cells: ['A1', 'B1', 'C1', 'A2'] },
+        { id: 'west', title: 'West', cells: ['A1', 'A2', 'A3', 'B1'] },
+      ],
+      rules: [
+        {
+          id: 'OR1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'north' },
+          right: { kind: 'region', regionId: 'west' },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'overlap guest count' },
+        },
+      ],
+      observations: [
+        { cellId: 'A1', kind: 'empty' },
+        { cellId: 'B1', kind: 'empty' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const result = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIsNot', cellId: 'A2', value: 'guest' }],
+    );
+
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'A2' },
+    ]);
+    expect(result.satisfiable).toBe(false);
+    expect(result.stats.truncated).toBe(false);
+  });
+});
+
+describe('conditional count human techniques', () => {
+  it('applies the consequence only after the condition is forced true', () => {
+    const base = {
+      board: { width: 3, height: 2 },
+      allowedKinds: ['empty', 'guest'] as const,
+      regions: [
+        { id: 'switch', title: 'Switch', cells: ['A1', 'B1'] },
+        { id: 'quiet', title: 'Quiet', cells: ['A2', 'B2', 'C2'] },
+      ],
+      rules: [
+        {
+          id: 'CR1',
+          type: 'conditionalCount' as const,
+          condition: {
+            scope: { kind: 'region' as const, regionId: 'switch' },
+            target: 'guest' as const,
+            count: { op: 'eq' as const, value: 1 },
+          },
+          then: {
+            scope: { kind: 'region' as const, regionId: 'quiet' },
+            target: 'guest' as const,
+            count: { op: 'eq' as const, value: 0 },
+          },
+          presentation: { title: 'conditional quiet region' },
+        },
+      ],
+    };
+    const undecided = makeState({
+      ...base,
+      observations: [{ cellId: 'A1', kind: 'guest' }],
+    });
+    const triggered = makeState({
+      ...base,
+      observations: [
+        { cellId: 'A1', kind: 'guest' },
+        { cellId: 'B1', kind: 'empty' },
+      ],
+    });
+
+    expect(conclusionsFor(deriveHumanDeductions(undecided), 'CONDITIONAL_COUNT_SATURATED')).toEqual([]);
+    expect(conclusionsFor(deriveHumanDeductions(triggered), 'CONDITIONAL_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'B2' },
+      { kind: 'safe', cellId: 'C2' },
+    ]);
+  });
+});
+
 describe('anchor count human techniques', () => {
   it('activates only after the anchor subject is observed', () => {
     const puzzleInput = {

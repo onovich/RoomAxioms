@@ -4,6 +4,8 @@ import type {
   CellKind,
   Comparator,
   AnchorCountRule,
+  ConditionalCountClause,
+  CountScopeRef,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
@@ -11,6 +13,7 @@ import type {
   PuzzleDefinition,
   RegionCountRule,
   RuleDefinition,
+  ScopeOverlapCountRule,
 } from '@room-axioms/domain';
 
 import type { KnowledgeState, ProofPremise } from './types.js';
@@ -66,6 +69,21 @@ export function summarizeLineCount(state: KnowledgeState, rule: LineCountRule): 
   return summarizeCountInCells(state, rule, lineScopeCells(state, rule));
 }
 
+export function summarizeScopeOverlapCount(
+  state: KnowledgeState,
+  rule: ScopeOverlapCountRule,
+): CountSummary {
+  return summarizeCountInCells(state, rule, scopeOverlapCells(state, rule));
+}
+
+export function summarizeConditionalClause(
+  state: KnowledgeState,
+  ruleId: string,
+  clause: ConditionalCountClause,
+): CountSummary {
+  return summarizeCountInCells(state, { id: ruleId, target: clause.target, count: clause.count }, countScopeCells(state, clause.scope));
+}
+
 export function summarizeAnchorScope(
   state: KnowledgeState,
   rule: AnchorCountRule,
@@ -84,7 +102,7 @@ export function summarizeForEachScope(
 
 export function summarizeCountInCells(
   state: KnowledgeState,
-  rule: GlobalCountRule | ForEachCountRule | RegionCountRule | LineCountRule | AnchorCountRule,
+  rule: Pick<RuleDefinition, 'id'> & { readonly target: CellKind; readonly count: Comparator },
   scopeCellIds: readonly CellId[],
 ): CountSummary {
   const index = createKnowledgeIndex(state);
@@ -167,6 +185,31 @@ export function lineScopePremise(rule: LineCountRule, scopeCellIds: readonly Cel
   };
 }
 
+export function countScopePremise(
+  ruleId: string,
+  scope: CountScopeRef,
+  scopeCellIds: readonly CellId[],
+): ProofPremise {
+  return {
+    kind: 'scope',
+    label: `${ruleId} ${countScopeLabel(scope)}: ${scopeCellIds.join(', ')}`,
+    cellIds: scopeCellIds,
+    ruleIds: [ruleId],
+  };
+}
+
+export function scopeOverlapPremise(
+  rule: ScopeOverlapCountRule,
+  scopeCellIds: readonly CellId[],
+): ProofPremise {
+  return {
+    kind: 'scope',
+    label: `${rule.id} ${rule.mode} overlap scope: ${scopeCellIds.join(', ')}`,
+    cellIds: scopeCellIds,
+    ruleIds: [rule.id],
+  };
+}
+
 export function anchorScopePremise(
   rule: AnchorCountRule,
   anchorCellId: CellId,
@@ -219,6 +262,77 @@ function lineScopeCells(state: KnowledgeState, rule: LineCountRule): readonly Ce
   }
 
   return visible;
+}
+
+function countScopeCells(state: KnowledgeState, scope: CountScopeRef): readonly CellId[] {
+  switch (scope.kind) {
+    case 'global':
+      return allCells(state.puzzle.board);
+    case 'region': {
+      const region = state.puzzle.regions?.find((candidate) => candidate.id === scope.regionId);
+      if (region === undefined) throw new Error(`Count scope references unknown region ${scope.regionId}.`);
+      return regionCells(region, state.puzzle.board);
+    }
+    case 'line':
+      return lineCountScopeCells(state, scope);
+  }
+}
+
+function lineCountScopeCells(state: KnowledgeState, scope: Extract<CountScopeRef, { readonly kind: 'line' }>): readonly CellId[] {
+  switch (scope.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(scope.scope, state.puzzle.board);
+    case 'ray':
+      break;
+  }
+
+  if (scope.origin === undefined) throw new Error('Line count scope must include origin for a ray scope.');
+
+  const cells = rayCells(scope.origin, scope.scope.direction, state.puzzle.board);
+  const stopAtKinds = new Set(scope.scope.stopAtKinds ?? []);
+  if (stopAtKinds.size === 0) return cells;
+
+  const observations = createKnowledgeIndex(state).observationsByCell;
+  const visible: CellId[] = [];
+
+  for (const cellId of cells) {
+    const observedKind = observations.get(cellId)?.kind;
+    if (observedKind !== undefined && stopAtKinds.has(observedKind)) break;
+    visible.push(cellId);
+  }
+
+  return visible;
+}
+
+function scopeOverlapCells(state: KnowledgeState, rule: ScopeOverlapCountRule): readonly CellId[] {
+  const left = countScopeCells(state, rule.left);
+  const right = countScopeCells(state, rule.right);
+  const rightSet = new Set(right);
+  const leftSet = new Set(left);
+
+  switch (rule.mode) {
+    case 'intersection':
+      return sortCellIds(left.filter((cellId) => rightSet.has(cellId)), state.puzzle.board);
+    case 'union':
+      return sortCellIds(new Set([...left, ...right]), state.puzzle.board);
+    case 'leftOnly':
+      return sortCellIds(left.filter((cellId) => !rightSet.has(cellId)), state.puzzle.board);
+    case 'rightOnly':
+      return sortCellIds(right.filter((cellId) => !leftSet.has(cellId)), state.puzzle.board);
+  }
+}
+
+function countScopeLabel(scope: CountScopeRef): string {
+  switch (scope.kind) {
+    case 'global':
+      return 'global scope';
+    case 'region':
+      return `region ${scope.regionId}`;
+    case 'line':
+      if (scope.scope.kind === 'ray') return `${scope.scope.direction} ray from ${scope.origin ?? 'unknown'}`;
+      return `${scope.scope.kind} ${scope.scope.index}`;
+  }
 }
 
 function anchorScopeCells(
