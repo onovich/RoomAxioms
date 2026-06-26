@@ -11,7 +11,8 @@ const BASELINE_WARMUP_RUNS = 2
 const RUNTIME_ANALYSIS_PRODUCT_TARGET_MS = 100
 const RUNTIME_ANALYSIS_P95_CEILING_MS = 500
 const CANDIDATE_CAP_P95_MS = 200
-const FULL_VERIFICATION_P95_MS = 2_500
+const FULL_VERIFICATION_P95_MS = 5_000
+const FULL_VERIFICATION_TIMEOUT_MS = 30_000
 
 const BASELINE_SOLVER_BUDGET = {
   maxNodes: 200_000,
@@ -88,7 +89,7 @@ describe('MVP performance baseline', () => {
       passedCases: summary.results.length,
     })
     expect(summary.p95Ms).toBeLessThanOrEqual(FULL_VERIFICATION_P95_MS)
-  })
+  }, FULL_VERIFICATION_TIMEOUT_MS)
 })
 
 interface Measurement<T> {

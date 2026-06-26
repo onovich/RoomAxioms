@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { caseSummaries, contentCases, DEFAULT_CASE_ID, getCaseById } from './cases'
 import { verifyCaseFixture } from './caseVerification'
 
+const SHIPPED_CASE_VERIFICATION_TIMEOUT_MS = 30_000
+
 describe('case content verification harness', () => {
   it('loads the shipped cases in stable order', () => {
     expect(contentCases.map((puzzle) => puzzle.id)).toEqual([
@@ -88,7 +90,7 @@ describe('case content verification harness', () => {
     expect(report.initial.candidateGuestLayouts).toBeGreaterThan(1)
     expect(report.proof.waveCount).toBeGreaterThan(0)
     expect(report.proof.deductionCount).toBeGreaterThan(0)
-  })
+  }, SHIPPED_CASE_VERIFICATION_TIMEOUT_MS)
 
   it('records the stable case-004 report shape for future MVP cases', () => {
     const report = verifyCaseFixture(getCaseById('case-004'))

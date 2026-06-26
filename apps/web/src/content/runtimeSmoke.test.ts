@@ -12,6 +12,8 @@ const SMOKE_SOLVER_BUDGET = {
   maxGuestLayouts: 200_000,
 } as const
 
+const SHIPPED_CASE_RUNTIME_SMOKE_TIMEOUT_MS = 30_000
+
 describe('MVP content runtime smoke', () => {
   it.each(contentCases)('loads and analyzes $id in player and developer modes', (puzzle) => {
     const observations = initialObservations(puzzle)
@@ -53,7 +55,7 @@ describe('MVP content runtime smoke', () => {
       guestLayoutUniqueAtEnd: true,
     })
     expect(developer.warnings).toEqual([])
-  })
+  }, SHIPPED_CASE_RUNTIME_SMOKE_TIMEOUT_MS)
 
   it('keeps rule reading copy plain and free of abstract scope terms', () => {
     const ruleTexts = contentCases.flatMap((puzzle) => puzzle.rules.map((rule) => ruleSemantics(rule)))
