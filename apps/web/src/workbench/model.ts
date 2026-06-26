@@ -18,6 +18,8 @@ import {
 } from '@room-axioms/authoring/drafts'
 import {
   evaluateDraftDiagnostics,
+  type AuthoringDiagnosticsGroup,
+  type AuthoringDiagnosticsItem,
   type AuthoringDraftDiagnosticsReport,
 } from '@room-axioms/authoring/diagnostics'
 import {
@@ -132,6 +134,22 @@ export interface WorkbenchDiagnosticsOverview {
   readonly metrics: readonly WorkbenchDiagnosticsOverviewMetric[]
   readonly capWarnings: readonly string[]
   readonly techniqueIds: readonly string[]
+}
+
+export interface WorkbenchDiagnosticsItemDetail {
+  readonly code: string
+  readonly severity: AuthoringDiagnosticsItem['severity']
+  readonly message: string
+  readonly refs: readonly string[]
+  readonly hiddenRefCount: number
+}
+
+export interface WorkbenchDiagnosticsGroupDetail {
+  readonly id: AuthoringDiagnosticsGroup['id']
+  readonly title: string
+  readonly status: AuthoringDiagnosticsGroup['status']
+  readonly items: readonly WorkbenchDiagnosticsItemDetail[]
+  readonly hiddenItemCount: number
 }
 
 export function createWorkbenchDraftFromPuzzle(puzzle: PuzzleDefinition): WorkbenchDraftState {
@@ -364,6 +382,41 @@ export function createWorkbenchDiagnosticsOverview(
     capWarnings: report.performance.capWarnings,
     techniqueIds: proof?.techniqueIds ?? [],
   }
+}
+
+export function createWorkbenchDiagnosticsGroupDetails(
+  report: AuthoringDraftDiagnosticsReport | undefined,
+  options: {
+    readonly maxItemsPerGroup?: number
+    readonly maxRefsPerItem?: number
+  } = {},
+): readonly WorkbenchDiagnosticsGroupDetail[] {
+  if (report === undefined) return []
+
+  const maxItemsPerGroup = options.maxItemsPerGroup ?? 6
+  const maxRefsPerItem = options.maxRefsPerItem ?? 6
+
+  return report.groups.map((group) => {
+    const visibleItems = group.items.slice(0, maxItemsPerGroup)
+
+    return {
+      id: group.id,
+      title: group.title,
+      status: group.status,
+      items: visibleItems.map((item) => {
+        const refs = item.refs ?? []
+
+        return {
+          code: item.code,
+          severity: item.severity,
+          message: item.message,
+          refs: refs.slice(0, maxRefsPerItem),
+          hiddenRefCount: Math.max(0, refs.length - maxRefsPerItem),
+        }
+      }),
+      hiddenItemCount: Math.max(0, group.items.length - maxItemsPerGroup),
+    }
+  })
 }
 
 export function patchWorkbenchTargetCell(

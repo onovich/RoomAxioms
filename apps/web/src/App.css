@@ -1577,6 +1577,21 @@ h3 {
   gap: 3px;
 }
 
+.diagnostics-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 7px;
+}
+
+.diagnostics-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.diagnostics-item-copy {
+  display: grid;
+  gap: 3px;
+}
+
 .diagnostics-group strong {
   color: var(--accent);
   font: 700 10px ui-monospace, Consolas, monospace;
@@ -1586,6 +1601,37 @@ h3 {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.45;
+}
+
+.diagnostics-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.diagnostics-refs code,
+.diagnostics-refs em {
+  background: #202b2b;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: #c9d4cf;
+  font: 700 9px ui-monospace, Consolas, monospace;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 3px 5px;
+}
+
+.diagnostics-refs em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.diagnostics-overflow {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+  margin: 8px 0 0;
 }
 
 .workbench-rule-card {

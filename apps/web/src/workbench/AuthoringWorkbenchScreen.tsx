@@ -14,6 +14,7 @@ import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchDiagnosticsState,
   createWorkbenchDiagnosticsOverview,
+  createWorkbenchDiagnosticsGroupDetails,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
@@ -29,6 +30,7 @@ import {
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
   type WorkbenchBoardCell,
+  type WorkbenchDiagnosticsGroupDetail,
   type WorkbenchDiagnosticsOverview,
   type WorkbenchDiagnosticsState,
   type WorkbenchRuleSummary,
@@ -798,24 +800,47 @@ function DiagnosticsSummary({
       <DiagnosticsStateNotice state={state} parseOk={parseOk} />
       <DiagnosticsOverview overview={createWorkbenchDiagnosticsOverview(report)} />
       <div className="diagnostics-group-list">
-        {report.groups.map((group) => (
-          <article key={group.id} className={`diagnostics-group ${group.status}`}>
-            <div className="diagnostics-group-heading">
-              <b>{diagnosticsTitle(group.title)}</b>
-              <span>{diagnosticsStatusLabel(group.status)}</span>
-            </div>
-            <ul>
-              {group.items.slice(0, 3).map((item) => (
-                <li key={`${group.id}:${item.code}:${item.message}`}>
-                  <strong>{item.code}</strong>
-                  <span>{item.message}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
+        {createWorkbenchDiagnosticsGroupDetails(report).map((group) => (
+          <DiagnosticsGroupDetailCard key={group.id} group={group} />
         ))}
       </div>
     </section>
+  )
+}
+
+function DiagnosticsGroupDetailCard({
+  group,
+}: {
+  readonly group: WorkbenchDiagnosticsGroupDetail
+}) {
+  return (
+    <article className={`diagnostics-group ${group.status}`}>
+      <div className="diagnostics-group-heading">
+        <b>{diagnosticsTitle(group.title)}</b>
+        <span>{diagnosticsStatusLabel(group.status)}</span>
+      </div>
+      <ul>
+        {group.items.map((item) => (
+          <li key={`${group.id}:${item.code}:${item.message}`} className={`diagnostics-item ${item.severity}`}>
+            <div className="diagnostics-item-copy">
+              <strong>{item.code}</strong>
+              <span>{item.message}</span>
+            </div>
+            {item.refs.length === 0 && item.hiddenRefCount === 0 ? null : (
+              <div className="diagnostics-refs" aria-label={`${item.code} refs`}>
+                {item.refs.map((ref) => (
+                  <code key={`${item.code}:${ref}`}>{ref}</code>
+                ))}
+                {item.hiddenRefCount === 0 ? null : <em>+{item.hiddenRefCount}</em>}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+      {group.hiddenItemCount === 0 ? null : (
+        <p className="diagnostics-overflow">还有 {group.hiddenItemCount} 条诊断未显示；请导出 JSON 或运行 CLI 查看完整报告。</p>
+      )}
+    </article>
   )
 }
 

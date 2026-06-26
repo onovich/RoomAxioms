@@ -14,6 +14,7 @@ import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchDiagnosticsState,
   createWorkbenchDiagnosticsOverview,
+  createWorkbenchDiagnosticsGroupDetails,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
@@ -487,6 +488,61 @@ describe('authoring workbench shell model', () => {
       detail: 'initial-layout-count-truncated, initial-layout-count-capped',
     })
     expect(overview?.capWarnings).toEqual(['initial-layout-count-truncated', 'initial-layout-count-capped'])
+  }, 30_000)
+
+  it('projects diagnostics group details with bounded items and refs', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    if (diagnostics === undefined) throw new Error('Expected diagnostics report.')
+    const details = createWorkbenchDiagnosticsGroupDetails(diagnostics, {
+      maxItemsPerGroup: 1,
+      maxRefsPerItem: 2,
+    })
+    const proofGroup = details.find((group) => group.id === 'human-proof')
+    const metricsItem = createWorkbenchDiagnosticsGroupDetails(diagnostics)
+      .find((group) => group.id === 'human-proof')
+      ?.items.find((item) => item.code === 'PROOF_METRICS')
+
+    expect(proofGroup).toMatchObject({
+      id: 'human-proof',
+      items: [
+        expect.objectContaining({
+          code: 'NO_GUESS',
+          hiddenRefCount: 0,
+        }),
+      ],
+      hiddenItemCount: 3,
+    })
+    expect(metricsItem?.refs.length).toBeGreaterThan(0)
+  }, 30_000)
+
+  it('reports hidden diagnostic refs when item refs exceed the UI cap', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    if (diagnostics === undefined) throw new Error('Expected diagnostics report.')
+    const diagnosticsWithRefs = {
+      ...diagnostics,
+      groups: [
+        {
+          ...diagnostics.groups[0],
+          items: [{
+            code: 'SYNTHETIC_REFS',
+            severity: 'info' as const,
+            message: 'Synthetic refs for bounded rendering.',
+            refs: ['A1', 'B2', 'R3'],
+          }],
+        },
+        ...diagnostics.groups.slice(1),
+      ],
+    }
+    const details = createWorkbenchDiagnosticsGroupDetails(diagnosticsWithRefs, {
+      maxItemsPerGroup: 6,
+      maxRefsPerItem: 1,
+    })
+    const item = details[0]?.items[0]
+
+    expect(item?.refs).toEqual(['A1'])
+    expect(item?.hiddenRefCount).toBe(2)
   }, 30_000)
 
   it('tracks current and stale workbench diagnostics around draft edits', () => {
