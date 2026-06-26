@@ -6,6 +6,9 @@ import phase12DifferenceFixture from '../../../../content/experimental/phase-12/
 import phase22ContaminatedFixture from '../../../../content/experimental/phase-22/fixtures/contaminated-record-cross-check.json' with { type: 'json' }
 import phase24ComparativeFixture from '../../../../content/experimental/phase-24/phase-24-comparative-balance-001.json' with { type: 'json' }
 import phase24ConditionalFixture from '../../../../content/experimental/phase-24/phase-24-conditional-frontier-001.json' with { type: 'json' }
+import phase25SingletonGiveawayFixture from '../../../../content/experimental/phase-25/phase-25-singleton-region-giveaway.json' with { type: 'json' }
+import phase25OneRuleFixture from '../../../../content/experimental/phase-25/phase-25-one-rule-solution.json' with { type: 'json' }
+import phase25PaddedOneRuleFixture from '../../../../content/experimental/phase-25/phase-25-one-rule-solution-padded.json' with { type: 'json' }
 
 export type WorkbenchCaseSource = 'shipped' | 'experimental'
 
@@ -41,6 +44,18 @@ export const experimentalWorkbenchCases: readonly WorkbenchCaseImport[] = [
   experimentalCase(
     phase24ConditionalFixture,
     'content/experimental/phase-24/phase-24-conditional-frontier-001.json',
+  ),
+  experimentalCase(
+    phase25SingletonGiveawayFixture,
+    'content/experimental/phase-25/phase-25-singleton-region-giveaway.json',
+  ),
+  experimentalCase(
+    phase25OneRuleFixture,
+    'content/experimental/phase-25/phase-25-one-rule-solution.json',
+  ),
+  experimentalCase(
+    phase25PaddedOneRuleFixture,
+    'content/experimental/phase-25/phase-25-one-rule-solution-padded.json',
   ),
 ]
 

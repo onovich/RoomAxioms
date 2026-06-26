@@ -186,6 +186,7 @@ export function evaluateWorkbenchDiagnostics(
   draft: WorkbenchDraftState,
   selectedCaseId: string,
   caps: WorkbenchDiagnosticsCaps = defaultWorkbenchDiagnosticsCaps(),
+  comparisonPuzzles: readonly PuzzleDefinition[] = [],
 ): AuthoringDraftDiagnosticsReport | undefined {
   const parse = parseDraftJson(draft.jsonText)
   if (!parse.ok) return undefined
@@ -194,6 +195,7 @@ export function evaluateWorkbenchDiagnostics(
     draft: parse.puzzle,
     sourcePath: `<workbench:${selectedCaseId}>`,
     caps,
+    comparisonPuzzles,
   })
 }
 

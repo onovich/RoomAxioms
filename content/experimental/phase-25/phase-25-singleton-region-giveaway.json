@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-25-singleton-region-giveaway",
+  "title": "Phase 25 singleton region giveaway",
+  "caseName": "Phase 25 Bad Case - Singleton Region",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "east-room",
+      "title": "target-4 safe area anchor",
+      "cells": [
+        "A1",
+        "B1"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "ZR1",
+      "type": "regionCount",
+      "regionId": "east-room",
+      "target": "empty",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "target-4 safe area"
+      }
+    },
+    {
+      "id": "GR1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "No visitors",
+        "flavor": "No guests are present."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1"
+  ],
+  "target": {
+    "A1": "bottle",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "phase-25",
+      "bad-case",
+      "workbench-only"
+    ],
+    "status": "draft",
+    "notes": "Private Phase 25 workbench bad-case fixture. It intentionally uses highlight-dependent/internal scope copy and a singleton/direct safe giveaway; never ship as player content."
+  }
+}

@@ -98,6 +98,26 @@ describe('authoring workbench shell model', () => {
     expect(model.exportStatus.fileName).toBe('phase-24-comparative-balance-001-workbench-draft.json')
   })
 
+  it('imports Phase 25 bad-case fixtures privately without changing the player selector', () => {
+    const experimentalCaseIds = experimentalWorkbenchCases.map((item) => item.puzzle.id)
+    const playerCaseIds = contentCases.map((puzzle) => puzzle.id)
+
+    expect(experimentalCaseIds).toEqual(expect.arrayContaining([
+      'phase-25-singleton-region-giveaway',
+      'phase-25-one-rule-solution',
+      'phase-25-one-rule-solution-padded',
+    ]))
+    expect(playerCaseIds).not.toEqual(expect.arrayContaining([
+      'phase-25-singleton-region-giveaway',
+      'phase-25-one-rule-solution',
+      'phase-25-one-rule-solution-padded',
+    ]))
+    expect(getWorkbenchCaseImportById('phase-25-singleton-region-giveaway')).toMatchObject({
+      source: 'experimental',
+      sourcePath: 'content/experimental/phase-25/phase-25-singleton-region-giveaway.json',
+    })
+  })
+
   it('keeps invalid JSON editable while withholding full diagnostics until parse succeeds', () => {
     const defaultCase = getCaseById(DEFAULT_CASE_ID)
     const draft = updateDraftJsonText(createWorkbenchDraftFromPuzzle(defaultCase), '{ "id": "broken"')
@@ -509,6 +529,47 @@ describe('authoring workbench shell model', () => {
       tone: 'warning',
     })
   }, 30_000)
+
+  it('catches Phase 25 singleton and copy bad-case signals through workbench diagnostics', () => {
+    const fixture = getWorkbenchCaseImportById('phase-25-singleton-region-giveaway').puzzle
+    const diagnostics = evaluateWorkbenchDiagnostics(createWorkbenchDraftFromPuzzle(fixture), fixture.id)
+
+    expect(diagnostics?.status).not.toBe('valid-ready-for-private-review')
+    expect(diagnostics?.quality?.degeneracy).toMatchObject({
+      status: 'fail',
+      results: expect.arrayContaining([
+        expect.objectContaining({
+          ruleId: 'ZR1',
+          reasons: expect.arrayContaining(['singleton-effective-scope']),
+        }),
+      ]),
+    })
+    expect(diagnostics?.copyWarnings.map((warning) => warning.code)).toEqual(expect.arrayContaining([
+      'COPY_INTERNAL_TERM',
+      'COPY_SCOPE_NEEDS_EXPLICIT_TEXT',
+      'COPY_DIRECT_SAFE_GIVEAWAY',
+    ]))
+  }, 30_000)
+
+  it('catches Phase 25 one-rule and padded-clone bad-case signals through workbench diagnostics', () => {
+    const oneRule = getWorkbenchCaseImportById('phase-25-one-rule-solution').puzzle
+    const padded = getWorkbenchCaseImportById('phase-25-one-rule-solution-padded').puzzle
+    const oneRuleDiagnostics = evaluateWorkbenchDiagnostics(createWorkbenchDraftFromPuzzle(oneRule), oneRule.id)
+    const paddedDiagnostics = evaluateWorkbenchDiagnostics(
+      createWorkbenchDraftFromPuzzle(padded),
+      padded.id,
+      defaultWorkbenchDiagnosticsCaps(),
+      [oneRule],
+    )
+
+    expect(oneRuleDiagnostics?.quality?.ruleFamilyDiversity.reasons).toContain('single-material-family')
+    expect(oneRuleDiagnostics?.validation.difficultyReview?.targetFour.pass).toBe(false)
+    expect(paddedDiagnostics?.cloneRisk).toMatchObject({
+      status: 'fail',
+      hardFailureCount: expect.any(Number),
+    })
+    expect(paddedDiagnostics?.groups.find((group) => group.id === 'clone-risk')?.status).toBe('fail')
+  }, 60_000)
 
   it('projects diagnostics group details with bounded items and refs', () => {
     const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))

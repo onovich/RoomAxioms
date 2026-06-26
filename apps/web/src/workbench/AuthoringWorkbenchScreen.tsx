@@ -125,10 +125,13 @@ export default function AuthoringWorkbenchScreen() {
     const started = beginWorkbenchDiagnostics(diagnosticsState)
     const requestId = started.requestId
     const caps = diagnosticsCaps
+    const comparisonPuzzles = workbenchCaseLibrary
+      .map((item) => item.puzzle)
+      .filter((puzzle) => puzzle.id !== parsedPuzzle?.id)
     setDiagnosticsState(started)
     globalThis.setTimeout(() => {
       try {
-        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId, caps)
+        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId, caps, comparisonPuzzles)
         setDiagnosticsState((current) => completeWorkbenchDiagnostics(current, requestId, report))
       } catch (error) {
         setDiagnosticsState((current) => failWorkbenchDiagnostics(current, requestId, error))
