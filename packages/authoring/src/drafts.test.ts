@@ -8,9 +8,14 @@ import {
   exportDraftJson,
   importJsonTextToDraftState,
   importPuzzleToDraftState,
+  patchDraftBoardSize,
+  patchDraftMetadata,
+  patchDraftRulePresentation,
+  patchDraftTargetCell,
   parseDraftJson,
   selectDraftCell,
   selectDraftRule,
+  toggleDraftInitialReveal,
   updateDraftJsonText,
 } from '@room-axioms/authoring/drafts'
 
@@ -139,5 +144,98 @@ describe('workbench draft state', () => {
         }),
       ],
     })
+  })
+
+  it('patches metadata and rule presentation through schema-validated draft JSON', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const metadataPatch = patchDraftMetadata(state, {
+      title: 'Workbench Draft Title',
+      caseName: 'Workbench Case Name',
+      difficulty: 3,
+      tags: ['phase-25', 'workbench'],
+      author: 'room-axioms-maintainers',
+      status: 'draft',
+      notes: 'Private workbench edit.',
+    })
+    expect(metadataPatch.ok).toBe(true)
+    if (!metadataPatch.ok) throw new Error('Metadata patch failed.')
+
+    const rulePatch = patchDraftRulePresentation(metadataPatch.state, {
+      ruleId: 'R1',
+      title: 'Plain rule title',
+      flavor: 'Plain player-facing rule copy.',
+    })
+    expect(rulePatch.ok).toBe(true)
+    if (!rulePatch.ok) throw new Error('Rule presentation patch failed.')
+
+    expect(rulePatch.puzzle).toMatchObject({
+      title: 'Workbench Draft Title',
+      caseName: 'Workbench Case Name',
+      metadata: {
+        difficulty: 3,
+        tags: ['phase-25', 'workbench'],
+        author: 'room-axioms-maintainers',
+        status: 'draft',
+        notes: 'Private workbench edit.',
+      },
+    })
+    expect(rulePatch.puzzle.rules.find((rule) => rule.id === 'R1')?.presentation).toEqual({
+      title: 'Plain rule title',
+      flavor: 'Plain player-facing rule copy.',
+    })
+    expect(rulePatch.state.dirty).toBe(true)
+  })
+
+  it('patches target cells and initial reveals while rejecting invalid guest reveals', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const targetPatch = patchDraftTargetCell(state, 'A1', 'guest')
+    expect(targetPatch.ok).toBe(true)
+    if (!targetPatch.ok) throw new Error('Target patch failed.')
+
+    const invalidReveal = toggleDraftInitialReveal(targetPatch.state, 'A1')
+    expect(invalidReveal).toMatchObject({
+      ok: false,
+      state: targetPatch.state,
+      issues: [
+        expect.objectContaining({
+          code: 'INITIAL_REVEAL_GUEST',
+        }),
+      ],
+    })
+    expect(invalidReveal.state).toBe(targetPatch.state)
+  })
+
+  it('patches board size by adding empty target cells without writing content files', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const patch = patchDraftBoardSize(state, { width: 5, height: 4 })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Board patch failed.')
+    expect(patch.puzzle.board).toEqual({ width: 5, height: 4 })
+    expect(patch.puzzle.target.E4).toBe('empty')
+    expect(exportDraftJson(patch.state)).toMatchObject({
+      ok: true,
+      puzzle: {
+        board: { width: 5, height: 4 },
+      },
+    })
+  })
+
+  it('returns parse issues and preserves state when patching invalid raw JSON', () => {
+    const state = importJsonTextToDraftState('{ "id": "broken"')
+    const patch = patchDraftMetadata(state, {
+      title: 'Ignored',
+    })
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state,
+      issues: [
+        expect.objectContaining({
+          code: 'JSON_PARSE_FAILED',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(state)
   })
 })

@@ -25,10 +25,17 @@ The current first slice supports:
 - replacing raw JSON text with `updateDraftJsonText`;
 - selecting or clearing a cell id with `selectDraftCell`;
 - selecting or clearing a rule id with `selectDraftRule`.
+- resizing the board with `patchDraftBoardSize`;
+- changing target cell facts with `patchDraftTargetCell`;
+- toggling initial reveals with `toggleDraftInitialReveal`;
+- changing title, case name, difficulty metadata, tags, author, status, and notes
+  with `patchDraftMetadata`;
+- changing rule title/flavor copy with `patchDraftRulePresentation`.
 
-These helpers are immutable and DOM-free. Later rounds can add board, target,
-initial reveal, metadata, region, anchor, record, and rule patch helpers on top of
-the same state shape.
+These helpers are immutable and DOM-free. Patch helpers validate the candidate
+through Puzzle Schema v1 before returning an updated state; invalid edits return
+issues and preserve the previous state. Later rounds can add region, anchor,
+record, and structured rule patch helpers on top of the same state shape.
 
 ## Export
 
