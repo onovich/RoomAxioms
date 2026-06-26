@@ -9,11 +9,17 @@ import {
   workbenchCaseLibrary,
 } from './caseLibrary'
 import {
+  beginWorkbenchDiagnostics,
+  completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchDiagnosticsState,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
+  diagnosticsReportForState,
   evaluateWorkbenchDiagnostics,
+  failWorkbenchDiagnostics,
+  markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
@@ -421,4 +427,65 @@ describe('authoring workbench shell model', () => {
       'performance',
     ])
   }, 30_000)
+
+  it('tracks current and stale workbench diagnostics around draft edits', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const report = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    if (report === undefined) throw new Error('Expected diagnostics report.')
+
+    const initial = createWorkbenchDiagnosticsState()
+    const running = beginWorkbenchDiagnostics(initial)
+    const current = completeWorkbenchDiagnostics(running, running.requestId, report)
+    expect(current).toMatchObject({
+      status: 'current',
+      requestId: 1,
+      report,
+    })
+    expect(diagnosticsReportForState(current)).toBe(report)
+
+    const stale = markWorkbenchDiagnosticsStale(current, 'draft changed')
+    expect(stale).toMatchObject({
+      status: 'stale',
+      requestId: 1,
+      report,
+      message: 'draft changed',
+    })
+    expect(diagnosticsReportForState(stale)).toBe(report)
+  }, 30_000)
+
+  it('discards completed diagnostics when a running request has gone stale', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const report = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+    if (report === undefined) throw new Error('Expected diagnostics report.')
+
+    const running = beginWorkbenchDiagnostics(createWorkbenchDiagnosticsState())
+    const changed = markWorkbenchDiagnosticsStale(running)
+    const completed = completeWorkbenchDiagnostics(changed, running.requestId, report)
+
+    expect(changed).toMatchObject({
+      status: 'idle',
+      requestId: running.requestId,
+    })
+    expect(completed).toBe(changed)
+    expect(diagnosticsReportForState(completed)).toBeUndefined()
+  }, 30_000)
+
+  it('reports unavailable and failed diagnostics without fabricating a report', () => {
+    const running = beginWorkbenchDiagnostics(createWorkbenchDiagnosticsState())
+    const unavailable = completeWorkbenchDiagnostics(running, running.requestId, undefined)
+    expect(unavailable).toMatchObject({
+      status: 'unavailable',
+      requestId: running.requestId,
+    })
+    expect(diagnosticsReportForState(unavailable)).toBeUndefined()
+
+    const failedRunning = beginWorkbenchDiagnostics(unavailable)
+    const failed = failWorkbenchDiagnostics(failedRunning, failedRunning.requestId, new Error('boom'))
+    expect(failed).toMatchObject({
+      status: 'failed',
+      requestId: failedRunning.requestId,
+      message: 'boom',
+    })
+    expect(diagnosticsReportForState(failed)).toBeUndefined()
+  })
 })

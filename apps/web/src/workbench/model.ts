@@ -85,6 +85,39 @@ export interface WorkbenchShellModel {
   readonly ruleSummaries: readonly WorkbenchRuleSummary[]
 }
 
+export type WorkbenchDiagnosticsState =
+  | {
+      readonly status: 'idle'
+      readonly requestId: number
+    }
+  | {
+      readonly status: 'running'
+      readonly requestId: number
+      readonly report?: AuthoringDraftDiagnosticsReport
+    }
+  | {
+      readonly status: 'current'
+      readonly requestId: number
+      readonly report: AuthoringDraftDiagnosticsReport
+    }
+  | {
+      readonly status: 'stale'
+      readonly requestId: number
+      readonly report: AuthoringDraftDiagnosticsReport
+      readonly message: string
+    }
+  | {
+      readonly status: 'unavailable'
+      readonly requestId: number
+      readonly message: string
+    }
+  | {
+      readonly status: 'failed'
+      readonly requestId: number
+      readonly message: string
+      readonly report?: AuthoringDraftDiagnosticsReport
+    }
+
 export function createWorkbenchDraftFromPuzzle(puzzle: PuzzleDefinition): WorkbenchDraftState {
   return importPuzzleToDraftState(puzzle, {
     label: puzzle.id,
@@ -122,6 +155,96 @@ export function evaluateWorkbenchDiagnostics(
     draft: parse.puzzle,
     sourcePath: `<workbench:${selectedCaseId}>`,
   })
+}
+
+export function createWorkbenchDiagnosticsState(): WorkbenchDiagnosticsState {
+  return {
+    status: 'idle',
+    requestId: 0,
+  }
+}
+
+export function beginWorkbenchDiagnostics(
+  state: WorkbenchDiagnosticsState,
+): WorkbenchDiagnosticsState {
+  const previousReport = diagnosticsReportForState(state)
+
+  return {
+    status: 'running',
+    requestId: state.requestId + 1,
+    ...(previousReport === undefined ? {} : { report: previousReport }),
+  }
+}
+
+export function completeWorkbenchDiagnostics(
+  state: WorkbenchDiagnosticsState,
+  requestId: number,
+  report: AuthoringDraftDiagnosticsReport | undefined,
+): WorkbenchDiagnosticsState {
+  if (state.status !== 'running' || state.requestId !== requestId) return state
+  if (report === undefined) {
+    return {
+      status: 'unavailable',
+      requestId,
+      message: 'JSON draft must parse before full diagnostics can run.',
+    }
+  }
+
+  return {
+    status: 'current',
+    requestId,
+    report,
+  }
+}
+
+export function failWorkbenchDiagnostics(
+  state: WorkbenchDiagnosticsState,
+  requestId: number,
+  error: unknown,
+): WorkbenchDiagnosticsState {
+  if (state.status !== 'running' || state.requestId !== requestId) return state
+
+  return {
+    status: 'failed',
+    requestId,
+    message: error instanceof Error ? error.message : 'Diagnostics failed.',
+    ...(state.report === undefined ? {} : { report: state.report }),
+  }
+}
+
+export function markWorkbenchDiagnosticsStale(
+  state: WorkbenchDiagnosticsState,
+  message = 'Draft changed after diagnostics ran. Re-run diagnostics before trusting these results.',
+): WorkbenchDiagnosticsState {
+  const report = diagnosticsReportForState(state)
+  if (report === undefined) {
+    return {
+      status: 'idle',
+      requestId: state.requestId,
+    }
+  }
+
+  return {
+    status: 'stale',
+    requestId: state.requestId,
+    report,
+    message,
+  }
+}
+
+export function diagnosticsReportForState(
+  state: WorkbenchDiagnosticsState,
+): AuthoringDraftDiagnosticsReport | undefined {
+  switch (state.status) {
+    case 'current':
+    case 'running':
+    case 'stale':
+    case 'failed':
+      return state.report
+    case 'idle':
+    case 'unavailable':
+      return undefined
+  }
 }
 
 export function patchWorkbenchTargetCell(

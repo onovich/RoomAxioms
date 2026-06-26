@@ -9,11 +9,17 @@ import type { BoardSize, CellId, CellKind, PuzzleDefinition } from '@room-axioms
 import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
+  beginWorkbenchDiagnostics,
+  completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchDiagnosticsState,
   createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
+  diagnosticsReportForState,
   evaluateWorkbenchDiagnostics,
+  failWorkbenchDiagnostics,
+  markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
@@ -22,6 +28,7 @@ import {
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
   type WorkbenchBoardCell,
+  type WorkbenchDiagnosticsState,
   type WorkbenchRuleSummary,
 } from './model'
 
@@ -34,7 +41,9 @@ export default function AuthoringWorkbenchScreen() {
   const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(defaultCase))
-  const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
+  const [diagnosticsState, setDiagnosticsState] = useState<WorkbenchDiagnosticsState>(
+    () => createWorkbenchDiagnosticsState(),
+  )
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
@@ -65,7 +74,7 @@ export default function AuthoringWorkbenchScreen() {
     const item = getWorkbenchCaseImportById(caseId)
     setSelectedCaseId(caseId)
     setDraft(createWorkbenchDraftFromPuzzle(item.puzzle))
-    setDiagnostics(undefined)
+    setDiagnosticsState(createWorkbenchDiagnosticsState())
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
     setActiveKind('empty')
@@ -87,7 +96,7 @@ export default function AuthoringWorkbenchScreen() {
 
   function updateDraftText(jsonText: string): void {
     setDraft(updateDraftJsonText(draft, jsonText))
-    setDiagnostics(undefined)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
     setActiveKind('empty')
@@ -104,7 +113,17 @@ export default function AuthoringWorkbenchScreen() {
   }
 
   function runDiagnostics(): void {
-    setDiagnostics(evaluateWorkbenchDiagnostics(draft, selectedCaseId))
+    const started = beginWorkbenchDiagnostics(diagnosticsState)
+    const requestId = started.requestId
+    setDiagnosticsState(started)
+    globalThis.setTimeout(() => {
+      try {
+        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId)
+        setDiagnosticsState((current) => completeWorkbenchDiagnostics(current, requestId, report))
+      } catch (error) {
+        setDiagnosticsState((current) => failWorkbenchDiagnostics(current, requestId, error))
+      }
+    }, 0)
   }
 
   function selectBoardCell(cell: WorkbenchBoardCell): void {
@@ -190,7 +209,7 @@ export default function AuthoringWorkbenchScreen() {
 
   function applySuccessfulPatch(nextDraft: WorkbenchDraftState, message: string): void {
     setDraft(nextDraft)
-    setDiagnostics(undefined)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setPatchStatus({ kind: 'applied', message })
   }
 
@@ -213,7 +232,7 @@ export default function AuthoringWorkbenchScreen() {
 
     const nextRule = patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
     setDraft(patch.state)
-    setDiagnostics(undefined)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setRuleTitleText(nextRule?.presentation.title ?? ruleTitleText)
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
     setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
@@ -243,7 +262,7 @@ export default function AuthoringWorkbenchScreen() {
       ? undefined
       : patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
     setDraft(patch.state)
-    setDiagnostics(undefined)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
     setRulesPatchStatus({
       kind: 'applied',
@@ -281,7 +300,7 @@ export default function AuthoringWorkbenchScreen() {
     }
 
     setDraft(patch.state)
-    setDiagnostics(undefined)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
     setScopePatchStatus({
       kind: 'applied',
@@ -408,8 +427,13 @@ export default function AuthoringWorkbenchScreen() {
               <span className="eyebrow">Diagnostics</span>
               <h2>检查</h2>
             </div>
-            <button className="small-button" type="button" onClick={runDiagnostics}>
-              运行诊断
+            <button
+              className="small-button"
+              type="button"
+              onClick={runDiagnostics}
+              disabled={diagnosticsState.status === 'running'}
+            >
+              {diagnosticsState.status === 'running' ? '诊断中' : '运行诊断'}
             </button>
           </div>
           <WorkbenchStatus puzzle={parsedPuzzle} draft={draft} exportOk={model.exported.ok} />
@@ -417,7 +441,7 @@ export default function AuthoringWorkbenchScreen() {
             selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
             exportStatus={model.exportStatus}
           />
-          <DiagnosticsSummary report={diagnostics} parseOk={model.parse.ok} />
+          <DiagnosticsSummary state={diagnosticsState} parseOk={model.parse.ok} />
           <section className="workbench-section">
             <h3>规则</h3>
             <div className="workbench-rule-list">
@@ -750,21 +774,18 @@ function ImportExportSummary({
 }
 
 function DiagnosticsSummary({
-  report,
+  state,
   parseOk,
 }: {
-  readonly report: AuthoringDraftDiagnosticsReport | undefined
+  readonly state: WorkbenchDiagnosticsState
   readonly parseOk: boolean
 }) {
+  const report = diagnosticsReportForState(state)
   if (report === undefined) {
     return (
       <section className="workbench-section">
         <h3>诊断</h3>
-        <IssueList issues={[
-          parseOk
-            ? '尚未运行完整诊断。点击“运行诊断”查看正确性、证明、质量、难度、文案和性能分组。'
-            : 'JSON 当前无法解析，修复格式后再运行完整诊断。',
-        ]} />
+        <DiagnosticsStateNotice state={state} parseOk={parseOk} />
       </section>
     )
   }
@@ -772,6 +793,7 @@ function DiagnosticsSummary({
   return (
     <section className="workbench-section">
       <h3>诊断 · {diagnosticsStatusText(report.status)}</h3>
+      <DiagnosticsStateNotice state={state} parseOk={parseOk} />
       <div className="diagnostics-group-list">
         {report.groups.map((group) => (
           <article key={group.id} className={`diagnostics-group ${group.status}`}>
@@ -792,6 +814,62 @@ function DiagnosticsSummary({
       </div>
     </section>
   )
+}
+
+function DiagnosticsStateNotice({
+  state,
+  parseOk,
+}: {
+  readonly state: WorkbenchDiagnosticsState
+  readonly parseOk: boolean
+}) {
+  const notice = diagnosticsStateNotice(state, parseOk)
+  if (notice === undefined) return null
+
+  return (
+    <div className={`diagnostics-state ${notice.kind}`}>
+      {notice.message}
+    </div>
+  )
+}
+
+function diagnosticsStateNotice(
+  state: WorkbenchDiagnosticsState,
+  parseOk: boolean,
+): { readonly kind: 'info' | 'warning' | 'error'; readonly message: string } | undefined {
+  switch (state.status) {
+    case 'idle':
+      return {
+        kind: parseOk ? 'info' : 'error',
+        message: parseOk
+          ? '尚未运行完整诊断。点击“运行诊断”查看正确性、证明、质量、难度、文案和性能分组。'
+          : 'JSON 当前无法解析，修复格式后再运行完整诊断。',
+      }
+    case 'running':
+      return {
+        kind: 'info',
+        message: state.report === undefined
+          ? '诊断正在运行。'
+          : '诊断正在运行；下方暂时显示上一次结果。',
+      }
+    case 'current':
+      return undefined
+    case 'stale':
+      return {
+        kind: 'warning',
+        message: state.message,
+      }
+    case 'unavailable':
+      return {
+        kind: 'error',
+        message: state.message,
+      }
+    case 'failed':
+      return {
+        kind: 'error',
+        message: `诊断运行失败：${state.message}`,
+      }
+  }
 }
 
 function diagnosticsStatusText(status: AuthoringDraftDiagnosticsReport['status']): string {

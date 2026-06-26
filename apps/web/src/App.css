@@ -1449,6 +1449,32 @@ h3 {
   gap: 9px;
 }
 
+.diagnostics-state {
+  border-radius: var(--radius);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  padding: 9px 10px;
+}
+
+.diagnostics-state.info {
+  background: var(--info-soft);
+  border: 1px solid #3a5d78;
+  color: #c6dbec;
+}
+
+.diagnostics-state.warning {
+  background: var(--accent-soft);
+  border: 1px solid #806536;
+  color: #e1c990;
+}
+
+.diagnostics-state.error {
+  background: var(--danger-soft);
+  border: 1px solid #7b403d;
+  color: #f1c0bd;
+}
+
 .diagnostics-group {
   background: var(--surface-0);
   border: 1px solid var(--border);
