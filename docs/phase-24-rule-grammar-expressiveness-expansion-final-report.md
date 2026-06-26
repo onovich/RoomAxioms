@@ -2,7 +2,7 @@
 
 Status: READY_FOR_CHECK_WITH_BLOCKER
 Guide: docs/phase-24-rule-grammar-expressiveness-expansion-goal-mode-execution-guide.md
-Final commit: pending final report commit; executor route message records the pushed hash.
+Final commit: `5f6d5f2`
 
 ## Summary
 
@@ -255,4 +255,3 @@ high-tier evidence.
 | Player UI avoids solver/target internals outside dev mode | PASS |
 | Non-scope avoided | PASS |
 | Full validation and diff checks pass | PASS before report; final commit reruns |
-
