@@ -3,6 +3,8 @@ import type {
   CellId,
   CellKind,
   Comparator,
+  ComparativeCountRule,
+  CountScopeRef,
   PuzzleDefinition,
   RuleDefinition,
 } from '@room-axioms/domain';
@@ -82,10 +84,46 @@ export function evaluateRule(
     case 'recordSet':
       throw new Error(`Record-set rule ${rule.id} must be expanded before oracle evaluation.`);
 
-    case 'scopeOverlapCount':
-    case 'comparativeCount':
-    case 'conditionalCount':
-      throw new Error(`Rule ${rule.id} uses ${rule.type}, which is not implemented in oracle evaluation yet.`);
+    case 'scopeOverlapCount': {
+      const actual = countCells(scopeOverlapCells(rule, puzzle, model), rule.target, model);
+
+      return {
+        ruleId: rule.id,
+        satisfied: compareCount(actual, rule.count),
+        actual,
+      };
+    }
+
+    case 'comparativeCount': {
+      const left = countCells(countScopeCells(rule.left, puzzle, model, rule.id), rule.target, model);
+      const right = countCells(countScopeCells(rule.right, puzzle, model, rule.id), rule.target, model);
+
+      return {
+        ruleId: rule.id,
+        satisfied: compareCounts(left, right, rule.comparison),
+        actual: [left, right],
+      };
+    }
+
+    case 'conditionalCount': {
+      const condition = countCells(
+        countScopeCells(rule.condition.scope, puzzle, model, rule.id),
+        rule.condition.target,
+        model,
+      );
+      const then = countCells(
+        countScopeCells(rule.then.scope, puzzle, model, rule.id),
+        rule.then.target,
+        model,
+      );
+      const conditionSatisfied = compareCount(condition, rule.condition.count);
+
+      return {
+        ruleId: rule.id,
+        satisfied: !conditionSatisfied || compareCount(then, rule.then.count),
+        actual: [condition, then],
+      };
+    }
 
     default:
       return assertNever(rule);
@@ -128,6 +166,86 @@ function lineScopeCells(
   return visible;
 }
 
+function countScopeCells(
+  scope: CountScopeRef,
+  puzzle: PuzzleDefinition,
+  model: OracleModel,
+  ruleId: string,
+): readonly CellId[] {
+  switch (scope.kind) {
+    case 'global':
+      return allCells(puzzle.board);
+
+    case 'region': {
+      const region = puzzle.regions?.find((candidate) => candidate.id === scope.regionId);
+      if (region === undefined) {
+        throw new Error(`Rule ${ruleId} references unknown region ${scope.regionId}.`);
+      }
+
+      return regionCells(region, puzzle.board);
+    }
+
+    case 'line':
+      return countLineScopeCells(scope, puzzle, model, ruleId);
+
+    default:
+      return assertNever(scope);
+  }
+}
+
+function countLineScopeCells(
+  scope: Extract<CountScopeRef, { readonly kind: 'line' }>,
+  puzzle: PuzzleDefinition,
+  model: OracleModel,
+  ruleId: string,
+): readonly CellId[] {
+  switch (scope.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(scope.scope, puzzle.board);
+    case 'ray':
+      break;
+  }
+
+  if (scope.origin === undefined) {
+    throw new Error(`Rule ${ruleId} must include origin for a ray scope.`);
+  }
+
+  const blockerKinds = new Set(scope.scope.stopAtKinds ?? []);
+  const visible: CellId[] = [];
+
+  for (const cellId of rayCells(scope.origin, scope.scope.direction, puzzle.board)) {
+    if (blockerKinds.has(model.cells[cellId])) break;
+    visible.push(cellId);
+  }
+
+  return visible;
+}
+
+function scopeOverlapCells(
+  rule: Extract<RuleDefinition, { readonly type: 'scopeOverlapCount' }>,
+  puzzle: PuzzleDefinition,
+  model: OracleModel,
+): readonly CellId[] {
+  const left = countScopeCells(rule.left, puzzle, model, rule.id);
+  const right = countScopeCells(rule.right, puzzle, model, rule.id);
+  const leftSet = new Set(left);
+  const rightSet = new Set(right);
+
+  switch (rule.mode) {
+    case 'intersection':
+      return left.filter((cellId) => rightSet.has(cellId));
+    case 'union':
+      return [...left, ...right.filter((cellId) => !leftSet.has(cellId))];
+    case 'leftOnly':
+      return left.filter((cellId) => !rightSet.has(cellId));
+    case 'rightOnly':
+      return right.filter((cellId) => !leftSet.has(cellId));
+    default:
+      return assertNever(rule.mode);
+  }
+}
+
 function anchorScopeCells(
   rule: Extract<RuleDefinition, { readonly type: 'anchorCount' }>,
   cellId: CellId,
@@ -156,5 +274,30 @@ function compareCount(actual: number, comparator: Comparator): boolean {
       return actual <= comparator.value;
     default:
       return assertNever(comparator);
+  }
+}
+
+function compareCounts(
+  left: number,
+  right: number,
+  comparison: ComparativeCountRule['comparison'],
+): boolean {
+  const adjustedRight = right + (comparison.offset ?? 0);
+
+  switch (comparison.op) {
+    case 'eq':
+      return left === adjustedRight;
+    case 'neq':
+      return left !== adjustedRight;
+    case 'gt':
+      return left > adjustedRight;
+    case 'gte':
+      return left >= adjustedRight;
+    case 'lt':
+      return left < adjustedRight;
+    case 'lte':
+      return left <= adjustedRight;
+    default:
+      return assertNever(comparison.op);
   }
 }

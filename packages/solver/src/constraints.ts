@@ -5,12 +5,16 @@ import type {
   Comparator,
   AnchorCountRule,
   AnchorDefinition,
+  ComparativeCountRule,
+  ConditionalCountRule,
+  CountScopeRef,
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
   PuzzleDefinition,
   RegionCountRule,
   RuleDefinition,
+  ScopeOverlapCountRule,
 } from '@room-axioms/domain';
 
 import { containsKind, isSingleton, singletonKind } from './bitset.js';
@@ -58,12 +62,42 @@ export interface LineCountConstraint {
   readonly dynamicScope: boolean;
 }
 
+export interface CountScopeConstraint {
+  readonly source: CountScopeRef;
+  readonly cells: readonly CellId[];
+  readonly dynamicScope: boolean;
+}
+
+export interface ScopeOverlapCountConstraint {
+  readonly kind: 'scopeOverlapCount';
+  readonly rule: ScopeOverlapCountRule;
+  readonly left: CountScopeConstraint;
+  readonly right: CountScopeConstraint;
+}
+
+export interface ComparativeCountConstraint {
+  readonly kind: 'comparativeCount';
+  readonly rule: ComparativeCountRule;
+  readonly left: CountScopeConstraint;
+  readonly right: CountScopeConstraint;
+}
+
+export interface ConditionalCountConstraint {
+  readonly kind: 'conditionalCount';
+  readonly rule: ConditionalCountRule;
+  readonly condition: CountScopeConstraint;
+  readonly then: CountScopeConstraint;
+}
+
 export type CompiledConstraint =
   | GlobalCountConstraint
   | ForEachCountConstraint
   | AnchorCountConstraint
   | RegionCountConstraint
-  | LineCountConstraint;
+  | LineCountConstraint
+  | ScopeOverlapCountConstraint
+  | ComparativeCountConstraint
+  | ConditionalCountConstraint;
 
 export interface GlobalCountBounds {
   readonly kind: 'globalCount';
@@ -108,12 +142,42 @@ export interface LineCountBounds {
   readonly possible: boolean;
 }
 
+export interface ScopeOverlapCountBounds {
+  readonly kind: 'scopeOverlapCount';
+  readonly ruleId: string;
+  readonly cells: readonly CellId[];
+  readonly bounds: CountBounds;
+  readonly possible: boolean;
+}
+
+export interface ComparativeCountBounds {
+  readonly kind: 'comparativeCount';
+  readonly ruleId: string;
+  readonly leftBounds: CountBounds;
+  readonly rightBounds: CountBounds;
+  readonly possible: boolean;
+}
+
+export interface ConditionalCountBounds {
+  readonly kind: 'conditionalCount';
+  readonly ruleId: string;
+  readonly conditionBounds: CountBounds;
+  readonly thenBounds: CountBounds;
+  readonly conditionCanBeTrue: boolean;
+  readonly conditionMustBeTrue: boolean;
+  readonly thenCanBeSatisfied: boolean;
+  readonly possible: boolean;
+}
+
 export type ConstraintBounds =
   | GlobalCountBounds
   | ForEachCountBounds
   | AnchorCountBounds
   | RegionCountBounds
-  | LineCountBounds;
+  | LineCountBounds
+  | ScopeOverlapCountBounds
+  | ComparativeCountBounds
+  | ConditionalCountBounds;
 
 export function compileConstraints(puzzle: PuzzleDefinition): readonly CompiledConstraint[] {
   return puzzle.rules.map((rule) => compileRule(rule, puzzle));
@@ -180,6 +244,59 @@ export function evaluateConstraintBounds(
         ruleId: constraint.rule.id,
         bounds,
         possible: comparatorCanBeSatisfied(bounds, constraint.rule.count),
+      };
+    }
+
+    case 'scopeOverlapCount': {
+      const resolved = scopeOverlapCells(constraint, domains);
+      const bounds = countCellsWithScopeCompleteness(resolved.cells, constraint.rule.target, resolved.complete, domains);
+
+      return {
+        kind: 'scopeOverlapCount',
+        ruleId: constraint.rule.id,
+        cells: resolved.cells,
+        bounds,
+        possible: comparatorCanBeSatisfied(bounds, constraint.rule.count),
+      };
+    }
+
+    case 'comparativeCount': {
+      const leftBounds = countScopeBounds(constraint.left, constraint.rule.target, domains);
+      const rightBounds = countScopeBounds(constraint.right, constraint.rule.target, domains);
+
+      return {
+        kind: 'comparativeCount',
+        ruleId: constraint.rule.id,
+        leftBounds,
+        rightBounds,
+        possible: countComparisonCanBeSatisfied(leftBounds, rightBounds, constraint.rule.comparison),
+      };
+    }
+
+    case 'conditionalCount': {
+      const conditionBounds = countScopeBounds(
+        constraint.condition,
+        constraint.rule.condition.target,
+        domains,
+      );
+      const thenBounds = countScopeBounds(
+        constraint.then,
+        constraint.rule.then.target,
+        domains,
+      );
+      const conditionCanBeTrue = comparatorCanBeSatisfied(conditionBounds, constraint.rule.condition.count);
+      const conditionMustBeTrue = allCountsSatisfyComparator(conditionBounds, constraint.rule.condition.count);
+      const thenCanBeSatisfied = comparatorCanBeSatisfied(thenBounds, constraint.rule.then.count);
+
+      return {
+        kind: 'conditionalCount',
+        ruleId: constraint.rule.id,
+        conditionBounds,
+        thenBounds,
+        conditionCanBeTrue,
+        conditionMustBeTrue,
+        thenCanBeSatisfied,
+        possible: !conditionMustBeTrue || thenCanBeSatisfied,
       };
     }
 
@@ -278,9 +395,28 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
       throw new Error(`Record-set rule ${rule.id} must be expanded before constraint compilation.`);
 
     case 'scopeOverlapCount':
+      return {
+        kind: 'scopeOverlapCount',
+        rule,
+        left: cellsForCountScope(rule.left, puzzle, rule.id),
+        right: cellsForCountScope(rule.right, puzzle, rule.id),
+      };
+
     case 'comparativeCount':
+      return {
+        kind: 'comparativeCount',
+        rule,
+        left: cellsForCountScope(rule.left, puzzle, rule.id),
+        right: cellsForCountScope(rule.right, puzzle, rule.id),
+      };
+
     case 'conditionalCount':
-      throw new Error(`Rule ${rule.id} uses ${rule.type}, which is not implemented in solver constraints yet.`);
+      return {
+        kind: 'conditionalCount',
+        rule,
+        condition: cellsForCountScope(rule.condition.scope, puzzle, rule.id),
+        then: cellsForCountScope(rule.then.scope, puzzle, rule.id),
+      };
 
     default:
       return assertNever(rule);
@@ -315,6 +451,47 @@ function cellsForRegionRule(rule: RegionCountRule, puzzle: PuzzleDefinition): re
   }
 
   return regionCells(region, puzzle.board);
+}
+
+function cellsForCountScope(
+  scope: CountScopeRef,
+  puzzle: PuzzleDefinition,
+  ruleId: string,
+): CountScopeConstraint {
+  switch (scope.kind) {
+    case 'global':
+      return {
+        source: scope,
+        cells: allCells(puzzle.board),
+        dynamicScope: false,
+      };
+
+    case 'region': {
+      const region = puzzle.regions?.find((candidate) => candidate.id === scope.regionId);
+      if (region === undefined) {
+        throw new Error(`Rule ${ruleId} references unknown region ${scope.regionId}.`);
+      }
+
+      return {
+        source: scope,
+        cells: regionCells(region, puzzle.board),
+        dynamicScope: false,
+      };
+    }
+
+    case 'line': {
+      const line = cellsForLineScope(scope.scope, scope.origin, puzzle, ruleId);
+
+      return {
+        source: scope,
+        cells: line.cells,
+        dynamicScope: line.dynamicScope,
+      };
+    }
+
+    default:
+      return assertNever(scope);
+  }
 }
 
 export function countLineBounds(
@@ -364,24 +541,33 @@ function cellsForLineRule(
   rule: LineCountRule,
   puzzle: PuzzleDefinition,
 ): { readonly cells: readonly CellId[]; readonly dynamicScope: boolean } {
-  switch (rule.scope.kind) {
+  return cellsForLineScope(rule.scope, rule.origin, puzzle, rule.id);
+}
+
+function cellsForLineScope(
+  scope: LineCountRule['scope'],
+  origin: CellId | undefined,
+  puzzle: PuzzleDefinition,
+  ruleId: string,
+): { readonly cells: readonly CellId[]; readonly dynamicScope: boolean } {
+  switch (scope.kind) {
     case 'row':
     case 'column':
       return {
-        cells: lineCells(rule.scope, puzzle.board),
+        cells: lineCells(scope, puzzle.board),
         dynamicScope: false,
       };
     case 'ray':
       break;
   }
 
-  if (rule.origin === undefined) {
-    throw new Error(`Rule ${rule.id} must include origin for a ray scope.`);
+  if (origin === undefined) {
+    throw new Error(`Rule ${ruleId} must include origin for a ray scope.`);
   }
 
   return {
-    cells: rayCells(rule.origin, rule.scope.direction, puzzle.board),
-    dynamicScope: (rule.scope.stopAtKinds ?? []).length > 0,
+    cells: rayCells(origin, scope.direction, puzzle.board),
+    dynamicScope: (scope.stopAtKinds ?? []).length > 0,
   };
 }
 
@@ -405,4 +591,159 @@ function evaluateForEachEntryBounds(
     targetBounds,
     possible: !subjectForced || targetCanSatisfy,
   };
+}
+
+export function countScopeBounds(
+  scope: CountScopeConstraint,
+  target: CellKind,
+  domains: DomainState,
+): CountBounds {
+  const resolved = countScopeCells(scope, domains);
+
+  return countCellsWithScopeCompleteness(resolved.cells, target, resolved.complete, domains);
+}
+
+function countCellsWithScopeCompleteness(
+  cells: readonly CellId[],
+  target: CellKind,
+  complete: boolean,
+  domains: DomainState,
+): CountBounds {
+  const bounds = countKindBounds(cells, target, domains);
+  if (complete) return bounds;
+
+  return {
+    minimum: 0,
+    maximum: bounds.maximum,
+  };
+}
+
+function countScopeCells(
+  scope: CountScopeConstraint,
+  domains: DomainState,
+): { readonly cells: readonly CellId[]; readonly complete: boolean } {
+  if (!scope.dynamicScope) {
+    return {
+      cells: scope.cells,
+      complete: true,
+    };
+  }
+
+  if (!countScopeComplete(scope, domains)) {
+    return {
+      cells: scope.cells,
+      complete: false,
+    };
+  }
+
+  return {
+    cells: visibleDynamicCountScopeCells(scope, domains),
+    complete: true,
+  };
+}
+
+function countScopeComplete(scope: CountScopeConstraint, domains: DomainState): boolean {
+  return scope.cells.every((cellId) => {
+    const mask = domains[cellId];
+    return mask !== undefined && isSingleton(mask);
+  });
+}
+
+function visibleDynamicCountScopeCells(
+  scope: CountScopeConstraint,
+  domains: DomainState,
+): readonly CellId[] {
+  if (scope.source.kind !== 'line' || scope.source.scope.kind !== 'ray') return scope.cells;
+
+  const blockerKinds = new Set(scope.source.scope.stopAtKinds ?? []);
+  const visible: CellId[] = [];
+
+  for (const cellId of scope.cells) {
+    const kind = singletonKind(domains[cellId]);
+    if (kind !== null && blockerKinds.has(kind)) break;
+    visible.push(cellId);
+  }
+
+  return visible;
+}
+
+function scopeOverlapCells(
+  constraint: ScopeOverlapCountConstraint,
+  domains: DomainState,
+): { readonly cells: readonly CellId[]; readonly complete: boolean } {
+  const left = countScopeCells(constraint.left, domains);
+  const right = countScopeCells(constraint.right, domains);
+  const leftSet = new Set(left.cells);
+  const rightSet = new Set(right.cells);
+
+  switch (constraint.rule.mode) {
+    case 'intersection':
+      return {
+        cells: left.cells.filter((cellId) => rightSet.has(cellId)),
+        complete: left.complete && right.complete,
+      };
+    case 'union':
+      return {
+        cells: [...left.cells, ...right.cells.filter((cellId) => !leftSet.has(cellId))],
+        complete: left.complete && right.complete,
+      };
+    case 'leftOnly':
+      return {
+        cells: left.cells.filter((cellId) => !rightSet.has(cellId)),
+        complete: left.complete && right.complete,
+      };
+    case 'rightOnly':
+      return {
+        cells: right.cells.filter((cellId) => !leftSet.has(cellId)),
+        complete: left.complete && right.complete,
+      };
+    default:
+      return assertNever(constraint.rule.mode);
+  }
+}
+
+export function countComparisonCanBeSatisfied(
+  left: CountBounds,
+  right: CountBounds,
+  comparison: ComparativeCountRule['comparison'],
+): boolean {
+  const offset = comparison.offset ?? 0;
+  const rightMinimum = right.minimum + offset;
+  const rightMaximum = right.maximum + offset;
+
+  switch (comparison.op) {
+    case 'eq':
+      return left.minimum <= rightMaximum && rightMinimum <= left.maximum;
+    case 'neq':
+      return left.minimum !== left.maximum || rightMinimum !== rightMaximum || left.minimum !== rightMinimum;
+    case 'gt':
+      return left.maximum > rightMinimum;
+    case 'gte':
+      return left.maximum >= rightMinimum;
+    case 'lt':
+      return left.minimum < rightMaximum;
+    case 'lte':
+      return left.minimum <= rightMaximum;
+    default:
+      return assertNever(comparison.op);
+  }
+}
+
+export function allCountsSatisfyComparator(bounds: CountBounds, comparator: Comparator): boolean {
+  switch (comparator.op) {
+    case 'eq':
+      return bounds.minimum === comparator.value && bounds.maximum === comparator.value;
+    case 'neq':
+      return comparator.value < bounds.minimum || comparator.value > bounds.maximum;
+    case 'gt':
+      return bounds.minimum > comparator.value;
+    case 'gte':
+      return bounds.minimum >= comparator.value;
+    case 'lt':
+      return bounds.maximum < comparator.value;
+    case 'lte':
+      return bounds.maximum <= comparator.value;
+    default:
+      return assertNever(comparator);
+  }
 }

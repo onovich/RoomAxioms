@@ -201,6 +201,145 @@ describe('constraint compilation and count bounds', () => {
     expect(bounds.possible).toBe(false);
   });
 
+  it('computes scope-overlap count bounds from derived public scopes', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'top-row',
+          title: 'Top row',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [
+        {
+          id: 'top-column-overlap',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'top-row' },
+          right: { kind: 'line', scope: { kind: 'column', index: 1 } },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Top column overlap' },
+        },
+      ],
+    });
+    const domains = setCellDomain(createInitialDomains(puzzle), 'B1', singletonMask('guest'));
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'scopeOverlapCount',
+      ruleId: 'top-column-overlap',
+      cells: ['B1'],
+      bounds: { minimum: 1, maximum: 1 },
+      possible: true,
+    });
+  });
+
+  it('evaluates comparative count feasibility between two scopes', () => {
+    const puzzle = makePuzzle({
+      width: 2,
+      height: 2,
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'left-side',
+          title: 'Left side',
+          cells: ['A1', 'A2'],
+        },
+        {
+          id: 'right-side',
+          title: 'Right side',
+          cells: ['B1', 'B2'],
+        },
+      ],
+      rules: [
+        {
+          id: 'left-more-than-right',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'left-side' },
+          right: { kind: 'region', regionId: 'right-side' },
+          target: 'guest',
+          comparison: { op: 'gt' },
+          presentation: { title: 'Left has more guests' },
+        },
+      ],
+    });
+    const domains = {
+      A1: singletonMask('guest'),
+      A2: singletonMask('empty'),
+      B1: singletonMask('empty'),
+      B2: singletonMask('empty'),
+    };
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'comparativeCount',
+      ruleId: 'left-more-than-right',
+      leftBounds: { minimum: 1, maximum: 1 },
+      rightBounds: { minimum: 0, maximum: 0 },
+      possible: true,
+    });
+  });
+
+  it('rejects forced-true conditional counts with impossible consequences', () => {
+    const puzzle = makePuzzle({
+      width: 2,
+      height: 1,
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        {
+          id: 'left-cell',
+          title: 'Left cell',
+          cells: ['A1'],
+        },
+        {
+          id: 'right-cell',
+          title: 'Right cell',
+          cells: ['B1'],
+        },
+      ],
+      rules: [
+        {
+          id: 'if-left-guest-right-empty',
+          type: 'conditionalCount',
+          condition: {
+            scope: { kind: 'region', regionId: 'left-cell' },
+            target: 'guest',
+            count: { op: 'eq', value: 1 },
+          },
+          then: {
+            scope: { kind: 'region', regionId: 'right-cell' },
+            target: 'empty',
+            count: { op: 'eq', value: 1 },
+          },
+          presentation: { title: 'If left guest then right empty' },
+        },
+      ],
+    });
+    const domains = {
+      A1: singletonMask('guest'),
+      B1: singletonMask('guest'),
+    };
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, domains);
+
+    expect(bounds).toEqual({
+      kind: 'conditionalCount',
+      ruleId: 'if-left-guest-right-empty',
+      conditionBounds: { minimum: 1, maximum: 1 },
+      thenBounds: { minimum: 0, maximum: 0 },
+      conditionCanBeTrue: true,
+      conditionMustBeTrue: true,
+      thenCanBeSatisfied: false,
+      possible: false,
+    });
+  });
+
   it('marks forced local subjects impossible when target bounds cannot satisfy the comparator', () => {
     const puzzle = makePuzzle({
       width: 2,

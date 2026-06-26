@@ -135,11 +135,90 @@ describe('rule evaluation', () => {
       actual: [2, 1],
     });
   });
+
+  it('evaluates Phase 24 count-scope rules exactly', () => {
+    const cells = makeAssignment([
+      ['empty', 'guest'],
+      ['empty', 'empty'],
+    ]);
+    const puzzle = makePuzzle({
+      width: 2,
+      height: 2,
+      regions: [
+        {
+          id: 'top-row',
+          title: 'Top row',
+          cells: ['A1', 'B1'],
+        },
+        {
+          id: 'bottom-row',
+          title: 'Bottom row',
+          cells: ['A2', 'B2'],
+        },
+      ],
+      rules: [
+        {
+          id: 'top-right-overlap',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'top-row' },
+          right: { kind: 'line', scope: { kind: 'column', index: 1 } },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Top right overlap' },
+        },
+        {
+          id: 'top-more-than-bottom',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'top-row' },
+          right: { kind: 'region', regionId: 'bottom-row' },
+          target: 'guest',
+          comparison: { op: 'gt' },
+          presentation: { title: 'Top has more guests' },
+        },
+        {
+          id: 'if-top-one-bottom-zero',
+          type: 'conditionalCount',
+          condition: {
+            scope: { kind: 'region', regionId: 'top-row' },
+            target: 'guest',
+            count: { op: 'eq', value: 1 },
+          },
+          then: {
+            scope: { kind: 'region', regionId: 'bottom-row' },
+            target: 'guest',
+            count: { op: 'eq', value: 0 },
+          },
+          presentation: { title: 'If top has one guest then bottom has none' },
+        },
+      ],
+      target: cells,
+    });
+    const model = { cells };
+
+    expect(evaluateRule(puzzle.rules[0], puzzle, model)).toEqual({
+      ruleId: 'top-right-overlap',
+      satisfied: true,
+      actual: 1,
+    });
+    expect(evaluateRule(puzzle.rules[1], puzzle, model)).toEqual({
+      ruleId: 'top-more-than-bottom',
+      satisfied: true,
+      actual: [1, 0],
+    });
+    expect(evaluateRule(puzzle.rules[2], puzzle, model)).toEqual({
+      ruleId: 'if-top-one-bottom-zero',
+      satisfied: true,
+      actual: [1, 0],
+    });
+    expect(satisfiesRules(puzzle, model)).toBe(true);
+  });
 });
 
 function makePuzzle(input: {
   readonly width: number;
   readonly height: number;
+  readonly regions?: PuzzleDefinition['regions'];
   readonly rules: readonly RuleDefinition[];
   readonly target: CellAssignment;
 }): PuzzleDefinition {
@@ -149,6 +228,7 @@ function makePuzzle(input: {
     title: 'Oracle Test Puzzle',
     board: { width: input.width, height: input.height },
     allowedKinds: ['empty', 'bottle', 'bin', 'mirror', 'guest'],
+    ...(input.regions === undefined ? {} : { regions: input.regions }),
     rules: input.rules,
     initialReveals: [],
     target: input.target,

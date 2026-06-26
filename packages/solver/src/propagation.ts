@@ -19,10 +19,13 @@ import type {
   CompiledConstraint,
   CountBounds,
   AnchorCountConstraint,
+  ComparativeCountConstraint,
+  ConditionalCountConstraint,
   ForEachCountConstraint,
   GlobalCountConstraint,
   LineCountConstraint,
   RegionCountConstraint,
+  ScopeOverlapCountConstraint,
 } from './constraints.js';
 import type { SolveInput } from './types.js';
 
@@ -187,6 +190,12 @@ function propagateConstraint(
       return propagateRegionCount(state, trail, constraint);
     case 'lineCount':
       return propagateLineCount(state, trail, constraint);
+    case 'scopeOverlapCount':
+      return propagateScopeOverlapCount(state, trail, constraint);
+    case 'comparativeCount':
+      return propagateComparativeCount(constraint);
+    case 'conditionalCount':
+      return propagateConditionalCount(constraint);
   }
 }
 
@@ -346,6 +355,22 @@ function propagateLineCount(
     bounds,
     constraint.rule.id,
   );
+}
+
+function propagateScopeOverlapCount(
+  _state: SolverState,
+  _trail: Trail,
+  _constraint: ScopeOverlapCountConstraint,
+): ConstraintPropagation {
+  return { changed: false, contradiction: null };
+}
+
+function propagateComparativeCount(_constraint: ComparativeCountConstraint): ConstraintPropagation {
+  return { changed: false, contradiction: null };
+}
+
+function propagateConditionalCount(_constraint: ConditionalCountConstraint): ConstraintPropagation {
+  return { changed: false, contradiction: null };
 }
 
 function enforceTargetCount(

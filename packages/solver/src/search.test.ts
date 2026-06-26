@@ -73,6 +73,45 @@ describe('solver search and model finding', () => {
     expect(guestCells(unassumed.model)).toEqual(['B2']);
   });
 
+  it('finds models constrained by Phase 24 count-scope rules', () => {
+    const puzzle = phase24CountScopePuzzle();
+    const result = findModel({ puzzle });
+
+    expect(result.satisfiable).toBe(true);
+    expect(guestCells(result.model)).toEqual(['B1']);
+    expect(result.stats.truncated).toBe(false);
+  });
+
+  it('rejects complete assignments that violate comparative counts', () => {
+    const puzzle = {
+      ...phase24CountScopePuzzle(),
+      rules: [
+        globalCountRule('one-guest', 'guest', { op: 'eq', value: 1 }),
+        {
+          id: 'bottom-more-than-top',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'bottom-row' },
+          right: { kind: 'region', regionId: 'top-row' },
+          target: 'guest',
+          comparison: { op: 'gt' },
+          presentation: { title: 'Bottom has more guests' },
+        } satisfies RuleDefinition,
+      ],
+    } satisfies PuzzleDefinition;
+    const result = isSatisfiable({
+      puzzle,
+      observations: [
+        { cellId: 'B1', kind: 'guest' },
+        { cellId: 'A1', kind: 'empty' },
+        { cellId: 'A2', kind: 'empty' },
+        { cellId: 'B2', kind: 'empty' },
+      ],
+    });
+
+    expect(result.satisfiable).toBe(false);
+    expect(result.stats.truncated).toBe(false);
+  });
+
   it('applies cellIsNot assumptions', () => {
     const puzzle = oneGuestPuzzle();
     const result = findModel({ puzzle }, [{ kind: 'cellIsNot', cellId: 'B2', value: 'guest' }]);
@@ -91,10 +130,68 @@ function oneGuestPuzzle(): PuzzleDefinition {
   });
 }
 
+function phase24CountScopePuzzle(): PuzzleDefinition {
+  return makePuzzle({
+    width: 2,
+    height: 2,
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      {
+        id: 'top-row',
+        title: 'Top row',
+        cells: ['A1', 'B1'],
+      },
+      {
+        id: 'bottom-row',
+        title: 'Bottom row',
+        cells: ['A2', 'B2'],
+      },
+    ],
+    rules: [
+      globalCountRule('one-guest', 'guest', { op: 'eq', value: 1 }),
+      {
+        id: 'top-right-overlap',
+        type: 'scopeOverlapCount',
+        left: { kind: 'region', regionId: 'top-row' },
+        right: { kind: 'line', scope: { kind: 'column', index: 1 } },
+        mode: 'intersection',
+        target: 'guest',
+        count: { op: 'eq', value: 1 },
+        presentation: { title: 'Top right overlap' },
+      },
+      {
+        id: 'top-more-than-bottom',
+        type: 'comparativeCount',
+        left: { kind: 'region', regionId: 'top-row' },
+        right: { kind: 'region', regionId: 'bottom-row' },
+        target: 'guest',
+        comparison: { op: 'gt' },
+        presentation: { title: 'Top has more guests' },
+      },
+      {
+        id: 'if-top-one-bottom-zero',
+        type: 'conditionalCount',
+        condition: {
+          scope: { kind: 'region', regionId: 'top-row' },
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+        },
+        then: {
+          scope: { kind: 'region', regionId: 'bottom-row' },
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+        },
+        presentation: { title: 'If top has one guest then bottom has none' },
+      },
+    ],
+  });
+}
+
 function makePuzzle(input: {
   readonly width: number;
   readonly height: number;
   readonly allowedKinds: readonly CellKind[];
+  readonly regions?: PuzzleDefinition['regions'];
   readonly rules: readonly RuleDefinition[];
 }): PuzzleDefinition {
   return {
@@ -103,6 +200,7 @@ function makePuzzle(input: {
     title: 'Solver Search Test',
     board: { width: input.width, height: input.height },
     allowedKinds: input.allowedKinds,
+    ...(input.regions === undefined ? {} : { regions: input.regions }),
     rules: input.rules,
     initialReveals: [],
     target: {},
