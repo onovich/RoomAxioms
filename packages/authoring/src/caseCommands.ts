@@ -11,8 +11,9 @@ import {
   type AuthoringTechniqueRetentionReport,
   type CasePathCommand,
 } from './contracts.js'
+import { solverCaps } from './diagnostics.js'
 import { evaluateTechniqueRetentionGate } from './qualityGates.js'
-import { loadAuthoringCase, solverCaps } from './validation.js'
+import { loadAuthoringCase } from './validation.js'
 
 export interface AuthoringCaseCommandOptions {
   readonly cwd?: string

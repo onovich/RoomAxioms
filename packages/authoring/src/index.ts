@@ -41,6 +41,17 @@ export {
 } from './contracts.js'
 export { minimizeCaseCommand, scoreCaseCommand } from './caseCommands.js'
 export {
+  DEFAULT_CAPS,
+  emptyValidation,
+  evaluateDraftDiagnostics,
+  solverCaps,
+  validatePuzzleInput,
+  type AuthoringCopyWarning,
+  type AuthoringDraftDiagnosticsInput,
+  type AuthoringDraftDiagnosticsReport,
+  type AuthoringDraftDiagnosticsStatus,
+} from './diagnostics.js'
+export {
   evaluateNoveltyClaimManifest,
   type NoveltyClaim,
   type NoveltyClaimEvidence,
