@@ -10,11 +10,13 @@ import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
+  patchWorkbenchRulesJson,
   patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
@@ -38,11 +40,13 @@ export default function AuthoringWorkbenchScreen() {
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [rulesPatchStatus, setRulesPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [scopePatchStatus, setScopePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
   const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
   const [ruleTitleText, setRuleTitleText] = useState('')
   const [ruleFlavorText, setRuleFlavorText] = useState('')
+  const [rulesJsonText, setRulesJsonText] = useState(() => createWorkbenchRulesJson(defaultCase))
   const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
@@ -69,9 +73,11 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText(String(item.puzzle.board.height))
     setRuleTitleText('')
     setRuleFlavorText('')
+    setRulesJsonText(createWorkbenchRulesJson(item.puzzle))
     setScopeCollectionsText(createWorkbenchScopeCollectionsJson(item.puzzle))
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
+    setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
   }
 
@@ -89,9 +95,11 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText('')
     setRuleTitleText('')
     setRuleFlavorText('')
+    setRulesJsonText('')
     setScopeCollectionsText('')
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
+    setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
   }
 
@@ -175,6 +183,7 @@ export default function AuthoringWorkbenchScreen() {
     }
     setBoardWidthText(String(patch.puzzle.board.width))
     setBoardHeightText(String(patch.puzzle.board.height))
+    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
     setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
     applySuccessfulPatch(patch.state, `棋盘尺寸已改为 ${board.width} × ${board.height}；完整诊断已标记为待重新运行。`)
   }
@@ -207,10 +216,52 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnostics(undefined)
     setRuleTitleText(nextRule?.presentation.title ?? ruleTitleText)
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
+    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
     setRulePatchStatus({
       kind: 'applied',
       message: `${selectedRuleId} 的标题和说明已更新；完整诊断已标记为待重新运行。`,
     })
+  }
+
+  function resetRulesEditor(): void {
+    setRulesJsonText(createWorkbenchRulesJson(parsedPuzzle))
+    setRulesPatchStatus({ kind: 'idle' })
+  }
+
+  function applyRulesPatch(): void {
+    const patch = patchWorkbenchRulesJson(draft, rulesJsonText)
+    if (!patch.ok) {
+      setRulesPatchStatus({
+        kind: 'rejected',
+        message: '规则结构 JSON 未应用。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    const nextSelectedRule = selectedRuleId === undefined
+      ? undefined
+      : patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
+    setDraft(patch.state)
+    setDiagnostics(undefined)
+    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
+    setRulesPatchStatus({
+      kind: 'applied',
+      message: '规则结构已更新；完整诊断已标记为待重新运行。',
+    })
+
+    if (selectedRuleId !== undefined && nextSelectedRule === undefined) {
+      setSelectedRuleId(undefined)
+      setRuleTitleText('')
+      setRuleFlavorText('')
+      setRulePatchStatus({ kind: 'idle' })
+      return
+    }
+
+    if (nextSelectedRule !== undefined) {
+      setRuleTitleText(nextSelectedRule.presentation.title)
+      setRuleFlavorText(nextSelectedRule.presentation.flavor ?? '')
+    }
   }
 
   function resetScopeCollectionsEditor(): void {
@@ -390,6 +441,14 @@ export default function AuthoringWorkbenchScreen() {
             onFlavorChange={setRuleFlavorText}
             onApply={applyRulePresentationPatch}
           />
+          <RulesJsonEditor
+            jsonText={rulesJsonText}
+            patchStatus={rulesPatchStatus}
+            canPatch={parsedPuzzle !== undefined}
+            onJsonTextChange={setRulesJsonText}
+            onReset={resetRulesEditor}
+            onApply={applyRulesPatch}
+          />
           <ScopeCollectionsEditor
             jsonText={scopeCollectionsText}
             patchStatus={scopePatchStatus}
@@ -566,6 +625,45 @@ function RuleCopyEditor({
       <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
         应用文案
       </button>
+      <PatchStatus status={patchStatus} />
+    </section>
+  )
+}
+
+function RulesJsonEditor({
+  jsonText,
+  patchStatus,
+  canPatch,
+  onJsonTextChange,
+  onReset,
+  onApply,
+}: {
+  readonly jsonText: string
+  readonly patchStatus: DraftPatchStatus
+  readonly canPatch: boolean
+  readonly onJsonTextChange: (value: string) => void
+  readonly onReset: () => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="workbench-section rules-json-editor">
+      <h3>规则结构 JSON</h3>
+      <p>编辑完整 rules 数组；支持当前所有规则族。schema 会复验类型、引用和字段。</p>
+      <textarea
+        value={jsonText}
+        spellCheck={false}
+        disabled={!canPatch}
+        onChange={(event) => onJsonTextChange(event.target.value)}
+        aria-label="Rules JSON"
+      />
+      <div className="rules-editor-actions">
+        <button className="small-button" type="button" onClick={onReset} disabled={!canPatch}>
+          从草稿重载
+        </button>
+        <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
+          应用规则
+        </button>
+      </div>
       <PatchStatus status={patchStatus} />
     </section>
   )

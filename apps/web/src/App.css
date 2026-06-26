@@ -1594,19 +1594,22 @@ h3 {
   justify-self: start;
 }
 
-.scope-collections-editor {
+.scope-collections-editor,
+.rules-json-editor {
   display: grid;
   gap: 9px;
 }
 
-.scope-collections-editor p {
+.scope-collections-editor p,
+.rules-json-editor p {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.5;
   margin: 0;
 }
 
-.scope-collections-editor textarea {
+.scope-collections-editor textarea,
+.rules-json-editor textarea {
   background: var(--surface-0);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1618,7 +1621,8 @@ h3 {
   width: 100%;
 }
 
-.scope-editor-actions {
+.scope-editor-actions,
+.rules-editor-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

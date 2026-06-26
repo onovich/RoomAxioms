@@ -6,6 +6,7 @@ import {
   patchDraftBoardSize,
   patchDraftRegions,
   patchDraftRulePresentation,
+  patchDraftRules,
   patchDraftTargetCell,
   parseDraftJson,
   toggleDraftInitialReveal,
@@ -27,6 +28,7 @@ import {
   type CellKind,
   type PuzzleDefinition,
   type RegionDefinition,
+  type RuleDefinition,
 } from '@room-axioms/domain'
 import type { SchemaIssue } from '@room-axioms/schema'
 
@@ -59,6 +61,10 @@ export interface WorkbenchRuleSummary {
 export interface WorkbenchScopeCollectionsDraft {
   readonly regions: readonly RegionDefinition[]
   readonly anchors: readonly AnchorDefinition[]
+}
+
+export interface WorkbenchRulesDraft {
+  readonly rules: readonly RuleDefinition[]
 }
 
 export interface WorkbenchExportStatus {
@@ -184,6 +190,30 @@ export function patchWorkbenchScopeCollectionsJson(
   return anchorsPatch
 }
 
+export function createWorkbenchRulesJson(
+  puzzle: PuzzleDefinition | undefined,
+): string {
+  return formatDraftJson({
+    rules: puzzle?.rules ?? [],
+  })
+}
+
+export function patchWorkbenchRulesJson(
+  draft: WorkbenchDraftState,
+  jsonText: string,
+): WorkbenchDraftPatchResult {
+  const parsed = parseRulesJson(jsonText)
+  if (!parsed.ok) {
+    return {
+      ok: false,
+      state: draft,
+      issues: parsed.issues,
+    }
+  }
+
+  return patchDraftRules(draft, parsed.value.rules)
+}
+
 export function workbenchCellKindOptions(
   puzzle: PuzzleDefinition | undefined,
   currentKind: CellKind | undefined,
@@ -291,7 +321,59 @@ function parseScopeCollectionsJson(jsonText: string): {
   }
 }
 
+function parseRulesJson(jsonText: string): {
+  readonly ok: true
+  readonly value: WorkbenchRulesDraft
+} | {
+  readonly ok: false
+  readonly issues: readonly SchemaIssue[]
+} {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(jsonText) as unknown
+  } catch (error) {
+    return {
+      ok: false,
+      issues: [rulesIssue(
+        'RULES_JSON_PARSE_FAILED',
+        [],
+        error instanceof Error ? error.message : 'Unable to parse rules JSON.',
+      )],
+    }
+  }
+
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return {
+      ok: false,
+      issues: [rulesIssue('RULES_JSON_INVALID', [], 'Rules JSON must be an object.')],
+    }
+  }
+
+  const rulesDraft = parsed as Partial<WorkbenchRulesDraft>
+  if (!Array.isArray(rulesDraft.rules)) {
+    return {
+      ok: false,
+      issues: [rulesIssue('RULES_JSON_RULES_INVALID', ['rules'], 'rules must be an array.')],
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      rules: rulesDraft.rules as readonly RuleDefinition[],
+    },
+  }
+}
+
 function scopeIssue(
+  code: string,
+  path: readonly (string | number)[],
+  message: string,
+): SchemaIssue {
+  return { code, path, message }
+}
+
+function rulesIssue(
   code: string,
   path: readonly (string | number)[],
   message: string,

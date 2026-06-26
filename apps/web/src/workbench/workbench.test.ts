@@ -10,11 +10,13 @@ import {
 } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchRulesJson,
   createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
   patchWorkbenchBoardSize,
   patchWorkbenchRulePresentation,
+  patchWorkbenchRulesJson,
   patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
@@ -254,6 +256,77 @@ describe('authoring workbench shell model', () => {
       issues: [
         expect.objectContaining({
           code: 'PRESENTATION_TITLE_EMPTY',
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
+  })
+
+  it('patches full rule definitions through schema-validated draft state', () => {
+    const fixture = getWorkbenchCaseImportById('phase-24-comparative-balance-001').puzzle
+    const draft = createWorkbenchDraftFromPuzzle(fixture)
+    const rulesDraft = JSON.parse(createWorkbenchRulesJson(fixture)) as {
+      rules: Array<{
+        readonly id: string
+        readonly presentation: {
+          readonly title: string
+          readonly flavor?: string
+        }
+      } & Record<string, unknown>>
+    }
+    const patch = patchWorkbenchRulesJson(draft, JSON.stringify({
+      rules: rulesDraft.rules.map((rule, index) => (
+        index === 0
+          ? {
+              ...rule,
+              presentation: {
+                ...rule.presentation,
+                title: '结构编辑后的规则标题',
+              },
+            }
+          : rule
+      )),
+    }, null, 2))
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Rules patch failed.')
+
+    expect(patch.puzzle.rules[0]?.presentation.title).toBe('结构编辑后的规则标题')
+    expect(createWorkbenchShellModel(workbenchCaseLibrary, fixture.id, patch.state).exported).toMatchObject({
+      ok: true,
+      puzzle: {
+        id: fixture.id,
+      },
+    })
+  })
+
+  it('rejects rule arrays that break schema semantics without mutating the draft', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchRulesJson(draft, JSON.stringify({ rules: [] }, null, 2))
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'SCHEMA_INVALID',
+          path: ['rules'],
+        }),
+      ],
+    })
+    expect(patch.state).toBe(draft)
+  })
+
+  it('returns rules JSON parse issues before touching the draft', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchRulesJson(draft, '{ "rules": ')
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'RULES_JSON_PARSE_FAILED',
         }),
       ],
     })
