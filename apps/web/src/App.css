@@ -1141,6 +1141,15 @@ h3 {
   min-height: 100vh;
 }
 
+.workbench-loading {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font: 700 14px ui-monospace, Consolas, monospace;
+  justify-content: center;
+  min-height: 100vh;
+}
+
 .workbench-topbar {
   align-items: center;
   background: rgba(10, 14, 14, 0.96);
@@ -1288,6 +1297,77 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 9px;
+}
+
+.diagnostics-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.diagnostics-group {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.diagnostics-group.pass {
+  border-left-color: var(--safe);
+}
+
+.diagnostics-group.warning {
+  border-left-color: var(--accent);
+}
+
+.diagnostics-group.fail {
+  border-left-color: var(--danger);
+}
+
+.diagnostics-group.skipped {
+  border-left-color: var(--faint);
+}
+
+.diagnostics-group-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.diagnostics-group-heading b {
+  font-size: 12px;
+}
+
+.diagnostics-group-heading span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.diagnostics-group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.diagnostics-group li {
+  display: grid;
+  gap: 3px;
+}
+
+.diagnostics-group strong {
+  color: var(--accent);
+  font: 700 10px ui-monospace, Consolas, monospace;
+}
+
+.diagnostics-group li span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .workbench-rule-card {

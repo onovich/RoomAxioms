@@ -6,6 +6,10 @@ import {
   type WorkbenchDraftParseResult,
   type WorkbenchDraftState,
 } from '@room-axioms/authoring/drafts'
+import {
+  evaluateDraftDiagnostics,
+  type AuthoringDraftDiagnosticsReport,
+} from '@room-axioms/authoring/diagnostics'
 import { allCells, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
 
 export interface WorkbenchCaseOption {
@@ -61,6 +65,19 @@ export function createWorkbenchShellModel(
     boardCells: parse.ok ? boardCells(parse.puzzle) : [],
     ruleSummaries: parse.ok ? parse.puzzle.rules.map(ruleSummary) : [],
   }
+}
+
+export function evaluateWorkbenchDiagnostics(
+  draft: WorkbenchDraftState,
+  selectedCaseId: string,
+): AuthoringDraftDiagnosticsReport | undefined {
+  const parse = parseDraftJson(draft.jsonText)
+  if (!parse.ok) return undefined
+
+  return evaluateDraftDiagnostics({
+    draft: parse.puzzle,
+    sourcePath: `<workbench:${selectedCaseId}>`,
+  })
 }
 
 function caseOption(puzzle: PuzzleDefinition): WorkbenchCaseOption {

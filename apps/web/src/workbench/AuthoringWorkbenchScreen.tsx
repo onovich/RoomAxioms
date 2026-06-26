@@ -3,18 +3,21 @@ import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
+import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
 import type { CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 import { contentCases, DEFAULT_CASE_ID, getCaseById } from '../content/cases'
 import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchShellModel,
+  evaluateWorkbenchDiagnostics,
   type WorkbenchRuleSummary,
 } from './model'
 
-export function AuthoringWorkbenchScreen() {
+export default function AuthoringWorkbenchScreen() {
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID)))
+  const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
   const model = useMemo(
     () => createWorkbenchShellModel(contentCases, selectedCaseId, draft),
     [draft, selectedCaseId],
@@ -25,10 +28,20 @@ export function AuthoringWorkbenchScreen() {
     const puzzle = getCaseById(caseId)
     setSelectedCaseId(caseId)
     setDraft(createWorkbenchDraftFromPuzzle(puzzle))
+    setDiagnostics(undefined)
   }
 
   function resetCurrentCase(): void {
     loadCase(selectedCaseId)
+  }
+
+  function updateDraftText(jsonText: string): void {
+    setDraft(updateDraftJsonText(draft, jsonText))
+    setDiagnostics(undefined)
+  }
+
+  function runDiagnostics(): void {
+    setDiagnostics(evaluateWorkbenchDiagnostics(draft, selectedCaseId))
   }
 
   return (
@@ -81,7 +94,7 @@ export function AuthoringWorkbenchScreen() {
             className="draft-json-editor"
             spellCheck={false}
             value={draft.jsonText}
-            onChange={(event) => setDraft(updateDraftJsonText(draft, event.target.value))}
+            onChange={(event) => updateDraftText(event.target.value)}
             aria-label="Draft JSON"
           />
         </section>
@@ -127,8 +140,12 @@ export function AuthoringWorkbenchScreen() {
               <span className="eyebrow">Diagnostics</span>
               <h2>检查</h2>
             </div>
+            <button className="small-button" type="button" onClick={runDiagnostics}>
+              运行诊断
+            </button>
           </div>
           <WorkbenchStatus puzzle={parsedPuzzle} draft={draft} exportOk={model.exported.ok} />
+          <DiagnosticsSummary report={diagnostics} parseOk={model.parse.ok} />
           <section className="workbench-section">
             <h3>规则</h3>
             <div className="workbench-rule-list">
@@ -145,6 +162,70 @@ export function AuthoringWorkbenchScreen() {
       </main>
     </div>
   )
+}
+
+function DiagnosticsSummary({
+  report,
+  parseOk,
+}: {
+  readonly report: AuthoringDraftDiagnosticsReport | undefined
+  readonly parseOk: boolean
+}) {
+  if (report === undefined) {
+    return (
+      <section className="workbench-section">
+        <h3>诊断</h3>
+        <IssueList issues={[
+          parseOk
+            ? '尚未运行完整诊断。点击“运行诊断”查看正确性、证明、质量、难度、文案和性能分组。'
+            : 'JSON 当前无法解析，修复格式后再运行完整诊断。',
+        ]} />
+      </section>
+    )
+  }
+
+  return (
+    <section className="workbench-section">
+      <h3>诊断 · {diagnosticsStatusText(report.status)}</h3>
+      <div className="diagnostics-group-list">
+        {report.groups.map((group) => (
+          <article key={group.id} className={`diagnostics-group ${group.status}`}>
+            <div className="diagnostics-group-heading">
+              <b>{diagnosticsTitle(group.title)}</b>
+              <span>{diagnosticsStatusLabel(group.status)}</span>
+            </div>
+            <ul>
+              {group.items.slice(0, 3).map((item) => (
+                <li key={`${group.id}:${item.code}:${item.message}`}>
+                  <strong>{item.code}</strong>
+                  <span>{item.message}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function diagnosticsStatusText(status: AuthoringDraftDiagnosticsReport['status']): string {
+  switch (status) {
+    case 'invalid-draft':
+      return '草稿无效'
+    case 'valid-unsatisfiable':
+      return '不可满足'
+    case 'valid-not-unique':
+      return '未唯一'
+    case 'valid-not-human-explainable':
+      return '证明不足'
+    case 'valid-degenerate':
+      return '退化'
+    case 'valid-review-needed':
+      return '需复核'
+    case 'valid-ready-for-private-review':
+      return '可进入私下复核'
+  }
 }
 
 function WorkbenchStatus({
@@ -180,6 +261,44 @@ function WorkbenchStatus({
       </div>
     </dl>
   )
+}
+
+function diagnosticsTitle(title: string): string {
+  switch (title) {
+    case 'Blocking Errors':
+      return '阻塞错误'
+    case 'Correctness':
+      return '正确性'
+    case 'Human Proof':
+      return '人类证明'
+    case 'Quality Gates':
+      return '质量门'
+    case 'Clone Risk':
+      return '克隆风险'
+    case 'Difficulty':
+      return '难度'
+    case 'Copy Warnings':
+      return '文案警告'
+    case 'Performance And Caps':
+      return '性能与上限'
+    default:
+      return title
+  }
+}
+
+function diagnosticsStatusLabel(status: AuthoringDiagnosticsGroup['status']): string {
+  switch (status) {
+    case 'pass':
+      return '通过'
+    case 'info':
+      return '信息'
+    case 'warning':
+      return '需复核'
+    case 'fail':
+      return '失败'
+    case 'skipped':
+      return '跳过'
+  }
 }
 
 function RuleSummary({ rule }: { readonly rule: WorkbenchRuleSummary }) {
