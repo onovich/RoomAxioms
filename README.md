@@ -40,12 +40,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 ## Current Project Status
 
 - Last completed check: Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates, accepted with blocker
-- Current executor result: Phase 23 returned `READY_FOR_CHECK_WITH_BLOCKER`; no next executor phase has been dispatched yet
+- Current executor result: Phase 24 dispatched for execution
 - Final report: `docs/phase-23-difficulty-4-plus-puzzle-expansion-final-report.md`
-- Active executor phase: none
-- Guide: `docs/phase-23-difficulty-4-plus-puzzle-expansion-goal-mode-execution-guide.md`
-- Completed budget: 40 executor rounds
-- Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, promoted `case-021` as the only honest target-4 case, and documented that 20 target promotions plus 10 super-hard promotions are blocked under the current mechanics/content method.
+- Active executor phase: Phase 24 - Rule Grammar Expressiveness Expansion
+- Guide: `docs/phase-24-rule-grammar-expressiveness-expansion-goal-mode-execution-guide.md`
+- Active budget: 24 executor rounds
+- Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, promoted `case-021` as the only honest target-4 case, and documented that deeper puzzles are blocked under the current mechanics/content method; Phase 24 now expands rule grammar to address that blocker.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
