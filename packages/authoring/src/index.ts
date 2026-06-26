@@ -57,6 +57,23 @@ export {
   type AuthoringDraftQualityReport,
 } from './diagnostics.js'
 export {
+  createEmptyWorkbenchDraftState,
+  exportDraftJson,
+  formatDraftJson,
+  importJsonTextToDraftState,
+  importPuzzleToDraftState,
+  parseDraftJson,
+  selectDraftCell,
+  selectDraftRule,
+  updateDraftJsonText,
+  type WorkbenchDraftExportResult,
+  type WorkbenchDraftImportOptions,
+  type WorkbenchDraftParseResult,
+  type WorkbenchDraftSource,
+  type WorkbenchDraftSourceKind,
+  type WorkbenchDraftState,
+} from './drafts.js'
+export {
   evaluateNoveltyClaimManifest,
   type NoveltyClaim,
   type NoveltyClaimEvidence,

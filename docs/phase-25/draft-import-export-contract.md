@@ -1,0 +1,42 @@
+# Phase 25 Draft Import / Export Contract
+
+Status: Round 6 draft-model evidence.
+Guide: `docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md`
+
+`@room-axioms/authoring/drafts` provides the browser-safe draft-state helpers for
+the private workbench. The API is deliberately in-memory and side-effect free.
+
+## Import
+
+Supported inputs:
+
+- a parsed `PuzzleDefinition` via `importPuzzleToDraftState`;
+- raw JSON text via `importJsonTextToDraftState`;
+- an empty state via `createEmptyWorkbenchDraftState`.
+
+Valid imports are formatted with two-space JSON and keep `lastValidPuzzle` for
+diagnostics and recovery. Invalid raw JSON remains editable as raw text and does
+not invent a puzzle.
+
+## Editing State
+
+The current first slice supports:
+
+- replacing raw JSON text with `updateDraftJsonText`;
+- selecting or clearing a cell id with `selectDraftCell`;
+- selecting or clearing a rule id with `selectDraftRule`.
+
+These helpers are immutable and DOM-free. Later rounds can add board, target,
+initial reveal, metadata, region, anchor, record, and rule patch helpers on top of
+the same state shape.
+
+## Export
+
+`exportDraftJson` parses the current draft text. If valid, it returns formatted
+JSON text plus the parsed puzzle. If invalid, it returns the raw text and schema
+issues.
+
+Export never writes to `content/cases`, never updates the web selector, and never
+promotes experimental content. Promotion remains a deliberate repository change
+with the existing schema, solver/proof, authoring, anti-clone, novelty, web, and
+full-validation gates.

@@ -14,6 +14,10 @@
     "./diagnostics": {
       "types": "./src/diagnostics.ts",
       "import": "./src/diagnostics.ts"
+    },
+    "./drafts": {
+      "types": "./src/drafts.ts",
+      "import": "./src/drafts.ts"
     }
   },
   "files": [
