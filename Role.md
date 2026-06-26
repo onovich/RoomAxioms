@@ -25,10 +25,10 @@ artist:
 idempotency:
   active_goal_guide: docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md
   active_goal_phase: Phase 25 - Authoring Editor And Live Diagnostics Workbench
-  last_planner_dispatch: 2026-06-26T14:10:12+08:00
+  last_planner_dispatch: 2026-06-27T00:06:22+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-24-rule-grammar-expressiveness-expansion-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: e1c3d86
+  last_planner_dispatch_guide: docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: a718edd
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
   last_check_phase: Phase 24 - Rule Grammar Expressiveness Expansion
