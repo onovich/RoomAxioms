@@ -3,6 +3,7 @@ import type {
   CellId,
   CellKind,
   AnchorCountRule,
+  ComparativeCountRule,
   AnchorDefinition,
   ConditionalCountRule,
   ForEachCountRule,
@@ -17,6 +18,7 @@ import { createDeduction, normalizeProofPremises } from './graph.js';
 import {
   comparatorBounds,
   anchorScopePremise,
+  comparativePremise,
   countPremise,
   countScopePremise,
   createKnowledgeIndex,
@@ -26,6 +28,7 @@ import {
   scopePremise,
   scopeOverlapPremise,
   summarizeConditionalClause,
+  summarizeComparativeScope,
   summarizeForEachScope,
   summarizeAnchorScope,
   summarizeGlobalCount,
@@ -49,6 +52,8 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
       baseDeductions.push(...deriveScopeOverlapCountDeductions(state, rule));
     } else if (rule.type === 'conditionalCount') {
       baseDeductions.push(...deriveConditionalCountDeductions(state, rule));
+    } else if (rule.type === 'comparativeCount') {
+      baseDeductions.push(...deriveComparativeCountDeductions(state, rule));
     } else if (rule.type === 'anchorCount') {
       baseDeductions.push(...deriveAnchorCountDeductions(state, rule));
     } else if (rule.type === 'forEachCount') {
@@ -417,6 +422,49 @@ export function deriveConditionalCountDeductions(
   return sortDeductions(state, deductions);
 }
 
+export function deriveComparativeCountDeductions(
+  state: KnowledgeState,
+  rule: ComparativeCountRule,
+): readonly Deduction[] {
+  if (rule.comparison.op !== 'eq') return [];
+
+  const offset = rule.comparison.offset ?? 0;
+  const leftSummary = summarizeComparativeScope(state, rule, 'left');
+  const rightSummary = summarizeComparativeScope(state, rule, 'right');
+  const deductions: Deduction[] = [];
+  const fixedRightCount = exactKnownCount(rightSummary);
+  if (fixedRightCount !== null) {
+    deductions.push(...deriveFixedComparativeSideDeductions({
+      state,
+      rule,
+      targetSide: 'left',
+      targetSummary: leftSummary,
+      targetScope: rule.left,
+      fixedSide: 'right',
+      fixedSummary: rightSummary,
+      fixedCount: fixedRightCount,
+      requiredCount: fixedRightCount + offset,
+    }));
+  }
+
+  const fixedLeftCount = exactKnownCount(leftSummary);
+  if (fixedLeftCount !== null) {
+    deductions.push(...deriveFixedComparativeSideDeductions({
+      state,
+      rule,
+      targetSide: 'right',
+      targetSummary: rightSummary,
+      targetScope: rule.right,
+      fixedSide: 'left',
+      fixedSummary: leftSummary,
+      fixedCount: fixedLeftCount,
+      requiredCount: fixedLeftCount - offset,
+    }));
+  }
+
+  return sortDeductions(state, mergeDeductions(deductions));
+}
+
 export function deriveAnchorCountDeductions(
   state: KnowledgeState,
   rule: AnchorCountRule,
@@ -594,6 +642,67 @@ export function deriveKnownSafeFromObjectDeductions(
 function targetConclusion(cellId: CellId, target: CellKind): DeductionConclusion {
   if (target === 'guest') return { kind: 'guest', cellId };
   return { kind: 'object', cellId, object: target };
+}
+
+function deriveFixedComparativeSideDeductions(input: {
+  readonly state: KnowledgeState;
+  readonly rule: ComparativeCountRule;
+  readonly targetSide: 'left' | 'right';
+  readonly targetSummary: ReturnType<typeof summarizeComparativeScope>;
+  readonly targetScope: ComparativeCountRule['left'];
+  readonly fixedSide: 'left' | 'right';
+  readonly fixedSummary: ReturnType<typeof summarizeComparativeScope>;
+  readonly fixedCount: number;
+  readonly requiredCount: number;
+}): readonly Deduction[] {
+  if (input.requiredCount < 0 || input.requiredCount > input.targetSummary.scopeCellIds.length) return [];
+
+  const premises = [
+    rulePremise(input.rule),
+    countScopePremise(input.rule.id, input.fixedSide === 'left' ? input.rule.left : input.rule.right, input.fixedSummary.scopeCellIds),
+    countPremise(input.fixedSummary),
+    comparativePremise(input.rule, input.fixedSide, input.fixedCount),
+    countScopePremise(input.rule.id, input.targetScope, input.targetSummary.scopeCellIds),
+    {
+      kind: 'count' as const,
+      label: `${input.rule.id} ${input.targetSide} side must contain ${input.requiredCount} ${input.rule.target}`,
+      cellIds: input.targetSummary.scopeCellIds,
+      ruleIds: [input.rule.id],
+    },
+  ];
+  const deductions: Deduction[] = [];
+
+  if (
+    input.rule.target === 'guest' &&
+    input.targetSummary.knownTargetCellIds.length === input.requiredCount
+  ) {
+    for (const cellId of input.targetSummary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'COMPARATIVE_COUNT_SATURATED',
+        conclusion: { kind: 'safe', cellId },
+        ruleIds: [input.rule.id],
+        premises,
+      }));
+    }
+  }
+
+  const remainingRequired = input.requiredCount - input.targetSummary.knownTargetCellIds.length;
+  if (remainingRequired > 0 && remainingRequired === input.targetSummary.unknownCellIds.length) {
+    for (const cellId of input.targetSummary.unknownCellIds) {
+      deductions.push(createDeduction({
+        technique: 'COMPARATIVE_COUNT_ALL_REMAINING',
+        conclusion: targetConclusion(cellId, input.rule.target),
+        ruleIds: [input.rule.id],
+        premises,
+      }));
+    }
+  }
+
+  return deductions;
+}
+
+function exactKnownCount(summary: ReturnType<typeof summarizeComparativeScope>): number | null {
+  return summary.unknownCellIds.length === 0 ? summary.knownTargetCellIds.length : null;
 }
 
 function anchorForRule(state: KnowledgeState, rule: AnchorCountRule): AnchorDefinition {

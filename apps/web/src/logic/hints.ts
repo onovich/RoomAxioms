@@ -63,6 +63,10 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
       return '条件成立后已经数够了'
     case 'CONDITIONAL_COUNT_ALL_REMAINING':
       return '条件成立后剩下的都要算'
+    case 'COMPARATIVE_COUNT_SATURATED':
+      return '比较后已经数够了'
+    case 'COMPARATIVE_COUNT_ALL_REMAINING':
+      return '比较后剩下的都要算'
     case 'ANCHOR_COUNT_SATURATED':
       return '锚点周围已经数够了'
     case 'ANCHOR_COUNT_ALL_REMAINING':

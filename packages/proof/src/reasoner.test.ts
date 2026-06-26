@@ -270,6 +270,81 @@ describe('conditional count human techniques', () => {
   });
 });
 
+describe('comparative count human techniques', () => {
+  it('derives safe cells when an equality comparison fixes a saturated side', () => {
+    const state = makeState({
+      board: { width: 4, height: 2 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'left', title: 'Left', cells: ['A1', 'B1', 'A2'] },
+        { id: 'right', title: 'Right', cells: ['C1', 'D1'] },
+      ],
+      rules: [
+        {
+          id: 'CP1',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'left' },
+          right: { kind: 'region', regionId: 'right' },
+          target: 'guest',
+          comparison: { op: 'eq' },
+          presentation: { title: 'left and right guest counts match' },
+        },
+      ],
+      observations: [
+        { cellId: 'A1', kind: 'guest' },
+        { cellId: 'C1', kind: 'guest' },
+        { cellId: 'D1', kind: 'empty' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const forced = findForcedCells({ puzzle: state.puzzle, observations: state.observations });
+
+    expect(conclusionsFor(deductions, 'COMPARATIVE_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+    ]);
+    expect(forced.safe).toEqual(['B1', 'A2']);
+  });
+
+  it('derives guests when an offset comparison requires all remaining cells on one side', () => {
+    const state = makeState({
+      board: { width: 3, height: 2 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'left', title: 'Left', cells: ['A1', 'B1'] },
+        { id: 'right', title: 'Right', cells: ['A2', 'B2'] },
+      ],
+      rules: [
+        {
+          id: 'CP1',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'left' },
+          right: { kind: 'region', regionId: 'right' },
+          target: 'guest',
+          comparison: { op: 'eq', offset: 1 },
+          presentation: { title: 'left has one more guest than right' },
+        },
+      ],
+      observations: [
+        { cellId: 'A1', kind: 'empty' },
+        { cellId: 'A2', kind: 'empty' },
+        { cellId: 'B2', kind: 'empty' },
+      ],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const result = isSatisfiable(
+      { puzzle: state.puzzle, observations: state.observations },
+      [{ kind: 'cellIsNot', cellId: 'B1', value: 'guest' }],
+    );
+
+    expect(conclusionsFor(deductions, 'COMPARATIVE_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'B1' },
+    ]);
+    expect(result.satisfiable).toBe(false);
+    expect(result.stats.truncated).toBe(false);
+  });
+});
+
 describe('anchor count human techniques', () => {
   it('activates only after the anchor subject is observed', () => {
     const puzzleInput = {

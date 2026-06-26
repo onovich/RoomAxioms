@@ -4,6 +4,7 @@ import type {
   CellKind,
   Comparator,
   AnchorCountRule,
+  ComparativeCountRule,
   ConditionalCountClause,
   CountScopeRef,
   ForEachCountRule,
@@ -82,6 +83,15 @@ export function summarizeConditionalClause(
   clause: ConditionalCountClause,
 ): CountSummary {
   return summarizeCountInCells(state, { id: ruleId, target: clause.target, count: clause.count }, countScopeCells(state, clause.scope));
+}
+
+export function summarizeComparativeScope(
+  state: KnowledgeState,
+  rule: ComparativeCountRule,
+  side: 'left' | 'right',
+): CountSummary {
+  const scope = side === 'left' ? rule.left : rule.right;
+  return summarizeCountInCells(state, { id: rule.id, target: rule.target, count: { op: 'gte', value: 0 } }, countScopeCells(state, scope));
 }
 
 export function summarizeAnchorScope(
@@ -195,6 +205,16 @@ export function countScopePremise(
     label: `${ruleId} ${countScopeLabel(scope)}: ${scopeCellIds.join(', ')}`,
     cellIds: scopeCellIds,
     ruleIds: [ruleId],
+  };
+}
+
+export function comparativePremise(rule: ComparativeCountRule, fixedSide: 'left' | 'right', fixedCount: number): ProofPremise {
+  const offset = rule.comparison.offset ?? 0;
+  const offsetText = offset === 0 ? '' : offset > 0 ? ` + ${offset}` : ` - ${Math.abs(offset)}`;
+  return {
+    kind: 'count',
+    label: `${rule.id} comparative ${rule.comparison.op}: left ${rule.target} count = right count${offsetText}; ${fixedSide} side fixed at ${fixedCount}`,
+    ruleIds: [rule.id],
   };
 }
 
