@@ -1,5 +1,7 @@
 # Phase 23 Difficulty 4+ Puzzle Expansion Final Report
 
+Post-Phase 24 note: `case-021` was later kept in the release selector but downgraded by user review to player-facing difficulty 3. The Phase 23 target-4 evidence below is retained as historical machine-gate evidence, not as the current selector tier.
+
 Status: READY_FOR_CHECK_WITH_BLOCKER
 Guide: docs/phase-23-difficulty-4-plus-puzzle-expansion-goal-mode-execution-guide.md
 Final commit: final report commit; hash reported by executor route response
@@ -10,7 +12,7 @@ Phase 23 implemented the requested intake, copy/quarantine, degeneracy, difficul
 
 Promoted Phase 23 cases:
 
-- Target 4/5: 1 (`case-021`)
+- Target 4/5 at Phase 23 close: 1 (`case-021`, later downgraded to difficulty 3 by Phase 24 user review)
 - Super-hard 6-7: 0
 
 Final status is therefore `READY_FOR_CHECK_WITH_BLOCKER`.
@@ -114,13 +116,15 @@ Common rejection causes:
 
 ## Selector Order
 
-`apps/web/src/content/cases.ts` now assigns selector tiers:
+At Phase 23 close, `apps/web/src/content/cases.ts` assigned selector tiers:
 
 - baseline/mechanics samples: all existing selected cases except `case-021`;
 - target-4 candidate: `case-021`;
 - super-hard: none.
 
 `apps/web/src/view/components/TopBar.tsx` renders selector `optgroup` labels so low-rated baseline content no longer masquerades as 4+ content.
+
+Post-Phase 24 status: `case-021` is now a baseline difficulty-3 case, so the current selector has no `target-4` or `super-hard` cases.
 
 ## Validation Evidence
 
@@ -162,7 +166,7 @@ Focused validation:
 ## Blockers Or Caveats
 
 - Blocker: Phase 23 did not produce the requested 20 target-4 promotions or 10 super-hard promotions.
-- Current honest promoted count is 1 target-4 and 0 super-hard.
+- Honest promoted count at Phase 23 close was 1 target-4 and 0 super-hard; after the Phase 24 case-021 downgrade, the current honest high-tier count is 0 target-4 and 0 super-hard.
 - Legacy selector cases still fail new Phase 23 gates when judged as hard content:
   - degeneracy fail: `case-015`, `case-017`, `case-018`, `case-020`;
   - single material-family fail: `case-011`, `case-013`, `case-014`.

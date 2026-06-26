@@ -42,9 +42,7 @@ export const contentCases: readonly PuzzleDefinition[] = caseFixtures.map((fixtu
   fixture as PuzzleDefinition,
 )
 
-const caseTierById: Partial<Record<string, CaseTier>> = {
-  'case-021': 'target-4',
-}
+const caseTierById: Partial<Record<string, CaseTier>> = {}
 
 export const caseSummaries: readonly CaseSummary[] = contentCases.map((puzzle) => ({
   id: puzzle.id,

@@ -1,12 +1,14 @@
 # Case 021 Salvage And Copy Audit
 
-Status: case-021 salvaged as a target-4 candidate with a caveat.
+Status: case-021 kept as a released difficulty-3 case with R3/R4 overlap caveat.
 
 ## Decision
 
 `case-021` had a real content-quality defect, not just a wording defect. The former R7 was a fixed five-cell `regionCount` rule with `empty = 5` over A2, A3, E2, E3, and E4. The text depended on a region label and rule highlight to communicate the scope, and the rule directly granted five safe cells while being counted as a hard clue.
 
 The repaired case removes that rule entirely. A2, A3, E2, E3, and E4 are now ordinary opening reveals. The remaining rules are global counts plus the bottle, mirror, and garbage-bin chain.
+
+Follow-up user review accepted keeping `case-021` released, but rejected the target-4/high-tier presentation. R3 and R4 feel redundant in play: keeping only one does not materially change the player experience. The web selector and case metadata therefore present this case as difficulty 3/baseline rather than as a 4+ candidate.
 
 Changed player-facing content:
 
@@ -26,6 +28,9 @@ Changed player-facing content:
 | Replace R7 with `guest = 0` over the same five cells | Preserved proof shape but still directly gave five safe cells and produced cap/truncation warning in the authoring report. |
 | Replace R7 with bottle/mirror/bin zero-count variants | Failed no-guess and/or made R7 redundant. |
 | Remove R7 and reveal A2, A3, E2, E3, E4 at opening | PASS: 56 opening guest layouts, 4 proof waves, 13 deductions, no-guess true, final guest layout unique, degeneracy pass, target-4 pass. |
+| Remove R3 from the repaired case | No-guess proof and final uniqueness survived, but default authoring report produced initial-layout truncation and recommended `raise-caps-or-simplify`; not safe for shipped correctness gates. |
+| Remove R4 from the repaired case | Broke no-guess proof with `GUESS_POINT`; not viable. |
+| Replace R3 with simple global, line-count, bottle-empty, or mirror-bin rules | No narrow replacement passed cleanly: candidates either broke proof/no-guess, introduced redundant rules, or produced default authoring truncation. |
 
 ## Current Evidence
 
@@ -42,13 +47,14 @@ Changed player-facing content:
 - redundant rules: none
 - degeneracy: pass
 - targetFour: pass
+- `pnpm authoring -- score content/cases/case-021.json`: ok true; uncalibrated score 33.87, band 5
 
-Quality caveat: the repaired puzzle still has 11 opening reveals and 5 irrelevant cells. It is acceptable as a salvaged target-4 candidate under current gates, but difficulty remains uncalibrated until real playtest evidence exists.
+Quality caveat: the repaired puzzle still has 11 opening reveals, 5 irrelevant cells, and a manual R3/R4 overlap concern. Although the machine targetFour threshold and uncalibrated score still read high for the unchanged mechanics, user review overrides that presentation: the case is released as difficulty 3 and no longer appears in the `target-4` selector tier.
 
 Anti-clone/novelty run over the current web selector:
 
 - Overall status: fail because legacy baseline cases still have known degeneracy or single-family hard failures.
-- `case-021`: degeneracy pass; rule-family diversity pass with anchor, foreach, and global families; no redundant rules.
+- `case-021`: degeneracy pass; rule-family diversity pass with anchor, foreach, and global families; automated redundant-rule check reports none, but manual review records R3/R4 as overlapping in player experience.
 - novelty manifest: pass for required selector cases, including the repaired `case-021` claim.
 
 ## Shipped-Case Audit

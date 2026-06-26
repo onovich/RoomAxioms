@@ -11,7 +11,7 @@ You are executing Phase 24 of Room Axioms: Rule Grammar Expressiveness Expansion
 
 Read this guide, `README.md`, `Role.md`, `docs/development-plan.md`, `docs/phase-23-difficulty-4-plus-puzzle-expansion-final-report.md`, `docs/phase-23/`, `content/novelty-claims.json`, `packages/domain/src`, `packages/schema/src`, `packages/solver/src`, `packages/proof/src`, `packages/authoring/src`, `packages/generator/src`, `apps/web/src`, and `content/cases`.
 
-Phase 23 proved an important blocker: stronger anti-degeneracy gates work, but the current content method and grammar only produced one honest target-4 case (`case-021`) and no super-hard cases. The next user-approved direction is to expand rule grammar before returning to bulk content production.
+Phase 23 proved an important blocker: stronger anti-degeneracy gates work, but the current content method and grammar only produced one machine-valid high-tier candidate (`case-021`), later downgraded by user review to difficulty 3, and no super-hard cases. The next user-approved direction is to expand rule grammar before returning to bulk content production.
 
 Your goal is to add a small, conservative set of grammar features that create deeper overlapping proof frontiers:
 

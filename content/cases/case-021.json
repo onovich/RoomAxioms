@@ -163,15 +163,16 @@
     "E5": "guest"
   },
   "metadata": {
-    "difficulty": 5,
+    "difficulty": 3,
     "tags": [
-      "target-4",
+      "mvp",
+      "mid-band",
       "multi-wave",
       "anchor-frontier",
       "intersection"
     ],
     "author": "room-axioms-maintainers",
     "status": "validated",
-    "notes": "Opening reveals replace the former fixed five-cell region rule; difficulty remains uncalibrated until real playtest evidence exists."
+    "notes": "Opening reveals replace the former fixed five-cell region rule; user review keeps this case but rates it around difficulty 3. The R3/R4 overlap remains a documented quality caveat."
   }
 }

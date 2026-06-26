@@ -3,6 +3,8 @@
 Round: 10
 Decision: promote `case-021` as the first Phase 23 target 4+ ladder case.
 
+Post-Phase 24 note: `case-021` was later kept in the player selector but downgraded by user review to difficulty 3. The target-4 notes in this round file are historical machine-gate evidence, not the current presentation tier.
+
 ## Promoted Case
 
 Path: `content/cases/case-021.json`

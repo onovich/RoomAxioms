@@ -143,12 +143,13 @@
     {
       "puzzleId": "case-021",
       "status": "accepted",
-      "novelty": "Four-wave centerline garbage-bin chain where observed bottles identify the only mirror, the mirror opens a bin anchor chain, and the former five-cell region is represented as ordinary opening information rather than a public safe-region rule.",
+      "novelty": "Centerline garbage-bin chain where observed bottles identify the only mirror, the mirror opens a bin anchor chain, and the former five-cell region is represented as ordinary opening information rather than a public safe-region rule.",
       "evidence": {
-        "reviewerNote": "Repaired after player review: the former R7 fixed five-cell empty-region rule was removed because it depended on highlight/region naming and gave away safe cells too directly. A2, A3, E2, E3, and E4 are now opening reveals; the remaining case still reports 56 opening guest layouts, 4 proof waves, 13 deductions, three material rule families, no redundant rules, and a degeneracy pass. Difficulty remains uncalibrated until real playtest evidence exists.",
+        "reviewerNote": "Repaired after player review: the former R7 fixed five-cell empty-region rule was removed because it depended on highlight/region naming and gave away safe cells too directly. A2, A3, E2, E3, and E4 are now opening reveals. A later user review kept the case released but rated it around difficulty 3, not target-4/high-tier; R3/R4 redundancy was probed, but narrow removal or replacement attempts either broke no-guess proof or produced default authoring truncation, so the overlap remains a quality caveat.",
         "gateEvidence": [
           "phase-23-target-candidate-round-10",
           "phase-24-case-021-content-quality-repair",
+          "phase-24-case-021-rating-downgrade",
           "UNIQUE_TARGET_NEIGHBOR_INTERSECTION",
           "ANCHOR_COUNT_SATURATED",
           "multi-wave-proof"

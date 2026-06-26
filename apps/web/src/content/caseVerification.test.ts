@@ -45,19 +45,23 @@ describe('case content verification harness', () => {
       caseName: '案卷 11 · 交汇视线',
       difficulty: 3,
     })
+    expect(caseSummaries.find((summary) => summary.id === 'case-021')).toMatchObject({
+      title: '客房 21：中线垃圾桶链',
+      caseName: '案卷 21 · 中线垃圾桶链',
+      difficulty: 3,
+      tier: 'baseline',
+    })
     for (const summary of caseSummaries) {
       expect(Object.keys(summary).sort()).toEqual(['board', 'caseName', 'difficulty', 'id', 'tags', 'tier', 'title'])
     }
     expect(caseSummaries.some((summary) => summary.id === DEFAULT_CASE_ID)).toBe(true)
   })
 
-  it('separates baseline cases from Phase 23 target-4 candidates', () => {
-    expect(caseSummaries.filter((summary) => summary.tier === 'target-4').map((summary) => summary.id)).toEqual([
-      'case-021',
-    ])
+  it('does not present downgraded cases as high-tier candidates', () => {
+    expect(caseSummaries.filter((summary) => summary.tier === 'target-4')).toEqual([])
     expect(caseSummaries.filter((summary) => summary.tier === 'super-hard')).toEqual([])
     expect(caseSummaries.find((summary) => summary.id === DEFAULT_CASE_ID)?.tier).toBe('baseline')
-    expect(caseSummaries.every((summary) => summary.tier !== 'target-4' || summary.tags.includes('target-4'))).toBe(true)
+    expect(caseSummaries.find((summary) => summary.id === 'case-021')?.tags).not.toContain('target-4')
   })
 
   it('keeps shipped case metadata free of internal phase labels', () => {
