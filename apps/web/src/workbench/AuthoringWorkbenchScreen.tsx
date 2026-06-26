@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
-import type { CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
+import type { BoardSize, CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
@@ -12,24 +12,29 @@ import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
+  patchWorkbenchBoardSize,
   patchWorkbenchTargetCell,
+  toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
   type WorkbenchBoardCell,
   type WorkbenchRuleSummary,
 } from './model'
 
-type CellPatchStatus =
+type DraftPatchStatus =
   | { readonly kind: 'idle' }
   | { readonly kind: 'applied'; readonly message: string }
   | { readonly kind: 'rejected'; readonly message: string; readonly issues: readonly string[] }
 
 export default function AuthoringWorkbenchScreen() {
+  const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
-  const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle))
+  const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(defaultCase))
   const [diagnostics, setDiagnostics] = useState<AuthoringDraftDiagnosticsReport | undefined>()
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
-  const [patchStatus, setPatchStatus] = useState<CellPatchStatus>({ kind: 'idle' })
+  const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
+  const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
@@ -47,6 +52,8 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnostics(undefined)
     setSelectedCellId(undefined)
     setActiveKind('empty')
+    setBoardWidthText(String(item.puzzle.board.width))
+    setBoardHeightText(String(item.puzzle.board.height))
     setPatchStatus({ kind: 'idle' })
   }
 
@@ -59,6 +66,8 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnostics(undefined)
     setSelectedCellId(undefined)
     setActiveKind('empty')
+    setBoardWidthText('')
+    setBoardHeightText('')
     setPatchStatus({ kind: 'idle' })
   }
 
@@ -85,12 +94,63 @@ export default function AuthoringWorkbenchScreen() {
       return
     }
 
-    setDraft(patch.state)
+    applySuccessfulPatch(patch.state, `${selectedCellId} 已改成${kindLabel(activeKind)}；完整诊断已标记为待重新运行。`)
+  }
+
+  function toggleInitialRevealForSelectedCell(): void {
+    if (selectedCellId === undefined) return
+
+    const patch = toggleWorkbenchInitialReveal(draft, selectedCellId)
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${selectedCellId} 的初始揭示切换被拒绝。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    const becameRevealed = patch.puzzle.initialReveals.includes(selectedCellId)
+    applySuccessfulPatch(
+      patch.state,
+      `${selectedCellId} 已${becameRevealed ? '加入' : '移出'}初始揭示；完整诊断已标记为待重新运行。`,
+    )
+  }
+
+  function applyBoardSizePatch(): void {
+    const board = parseBoardSize(boardWidthText, boardHeightText)
+    if (board === undefined) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: '棋盘尺寸未应用。',
+        issues: ['BOARD_SIZE_INPUT: 宽和高必须是 1 到 26 之间的整数。'],
+      })
+      return
+    }
+
+    const patch = patchWorkbenchBoardSize(draft, board)
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${board.width} × ${board.height} 的棋盘尺寸被拒绝。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    if (selectedCellId !== undefined && !patch.puzzle.target[selectedCellId]) {
+      setSelectedCellId(undefined)
+      setActiveKind('empty')
+    }
+    setBoardWidthText(String(patch.puzzle.board.width))
+    setBoardHeightText(String(patch.puzzle.board.height))
+    applySuccessfulPatch(patch.state, `棋盘尺寸已改为 ${board.width} × ${board.height}；完整诊断已标记为待重新运行。`)
+  }
+
+  function applySuccessfulPatch(nextDraft: WorkbenchDraftState, message: string): void {
+    setDraft(nextDraft)
     setDiagnostics(undefined)
-    setPatchStatus({
-      kind: 'applied',
-      message: `${selectedCellId} 已改成${kindLabel(activeKind)}；完整诊断已标记为待重新运行。`,
-    })
+    setPatchStatus({ kind: 'applied', message })
   }
 
   return (
@@ -158,6 +218,14 @@ export default function AuthoringWorkbenchScreen() {
               {model.parse.ok ? 'Schema OK' : 'Schema Error'}
             </span>
           </div>
+          <BoardSizeEditor
+            widthText={boardWidthText}
+            heightText={boardHeightText}
+            disabled={parsedPuzzle === undefined}
+            onWidthChange={setBoardWidthText}
+            onHeightChange={setBoardHeightText}
+            onApply={applyBoardSizePatch}
+          />
           {parsedPuzzle === undefined ? (
             <IssueList issues={model.parse.issues.map((issue) => `${issue.code}: ${issue.message}`)} />
           ) : (
@@ -194,6 +262,7 @@ export default function AuthoringWorkbenchScreen() {
             canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
             onKindChange={setActiveKind}
             onApply={applyTargetCellPatch}
+            onToggleInitialReveal={toggleInitialRevealForSelectedCell}
           />
         </section>
 
@@ -231,6 +300,52 @@ export default function AuthoringWorkbenchScreen() {
   )
 }
 
+function BoardSizeEditor({
+  widthText,
+  heightText,
+  disabled,
+  onWidthChange,
+  onHeightChange,
+  onApply,
+}: {
+  readonly widthText: string
+  readonly heightText: string
+  readonly disabled: boolean
+  readonly onWidthChange: (value: string) => void
+  readonly onHeightChange: (value: string) => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="board-size-editor" aria-label="棋盘尺寸">
+      <label>
+        宽
+        <input
+          type="number"
+          min="1"
+          max="26"
+          value={widthText}
+          disabled={disabled}
+          onChange={(event) => onWidthChange(event.target.value)}
+        />
+      </label>
+      <label>
+        高
+        <input
+          type="number"
+          min="1"
+          max="26"
+          value={heightText}
+          disabled={disabled}
+          onChange={(event) => onHeightChange(event.target.value)}
+        />
+      </label>
+      <button className="small-button" type="button" onClick={onApply} disabled={disabled}>
+        应用尺寸
+      </button>
+    </section>
+  )
+}
+
 function CellFactEditor({
   selectedCell,
   activeKind,
@@ -239,14 +354,16 @@ function CellFactEditor({
   canPatch,
   onKindChange,
   onApply,
+  onToggleInitialReveal,
 }: {
   readonly selectedCell: WorkbenchBoardCell | undefined
   readonly activeKind: CellKind
   readonly kindOptions: readonly CellKind[]
-  readonly patchStatus: CellPatchStatus
+  readonly patchStatus: DraftPatchStatus
   readonly canPatch: boolean
   readonly onKindChange: (kind: CellKind) => void
   readonly onApply: () => void
+  readonly onToggleInitialReveal: () => void
 }) {
   return (
     <section className="cell-editor" aria-label="目标格编辑">
@@ -277,13 +394,16 @@ function CellFactEditor({
         <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
           应用对象
         </button>
+        <button className="small-button" type="button" onClick={onToggleInitialReveal} disabled={!canPatch}>
+          {selectedCell?.initiallyRevealed ? '取消初始' : '设为初始'}
+        </button>
       </div>
       <PatchStatus status={patchStatus} />
     </section>
   )
 }
 
-function PatchStatus({ status }: { readonly status: CellPatchStatus }) {
+function PatchStatus({ status }: { readonly status: DraftPatchStatus }) {
   if (status.kind === 'idle') return null
 
   return (
@@ -292,6 +412,15 @@ function PatchStatus({ status }: { readonly status: CellPatchStatus }) {
       {status.kind === 'rejected' ? <IssueList issues={status.issues} /> : null}
     </div>
   )
+}
+
+function parseBoardSize(widthText: string, heightText: string): BoardSize | undefined {
+  const width = Number(widthText)
+  const height = Number(heightText)
+  if (!Number.isInteger(width) || !Number.isInteger(height)) return undefined
+  if (width < 1 || width > 26 || height < 1 || height > 26) return undefined
+
+  return { width, height }
 }
 
 function ImportExportSummary({

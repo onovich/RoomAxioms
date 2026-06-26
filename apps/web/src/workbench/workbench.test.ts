@@ -12,7 +12,9 @@ import {
   createWorkbenchDraftFromPuzzle,
   createWorkbenchShellModel,
   evaluateWorkbenchDiagnostics,
+  patchWorkbenchBoardSize,
   patchWorkbenchTargetCell,
+  toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
 } from './model'
 import { AUTHORING_WORKBENCH_HASH, shouldShowAuthoringWorkbench } from './route'
@@ -156,6 +158,60 @@ describe('authoring workbench shell model', () => {
     expect(workbenchCellKindOptions(experimental, undefined)).toEqual(['empty', 'guest'])
     expect(workbenchCellKindOptions(experimental, 'mirror')).toEqual(['empty', 'mirror', 'guest'])
     expect(workbenchCellKindOptions(undefined, undefined)).toEqual(['empty', 'bottle', 'bin', 'mirror', 'guest'])
+  })
+
+  it('resizes the draft board while keeping the exported draft schema-valid', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchBoardSize(draft, { width: 5, height: 4 })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Board size patch failed.')
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, patch.state)
+    expect(model.boardCells).toHaveLength(20)
+    expect(model.boardCells.find((cell) => cell.id === 'E4')).toMatchObject({
+      id: 'E4',
+      kind: 'empty',
+      initiallyRevealed: false,
+      guestTarget: false,
+    })
+    expect(model.exported).toMatchObject({
+      ok: true,
+      puzzle: {
+        board: { width: 5, height: 4 },
+        target: {
+          E4: 'empty',
+        },
+      },
+    })
+  })
+
+  it('toggles initial reveals through the same schema-validated draft path', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const addReveal = toggleWorkbenchInitialReveal(draft, 'A1')
+    expect(addReveal.ok).toBe(true)
+    if (!addReveal.ok) throw new Error('Initial reveal add failed.')
+    expect(addReveal.puzzle.initialReveals).toContain('A1')
+
+    const removeReveal = toggleWorkbenchInitialReveal(addReveal.state, 'A1')
+    expect(removeReveal.ok).toBe(true)
+    if (!removeReveal.ok) throw new Error('Initial reveal removal failed.')
+    expect(removeReveal.puzzle.initialReveals).not.toContain('A1')
+  })
+
+  it('rejects initial reveals that would expose a guest target', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = toggleWorkbenchInitialReveal(draft, 'D1')
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'INITIAL_REVEAL_GUEST',
+        }),
+      ],
+    })
   })
 
   it('runs grouped authoring diagnostics on demand for a valid draft', () => {

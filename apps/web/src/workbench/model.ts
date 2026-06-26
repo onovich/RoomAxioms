@@ -1,8 +1,10 @@
 import {
   exportDraftJson,
   importPuzzleToDraftState,
+  patchDraftBoardSize,
   patchDraftTargetCell,
   parseDraftJson,
+  toggleDraftInitialReveal,
   type WorkbenchDraftExportResult,
   type WorkbenchDraftPatchResult,
   type WorkbenchDraftParseResult,
@@ -12,7 +14,7 @@ import {
   evaluateDraftDiagnostics,
   type AuthoringDraftDiagnosticsReport,
 } from '@room-axioms/authoring/diagnostics'
-import { allCells, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
+import { allCells, type BoardSize, type CellId, type CellKind, type PuzzleDefinition } from '@room-axioms/domain'
 
 import type { WorkbenchCaseImport, WorkbenchCaseSource } from './caseLibrary'
 
@@ -103,6 +105,20 @@ export function patchWorkbenchTargetCell(
   kind: CellKind,
 ): WorkbenchDraftPatchResult {
   return patchDraftTargetCell(draft, cellId, kind)
+}
+
+export function patchWorkbenchBoardSize(
+  draft: WorkbenchDraftState,
+  board: BoardSize,
+): WorkbenchDraftPatchResult {
+  return patchDraftBoardSize(draft, board)
+}
+
+export function toggleWorkbenchInitialReveal(
+  draft: WorkbenchDraftState,
+  cellId: CellId,
+): WorkbenchDraftPatchResult {
+  return toggleDraftInitialReveal(draft, cellId)
 }
 
 export function workbenchCellKindOptions(

@@ -1219,6 +1219,35 @@ h3 {
   width: 100%;
 }
 
+.board-size-editor {
+  align-items: end;
+  background: rgba(11, 15, 15, 0.56);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 9px;
+  grid-template-columns: repeat(2, minmax(72px, 100px)) auto;
+  margin-top: 14px;
+  padding: 10px;
+}
+
+.board-size-editor label {
+  color: var(--muted);
+  display: grid;
+  font-size: 11px;
+  gap: 5px;
+}
+
+.board-size-editor input {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  min-height: 34px;
+  padding: 5px 8px;
+  width: 100%;
+}
+
 .workbench-cell {
   align-items: center;
   aspect-ratio: 1;
@@ -1310,7 +1339,7 @@ h3 {
   align-items: end;
   display: grid;
   gap: 9px;
-  grid-template-columns: minmax(120px, 1fr) auto;
+  grid-template-columns: minmax(120px, 1fr) auto auto;
 }
 
 .cell-editor-controls label {
@@ -1671,6 +1700,11 @@ h3 {
   }
 
   .cell-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .board-size-editor,
+  .cell-editor-controls {
     grid-template-columns: 1fr;
   }
 
