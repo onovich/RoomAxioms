@@ -303,9 +303,9 @@ describe('case content verification harness', () => {
     expect(report.issues).toEqual([])
     expect(report).toMatchObject({
       id: 'case-021',
-      title: '客房 21：中线清扫链',
+      title: '客房 21：中线垃圾桶链',
       initial: {
-        revealedCells: ['B1', 'D1', 'B3', 'D3', 'B4', 'D4'],
+        revealedCells: ['B1', 'D1', 'A2', 'E2', 'A3', 'B3', 'D3', 'E3', 'B4', 'D4', 'E4'],
         satisfiable: true,
         candidateGuestLayouts: 56,
       },
@@ -319,12 +319,11 @@ describe('case content verification harness', () => {
         guestLayoutUniqueAtEnd: true,
         finalGuestCells: ['A4', 'A5', 'E5'],
         waveCount: 4,
-        deductionCount: 23,
+        deductionCount: 13,
         techniqueIds: [
           'ANCHOR_COUNT_SATURATED',
           'KNOWN_SAFE_FROM_NON_GUEST_OBJECT',
           'LOCAL_COUNT_SATURATED',
-          'REGION_COUNT_ALL_REMAINING',
           'UNIQUE_TARGET_NEIGHBOR_INTERSECTION',
         ],
         issueCodes: [],

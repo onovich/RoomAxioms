@@ -16,6 +16,12 @@ function ruleKind(rule: RuleDefinition): string {
       return `anchor:${rule.anchorId}:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
     case 'recordSet':
       return `records:${rule.falseRecords.op}:${rule.falseRecords.value}:${rule.recordIds.join('+')}`
+    case 'scopeOverlapCount':
+      return `overlap:${rule.mode}:${rule.target}:${rule.count.op}:${rule.count.value}`
+    case 'comparativeCount':
+      return `compare:${rule.target}:${rule.comparison.op}:${rule.comparison.offset ?? 0}`
+    case 'conditionalCount':
+      return `conditional:${rule.condition.target}:${rule.condition.count.op}:${rule.then.target}:${rule.then.count.op}`
     default:
       return assertNever(rule)
   }
@@ -31,6 +37,12 @@ function expressiveRuleKind(rule: ExpressiveRuleDefinition): string {
       return `anchor:${rule.anchorId}:${rule.scope.kind}:${rule.target}:${rule.count.op}:${rule.count.value}`
     case 'recordSet':
       return `records:${rule.falseRecords.op}:${rule.falseRecords.value}:${rule.recordIds.join('+')}`
+    case 'scopeOverlapCount':
+      return `overlap:${rule.mode}:${rule.target}:${rule.count.op}:${rule.count.value}`
+    case 'comparativeCount':
+      return `compare:${rule.target}:${rule.comparison.op}:${rule.comparison.offset ?? 0}`
+    case 'conditionalCount':
+      return `conditional:${rule.condition.target}:${rule.condition.count.op}:${rule.then.target}:${rule.then.count.op}`
     default:
       return assertNever(rule)
   }
@@ -114,5 +126,49 @@ describe('rule definitions', () => {
 
     expect(ruleKind(recordRule)).toBe('records:eq:1:card-a+card-b')
     expect(expressiveRuleKind(recordRule)).toBe('records:eq:1:card-a+card-b')
+  })
+
+  it('supports Phase 24 count-scope grammar shapes', () => {
+    const overlapRule = {
+      id: 'OR1',
+      type: 'scopeOverlapCount',
+      left: { kind: 'region', regionId: 'hall' },
+      right: { kind: 'line', scope: { kind: 'column', index: 1 } },
+      mode: 'intersection',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: 'Hall column overlap' },
+    } satisfies RuleDefinition
+    const comparativeRule = {
+      id: 'CMP1',
+      type: 'comparativeCount',
+      left: { kind: 'region', regionId: 'west' },
+      right: { kind: 'region', regionId: 'east' },
+      target: 'guest',
+      comparison: { op: 'gt', offset: 1 },
+      presentation: { title: 'West exceeds east' },
+    } satisfies RuleDefinition
+    const conditionalRule = {
+      id: 'IF1',
+      type: 'conditionalCount',
+      condition: {
+        scope: { kind: 'line', origin: 'A1', scope: { kind: 'ray', direction: 'east' } },
+        target: 'mirror',
+        count: { op: 'gte', value: 1 },
+      },
+      then: {
+        scope: { kind: 'global' },
+        target: 'guest',
+        count: { op: 'lte', value: 2 },
+      },
+      presentation: { title: 'Mirror activates guest cap' },
+    } satisfies RuleDefinition
+
+    expect(ruleKind(overlapRule)).toBe('overlap:intersection:guest:eq:1')
+    expect(expressiveRuleKind(overlapRule)).toBe('overlap:intersection:guest:eq:1')
+    expect(ruleKind(comparativeRule)).toBe('compare:guest:gt:1')
+    expect(expressiveRuleKind(comparativeRule)).toBe('compare:guest:gt:1')
+    expect(ruleKind(conditionalRule)).toBe('conditional:mirror:gte:guest:lte')
+    expect(expressiveRuleKind(conditionalRule)).toBe('conditional:mirror:gte:guest:lte')
   })
 })

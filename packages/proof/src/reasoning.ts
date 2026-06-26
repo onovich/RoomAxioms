@@ -237,8 +237,14 @@ export function comparatorBounds(comparator: Comparator): CountBounds {
   switch (comparator.op) {
     case 'eq':
       return { lowerBound: comparator.value, upperBound: comparator.value };
+    case 'neq':
+      return { lowerBound: 0, upperBound: null };
+    case 'gt':
+      return { lowerBound: comparator.value + 1, upperBound: null };
     case 'gte':
       return { lowerBound: comparator.value, upperBound: null };
+    case 'lt':
+      return { lowerBound: 0, upperBound: Math.max(0, comparator.value - 1) };
     case 'lte':
       return { lowerBound: 0, upperBound: comparator.value };
   }

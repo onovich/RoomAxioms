@@ -210,8 +210,14 @@ export function comparatorCanBeSatisfied(bounds: CountBounds, comparator: Compar
   switch (comparator.op) {
     case 'eq':
       return bounds.minimum <= comparator.value && comparator.value <= bounds.maximum;
+    case 'neq':
+      return bounds.minimum !== comparator.value || bounds.maximum !== comparator.value;
+    case 'gt':
+      return bounds.maximum > comparator.value;
     case 'gte':
       return bounds.maximum >= comparator.value;
+    case 'lt':
+      return bounds.minimum < comparator.value;
     case 'lte':
       return bounds.minimum <= comparator.value;
     default:
@@ -270,6 +276,11 @@ function compileRule(rule: RuleDefinition, puzzle: PuzzleDefinition): CompiledCo
 
     case 'recordSet':
       throw new Error(`Record-set rule ${rule.id} must be expanded before constraint compilation.`);
+
+    case 'scopeOverlapCount':
+    case 'comparativeCount':
+    case 'conditionalCount':
+      throw new Error(`Rule ${rule.id} uses ${rule.type}, which is not implemented in solver constraints yet.`);
 
     default:
       return assertNever(rule);

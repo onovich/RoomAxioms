@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "case-021",
-  "title": "客房 21：中线清扫链",
-  "caseName": "案卷 21 · 中线清扫链",
+  "title": "客房 21：中线垃圾桶链",
+  "caseName": "案卷 21 · 中线垃圾桶链",
   "board": {
     "width": 5,
     "height": 5
@@ -14,28 +14,15 @@
     "mirror",
     "guest"
   ],
-  "regions": [
-    {
-      "id": "side-clear",
-      "title": "侧翼空区",
-      "cells": [
-        "A2",
-        "A3",
-        "E2",
-        "E3",
-        "E4"
-      ]
-    }
-  ],
   "anchors": [
     {
       "id": "mirror-anchor",
-      "title": "镜面锚点",
+      "title": "已确认的镜子",
       "subject": "mirror"
     },
     {
       "id": "bin-anchor",
-      "title": "清扫锚点",
+      "title": "已确认的垃圾桶",
       "subject": "bin"
     }
   ],
@@ -113,8 +100,8 @@
         "value": 0
       },
       "presentation": {
-        "title": "镜面安静区",
-        "flavor": "每面已确认镜子周围一圈没有未登记访客。"
+        "title": "镜子周围",
+        "flavor": "每个已确认的镜子周围一圈，没有访客。"
       }
     },
     {
@@ -130,32 +117,23 @@
         "value": 0
       },
       "presentation": {
-        "title": "清扫十字区",
-        "flavor": "每个已确认清扫点上下左右没有未登记访客。"
-      }
-    },
-    {
-      "id": "R7",
-      "type": "regionCount",
-      "regionId": "side-clear",
-      "target": "empty",
-      "count": {
-        "op": "eq",
-        "value": 5
-      },
-      "presentation": {
-        "title": "侧翼空区",
-        "flavor": "侧翼空区里的 5 个格子全是空房。"
+        "title": "垃圾桶邻格",
+        "flavor": "每个已确认的垃圾桶上下左右邻格，没有访客。"
       }
     }
   ],
   "initialReveals": [
+    "A2",
+    "A3",
     "B1",
-    "D1",
     "B3",
-    "D3",
     "B4",
-    "D4"
+    "D1",
+    "D3",
+    "D4",
+    "E2",
+    "E3",
+    "E4"
   ],
   "target": {
     "A1": "empty",
@@ -190,11 +168,10 @@
       "target-4",
       "multi-wave",
       "anchor-frontier",
-      "region",
       "intersection"
     ],
     "author": "room-axioms-maintainers",
     "status": "validated",
-    "notes": "Provisional 4+ ladder case; difficulty is uncalibrated until real playtest evidence exists."
+    "notes": "Opening reveals replace the former fixed five-cell region rule; difficulty remains uncalibrated until real playtest evidence exists."
   }
 }

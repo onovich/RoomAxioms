@@ -20,7 +20,10 @@ export type Direction = 'north' | 'south' | 'east' | 'west'
 
 export type Comparator =
   | { readonly op: 'eq'; readonly value: number }
+  | { readonly op: 'neq'; readonly value: number }
+  | { readonly op: 'gt'; readonly value: number }
   | { readonly op: 'gte'; readonly value: number }
+  | { readonly op: 'lt'; readonly value: number }
   | { readonly op: 'lte'; readonly value: number }
 
 export interface RulePresentation {
@@ -59,6 +62,15 @@ export interface RegionReferenceScope {
 }
 
 export type ExpressiveScope = LocalScope | StaticLineScope | RayScope | RegionReferenceScope
+
+export type CountScopeRef =
+  | { readonly kind: 'global' }
+  | RegionReferenceScope
+  | {
+      readonly kind: 'line'
+      readonly origin?: CellId
+      readonly scope: StaticLineScope | RayScope
+    }
 
 export interface ForEachCountRule {
   readonly id: string
@@ -118,14 +130,6 @@ export interface AnchorCountRule {
   readonly presentation: RulePresentation
 }
 
-export type RuleDefinition =
-  | GlobalCountRule
-  | ForEachCountRule
-  | RegionCountRule
-  | LineCountRule
-  | AnchorCountRule
-  | RecordSetRule
-
 export interface RecordSetRule {
   readonly id: string
   readonly type: 'recordSet'
@@ -134,11 +138,67 @@ export interface RecordSetRule {
   readonly presentation: RulePresentation
 }
 
+export type ScopeOverlapMode = 'intersection' | 'union' | 'leftOnly' | 'rightOnly'
+
+export interface ScopeOverlapCountRule {
+  readonly id: string
+  readonly type: 'scopeOverlapCount'
+  readonly left: CountScopeRef
+  readonly right: CountScopeRef
+  readonly mode: ScopeOverlapMode
+  readonly target: CellKind
+  readonly count: Comparator
+  readonly presentation: RulePresentation
+}
+
+export interface CountComparison {
+  readonly op: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'
+  readonly offset?: number
+}
+
+export interface ComparativeCountRule {
+  readonly id: string
+  readonly type: 'comparativeCount'
+  readonly left: CountScopeRef
+  readonly right: CountScopeRef
+  readonly target: CellKind
+  readonly comparison: CountComparison
+  readonly presentation: RulePresentation
+}
+
+export interface ConditionalCountClause {
+  readonly scope: CountScopeRef
+  readonly target: CellKind
+  readonly count: Comparator
+}
+
+export interface ConditionalCountRule {
+  readonly id: string
+  readonly type: 'conditionalCount'
+  readonly condition: ConditionalCountClause
+  readonly then: ConditionalCountClause
+  readonly presentation: RulePresentation
+}
+
+export type RuleDefinition =
+  | GlobalCountRule
+  | ForEachCountRule
+  | RegionCountRule
+  | LineCountRule
+  | AnchorCountRule
+  | RecordSetRule
+  | ScopeOverlapCountRule
+  | ComparativeCountRule
+  | ConditionalCountRule
+
 export type ExpressiveRuleDefinition =
   | RegionCountRule
   | LineCountRule
   | AnchorCountRule
   | RecordSetRule
+  | ScopeOverlapCountRule
+  | ComparativeCountRule
+  | ConditionalCountRule
 
 export type AnyRuleDefinition = RuleDefinition | ExpressiveRuleDefinition
 

@@ -1,4 +1,4 @@
-import type { RuleDefinition } from '@room-axioms/domain'
+import type { Comparator, RuleDefinition } from '@room-axioms/domain'
 
 export function ruleChip(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
@@ -19,6 +19,18 @@ export function ruleChip(rule: RuleDefinition): string {
 
   if (rule.type === 'recordSet') {
     return recordSetPhrase(rule)
+  }
+
+  if (rule.type === 'scopeOverlapCount') {
+    return `${rule.presentation.title}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
+  }
+
+  if (rule.type === 'comparativeCount') {
+    return `${rule.presentation.title}：${comparisonText(rule.comparison.op, rule.comparison.offset ?? 0)}`
+  }
+
+  if (rule.type === 'conditionalCount') {
+    return rule.presentation.title
   }
 
   return `${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}`
@@ -47,6 +59,18 @@ export function rulePlainText(rule: RuleDefinition): string {
     return `${recordSetPhrase(rule)}。`
   }
 
+  if (rule.type === 'scopeOverlapCount') {
+    return `${rule.presentation.title}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  }
+
+  if (rule.type === 'comparativeCount') {
+    return `${rule.presentation.title}，${comparisonText(rule.comparison.op, rule.comparison.offset ?? 0)}。`
+  }
+
+  if (rule.type === 'conditionalCount') {
+    return rule.presentation.title
+  }
+
   if (rule.count.op === 'eq' && rule.count.value === 0) {
     return `${kindLabel(rule.target)}不在${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}。`
   }
@@ -58,9 +82,12 @@ export function ruleSemantics(rule: RuleDefinition): string {
   return rulePlainText(rule)
 }
 
-export function comparatorText(op: 'eq' | 'gte' | 'lte', value: number): string {
+export function comparatorText(op: Comparator['op'], value: number): string {
   if (op === 'eq') return `= ${value}`
+  if (op === 'neq') return `≠ ${value}`
+  if (op === 'gt') return `> ${value}`
   if (op === 'gte') return `>= ${value}`
+  if (op === 'lt') return `< ${value}`
   return `<= ${value}`
 }
 
@@ -106,14 +133,27 @@ function directionLabel(direction: 'north' | 'south' | 'east' | 'west'): string 
   return '左'
 }
 
-function countTargetPhrase(kind: string, op: 'eq' | 'gte' | 'lte', value: number): string {
+function countTargetPhrase(kind: string, op: Comparator['op'], value: number): string {
   const target = kindLabel(kind)
   if (op === 'eq' && value === 0) return `没有${target}`
 
   const quantity = `${value} ${kindUnit(kind)}`
   if (op === 'eq') return `有 ${quantity}${target}`
+  if (op === 'neq') return `不是 ${quantity}${target}`
+  if (op === 'gt') return `多于 ${quantity}${target}`
   if (op === 'gte') return `至少有 ${quantity}${target}`
+  if (op === 'lt') return `少于 ${quantity}${target}`
   return `最多有 ${quantity}${target}`
+}
+
+function comparisonText(op: Comparator['op'], offset: number): string {
+  const suffix = offset === 0 ? '' : offset > 0 ? ` 多 ${offset}` : ` 少 ${Math.abs(offset)}`
+  if (op === 'eq') return `两边数量相同${suffix}`
+  if (op === 'neq') return `两边数量不同${suffix}`
+  if (op === 'gt') return `左侧数量更多${suffix}`
+  if (op === 'gte') return `左侧数量不少于右侧${suffix}`
+  if (op === 'lt') return `左侧数量更少${suffix}`
+  return `左侧数量不多于右侧${suffix}`
 }
 
 function kindUnit(kind: string): string {

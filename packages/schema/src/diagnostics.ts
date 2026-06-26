@@ -5,8 +5,11 @@ import {
   type BoardSize,
   type CellId,
   type CellKind,
+  type CountScopeRef,
+  type RayScope,
   type PuzzleDefinition,
   type RuleDefinition,
+  type StaticLineScope,
 } from '@room-axioms/domain'
 import { z } from 'zod'
 import { puzzleDefinitionSchema } from './puzzleSchema.js'
@@ -349,28 +352,34 @@ function validateRuleKindReferences(
 ): readonly SchemaIssue[] {
   const issues: SchemaIssue[] = []
 
-  if (rule.type === 'recordSet') return issues
+  for (const reference of ruleKindReferences(rule, index)) {
+    if (allowedKinds.has(reference.kind)) continue
 
-  if (!allowedKinds.has(rule.target)) {
     issues.push(
       createIssue(
         'RULE_KIND_NOT_ALLOWED',
-        ['rules', index, 'target'],
-        `Rule ${rule.id} references target kind ${rule.target} outside allowedKinds`,
-        { ruleId: rule.id, kind: rule.target },
+        reference.path,
+        `Rule ${rule.id} references ${reference.role} kind ${reference.kind} outside allowedKinds`,
+        { ruleId: rule.id, kind: reference.kind },
       ),
     )
   }
 
-  if (rule.type === 'forEachCount' && !allowedKinds.has(rule.subject)) {
-    issues.push(
-      createIssue(
-        'RULE_KIND_NOT_ALLOWED',
-        ['rules', index, 'subject'],
-        `Rule ${rule.id} references subject kind ${rule.subject} outside allowedKinds`,
-        { ruleId: rule.id, kind: rule.subject },
-      ),
-    )
+  for (const reference of ruleCountScopeReferences(rule, index)) {
+    if (reference.scope.kind !== 'line' || reference.scope.scope.kind !== 'ray') continue
+
+    reference.scope.scope.stopAtKinds?.forEach((kind, blockerIndex) => {
+      if (allowedKinds.has(kind)) return
+
+      issues.push(
+        createIssue(
+          'RULE_KIND_NOT_ALLOWED',
+          [...reference.path, 'scope', 'stopAtKinds', blockerIndex],
+          `Rule ${rule.id} references blocker kind ${kind} outside allowedKinds`,
+          { ruleId: rule.id, kind },
+        ),
+      )
+    })
   }
 
   if (rule.type === 'lineCount' && rule.scope.kind === 'ray') {
@@ -396,16 +405,33 @@ function validateRuleRegionReferences(
   index: number,
   regionIds: ReadonlySet<string>,
 ): readonly SchemaIssue[] {
-  if (rule.type !== 'regionCount' || regionIds.has(rule.regionId)) return []
+  const issues: SchemaIssue[] = []
 
-  return [
-    createIssue(
-      'RULE_REGION_UNKNOWN',
-      ['rules', index, 'regionId'],
-      `Rule ${rule.id} references unknown region ${rule.regionId}`,
-      { ruleId: rule.id, regionId: rule.regionId },
-    ),
-  ]
+  if (rule.type === 'regionCount' && !regionIds.has(rule.regionId)) {
+    issues.push(
+      createIssue(
+        'RULE_REGION_UNKNOWN',
+        ['rules', index, 'regionId'],
+        `Rule ${rule.id} references unknown region ${rule.regionId}`,
+        { ruleId: rule.id, regionId: rule.regionId },
+      ),
+    )
+  }
+
+  for (const reference of ruleCountScopeReferences(rule, index)) {
+    if (reference.scope.kind !== 'region' || regionIds.has(reference.scope.regionId)) continue
+
+    issues.push(
+      createIssue(
+        'RULE_REGION_UNKNOWN',
+        [...reference.path, 'regionId'],
+        `Rule ${rule.id} references unknown region ${reference.scope.regionId}`,
+        { ruleId: rule.id, regionId: reference.scope.regionId },
+      ),
+    )
+  }
+
+  return issues
 }
 
 function validateRuleAnchorReferences(
@@ -454,60 +480,158 @@ function validateRuleLineReferences(
   index: number,
   puzzle: PuzzleDefinition,
 ): readonly SchemaIssue[] {
-  if (rule.type !== 'lineCount') return []
+  const issues: SchemaIssue[] = []
 
-  if (rule.scope.kind === 'row' && rule.scope.index >= puzzle.board.height) {
+  if (rule.type === 'lineCount') {
+    issues.push(
+      ...validateLineScopeReference({
+        ruleId: rule.id,
+        origin: rule.origin,
+        scope: rule.scope,
+        path: ['rules', index],
+        puzzle,
+      }),
+    )
+  }
+
+  for (const reference of ruleCountScopeReferences(rule, index)) {
+    if (reference.scope.kind !== 'line') continue
+
+    issues.push(
+      ...validateLineScopeReference({
+        ruleId: rule.id,
+        origin: reference.scope.origin,
+        scope: reference.scope.scope,
+        path: reference.path,
+        puzzle,
+      }),
+    )
+  }
+
+  return issues
+}
+
+function ruleReferencesGuest(rule: RuleDefinition): boolean {
+  return ruleKindReferences(rule, 0).some((reference) => reference.kind === 'guest')
+}
+
+interface RuleKindReference {
+  readonly role: 'subject' | 'target'
+  readonly kind: CellKind
+  readonly path: readonly (string | number)[]
+}
+
+interface RuleCountScopeReference {
+  readonly scope: CountScopeRef
+  readonly path: readonly (string | number)[]
+}
+
+function ruleKindReferences(rule: RuleDefinition, index: number): readonly RuleKindReference[] {
+  switch (rule.type) {
+    case 'globalCount':
+    case 'regionCount':
+    case 'lineCount':
+    case 'anchorCount':
+    case 'scopeOverlapCount':
+    case 'comparativeCount':
+      return [{ role: 'target', kind: rule.target, path: ['rules', index, 'target'] }]
+
+    case 'forEachCount':
+      return [
+        { role: 'subject', kind: rule.subject, path: ['rules', index, 'subject'] },
+        { role: 'target', kind: rule.target, path: ['rules', index, 'target'] },
+      ]
+
+    case 'conditionalCount':
+      return [
+        { role: 'target', kind: rule.condition.target, path: ['rules', index, 'condition', 'target'] },
+        { role: 'target', kind: rule.then.target, path: ['rules', index, 'then', 'target'] },
+      ]
+
+    case 'recordSet':
+      return []
+  }
+}
+
+function ruleCountScopeReferences(rule: RuleDefinition, index: number): readonly RuleCountScopeReference[] {
+  switch (rule.type) {
+    case 'scopeOverlapCount':
+    case 'comparativeCount':
+      return [
+        { scope: rule.left, path: ['rules', index, 'left'] },
+        { scope: rule.right, path: ['rules', index, 'right'] },
+      ]
+
+    case 'conditionalCount':
+      return [
+        { scope: rule.condition.scope, path: ['rules', index, 'condition', 'scope'] },
+        { scope: rule.then.scope, path: ['rules', index, 'then', 'scope'] },
+      ]
+
+    case 'globalCount':
+    case 'forEachCount':
+    case 'regionCount':
+    case 'lineCount':
+    case 'anchorCount':
+    case 'recordSet':
+      return []
+  }
+}
+
+function validateLineScopeReference(input: {
+  readonly ruleId: string
+  readonly origin?: CellId
+  readonly scope: StaticLineScope | RayScope
+  readonly path: readonly (string | number)[]
+  readonly puzzle: PuzzleDefinition
+}): readonly SchemaIssue[] {
+  if (input.scope.kind === 'row' && input.scope.index >= input.puzzle.board.height) {
     return [
       createIssue(
         'LINE_SCOPE_OUT_OF_BOARD',
-        ['rules', index, 'scope', 'index'],
-        `Rule ${rule.id} references row ${rule.scope.index} outside the board`,
-        { ruleId: rule.id, index: rule.scope.index },
+        [...input.path, 'scope', 'index'],
+        `Rule ${input.ruleId} references row ${input.scope.index} outside the board`,
+        { ruleId: input.ruleId, index: input.scope.index },
       ),
     ]
   }
 
-  if (rule.scope.kind === 'column' && rule.scope.index >= puzzle.board.width) {
+  if (input.scope.kind === 'column' && input.scope.index >= input.puzzle.board.width) {
     return [
       createIssue(
         'LINE_SCOPE_OUT_OF_BOARD',
-        ['rules', index, 'scope', 'index'],
-        `Rule ${rule.id} references column ${rule.scope.index} outside the board`,
-        { ruleId: rule.id, index: rule.scope.index },
+        [...input.path, 'scope', 'index'],
+        `Rule ${input.ruleId} references column ${input.scope.index} outside the board`,
+        { ruleId: input.ruleId, index: input.scope.index },
       ),
     ]
   }
 
-  if (rule.scope.kind !== 'ray') return []
+  if (input.scope.kind !== 'ray') return []
 
-  if (rule.origin === undefined) {
+  if (input.origin === undefined) {
     return [
       createIssue(
         'LINE_RAY_ORIGIN_MISSING',
-        ['rules', index, 'origin'],
-        `Rule ${rule.id} must include origin for a ray scope`,
-        { ruleId: rule.id },
+        [...input.path, 'origin'],
+        `Rule ${input.ruleId} must include origin for a ray scope`,
+        { ruleId: input.ruleId },
       ),
     ]
   }
 
-  if (!tryCanonicalCellId(rule.origin, puzzle.board)) {
+  if (!tryCanonicalCellId(input.origin, input.puzzle.board)) {
     return [
       createIssue(
         'LINE_RAY_ORIGIN_OUT_OF_BOARD',
-        ['rules', index, 'origin'],
-        `Rule ${rule.id} references ray origin ${rule.origin} outside the board`,
-        { ruleId: rule.id, cellId: rule.origin },
+        [...input.path, 'origin'],
+        `Rule ${input.ruleId} references ray origin ${input.origin} outside the board`,
+        { ruleId: input.ruleId, cellId: input.origin },
       ),
     ]
   }
 
   return []
-}
-
-function ruleReferencesGuest(rule: RuleDefinition): boolean {
-  if (rule.type === 'recordSet') return false
-  return rule.target === 'guest' || (rule.type === 'forEachCount' && rule.subject === 'guest')
 }
 
 function zodIssueToSchemaIssue(issue: ZodIssue): SchemaIssue {
@@ -522,7 +646,12 @@ function zodIssueCode(issue: ZodIssue, path: readonly (string | number)[]): stri
   if (pathText.endsWith('presentation.title')) return 'PRESENTATION_TITLE_EMPTY'
   if (pathText.endsWith('presentation.flavor')) return 'PRESENTATION_FLAVOR_EMPTY'
   if (pathText.includes('scope')) return 'SCOPE_INVALID'
-  if (pathText.endsWith('count.op') || pathText.endsWith('count.value')) return 'COMPARATOR_INVALID'
+  if (
+    pathText.endsWith('count.op') ||
+    pathText.endsWith('count.value') ||
+    pathText.endsWith('comparison.op') ||
+    pathText.endsWith('comparison.offset')
+  ) return 'COMPARATOR_INVALID'
   if (isCellKindPath(path)) return 'CELL_KIND_UNKNOWN'
   if (issue.code === 'unrecognized_keys') return 'SCHEMA_UNKNOWN_KEY'
 

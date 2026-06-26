@@ -35,8 +35,14 @@ describe('constraint compilation and count bounds', () => {
 
     expect(comparatorCanBeSatisfied(bounds, { op: 'eq', value: 2 })).toBe(true);
     expect(comparatorCanBeSatisfied(bounds, { op: 'eq', value: 4 })).toBe(false);
+    expect(comparatorCanBeSatisfied(bounds, { op: 'neq', value: 2 })).toBe(true);
+    expect(comparatorCanBeSatisfied({ minimum: 2, maximum: 2 }, { op: 'neq', value: 2 })).toBe(false);
+    expect(comparatorCanBeSatisfied(bounds, { op: 'gt', value: 2 })).toBe(true);
+    expect(comparatorCanBeSatisfied(bounds, { op: 'gt', value: 3 })).toBe(false);
     expect(comparatorCanBeSatisfied(bounds, { op: 'gte', value: 3 })).toBe(true);
     expect(comparatorCanBeSatisfied(bounds, { op: 'gte', value: 4 })).toBe(false);
+    expect(comparatorCanBeSatisfied(bounds, { op: 'lt', value: 2 })).toBe(true);
+    expect(comparatorCanBeSatisfied(bounds, { op: 'lt', value: 1 })).toBe(false);
     expect(comparatorCanBeSatisfied(bounds, { op: 'lte', value: 1 })).toBe(true);
     expect(comparatorCanBeSatisfied(bounds, { op: 'lte', value: 0 })).toBe(false);
   });

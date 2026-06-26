@@ -10,6 +10,7 @@ import {
   type CellId,
   type CellKind,
   type Comparator,
+  type CountScopeRef,
   type Coord,
   type Observation,
   type PuzzleDefinition,
@@ -71,6 +72,9 @@ export type MaterialRuleFamily =
   | 'anchor'
   | 'foreach'
   | 'record-set'
+  | 'scope-overlap'
+  | 'comparative'
+  | 'conditional'
 
 export type RuleFamilyDiversityReason =
   | 'no-material-rule'
@@ -1081,6 +1085,12 @@ function materialRuleFamily(rule: RuleDefinition): MaterialRuleFamily {
       return 'foreach'
     case 'recordSet':
       return 'record-set'
+    case 'scopeOverlapCount':
+      return 'scope-overlap'
+    case 'comparativeCount':
+      return 'comparative'
+    case 'conditionalCount':
+      return 'conditional'
   }
 }
 
@@ -1394,6 +1404,43 @@ function ruleSignature(rule: RuleDefinition): string {
       type: rule.type,
       recordIds: [...rule.recordIds].sort(),
       falseRecords: rule.falseRecords,
+    })
+  }
+
+  if (rule.type === 'scopeOverlapCount') {
+    return JSON.stringify({
+      type: rule.type,
+      left: countScopeSignature(rule.left),
+      right: countScopeSignature(rule.right),
+      mode: rule.mode,
+      target: rule.target,
+      count: rule.count,
+    })
+  }
+
+  if (rule.type === 'comparativeCount') {
+    return JSON.stringify({
+      type: rule.type,
+      left: countScopeSignature(rule.left),
+      right: countScopeSignature(rule.right),
+      target: rule.target,
+      comparison: rule.comparison,
+    })
+  }
+
+  if (rule.type === 'conditionalCount') {
+    return JSON.stringify({
+      type: rule.type,
+      condition: {
+        scope: countScopeSignature(rule.condition.scope),
+        target: rule.condition.target,
+        count: rule.condition.count,
+      },
+      then: {
+        scope: countScopeSignature(rule.then.scope),
+        target: rule.then.target,
+        count: rule.then.count,
+      },
     })
   }
 
@@ -1744,6 +1791,43 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
     })
   }
 
+  if (rule.type === 'scopeOverlapCount') {
+    return JSON.stringify({
+      type: rule.type,
+      left: traceCountScope(rule.left, mode),
+      right: traceCountScope(rule.right, mode),
+      mode: rule.mode,
+      target: traceKind(rule.target, mode),
+      count: rule.count,
+    })
+  }
+
+  if (rule.type === 'comparativeCount') {
+    return JSON.stringify({
+      type: rule.type,
+      left: traceCountScope(rule.left, mode),
+      right: traceCountScope(rule.right, mode),
+      target: traceKind(rule.target, mode),
+      comparison: rule.comparison,
+    })
+  }
+
+  if (rule.type === 'conditionalCount') {
+    return JSON.stringify({
+      type: rule.type,
+      condition: {
+        scope: traceCountScope(rule.condition.scope, mode),
+        target: traceKind(rule.condition.target, mode),
+        count: rule.condition.count,
+      },
+      then: {
+        scope: traceCountScope(rule.then.scope, mode),
+        target: traceKind(rule.then.target, mode),
+        count: rule.then.count,
+      },
+    })
+  }
+
   return JSON.stringify({
     type: rule.type,
     subject: traceKind(rule.subject, mode),
@@ -1751,6 +1835,36 @@ function ruleTraceShape(rule: RuleDefinition, mode: 'exact' | 'kind-agnostic'): 
     target: traceKind(rule.target, mode),
     count: rule.count,
   })
+}
+
+function countScopeSignature(scope: CountScopeRef): unknown {
+  if (scope.kind === 'line' && scope.scope.kind === 'ray') {
+    return {
+      kind: scope.kind,
+      origin: scope.origin,
+      scope: {
+        ...scope.scope,
+        stopAtKinds: scope.scope.stopAtKinds?.slice().sort(),
+      },
+    }
+  }
+
+  return scope
+}
+
+function traceCountScope(scope: CountScopeRef, mode: 'exact' | 'kind-agnostic'): unknown {
+  if (scope.kind === 'line' && scope.scope.kind === 'ray') {
+    return {
+      kind: scope.kind,
+      origin: scope.origin,
+      scope: {
+        ...scope.scope,
+        stopAtKinds: scope.scope.stopAtKinds?.map((kind) => traceKind(kind, mode)).sort(),
+      },
+    }
+  }
+
+  return scope
 }
 
 function traceKind(kind: string, mode: 'exact' | 'kind-agnostic'): string {

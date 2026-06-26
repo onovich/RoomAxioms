@@ -121,6 +121,22 @@ describe('parsePuzzleDefinition', () => {
     expect(issueCodes({ ...validPuzzle, rules })).toContain('COMPARATOR_INVALID')
   })
 
+  it('reports invalid comparison shapes through structured diagnostics', () => {
+    const rules = [
+      {
+        id: 'R3',
+        type: 'comparativeCount',
+        left: { kind: 'global' },
+        right: { kind: 'global' },
+        target: 'guest',
+        comparison: { op: 'gt', offset: 99 },
+        presentation: { title: 'Invalid comparison' },
+      },
+    ]
+
+    expect(issueCodes({ ...validPuzzle, rules })).toContain('COMPARATOR_INVALID')
+  })
+
   it('reports invalid local scopes through structured diagnostics', () => {
     const rules = [
       {

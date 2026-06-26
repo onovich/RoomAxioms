@@ -307,4 +307,80 @@ describe('puzzleDefinitionSchema', () => {
       'RULE_RECORD_UNKNOWN',
     ])
   })
+
+  it('accepts Phase 24 count-scope grammar rules', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      allowedKinds: ['empty', 'guest', 'mirror'],
+      regions: [
+        {
+          id: 'north-wing',
+          title: 'North wing',
+          cells: ['A1', 'B1', 'C1'],
+        },
+      ],
+      rules: [
+        {
+          id: 'O1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'north-wing' },
+          right: { kind: 'line', scope: { kind: 'row', index: 0 } },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'neq', value: 2 },
+          presentation: { title: 'Overlap count' },
+        },
+        {
+          id: 'C1',
+          type: 'comparativeCount',
+          left: { kind: 'global' },
+          right: { kind: 'line', origin: 'A1', scope: { kind: 'ray', direction: 'east', stopAtKinds: ['mirror'] } },
+          target: 'guest',
+          comparison: { op: 'gt', offset: 0 },
+          presentation: { title: 'Comparative count' },
+        },
+        {
+          id: 'K1',
+          type: 'conditionalCount',
+          condition: {
+            scope: { kind: 'global' },
+            target: 'guest',
+            count: { op: 'gt', value: 0 },
+          },
+          then: {
+            scope: { kind: 'region', regionId: 'north-wing' },
+            target: 'empty',
+            count: { op: 'lt', value: 3 },
+          },
+          presentation: { title: 'Conditional count' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects invalid count-scope references', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      rules: [
+        {
+          id: 'O1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'missing-wing' },
+          right: { kind: 'line', scope: { kind: 'ray', direction: 'east' } },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'Invalid count scopes' },
+        },
+      ],
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.issues.map((issue) => issue.code)).toEqual([
+      'RULE_REGION_UNKNOWN',
+      'LINE_RAY_ORIGIN_MISSING',
+    ])
+  })
 })

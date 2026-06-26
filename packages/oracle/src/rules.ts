@@ -82,6 +82,11 @@ export function evaluateRule(
     case 'recordSet':
       throw new Error(`Record-set rule ${rule.id} must be expanded before oracle evaluation.`);
 
+    case 'scopeOverlapCount':
+    case 'comparativeCount':
+    case 'conditionalCount':
+      throw new Error(`Rule ${rule.id} uses ${rule.type}, which is not implemented in oracle evaluation yet.`);
+
     default:
       return assertNever(rule);
   }
@@ -139,8 +144,14 @@ function compareCount(actual: number, comparator: Comparator): boolean {
   switch (comparator.op) {
     case 'eq':
       return actual === comparator.value;
+    case 'neq':
+      return actual !== comparator.value;
+    case 'gt':
+      return actual > comparator.value;
     case 'gte':
       return actual >= comparator.value;
+    case 'lt':
+      return actual < comparator.value;
     case 'lte':
       return actual <= comparator.value;
     default:

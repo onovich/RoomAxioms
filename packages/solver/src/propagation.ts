@@ -378,6 +378,11 @@ function enforceTargetCount(
       };
     }
 
+    case 'neq':
+    case 'gt':
+    case 'lt':
+      return { changed: false, contradiction: null };
+
     case 'gte': {
       if (bounds.maximum !== comparator.value) return { changed: false, contradiction: null };
       return forceTargetInPossibleCells(state, trail, cells, target);

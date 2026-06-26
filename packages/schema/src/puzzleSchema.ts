@@ -21,8 +21,13 @@ export const boardSizeSchema = z.strictObject({
 })
 
 export const comparatorSchema = z.strictObject({
-  op: z.enum(['eq', 'gte', 'lte']),
+  op: z.enum(['eq', 'neq', 'gt', 'gte', 'lt', 'lte']),
   value: z.number().int().nonnegative(),
+})
+
+export const countComparisonSchema = z.strictObject({
+  op: z.enum(['eq', 'neq', 'gt', 'gte', 'lt', 'lte']),
+  offset: z.number().int().min(-5).max(5).optional(),
 })
 
 export const rulePresentationSchema = z.strictObject({
@@ -80,6 +85,23 @@ export const lineScopeSchema = z.discriminatedUnion('kind', [
 ])
 
 export const scopeSchema = z.discriminatedUnion('kind', [globalScopeSchema, ...localScopeSchema.options])
+
+export const regionReferenceScopeSchema = z.strictObject({
+  kind: z.literal('region'),
+  regionId: z.string().regex(ruleIdPattern),
+})
+
+export const countLineScopeRefSchema = z.strictObject({
+  kind: z.literal('line'),
+  origin: cellIdSchema.optional(),
+  scope: lineScopeSchema,
+})
+
+export const countScopeRefSchema = z.discriminatedUnion('kind', [
+  globalScopeSchema,
+  regionReferenceScopeSchema,
+  countLineScopeRefSchema,
+])
 
 export const globalCountRuleSchema = z.strictObject({
   id: z.string().regex(ruleIdPattern),
@@ -141,6 +163,41 @@ export const recordSetRuleSchema = z.strictObject({
   presentation: rulePresentationSchema,
 })
 
+export const scopeOverlapCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('scopeOverlapCount'),
+  left: countScopeRefSchema,
+  right: countScopeRefSchema,
+  mode: z.enum(['intersection', 'union', 'leftOnly', 'rightOnly']),
+  target: cellKindSchema,
+  count: comparatorSchema,
+  presentation: rulePresentationSchema,
+})
+
+export const comparativeCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('comparativeCount'),
+  left: countScopeRefSchema,
+  right: countScopeRefSchema,
+  target: cellKindSchema,
+  comparison: countComparisonSchema,
+  presentation: rulePresentationSchema,
+})
+
+export const conditionalCountClauseSchema = z.strictObject({
+  scope: countScopeRefSchema,
+  target: cellKindSchema,
+  count: comparatorSchema,
+})
+
+export const conditionalCountRuleSchema = z.strictObject({
+  id: z.string().regex(ruleIdPattern),
+  type: z.literal('conditionalCount'),
+  condition: conditionalCountClauseSchema,
+  then: conditionalCountClauseSchema,
+  presentation: rulePresentationSchema,
+})
+
 export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   globalCountRuleSchema,
   forEachCountRuleSchema,
@@ -148,6 +205,9 @@ export const ruleDefinitionSchema = z.discriminatedUnion('type', [
   lineCountRuleSchema,
   anchorCountRuleSchema,
   recordSetRuleSchema,
+  scopeOverlapCountRuleSchema,
+  comparativeCountRuleSchema,
+  conditionalCountRuleSchema,
 ])
 
 export const puzzleMetadataSchema = z.strictObject({

@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { CellKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
+import type { CellKind, CountScopeRef, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
 import { parsePuzzleDefinition } from '@room-axioms/schema'
 import type { AuthoringCaseValidationReport, AuthoringCliReport } from './contracts.js'
 import {
@@ -808,9 +808,58 @@ function renameRuleKinds(
     return rule
   }
 
+  if (rule.type === 'scopeOverlapCount') {
+    return {
+      ...rule,
+      left: renameCountScopeKinds(rule.left, rename),
+      right: renameCountScopeKinds(rule.right, rename),
+      target: rename(rule.target),
+    }
+  }
+
+  if (rule.type === 'comparativeCount') {
+    return {
+      ...rule,
+      left: renameCountScopeKinds(rule.left, rename),
+      right: renameCountScopeKinds(rule.right, rename),
+      target: rename(rule.target),
+    }
+  }
+
+  if (rule.type === 'conditionalCount') {
+    return {
+      ...rule,
+      condition: {
+        ...rule.condition,
+        scope: renameCountScopeKinds(rule.condition.scope, rename),
+        target: rename(rule.condition.target),
+      },
+      then: {
+        ...rule.then,
+        scope: renameCountScopeKinds(rule.then.scope, rename),
+        target: rename(rule.then.target),
+      },
+    }
+  }
+
   return {
     ...rule,
     subject: rename(rule.subject),
     target: rename(rule.target),
+  }
+}
+
+function renameCountScopeKinds(
+  scope: CountScopeRef,
+  rename: (kind: CellKind) => CellKind,
+): CountScopeRef {
+  if (scope.kind !== 'line' || scope.scope.kind !== 'ray') return scope
+
+  return {
+    ...scope,
+    scope: {
+      ...scope.scope,
+      stopAtKinds: scope.scope.stopAtKinds?.map(rename),
+    },
   }
 }

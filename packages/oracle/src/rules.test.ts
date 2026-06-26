@@ -11,7 +11,7 @@ const metadata: PuzzleDefinition['metadata'] = {
 };
 
 describe('rule evaluation', () => {
-  it('evaluates global counts with eq, gte, and lte comparators', () => {
+  it('evaluates global counts with every comparator', () => {
     const cells = makeAssignment([
       ['guest', 'empty'],
       ['guest', 'bottle'],
@@ -21,7 +21,10 @@ describe('rule evaluation', () => {
       height: 2,
       rules: [
         globalCountRule('two-guests', 'guest', { op: 'eq', value: 2 }),
+        globalCountRule('not-three-guests', 'guest', { op: 'neq', value: 3 }),
+        globalCountRule('more-than-one-guest', 'guest', { op: 'gt', value: 1 }),
         globalCountRule('at-least-one-bottle', 'bottle', { op: 'gte', value: 1 }),
+        globalCountRule('less-than-two-bottles', 'bottle', { op: 'lt', value: 2 }),
         globalCountRule('no-more-than-one-bin', 'bin', { op: 'lte', value: 1 }),
       ],
       target: cells,
@@ -35,6 +38,9 @@ describe('rule evaluation', () => {
     });
     expect(evaluateRule(puzzle.rules[1], puzzle, model).satisfied).toBe(true);
     expect(evaluateRule(puzzle.rules[2], puzzle, model).satisfied).toBe(true);
+    expect(evaluateRule(puzzle.rules[3], puzzle, model).satisfied).toBe(true);
+    expect(evaluateRule(puzzle.rules[4], puzzle, model).satisfied).toBe(true);
+    expect(evaluateRule(puzzle.rules[5], puzzle, model).satisfied).toBe(true);
     expect(satisfiesRules(puzzle, model)).toBe(true);
   });
 

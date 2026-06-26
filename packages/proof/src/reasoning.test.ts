@@ -99,9 +99,12 @@ describe('rule scope summaries', () => {
     });
   });
 
-  it('supports eq, gte, and lte comparator bounds', () => {
+  it('supports comparator bounds for all count operators', () => {
     expect(comparatorBounds({ op: 'eq', value: 2 })).toEqual({ lowerBound: 2, upperBound: 2 });
+    expect(comparatorBounds({ op: 'neq', value: 2 })).toEqual({ lowerBound: 0, upperBound: null });
+    expect(comparatorBounds({ op: 'gt', value: 2 })).toEqual({ lowerBound: 3, upperBound: null });
     expect(comparatorBounds({ op: 'gte', value: 2 })).toEqual({ lowerBound: 2, upperBound: null });
+    expect(comparatorBounds({ op: 'lt', value: 2 })).toEqual({ lowerBound: 0, upperBound: 1 });
     expect(comparatorBounds({ op: 'lte', value: 2 })).toEqual({ lowerBound: 0, upperBound: 2 });
   });
 });
