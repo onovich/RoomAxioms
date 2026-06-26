@@ -57,6 +57,19 @@ describe('in-memory authoring diagnostics', () => {
         calibratedWithRealPlaytest: false,
       },
     })
+    expect(memoryReport.groups.map((group) => group.id)).toEqual([
+      'blocking-errors',
+      'correctness',
+      'human-proof',
+      'quality',
+      'clone-risk',
+      'difficulty',
+      'copy',
+      'performance',
+    ])
+    expect(groupStatus(memoryReport, 'blocking-errors')).toBe('pass')
+    expect(groupStatus(memoryReport, 'correctness')).toBe('pass')
+    expect(groupStatus(memoryReport, 'human-proof')).toBe('pass')
     expect(memoryReport.performance.truncated).toBe(false)
   })
 
@@ -79,6 +92,9 @@ describe('in-memory authoring diagnostics', () => {
       },
     })
     expect(report.validation.schema.issueCount).toBeGreaterThan(0)
+    expect(groupStatus(report, 'blocking-errors')).toBe('fail')
+    expect(groupStatus(report, 'correctness')).toBe('skipped')
+    expect(groupStatus(report, 'human-proof')).toBe('skipped')
   })
 
   it('reports copy warnings for internal labels and highlight-dependent scope text', () => {
@@ -96,6 +112,7 @@ describe('in-memory authoring diagnostics', () => {
       'COPY_INTERNAL_TERM',
       'COPY_SCOPE_NEEDS_EXPLICIT_TEXT',
     ]))
+    expect(groupStatus(report, 'copy')).toBe('warning')
     expect(report.status).toBe('valid-review-needed')
   })
 
@@ -110,6 +127,7 @@ describe('in-memory authoring diagnostics', () => {
       hardFailureCount: expect.any(Number),
     })
     expect(report.cloneRisk?.hardFailureCount).toBeGreaterThan(0)
+    expect(groupStatus(report, 'clone-risk')).toBe('fail')
     expect(report.status).toBe('valid-review-needed')
   }, 60_000)
 
@@ -129,6 +147,8 @@ describe('in-memory authoring diagnostics', () => {
       ]),
     })
     expect(report.copyWarnings.map((warning) => warning.code)).toContain('COPY_DIRECT_SAFE_GIVEAWAY')
+    expect(groupStatus(report, 'quality')).toBe('fail')
+    expect(groupStatus(report, 'copy')).toBe('warning')
   })
 
   it('reports one-rule solutions as weak authoring candidates even when valid', () => {
@@ -142,6 +162,7 @@ describe('in-memory authoring diagnostics', () => {
     ]))
     expect(report.validation.difficultyReview?.targetFour.pass).toBe(false)
     expect(report.quality?.difficulty.calibratedWithRealPlaytest).toBe(false)
+    expect(groupStatus(report, 'difficulty')).toBe('warning')
   })
 
   it('marks duplicated rules as reviewer-needed contribution warnings', () => {
@@ -169,6 +190,7 @@ describe('in-memory authoring diagnostics', () => {
         }),
       ]),
     })
+    expect(['warning', 'fail']).toContain(groupStatus(report, 'quality'))
   })
 
   it('surfaces candidate layout caps as performance warnings', () => {
@@ -185,8 +207,16 @@ describe('in-memory authoring diagnostics', () => {
       capWarnings: expect.arrayContaining(['initial-layout-count-capped']),
     })
     expect(report.validation.recommendation).toBe('raise-caps-or-simplify')
+    expect(groupStatus(report, 'performance')).toBe('warning')
   })
 })
+
+function groupStatus(
+  report: ReturnType<typeof evaluateDraftDiagnostics>,
+  id: string,
+): string | undefined {
+  return report.groups.find((group) => group.id === id)?.status
+}
 
 function singletonRegionGiveawayCase(): PuzzleDefinition {
   return {

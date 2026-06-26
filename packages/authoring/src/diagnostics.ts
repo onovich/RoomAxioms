@@ -75,6 +75,7 @@ export interface AuthoringDraftDiagnosticsReport {
   readonly quality?: AuthoringDraftQualityReport
   readonly cloneRisk?: AntiCloneReport
   readonly copyWarnings: readonly AuthoringCopyWarning[]
+  readonly groups: readonly AuthoringDiagnosticsGroup[]
   readonly performance: {
     readonly truncated: boolean
     readonly capWarnings: readonly string[]
@@ -90,6 +91,32 @@ export interface AuthoringDraftQualityReport {
     readonly calibratedWithRealPlaytest: false
     readonly warning: string
   }
+}
+
+export type AuthoringDiagnosticsGroupId =
+  | 'blocking-errors'
+  | 'correctness'
+  | 'human-proof'
+  | 'quality'
+  | 'clone-risk'
+  | 'difficulty'
+  | 'copy'
+  | 'performance'
+
+export type AuthoringDiagnosticsSeverity = 'pass' | 'info' | 'warning' | 'fail' | 'skipped'
+
+export interface AuthoringDiagnosticsItem {
+  readonly code: string
+  readonly severity: Exclude<AuthoringDiagnosticsSeverity, 'skipped'>
+  readonly message: string
+  readonly refs?: readonly string[]
+}
+
+export interface AuthoringDiagnosticsGroup {
+  readonly id: AuthoringDiagnosticsGroupId
+  readonly title: string
+  readonly status: AuthoringDiagnosticsSeverity
+  readonly items: readonly AuthoringDiagnosticsItem[]
 }
 
 export function evaluateDraftDiagnostics(
@@ -110,6 +137,13 @@ export function evaluateDraftDiagnostics(
     : undefined
   const capWarnings = capWarningsFor(result.validation)
   const status = diagnosticsStatus(result.validation, quality, copyWarnings, cloneRisk)
+  const groups = diagnosticsGroups({
+    validation: result.validation,
+    quality,
+    cloneRisk,
+    copyWarnings,
+    capWarnings,
+  })
 
   return {
     ok: status === 'valid-ready-for-private-review',
@@ -120,6 +154,7 @@ export function evaluateDraftDiagnostics(
     ...(quality === undefined ? {} : { quality }),
     ...(cloneRisk === undefined ? {} : { cloneRisk }),
     copyWarnings,
+    groups,
     performance: {
       truncated: capWarnings.length > 0,
       capWarnings,
@@ -327,6 +362,293 @@ function evaluateDraftQuality(
       warning: 'Difficulty signals are authoring heuristics only and are not calibrated with real playtest data.',
     },
   }
+}
+
+function diagnosticsGroups(input: {
+  readonly validation: AuthoringCaseValidationReport
+  readonly quality?: AuthoringDraftQualityReport
+  readonly cloneRisk?: AntiCloneReport
+  readonly copyWarnings: readonly AuthoringCopyWarning[]
+  readonly capWarnings: readonly string[]
+}): readonly AuthoringDiagnosticsGroup[] {
+  return [
+    blockingGroup(input.validation),
+    correctnessGroup(input.validation),
+    humanProofGroup(input.validation),
+    qualityGroup(input.quality),
+    cloneRiskGroup(input.cloneRisk),
+    difficultyGroup(input.validation),
+    copyGroup(input.copyWarnings),
+    performanceGroup(input.capWarnings),
+  ]
+}
+
+function blockingGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
+  if (!validation.schema.ok) {
+    return group('blocking-errors', 'Blocking Errors', validation.schema.issues.map((issue) => ({
+      code: issue.code,
+      severity: 'fail',
+      message: issue.message,
+      refs: [formatIssuePath(issue.path)],
+    })))
+  }
+
+  return group('blocking-errors', 'Blocking Errors', [{
+    code: 'SCHEMA_VALID',
+    severity: 'pass',
+    message: 'Draft parses as Puzzle Schema v1 and passed semantic validation.',
+  }])
+}
+
+function correctnessGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
+  if (!validation.schema.ok) return skippedGroup('correctness', 'Correctness', 'Draft must pass schema validation first.')
+
+  const items: AuthoringDiagnosticsItem[] = []
+  items.push({
+    code: 'TARGET_RULES',
+    severity: validation.targetRules?.satisfiesRules ? 'pass' : 'fail',
+    message: validation.targetRules?.satisfiesRules
+      ? 'Target satisfies the public rules.'
+      : 'Target does not satisfy the public rules or the check was truncated.',
+  })
+  items.push({
+    code: 'INITIAL_SATISFIABILITY',
+    severity: validation.initialSatisfiability?.satisfiable ? 'pass' : 'fail',
+    message: validation.initialSatisfiability?.satisfiable
+      ? 'Initial observations are satisfiable.'
+      : 'Initial observations are unsatisfiable or the check was truncated.',
+  })
+  items.push({
+    code: 'INITIAL_GUEST_LAYOUTS',
+    severity: validation.initialGuestLayouts?.greaterThan === undefined ? 'info' : 'warning',
+    message: validation.initialGuestLayouts?.greaterThan === undefined
+      ? `Initial guest-layout count: ${validation.initialGuestLayouts?.count ?? 0}.`
+      : `Initial guest-layout count exceeded cap ${validation.initialGuestLayouts.greaterThan}.`,
+  })
+  if (validation.recordSets !== undefined) {
+    items.push({
+      code: 'RECORD_SETS',
+      severity: validation.recordSets.possibleAssignments.length > 0 ? 'pass' : 'fail',
+      message: `Record-set possible assignments: ${validation.recordSets.possibleAssignments.length}.`,
+    })
+  }
+
+  return group('correctness', 'Correctness', items)
+}
+
+function humanProofGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
+  if (!validation.schema.ok) return skippedGroup('human-proof', 'Human Proof', 'Draft must pass schema validation first.')
+  if (validation.proof === undefined) {
+    return group('human-proof', 'Human Proof', [{
+      code: 'PROOF_MISSING',
+      severity: 'fail',
+      message: 'No proof report was produced.',
+    }])
+  }
+
+  return group('human-proof', 'Human Proof', [
+    {
+      code: 'NO_GUESS',
+      severity: validation.proof.noGuess ? 'pass' : 'fail',
+      message: validation.proof.noGuess ? 'No-guess verifier passed.' : 'No-guess verifier failed.',
+    },
+    {
+      code: 'HUMAN_EXPLAINABLE',
+      severity: validation.proof.humanExplainable ? 'pass' : 'fail',
+      message: validation.proof.humanExplainable
+        ? 'Proof uses approved human-readable techniques.'
+        : 'Proof has explanation gaps or unsupported techniques.',
+    },
+    {
+      code: 'FINAL_UNIQUENESS',
+      severity: validation.proof.guestLayoutUniqueAtEnd ? 'pass' : 'fail',
+      message: validation.proof.guestLayoutUniqueAtEnd
+        ? `Final guest cells: ${validation.proof.finalGuestCells?.join(', ') ?? '(none reported)'}.`
+        : 'Final guest layout is not unique.',
+    },
+    {
+      code: 'PROOF_METRICS',
+      severity: 'info',
+      message: `${validation.proof.waveCount} wave(s), ${validation.proof.deductionCount} deduction(s).`,
+      refs: validation.proof.techniqueIds,
+    },
+  ])
+}
+
+function qualityGroup(quality: AuthoringDraftQualityReport | undefined): AuthoringDiagnosticsGroup {
+  if (quality === undefined) return skippedGroup('quality', 'Quality Gates', 'Draft must pass schema validation first.')
+
+  const irrelevantCellCount = quality.effectiveBoard.irrelevantCells.length
+  const redundantRuleIds = quality.ruleFamilyDiversity.redundantRuleIds
+
+  return group('quality', 'Quality Gates', [
+    {
+      code: 'DEGENERACY',
+      severity: gateSeverity(quality.degeneracy.status),
+      message: `Degeneracy gate: ${quality.degeneracy.status}.`,
+      refs: quality.degeneracy.results
+        .filter((result) => result.status !== 'pass')
+        .map((result) => result.ruleId),
+    },
+    {
+      code: 'RULE_CONTRIBUTION',
+      severity: quality.ruleContribution.status === 'pass' ? 'pass' : 'warning',
+      message: quality.ruleContribution.status === 'pass'
+        ? 'No redundant rule contribution suspects.'
+        : 'One or more rules have no material contribution.',
+      refs: quality.ruleContribution.results
+        .filter((result) => result.status === 'redundant')
+        .map((result) => result.ruleId),
+    },
+    {
+      code: 'RULE_FAMILY_DIVERSITY',
+      severity: gateSeverity(quality.ruleFamilyDiversity.status),
+      message: `${quality.ruleFamilyDiversity.materialFamilyCount} material rule famil(ies); ${redundantRuleIds.length} redundant rule suspect(s).`,
+      refs: [...quality.ruleFamilyDiversity.materialFamilies, ...redundantRuleIds],
+    },
+    {
+      code: 'EFFECTIVE_BOARD',
+      severity: irrelevantCellCount === 0 ? 'pass' : 'warning',
+      message: `${quality.effectiveBoard.effectiveCells.length} effective cell(s), ${irrelevantCellCount} irrelevant cell(s).`,
+      refs: quality.effectiveBoard.irrelevantCells,
+    },
+  ])
+}
+
+function cloneRiskGroup(cloneRisk: AntiCloneReport | undefined): AuthoringDiagnosticsGroup {
+  if (cloneRisk === undefined) {
+    return group('clone-risk', 'Clone Risk', [{
+      code: 'CLONE_RISK_NOT_RUN',
+      severity: 'info',
+      message: 'Clone-risk comparison was not run because no comparison puzzles were provided.',
+    }])
+  }
+
+  return group('clone-risk', 'Clone Risk', [{
+    code: 'CLONE_RISK',
+    severity: cloneRisk.status === 'pass' ? 'pass' : cloneRisk.status === 'fail' ? 'fail' : 'warning',
+    message: `Clone-risk status: ${cloneRisk.status}; hard failures ${cloneRisk.hardFailureCount}, reviewer-blocking ${cloneRisk.reviewerBlockingCount}.`,
+    refs: cloneRisk.evidenceGroups.map((evidence) => evidence.kind),
+  }])
+}
+
+function difficultyGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
+  if (!validation.schema.ok || validation.difficultyReview === undefined) {
+    return skippedGroup('difficulty', 'Difficulty', 'Draft must pass schema validation first.')
+  }
+
+  return group('difficulty', 'Difficulty', [
+    {
+      code: 'DIFFICULTY_UNCALIBRATED',
+      severity: 'warning',
+      message: 'Difficulty is an authoring heuristic and is not calibrated with real playtest data.',
+    },
+    {
+      code: 'DIFFICULTY_BUCKET',
+      severity: 'info',
+      message: `Recommended bucket: ${validation.difficultyReview.recommendedBucket}.`,
+    },
+    {
+      code: 'TARGET_FOUR_THRESHOLD',
+      severity: validation.difficultyReview.targetFour.pass ? 'pass' : 'warning',
+      message: validation.difficultyReview.targetFour.pass
+        ? 'Target-4 heuristic threshold passed.'
+        : `Target-4 heuristic missing: ${validation.difficultyReview.targetFour.missing.join(', ')}.`,
+    },
+    {
+      code: 'SUPER_HARD_THRESHOLD',
+      severity: validation.difficultyReview.superHard.pass ? 'pass' : 'info',
+      message: validation.difficultyReview.superHard.pass
+        ? 'Super-hard heuristic threshold passed.'
+        : `Super-hard heuristic missing: ${validation.difficultyReview.superHard.missing.join(', ')}.`,
+    },
+  ])
+}
+
+function copyGroup(copyWarnings: readonly AuthoringCopyWarning[]): AuthoringDiagnosticsGroup {
+  if (copyWarnings.length === 0) {
+    return group('copy', 'Copy Warnings', [{
+      code: 'COPY_CLEAR',
+      severity: 'pass',
+      message: 'No copy warnings were detected.',
+    }])
+  }
+
+  return group('copy', 'Copy Warnings', copyWarnings.map((warning) => ({
+    code: warning.code,
+    severity: warning.severity,
+    message: warning.message,
+    refs: [warning.location],
+  })))
+}
+
+function performanceGroup(capWarnings: readonly string[]): AuthoringDiagnosticsGroup {
+  if (capWarnings.length === 0) {
+    return group('performance', 'Performance And Caps', [{
+      code: 'CAPS_CLEAR',
+      severity: 'pass',
+      message: 'No solver cap or truncation warning was reported.',
+    }])
+  }
+
+  return group('performance', 'Performance And Caps', capWarnings.map((warning) => ({
+    code: warning,
+    severity: 'warning',
+    message: `Solver cap warning: ${warning}.`,
+  })))
+}
+
+function skippedGroup(
+  id: AuthoringDiagnosticsGroupId,
+  title: string,
+  message: string,
+): AuthoringDiagnosticsGroup {
+  return {
+    id,
+    title,
+    status: 'skipped',
+    items: [{
+      code: 'SKIPPED',
+      severity: 'info',
+      message,
+    }],
+  }
+}
+
+function group(
+  id: AuthoringDiagnosticsGroupId,
+  title: string,
+  items: readonly AuthoringDiagnosticsItem[],
+): AuthoringDiagnosticsGroup {
+  return {
+    id,
+    title,
+    status: groupSeverity(items),
+    items,
+  }
+}
+
+function groupSeverity(items: readonly AuthoringDiagnosticsItem[]): AuthoringDiagnosticsSeverity {
+  if (items.some((item) => item.severity === 'fail')) return 'fail'
+  if (items.some((item) => item.severity === 'warning')) return 'warning'
+  if (items.some((item) => item.severity === 'pass')) return 'pass'
+
+  return 'info'
+}
+
+function gateSeverity(status: 'pass' | 'warning' | 'fail'): AuthoringDiagnosticsItem['severity'] {
+  if (status === 'fail') return 'fail'
+  if (status === 'warning') return 'warning'
+
+  return 'pass'
+}
+
+function formatIssuePath(path: readonly (string | number)[]): string {
+  if (path.length === 0) return '$'
+
+  return path.reduce<string>((output, segment) => (
+    typeof segment === 'number' ? `${output}[${segment}]` : `${output}.${segment}`
+  ), '$')
 }
 
 function capWarningsFor(validation: AuthoringCaseValidationReport): readonly string[] {
