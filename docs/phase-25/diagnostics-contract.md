@@ -8,6 +8,16 @@ source-of-truth API for private workbench diagnostics. The web workbench should
 render this report rather than reimplementing schema, solver, proof, degeneracy,
 clone-risk, copy, or difficulty logic.
 
+Browser-facing code should import the diagnostics entrypoint explicitly:
+
+```ts
+import { evaluateDraftDiagnostics } from '@room-axioms/authoring/diagnostics'
+```
+
+The package root remains available for the private CLI and maintainer workflows,
+but it also exports Node/file/generator-facing commands. The `./diagnostics`
+subpath is the intended workbench import surface.
+
 ## Report Shape
 
 The report keeps raw diagnostic detail for maintainer drill-down:
