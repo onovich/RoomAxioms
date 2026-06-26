@@ -36,11 +36,20 @@ export type QualityGateId =
 export type QualityGateStatus = 'pass' | 'warning' | 'fail'
 
 export type DegeneracyGateStatus = 'pass' | 'warning' | 'fail'
-export type DegeneracyScopeKind = 'region' | 'line'
+export type DegeneracyScopeKind =
+  | 'region'
+  | 'line'
+  | 'scope-overlap'
+  | 'conditional-condition'
+  | 'conditional-then'
+  | 'comparative-left'
+  | 'comparative-right'
+  | 'comparative'
 export type DegeneracyReason =
   | 'singleton-effective-scope'
   | 'direct-count-giveaway'
   | 'near-count-giveaway'
+  | 'trivial-same-scope-comparison'
 
 export interface DegeneracyGateOptions {
   readonly nearGiveawaySlack?: number
@@ -48,7 +57,7 @@ export interface DegeneracyGateOptions {
 
 export interface DegeneracyGateResult {
   readonly ruleId: string
-  readonly ruleType: 'regionCount' | 'lineCount'
+  readonly ruleType: 'regionCount' | 'lineCount' | 'scopeOverlapCount' | 'conditionalCount' | 'comparativeCount'
   readonly scopeKind: DegeneracyScopeKind
   readonly status: DegeneracyGateStatus
   readonly reasons: readonly DegeneracyReason[]
@@ -391,12 +400,12 @@ export function evaluateDegeneracyGates(
 ): DegeneracyGateReport {
   const nearGiveawaySlack = options.nearGiveawaySlack ?? 1
   const results = puzzle.rules
-    .map((rule) => {
+    .flatMap((rule) => {
       if (rule.type === 'regionCount') {
         const region = puzzle.regions?.find((candidate) => candidate.id === rule.regionId)
-        if (region === undefined) return undefined
+        if (region === undefined) return []
 
-        return scopeDegeneracyResult({
+        return [scopeDegeneracyResult({
           puzzle,
           ruleId: rule.id,
           ruleType: rule.type,
@@ -405,14 +414,14 @@ export function evaluateDegeneracyGates(
           target: rule.target,
           count: rule.count,
           nearGiveawaySlack,
-        })
+        })]
       }
 
       if (rule.type === 'lineCount') {
         const scopeCells = lineCountScopeCells(puzzle, rule)
-        if (scopeCells === undefined) return undefined
+        if (scopeCells === undefined) return []
 
-        return scopeDegeneracyResult({
+        return [scopeDegeneracyResult({
           puzzle,
           ruleId: rule.id,
           ruleType: rule.type,
@@ -421,12 +430,76 @@ export function evaluateDegeneracyGates(
           target: rule.target,
           count: rule.count,
           nearGiveawaySlack,
-        })
+        })]
       }
 
-      return undefined
+      if (rule.type === 'scopeOverlapCount') {
+        return [scopeDegeneracyResult({
+          puzzle,
+          ruleId: rule.id,
+          ruleType: rule.type,
+          scopeKind: 'scope-overlap',
+          scopeCells: scopeOverlapCells(puzzle, rule),
+          target: rule.target,
+          count: rule.count,
+          nearGiveawaySlack,
+        })]
+      }
+
+      if (rule.type === 'conditionalCount') {
+        return [
+          scopeDegeneracyResult({
+            puzzle,
+            ruleId: rule.id,
+            ruleType: rule.type,
+            scopeKind: 'conditional-condition',
+            scopeCells: countScopeCells(puzzle, rule.condition.scope) ?? [],
+            target: rule.condition.target,
+            count: rule.condition.count,
+            nearGiveawaySlack,
+          }),
+          scopeDegeneracyResult({
+            puzzle,
+            ruleId: rule.id,
+            ruleType: rule.type,
+            scopeKind: 'conditional-then',
+            scopeCells: countScopeCells(puzzle, rule.then.scope) ?? [],
+            target: rule.then.target,
+            count: rule.then.count,
+            nearGiveawaySlack,
+          }),
+        ]
+      }
+
+      if (rule.type === 'comparativeCount') {
+        const comparativeResults: DegeneracyGateResult[] = []
+        const leftScopeCells = countScopeCells(puzzle, rule.left)
+        if (leftScopeCells !== undefined) {
+          comparativeResults.push(comparativeScopeDegeneracyResult({
+            puzzle,
+            ruleId: rule.id,
+            scopeKind: 'comparative-left',
+            scopeCells: leftScopeCells,
+          }))
+        }
+        const rightScopeCells = countScopeCells(puzzle, rule.right)
+        if (rightScopeCells !== undefined) {
+          comparativeResults.push(comparativeScopeDegeneracyResult({
+            puzzle,
+            ruleId: rule.id,
+            scopeKind: 'comparative-right',
+            scopeCells: rightScopeCells,
+          }))
+        }
+        if (countScopeSignature(rule.left) === countScopeSignature(rule.right) && (rule.comparison.offset ?? 0) === 0) {
+          comparativeResults.push(trivialComparativeDegeneracyResult(rule.id))
+        }
+
+        return comparativeResults
+      }
+
+      return []
     })
-    .filter(isDefined)
 
   return {
     puzzleId: puzzle.id,
@@ -1185,10 +1258,65 @@ function lineCountScopeCells(
   }
 }
 
+function countScopeCells(puzzle: PuzzleDefinition, scope: CountScopeRef): readonly CellId[] | undefined {
+  switch (scope.kind) {
+    case 'global':
+      return allCells(puzzle.board)
+    case 'region': {
+      const region = puzzle.regions?.find((candidate) => candidate.id === scope.regionId)
+      if (region === undefined) return undefined
+
+      return regionCells(region, puzzle.board)
+    }
+    case 'line':
+      return countScopeLineCells(puzzle, scope)
+  }
+}
+
+function countScopeLineCells(
+  puzzle: PuzzleDefinition,
+  scope: Extract<CountScopeRef, { readonly kind: 'line' }>,
+): readonly CellId[] | undefined {
+  switch (scope.scope.kind) {
+    case 'row':
+    case 'column':
+      return lineCells(scope.scope, puzzle.board)
+    case 'ray': {
+      if (scope.origin === undefined) return undefined
+
+      const blockerKinds = new Set(scope.scope.stopAtKinds ?? [])
+      const observedStopCells = puzzle.initialReveals.filter((cellId) => blockerKinds.has(puzzle.target[cellId]))
+
+      return rayCells(scope.origin, scope.scope.direction, puzzle.board, { stopCells: observedStopCells })
+    }
+  }
+}
+
+function scopeOverlapCells(
+  puzzle: PuzzleDefinition,
+  rule: Extract<RuleDefinition, { readonly type: 'scopeOverlapCount' }>,
+): readonly CellId[] {
+  const left = countScopeCells(puzzle, rule.left) ?? []
+  const right = countScopeCells(puzzle, rule.right) ?? []
+  const leftSet = new Set(left)
+  const rightSet = new Set(right)
+
+  switch (rule.mode) {
+    case 'intersection':
+      return sortCellIds(left.filter((cellId) => rightSet.has(cellId)), puzzle.board)
+    case 'union':
+      return sortCellIds(new Set([...left, ...right]), puzzle.board)
+    case 'leftOnly':
+      return sortCellIds(left.filter((cellId) => !rightSet.has(cellId)), puzzle.board)
+    case 'rightOnly':
+      return sortCellIds(right.filter((cellId) => !leftSet.has(cellId)), puzzle.board)
+  }
+}
+
 function scopeDegeneracyResult(input: {
   readonly puzzle: PuzzleDefinition
   readonly ruleId: string
-  readonly ruleType: 'regionCount' | 'lineCount'
+  readonly ruleType: DegeneracyGateResult['ruleType']
   readonly scopeKind: DegeneracyScopeKind
   readonly scopeCells: readonly CellId[]
   readonly target: CellKind
@@ -1232,6 +1360,51 @@ function scopeDegeneracyResult(input: {
     observedTargetCount,
     requiredTargetCount,
     message: degeneracyMessage(input.scopeKind, status, reasons, unknownCellCount, requiredTargetCount),
+  }
+}
+
+function comparativeScopeDegeneracyResult(input: {
+  readonly puzzle: PuzzleDefinition
+  readonly ruleId: string
+  readonly scopeKind: 'comparative-left' | 'comparative-right'
+  readonly scopeCells: readonly CellId[]
+}): DegeneracyGateResult {
+  const initialReveals = new Set(input.puzzle.initialReveals)
+  const unknownCellCount = input.scopeCells.filter((cellId) => !initialReveals.has(cellId)).length
+  const reasons: DegeneracyReason[] = []
+
+  if (unknownCellCount <= 1) reasons.push('singleton-effective-scope')
+
+  const status: DegeneracyGateStatus = reasons.length > 0 ? 'fail' : 'pass'
+
+  return {
+    ruleId: input.ruleId,
+    ruleType: 'comparativeCount',
+    scopeKind: input.scopeKind,
+    status,
+    reasons,
+    scopeCellCount: input.scopeCells.length,
+    unknownCellCount,
+    observedTargetCount: 0,
+    requiredTargetCount: 0,
+    message: status === 'pass'
+      ? `${input.scopeKind} has ${unknownCellCount} effective unknown cells.`
+      : `${input.scopeKind} has only ${unknownCellCount} effective unknown cell(s).`,
+  }
+}
+
+function trivialComparativeDegeneracyResult(ruleId: string): DegeneracyGateResult {
+  return {
+    ruleId,
+    ruleType: 'comparativeCount',
+    scopeKind: 'comparative',
+    status: 'fail',
+    reasons: ['trivial-same-scope-comparison'],
+    scopeCellCount: 0,
+    unknownCellCount: 0,
+    observedTargetCount: 0,
+    requiredTargetCount: 0,
+    message: 'Comparative rule compares the same scope with no offset.',
   }
 }
 

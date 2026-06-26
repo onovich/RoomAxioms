@@ -178,6 +178,70 @@ describe('degeneracy gates', () => {
       requiredTargetCount: 2,
     }))
   })
+
+  it('fails singleton scope-overlap counts that behave like direct reveals', () => {
+    const report = evaluateDegeneracyGates(singletonScopeOverlapCase())
+
+    expect(report.status).toBe('fail')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'OR1',
+      ruleType: 'scopeOverlapCount',
+      scopeKind: 'scope-overlap',
+      status: 'fail',
+      reasons: expect.arrayContaining(['singleton-effective-scope', 'direct-count-giveaway']),
+      unknownCellCount: 1,
+      requiredTargetCount: 1,
+    }))
+  })
+
+  it('fails conditional consequences that directly give away guest cells', () => {
+    const report = evaluateDegeneracyGates(conditionalThenGiveawayCase())
+
+    expect(report.status).toBe('fail')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CR1',
+      ruleType: 'conditionalCount',
+      scopeKind: 'conditional-condition',
+      status: 'pass',
+      unknownCellCount: 4,
+    }))
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CR1',
+      ruleType: 'conditionalCount',
+      scopeKind: 'conditional-then',
+      status: 'fail',
+      reasons: expect.arrayContaining(['singleton-effective-scope', 'direct-count-giveaway']),
+      unknownCellCount: 1,
+      requiredTargetCount: 1,
+    }))
+  })
+
+  it('fails comparative counts that compare the same scope with no offset', () => {
+    const report = evaluateDegeneracyGates(trivialComparativeCase())
+
+    expect(report.status).toBe('fail')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CP1',
+      ruleType: 'comparativeCount',
+      scopeKind: 'comparative-left',
+      status: 'pass',
+      unknownCellCount: 4,
+    }))
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CP1',
+      ruleType: 'comparativeCount',
+      scopeKind: 'comparative-right',
+      status: 'pass',
+      unknownCellCount: 4,
+    }))
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CP1',
+      ruleType: 'comparativeCount',
+      scopeKind: 'comparative',
+      status: 'fail',
+      reasons: ['trivial-same-scope-comparison'],
+    }))
+  })
 })
 
 describe('rule contribution gate', () => {
@@ -654,6 +718,111 @@ function healthyRegionCase(): PuzzleDefinition {
       B2: 'empty',
       C2: 'guest',
       D2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function singletonScopeOverlapCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'degenerate-scope-overlap-singleton',
+    title: 'Degenerate scope overlap singleton',
+    board: { width: 3, height: 2 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      { id: 'left-block', title: 'Left block', cells: ['A1', 'B1', 'A2', 'B2'] },
+      { id: 'right-block', title: 'Right block', cells: ['B1', 'C1', 'B2', 'C2'] },
+    ],
+    rules: [{
+      id: 'OR1',
+      type: 'scopeOverlapCount',
+      left: { kind: 'region', regionId: 'left-block' },
+      right: { kind: 'region', regionId: 'right-block' },
+      mode: 'intersection',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: 'Overlap has one guest' },
+    }],
+    initialReveals: ['B1'],
+    target: {
+      A1: 'empty',
+      B1: 'empty',
+      C1: 'empty',
+      A2: 'empty',
+      B2: 'guest',
+      C2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function conditionalThenGiveawayCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'degenerate-conditional-then-singleton',
+    title: 'Degenerate conditional consequence singleton',
+    board: { width: 4, height: 2 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      { id: 'condition-band', title: 'Condition band', cells: ['A1', 'B1', 'C1', 'D1'] },
+      { id: 'then-cell', title: 'Then cell', cells: ['A2', 'B2'] },
+    ],
+    rules: [{
+      id: 'CR1',
+      type: 'conditionalCount',
+      condition: {
+        scope: { kind: 'region', regionId: 'condition-band' },
+        target: 'guest',
+        count: { op: 'eq', value: 2 },
+      },
+      then: {
+        scope: { kind: 'region', regionId: 'then-cell' },
+        target: 'guest',
+        count: { op: 'eq', value: 1 },
+      },
+      presentation: { title: 'Conditional then giveaway' },
+    }],
+    initialReveals: ['B2'],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      C1: 'guest',
+      D1: 'empty',
+      A2: 'guest',
+      B2: 'empty',
+      C2: 'empty',
+      D2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function trivialComparativeCase(): PuzzleDefinition {
+  const repeatedScope: CountScopeRef = { kind: 'region', regionId: 'shared-band' }
+
+  return {
+    schemaVersion: 1,
+    id: 'degenerate-comparative-same-scope',
+    title: 'Degenerate comparative same scope',
+    board: { width: 4, height: 1 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [{ id: 'shared-band', title: 'Shared band', cells: ['A1', 'B1', 'C1', 'D1'] }],
+    rules: [{
+      id: 'CP1',
+      type: 'comparativeCount',
+      left: repeatedScope,
+      right: repeatedScope,
+      target: 'guest',
+      comparison: { op: 'eq', offset: 0 },
+      presentation: { title: 'Same scope comparison' },
+    }],
+    initialReveals: [],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      C1: 'guest',
+      D1: 'empty',
     },
     metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
   }
