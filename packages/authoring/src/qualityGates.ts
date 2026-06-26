@@ -457,6 +457,7 @@ export function evaluateDegeneracyGates(
             target: rule.condition.target,
             count: rule.condition.count,
             nearGiveawaySlack,
+            allowFullyObservedScope: true,
           }),
           scopeDegeneracyResult({
             puzzle,
@@ -1322,6 +1323,7 @@ function scopeDegeneracyResult(input: {
   readonly target: CellKind
   readonly count: Comparator
   readonly nearGiveawaySlack: number
+  readonly allowFullyObservedScope?: boolean
 }): DegeneracyGateResult {
   const initialReveals = new Set(input.puzzle.initialReveals)
   const unknownCellCount = input.scopeCells.filter((cellId) => !initialReveals.has(cellId)).length
@@ -1331,7 +1333,9 @@ function scopeDegeneracyResult(input: {
   const requiredTargetCount = Math.max(0, input.count.value - observedTargetCount)
   const reasons: DegeneracyReason[] = []
 
-  if (unknownCellCount <= 1) reasons.push('singleton-effective-scope')
+  if (unknownCellCount <= 1 && !(unknownCellCount === 0 && input.allowFullyObservedScope === true)) {
+    reasons.push('singleton-effective-scope')
+  }
 
   if (input.target === 'guest' && (input.count.op === 'eq' || input.count.op === 'gte') && requiredTargetCount > 0) {
     if (requiredTargetCount >= unknownCellCount) {
@@ -1373,7 +1377,7 @@ function comparativeScopeDegeneracyResult(input: {
   const unknownCellCount = input.scopeCells.filter((cellId) => !initialReveals.has(cellId)).length
   const reasons: DegeneracyReason[] = []
 
-  if (unknownCellCount <= 1) reasons.push('singleton-effective-scope')
+  if (unknownCellCount === 1) reasons.push('singleton-effective-scope')
 
   const status: DegeneracyGateStatus = reasons.length > 0 ? 'fail' : 'pass'
 

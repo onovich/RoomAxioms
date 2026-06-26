@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-24-conditional-frontier-001",
+  "title": "Phase 24 Conditional Frontier 001",
+  "caseName": "Phase 24 - 条件计数实验 001",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "switch-pair",
+      "title": "开关两格",
+      "cells": [
+        "A1",
+        "B1"
+      ]
+    },
+    {
+      "id": "quiet-row",
+      "title": "下方三格",
+      "cells": [
+        "A3",
+        "B3",
+        "C3"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "conditionalCount",
+      "condition": {
+        "scope": {
+          "kind": "region",
+          "regionId": "switch-pair"
+        },
+        "target": "guest",
+        "count": {
+          "op": "eq",
+          "value": 0
+        }
+      },
+      "then": {
+        "scope": {
+          "kind": "region",
+          "regionId": "quiet-row"
+        },
+        "target": "guest",
+        "count": {
+          "op": "eq",
+          "value": 0
+        }
+      },
+      "presentation": {
+        "title": "开关为空则下方无人",
+        "flavor": "如果 A1、B1 这两格没有访客，那么 A3、B3、C3 这三格没有访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "A2",
+    "B2",
+    "C2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 2,
+    "tags": [
+      "experimental",
+      "phase-24",
+      "conditional-count",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Private Phase 24 fixture proving conditionalCount applies only after its public condition is forced true. Not shipped."
+  }
+}

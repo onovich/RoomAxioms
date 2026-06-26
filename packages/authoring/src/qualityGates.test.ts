@@ -216,6 +216,27 @@ describe('degeneracy gates', () => {
     }))
   })
 
+  it('allows fixed public conditional conditions while still checking the consequence', () => {
+    const report = evaluateDegeneracyGates(fixedConditionalConditionCase())
+
+    expect(report.status).toBe('pass')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CR1',
+      ruleType: 'conditionalCount',
+      scopeKind: 'conditional-condition',
+      status: 'pass',
+      reasons: [],
+      unknownCellCount: 0,
+    }))
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CR1',
+      ruleType: 'conditionalCount',
+      scopeKind: 'conditional-then',
+      status: 'pass',
+      unknownCellCount: 2,
+    }))
+  })
+
   it('fails comparative counts that compare the same scope with no offset', () => {
     const report = evaluateDegeneracyGates(trivialComparativeCase())
 
@@ -240,6 +261,27 @@ describe('degeneracy gates', () => {
       scopeKind: 'comparative',
       status: 'fail',
       reasons: ['trivial-same-scope-comparison'],
+    }))
+  })
+
+  it('allows a fixed public comparative side as a readable comparison anchor', () => {
+    const report = evaluateDegeneracyGates(fixedComparativeSideCase())
+
+    expect(report.status).toBe('pass')
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CP1',
+      ruleType: 'comparativeCount',
+      scopeKind: 'comparative-left',
+      status: 'pass',
+      unknownCellCount: 2,
+    }))
+    expect(report.results).toContainEqual(expect.objectContaining({
+      ruleId: 'CP1',
+      ruleType: 'comparativeCount',
+      scopeKind: 'comparative-right',
+      status: 'pass',
+      reasons: [],
+      unknownCellCount: 0,
     }))
   })
 })
@@ -798,6 +840,47 @@ function conditionalThenGiveawayCase(): PuzzleDefinition {
   }
 }
 
+function fixedConditionalConditionCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'fixed-conditional-condition',
+    title: 'Fixed conditional condition',
+    board: { width: 4, height: 2 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      { id: 'condition-band', title: 'Condition band', cells: ['A1', 'B1'] },
+      { id: 'then-band', title: 'Then band', cells: ['A2', 'B2'] },
+    ],
+    rules: [{
+      id: 'CR1',
+      type: 'conditionalCount',
+      condition: {
+        scope: { kind: 'region', regionId: 'condition-band' },
+        target: 'guest',
+        count: { op: 'eq', value: 1 },
+      },
+      then: {
+        scope: { kind: 'region', regionId: 'then-band' },
+        target: 'guest',
+        count: { op: 'eq', value: 0 },
+      },
+      presentation: { title: 'Fixed condition fixture' },
+    }],
+    initialReveals: ['A1', 'B1'],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      C1: 'empty',
+      D1: 'empty',
+      A2: 'empty',
+      B2: 'empty',
+      C2: 'empty',
+      D2: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
 function trivialComparativeCase(): PuzzleDefinition {
   const repeatedScope: CountScopeRef = { kind: 'region', regionId: 'shared-band' }
 
@@ -818,6 +901,37 @@ function trivialComparativeCase(): PuzzleDefinition {
       presentation: { title: 'Same scope comparison' },
     }],
     initialReveals: [],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      C1: 'guest',
+      D1: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['degeneracy-fixture'], status: 'draft' },
+  }
+}
+
+function fixedComparativeSideCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'fixed-comparative-side',
+    title: 'Fixed comparative side',
+    board: { width: 4, height: 1 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      { id: 'left-band', title: 'Left band', cells: ['A1', 'B1'] },
+      { id: 'right-band', title: 'Right band', cells: ['C1', 'D1'] },
+    ],
+    rules: [{
+      id: 'CP1',
+      type: 'comparativeCount',
+      left: { kind: 'region', regionId: 'left-band' },
+      right: { kind: 'region', regionId: 'right-band' },
+      target: 'guest',
+      comparison: { op: 'eq' },
+      presentation: { title: 'Fixed side comparison' },
+    }],
+    initialReveals: ['C1', 'D1'],
     target: {
       A1: 'guest',
       B1: 'empty',

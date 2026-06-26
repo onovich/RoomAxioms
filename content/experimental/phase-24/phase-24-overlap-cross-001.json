@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-24-overlap-cross-001",
+  "title": "Phase 24 Overlap Cross 001",
+  "caseName": "Phase 24 - 重叠范围实验 001",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-strip",
+      "title": "北排与左中",
+      "cells": [
+        "A1",
+        "B1",
+        "C1",
+        "A2"
+      ]
+    },
+    {
+      "id": "west-strip",
+      "title": "左列与北中",
+      "cells": [
+        "A1",
+        "A2",
+        "A3",
+        "B1"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "scopeOverlapCount",
+      "left": {
+        "kind": "region",
+        "regionId": "north-strip"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "west-strip"
+      },
+      "mode": "intersection",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "重叠三格",
+        "flavor": "同时属于北排与左列线索的 A1、B1、A2 这三格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字",
+        "flavor": "每个酒瓶上下左右相邻格里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "B2",
+    "C1",
+    "C2",
+    "A3",
+    "B3",
+    "C3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "A2": "guest",
+    "B2": "bottle",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty"
+  },
+  "metadata": {
+    "difficulty": 2,
+    "tags": [
+      "experimental",
+      "phase-24",
+      "scope-overlap-count",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Private Phase 24 fixture proving scopeOverlapCount can produce proof-backed saturated deductions over a non-singleton derived intersection after a public bottle count identifies the guest. Not shipped."
+  }
+}
