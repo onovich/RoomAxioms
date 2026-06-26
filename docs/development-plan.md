@@ -43,10 +43,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 24 - Rule Grammar Expressiveness Expansion, accepted with blocker, final commit `5f6d5f2`.
-- Current executor result: no active executor phase after Phase 24 acceptance; Phase 25 is planned but not dispatched.
-- Active guide: `docs/phase-24-rule-grammar-expressiveness-expansion-goal-mode-execution-guide.md`.
-- Executor budget: 24 rounds.
-- Executor status: awaiting planner dispatch.
+- Current executor result: Phase 25 dispatched for execution.
+- Active guide: `docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md`.
+- Executor budget: 28 rounds.
+- Executor status: executing authoring editor and live diagnostics workbench.
 - Last completed final report: `docs/phase-24-rule-grammar-expressiveness-expansion-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -70,6 +70,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 24 target: implement additive comparative, conditional, overlap, and readable contaminated-record grammar slices where feasible; prove them through fixtures, authoring reports, experimental cases, and hardness probes rather than bulk case production.
 - Phase 24 result: accepted with blocker. `scopeOverlapCount`, `comparativeCount`, and `conditionalCount` are implemented end to end across domain/schema/oracle/solver/proof/authoring/web copy and hints; `recordContamination` remains deferred. The blocker is content expressiveness: Phase 24 experimental cases validate grammar integration but have `initialGuestLayouts = 1` and `proofWaveCount = 0`, so they are not non-degenerate high-difficulty puzzles.
 - Planned Phase 25 direction: build a maintainer-facing authoring editor and live diagnostics workbench so level design becomes an inspectable human-in-the-loop workflow rather than pure AI generation.
+- Phase 25 target: implement a private maintainer-only workbench that can import/edit/export puzzle drafts and show immediate schema, solver, proof, degeneracy, clone-risk, rule contribution, copy-warning, and difficulty diagnostics without exposing public UGC.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -101,5 +102,5 @@ These are accepted as candidates, not active execution scope:
 - Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22, completed.
 - Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23, completed with blocker.
 - Rule grammar expressiveness expansion budget: 24 rounds, covering Phase 24, completed with blocker.
-- Authoring editor and live diagnostics workbench budget: 28 rounds, reserved for Phase 25 after planner dispatch.
+- Authoring editor and live diagnostics workbench budget: 28 rounds, covering active Phase 25.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
