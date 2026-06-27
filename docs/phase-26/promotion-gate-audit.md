@@ -61,6 +61,7 @@ The current player selector still imports only shipped cases in
 | `p26-c12-final-synthesis` | Comparative technique retained; degeneracy pass. | No-guess false; final uniqueness false; exact proof-trace clone of C09; object-local rules redundant. | Reject; do not promote. |
 | `p26-c13-frontier-closure` | Retains the C10 local-count plus region-count proof techniques. | No-guess false; final uniqueness false; hard degeneracy on fully observed R2; R1/R2/R4/R5 redundant; R6 is direct three-cell no-guest closure. | Reject; do not promote. |
 | `p26-c14-comparative-object-bridge` | Object-bridge rules become material. | Opening guest layout already unique; zero proof waves; hard degeneracy on singleton comparative-left; required proof techniques absent. | Reject; do not promote. |
+| `p26-c15-overlap-chain-repair` | Non-degenerate material overlap scope with opening ambiguity. | No-guess false; final uniqueness false; no `SCOPE_OVERLAP_*` proof technique; B1/A2 explanation gaps; singleton entry rule; redundant R4. | Reject; do not promote. |
 
 ## Phase 24 Grammar Finding
 
@@ -94,7 +95,9 @@ Best repair candidates:
   object rules material, but only by collapsing the opening into a singleton
   comparative side and a zero-wave solution.
 - `p26-c08-overlap-repair`: best scope-overlap retention evidence, blocked by
-  direct opening-observation giveaway.
+  direct opening-observation giveaway. Round 20's C15 repair kept the overlap
+  scope non-degenerate and material, but derived A1 did not feed a later
+  `SCOPE_OVERLAP_*` deduction.
 
 Avoid:
 
@@ -160,3 +163,31 @@ Conclusion: C14 is useful blocker evidence, not promotion material. It confirms
 that making the C12 object bridge mechanically material is possible, but the
 tested legal repair over-closes the puzzle before play begins and recreates the
 singleton-comparative trap that Phase 26 is supposed to avoid.
+
+## Round 20 Repair Update
+
+Round 20 attempted a narrow repair of the C08 scope-overlap line as
+`p26-c15-overlap-chain-repair`.
+
+Evidence:
+
+- `pnpm authoring -- report content\experimental\phase-26\candidates\p26-c15-overlap-chain-repair.json`
+  reports schema/target/initial pass, initial guest layouts 4, no truncation,
+  noGuess false, final guest layout not unique, explanation gaps on B1 and A2,
+  1 wave, and 4 deductions.
+- `pnpm authoring -- score content\experimental\phase-26\candidates\p26-c15-overlap-chain-repair.json`
+  reports 13.69 / band 3 uncalibrated.
+- `pnpm authoring -- minimize ... --require-technique SCOPE_OVERLAP_COUNT_SATURATED --require-technique LOCAL_COUNT_SATURATED --require-technique LOCAL_COUNT_ALL_REMAINING`
+  reports all required techniques missing. The proof only emits
+  `REGION_COUNT_ALL_REMAINING` and `REGION_COUNT_SATURATED`.
+- Anti-clone/degeneracy against C01/C08/C15 reports C15 hard degeneracy
+  `region:R2:singleton-effective-scope:direct-count-giveaway`; C15's
+  `scopeOverlapCount` rule itself passes degeneracy and is material.
+
+Conclusion: C15 is useful blocker evidence, not promotion material. It confirms
+that a non-degenerate overlap scope can be present and material, but the current
+human proof still does not turn a derived A1 guest into a later
+`SCOPE_OVERLAP_COUNT_SATURATED` deduction. The available Phase 26 overlap paths
+therefore split into either "technique retained only by opening-observation
+giveaway" (C08) or "non-degenerate overlap that never becomes a proof
+technique" (C15).
