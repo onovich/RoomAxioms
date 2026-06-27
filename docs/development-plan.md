@@ -45,10 +45,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 26 - Workbench-Guided Puzzle Ladder Production, accepted with blocker, final commit `e326c04`.
-- Current executor result: no active executor phase after Phase 26 acceptance; Phase 27 is planned but not dispatched.
-- Active guide: `docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md`.
-- Executor budget: 32 rounds.
-- Executor status: awaiting planner dispatch.
+- Current executor result: Phase 27 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: `docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md`.
+- Executor budget: 24 rounds.
+- Executor status: executing proof and authoring bridge hardening.
 - Last completed final report: `docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -78,6 +78,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 26 target: attempt at least 12 serious workbench-guided candidates, promote at least 4 genuinely non-degenerate cases if strict gates allow, and otherwise report an honest blocker with a high-quality rejection corpus.
 - Phase 26 result: accepted with blocker. Fifteen serious workbench-guided candidates were attempted and all were rejected under strict gates; the player selector remains unchanged. The blocker points to proof/authoring readiness gaps around derived-fact reuse, late closure, and Phase 24 grammar material.
 - Planned Phase 27 direction: harden proof and authoring fixtures for derived facts, late closure, comparative/overlap/conditional techniques, and no-guess closure before attempting another broad puzzle ladder pass.
+- Phase 27 target: build focused fixtures, proof techniques, diagnostics, and a small near-miss repair trial so Phase 26 failure modes become explainable or detectable earlier; do not run another broad content batch.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -111,5 +112,5 @@ These are accepted as candidates, not active execution scope:
 - Rule grammar expressiveness expansion budget: 24 rounds, covering Phase 24, completed with blocker.
 - Authoring editor and live diagnostics workbench budget: 28 rounds, covering Phase 25, completed.
 - Workbench-guided puzzle ladder production budget: 32 rounds, covering Phase 26, completed with blocker.
-- Proof and authoring bridge hardening budget: 24 rounds, reserved for Phase 27 after planner dispatch.
+- Proof and authoring bridge hardening budget: 24 rounds, covering active Phase 27.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
