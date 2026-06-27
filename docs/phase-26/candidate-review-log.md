@@ -64,6 +64,7 @@ Workflow details live in `docs/phase-26/authoring-workflow.md`.
 | --- | --- | --- | --- | --- |
 | None after Round 20 audit | 15 attempted candidates | None | `docs/phase-26/promotion-gate-audit.md` | No Phase 26 candidate currently passes the full promotion gate; selector remains unchanged. |
 | None after Round 21 ladder/copy review | 15 attempted candidates | None | `docs/phase-26/ladder-copy-review.md` | Current 10-case selector retained with caveats; no rejected or experimental Phase 26 content promoted. |
+| None after Round 22 blocker-readiness review | 15 attempted candidates | None | `docs/phase-26/blocker-readiness-plan.md` | No selector/order/copy-only change is justified without accepted promotions; remaining rounds should validate player boundaries and prepare blocker evidence unless a narrow repair passes all gates. |
 
 ## Rejection Themes
 

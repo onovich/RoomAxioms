@@ -126,3 +126,17 @@ does not overclaim quality, the phase should proceed toward
 `READY_FOR_CHECK_WITH_BLOCKER` preparation: the current rejection corpus is
 already strong enough to explain why the minimum four-promotion target has not
 been met under the strict gates.
+
+## Round 22 Follow-up
+
+Round 22 found no credible copy-only or ordering-only improvement that would make
+the public selector more honest. The current order remains encoded in
+`apps/web/src/content/cases.ts`, `DEFAULT_CASE_ID` remains `case-004`, and no
+Phase 26 experimental case is promoted.
+
+The blocker-readiness plan is recorded in
+`docs/phase-26/blocker-readiness-plan.md`. It converts the 15-candidate
+rejection corpus into the remaining QA/final-report path: verify runtime and
+selector boundaries, repair only concrete QA failures, and report
+`READY_FOR_CHECK_WITH_BLOCKER` if strict gates still prevent four honest
+promotions.

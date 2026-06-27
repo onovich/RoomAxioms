@@ -205,3 +205,18 @@ Result:
   `apps/web/src/content/cases.ts`.
 - The current 10-case selector is retained with explicit caveats rather than
   padded or reordered around rejected experimental content.
+
+## Round 22 Blocker Readiness Update
+
+Round 22 review is recorded in
+`docs/phase-26/blocker-readiness-plan.md`.
+
+Result:
+
+- No Phase 26 candidate is promoted.
+- No selector order, default-case, shipped case JSON, or novelty-manifest change
+  is made.
+- The current 15-candidate rejection corpus is sufficient blocker evidence if no
+  later repair produces at least four strict-gate promotions.
+- Remaining non-final rounds should prioritize runtime/selector QA and concrete
+  repair of any discovered P0/P1 issue, not additional content padding.
