@@ -108,6 +108,16 @@ export {
   type ReviewerManifestIssueCode,
   type ReviewerManifestReport,
 } from './reviewerManifest.js'
+export {
+  evaluateSkeletonReview,
+  type SkeletonReviewClaims,
+  type SkeletonReviewGate,
+  type SkeletonReviewGateId,
+  type SkeletonReviewInput,
+  type SkeletonReviewMetrics,
+  type SkeletonReviewReport,
+  type SkeletonReviewStatus,
+} from './skeletonReview.js'
 export { commandInputPath, parseAuthoringArgs } from './parser.js'
 export {
   candidateShrinkSignature,
