@@ -45,7 +45,7 @@ Do not promote or count a candidate as a target-4 win unless it passes:
 | 1 | `p28-c15-a-remove-direct-safe-region` | `content/experimental/phase-28/p28-c15-a-remove-direct-safe-region.json` | C15 | Preserve derived overlap and local follow-up while replacing the direct `B3/C3/D3` no-guest region with an indirect late frontier. | FAIL: `repair-proof`; 16 initial guest layouts; 3 waves / 4 deductions; `GUESS_POINT`; final uniqueness false. | PASS: 21.51 / band 5 uncalibrated. | FAIL: required overlap/local techniques retained, but minimized proof still no-guess false and final uniqueness false. | FAIL: R5 replacement passes degeneracy, but R2 remains `singleton-effective-scope:direct-count-giveaway`; anti-clone status `fail`. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 2 | `p28-c15-b-broaden-entry-opener` | `content/experimental/phase-28/p28-c15-b-broaden-entry-opener.json` | C15 | Broaden the entry opener so the overlap saturation depends on a derived frontier instead of two opening empties. | FAIL: `repair-proof`; 32 initial guest layouts; 1 wave / 0 deductions; `EXPLANATION_GAP` on B1. | PASS: 15.24 / band 4 uncalibrated. | FAIL: required overlap/local techniques missing before and after minimization. | BLOCKED: R2 improves to warning rather than hard fail, but R4 becomes redundant and anti-clone status is `fail` against C15 due baseline hard fail plus B warning. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 3 | `p28-c15-c-larger-effective-board` | `content/experimental/phase-28/p28-c15-c-larger-effective-board.json` | C15 | Move the overlap/local chain onto a larger effective board where the overlap result unlocks later pressure rather than closing the case. | FAIL: `repair-proof`; 18 initial guest layouts; 1 wave / 3 deductions; `EXPLANATION_GAP` on B3/C3; final uniqueness false. | PASS: 20.44 / band 5 uncalibrated. | FAIL: overlap retained, but `LOCAL_COUNT_SATURATED` missing; proof/final uniqueness fail. | FAIL: R2 remains `singleton-effective-scope:direct-count-giveaway`; R4 redundant; 6 irrelevant cells. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
-| 4 | `p28-c10-a-late-closure-frontier` | `content/experimental/phase-28/p28-c10-a-late-closure-frontier.json` | C10 | Preserve the two-wave bottle frontier and add one honest late-closure rule for `D2/A3/B3` without a direct no-guest giveaway. | pending | pending | pending | pending | pending | pending |
+| 4 | `p28-c10-a-late-closure-frontier` | `content/experimental/phase-28/p28-c10-a-late-closure-frontier.json` | C10 | Preserve the two-wave bottle frontier and add one late conditional closure plus east-column follow-up for `D2/A3/B3/D4`. | FAIL QUALITY: machine `ok true`, but proof collapses to 1 wave / 3 deductions with only `REGION_COUNT_SATURATED`; R7/R5 redundant. | PASS: 12.38 / band 3 uncalibrated. | FAIL: minimizer collapses 6 reveals to `C3`; required `LOCAL_COUNT_ALL_REMAINING`, `CONDITIONAL_COUNT_SATURATED`, and `REGION_COUNT_ALL_REMAINING` missing. | FAIL: R7 condition is `singleton-effective-scope:direct-count-giveaway`; R8 is `near-count-giveaway`; anti-clone status `fail`. | PASS text scope clarity: coordinates explicit; FAIL design clarity: R7 is a direct conditional safe dump. | rejected |
 
 ## Baseline Rejection Knowledge
 
@@ -211,6 +211,52 @@ uncalibrated score, but less proof depth than attempt A, no local follow-up, and
 the same R2 hard degeneracy. Future work should not treat board expansion as a
 repair unless the new cells create approved human deductions after the overlap
 step.
+
+### 4. `p28-c10-a-late-closure-frontier`
+
+Round 9 attempted the backup late-closure lane from C10.
+
+Intended change:
+
+- Preserve the north-three opener and bottle-neighbor frontier.
+- Add a conditional rule that should trigger only after `B2` is known as a
+  guest.
+- Use the conditional closure over `D2/A3/B3` to make an east-column count force
+  `D4` as the second guest.
+- Reject if the condition or follow-up becomes a direct giveaway or if
+  minimization removes the intended late chain.
+
+Evidence:
+
+```text
+pnpm authoring -- report content\experimental\phase-28\p28-c10-a-late-closure-frontier.json
+pnpm authoring -- score content\experimental\phase-28\p28-c10-a-late-closure-frontier.json
+pnpm authoring -- minimize content\experimental\phase-28\p28-c10-a-late-closure-frontier.json --require-technique LOCAL_COUNT_ALL_REMAINING --require-technique REGION_COUNT_SATURATED --require-technique CONDITIONAL_COUNT_SATURATED --require-technique REGION_COUNT_ALL_REMAINING
+pnpm authoring -- anti-clone content\experimental\phase-26\candidates\p26-c10-frontier-repair.json content\experimental\phase-28\p28-c10-a-late-closure-frontier.json --include-degeneracy
+```
+
+Result:
+
+- Schema, target rules, initial satisfiability, no-guess, final uniqueness, and
+  no truncation pass.
+- Initial guest layouts fall from C10's 9 to 5.
+- The proof becomes easier rather than deeper: 1 wave / 3 deductions, only
+  `REGION_COUNT_SATURATED`.
+- R7 and R5 are redundant in the final proof; the intended late conditional
+  never contributes.
+- Minimization shrinks six opening reveals to only `C3` while preserving
+  no-guess and uniqueness.
+- R7's condition hard-fails degeneracy as
+  `conditional-condition:R7:singleton-effective-scope:direct-count-giveaway`.
+- R8 is reviewer-blocking as `region:R8:near-count-giveaway`.
+
+Decision:
+
+Reject. This is a serious negative result: simply adding a conditional safe
+dump to cover C10's explanation gaps can make the machine verifier happy while
+making the player experience much weaker. The next C10 attempt, if any, must
+broaden the trigger condition into a real multi-cell frontier and must retain
+`LOCAL_COUNT_ALL_REMAINING` plus a late closure technique under minimization.
 
 ## Planned Command Pattern
 
