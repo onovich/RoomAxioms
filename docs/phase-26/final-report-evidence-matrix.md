@@ -34,7 +34,7 @@ preflight are complete.
 
 | Guide criterion | Current evidence | Round 26 assessment | Final-round requirement |
 | --- | --- | --- | --- |
-| Final report exists | Not yet created by design. | Pending. | Create `docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md`. |
+| Final report exists | Draft created at `docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md`. | Draft supported; terminal evidence still pending. | Update the report after final validation, smoke, Pages, and planner routing evidence exist. |
 | At least 12 serious candidates attempted | Candidate log records 15 C01-C15 attempts. | Supported. | Reconfirm no candidate accounting changed. |
 | At least 4 cases promoted, or blocker evidence provided | 0 promoted; blocker readiness, promotion audit, and follow-up recommendations explain why. | Supported for blocker route. | Final report should use `READY_FOR_CHECK_WITH_BLOCKER` unless later repair succeeds. |
 | Every promoted case passes full gates | No Phase 26 promoted cases. | Not applicable. | Final report should state none promoted rather than implying gate pass. |
@@ -88,3 +88,12 @@ Round 27 final preflight is recorded in
 It confirms the final report file is intentionally still absent, fixes the
 final command checklist, and preserves final validation, local smoke, Pages
 deployment evidence, and planner notification as mandatory remaining work.
+
+## Round 28 Draft Report
+
+Round 28 created
+`docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md` as a
+draft final report. The report intentionally says final validation, final push,
+Pages evidence, and planner notification are pending. This preserves the
+remaining terminal gates for later final rounds while making the blocker
+narrative reviewable.
