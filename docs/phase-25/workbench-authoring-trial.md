@@ -1,12 +1,13 @@
 # Phase 25 Workbench Authoring Trial
 
-Status: Round 23 evidence.
+Status: Round 24 evidence.
 Guide: `docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md`
 
 This trial uses the private workbench model path to repair one draft enough to
 show the authoring loop, without promoting it as player-facing content.
 
 Executable coverage lives in `apps/web/src/workbench/authoringTrial.test.ts`.
+Round 24 also adds a structured metadata editor to the private workbench UI.
 
 ## Trial Input
 
@@ -38,6 +39,8 @@ screen uses:
   `A1 and B1 contain exactly one no-guest cell.`;
 - metadata edit: title/case name/difficulty/tags/notes are changed through the
   schema-validated draft patch path;
+- structured metadata UI: maintainers can edit title, case name, difficulty,
+  tags, status, and notes without hand-editing raw JSON;
 - export check: draft exports as
   `phase-25-singleton-region-giveaway-workbench-draft.json`.
 
@@ -53,6 +56,8 @@ The workbench made these issues easier to fix:
 - the rule has explicit player-readable text;
 - metadata can mark the draft as a low-difficulty private trial rather than a
   target-4 candidate.
+- the UI can now expose that metadata correction directly, while raw JSON
+  remains available as a fallback.
 
 The workbench still correctly refuses to bless the draft:
 

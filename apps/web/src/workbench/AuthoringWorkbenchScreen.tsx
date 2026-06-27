@@ -24,6 +24,7 @@ import {
   failWorkbenchDiagnostics,
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
+  patchWorkbenchMetadata,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
   patchWorkbenchScopeCollectionsJson,
@@ -43,6 +44,8 @@ type DraftPatchStatus =
   | { readonly kind: 'applied'; readonly message: string }
   | { readonly kind: 'rejected'; readonly message: string; readonly issues: readonly string[] }
 
+const METADATA_STATUSES = ['draft', 'validated', 'published', 'deprecated'] as const
+
 export default function AuthoringWorkbenchScreen() {
   const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
@@ -60,10 +63,17 @@ export default function AuthoringWorkbenchScreen() {
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulesPatchStatus, setRulesPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [scopePatchStatus, setScopePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [metadataPatchStatus, setMetadataPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
   const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
   const [ruleTitleText, setRuleTitleText] = useState('')
   const [ruleFlavorText, setRuleFlavorText] = useState('')
+  const [metadataTitleText, setMetadataTitleText] = useState(defaultCase.title)
+  const [metadataCaseNameText, setMetadataCaseNameText] = useState(defaultCase.caseName ?? '')
+  const [metadataDifficultyText, setMetadataDifficultyText] = useState(String(defaultCase.metadata.difficulty))
+  const [metadataTagsText, setMetadataTagsText] = useState(defaultCase.metadata.tags.join(', '))
+  const [metadataStatusText, setMetadataStatusText] = useState<string>(defaultCase.metadata.status)
+  const [metadataNotesText, setMetadataNotesText] = useState(defaultCase.metadata.notes ?? '')
   const [rulesJsonText, setRulesJsonText] = useState(() => createWorkbenchRulesJson(defaultCase))
   const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
   const model = useMemo(
@@ -91,12 +101,14 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText(String(item.puzzle.board.height))
     setRuleTitleText('')
     setRuleFlavorText('')
+    syncMetadataEditor(item.puzzle)
     setRulesJsonText(createWorkbenchRulesJson(item.puzzle))
     setScopeCollectionsText(createWorkbenchScopeCollectionsJson(item.puzzle))
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
     setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
+    setMetadataPatchStatus({ kind: 'idle' })
   }
 
   function resetCurrentCase(): void {
@@ -113,12 +125,14 @@ export default function AuthoringWorkbenchScreen() {
     setBoardHeightText('')
     setRuleTitleText('')
     setRuleFlavorText('')
+    syncMetadataEditor(undefined)
     setRulesJsonText('')
     setScopeCollectionsText('')
     setPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
     setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
+    setMetadataPatchStatus({ kind: 'idle' })
   }
 
   function runDiagnostics(): void {
@@ -333,6 +347,74 @@ export default function AuthoringWorkbenchScreen() {
     })
   }
 
+  function applyMetadataPatch(): void {
+    const difficulty = Number(metadataDifficultyText)
+    if (!isMetadataDifficulty(difficulty)) {
+      setMetadataPatchStatus({
+        kind: 'rejected',
+        message: '难度未应用。',
+        issues: ['METADATA_DIFFICULTY_INPUT: 难度必须是 1 到 5。'],
+      })
+      return
+    }
+
+    if (!isMetadataStatus(metadataStatusText)) {
+      setMetadataPatchStatus({
+        kind: 'rejected',
+        message: '状态未应用。',
+        issues: ['METADATA_STATUS_INPUT: 状态必须是 draft、validated、published 或 deprecated。'],
+      })
+      return
+    }
+
+    const tags = metadataTagsText
+      .split(/[\n,]/)
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0)
+    if (tags.length === 0) {
+      setMetadataPatchStatus({
+        kind: 'rejected',
+        message: '标签未应用。',
+        issues: ['METADATA_TAGS_INPUT: 至少需要一个非空标签。'],
+      })
+      return
+    }
+
+    const patch = patchWorkbenchMetadata(draft, {
+      title: metadataTitleText,
+      caseName: metadataCaseNameText.trim() === '' ? undefined : metadataCaseNameText,
+      difficulty,
+      tags,
+      status: metadataStatusText,
+      notes: metadataNotesText.trim() === '' ? undefined : metadataNotesText,
+    })
+    if (!patch.ok) {
+      setMetadataPatchStatus({
+        kind: 'rejected',
+        message: '元数据未应用。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setDraft(patch.state)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    syncMetadataEditor(patch.puzzle)
+    setMetadataPatchStatus({
+      kind: 'applied',
+      message: '标题、难度、标签和备注已更新；完整诊断已标记为待重新运行。',
+    })
+  }
+
+  function syncMetadataEditor(puzzle: PuzzleDefinition | undefined): void {
+    setMetadataTitleText(puzzle?.title ?? '')
+    setMetadataCaseNameText(puzzle?.caseName ?? '')
+    setMetadataDifficultyText(puzzle === undefined ? '' : String(puzzle.metadata.difficulty))
+    setMetadataTagsText(puzzle?.metadata.tags.join(', ') ?? '')
+    setMetadataStatusText(puzzle?.metadata.status ?? 'draft')
+    setMetadataNotesText(puzzle?.metadata.notes ?? '')
+  }
+
   return (
     <div className="authoring-workbench">
       <header className="workbench-topbar">
@@ -494,6 +576,23 @@ export default function AuthoringWorkbenchScreen() {
             onTitleChange={setRuleTitleText}
             onFlavorChange={setRuleFlavorText}
             onApply={applyRulePresentationPatch}
+          />
+          <MetadataEditor
+            titleText={metadataTitleText}
+            caseNameText={metadataCaseNameText}
+            difficultyText={metadataDifficultyText}
+            tagsText={metadataTagsText}
+            statusText={metadataStatusText}
+            notesText={metadataNotesText}
+            patchStatus={metadataPatchStatus}
+            canPatch={parsedPuzzle !== undefined}
+            onTitleChange={setMetadataTitleText}
+            onCaseNameChange={setMetadataCaseNameText}
+            onDifficultyChange={setMetadataDifficultyText}
+            onTagsChange={setMetadataTagsText}
+            onStatusChange={setMetadataStatusText}
+            onNotesChange={setMetadataNotesText}
+            onApply={applyMetadataPatch}
           />
           <RulesJsonEditor
             jsonText={rulesJsonText}
@@ -684,6 +783,115 @@ function RuleCopyEditor({
   )
 }
 
+function MetadataEditor({
+  titleText,
+  caseNameText,
+  difficultyText,
+  tagsText,
+  statusText,
+  notesText,
+  patchStatus,
+  canPatch,
+  onTitleChange,
+  onCaseNameChange,
+  onDifficultyChange,
+  onTagsChange,
+  onStatusChange,
+  onNotesChange,
+  onApply,
+}: {
+  readonly titleText: string
+  readonly caseNameText: string
+  readonly difficultyText: string
+  readonly tagsText: string
+  readonly statusText: string
+  readonly notesText: string
+  readonly patchStatus: DraftPatchStatus
+  readonly canPatch: boolean
+  readonly onTitleChange: (value: string) => void
+  readonly onCaseNameChange: (value: string) => void
+  readonly onDifficultyChange: (value: string) => void
+  readonly onTagsChange: (value: string) => void
+  readonly onStatusChange: (value: string) => void
+  readonly onNotesChange: (value: string) => void
+  readonly onApply: () => void
+}) {
+  return (
+    <section className="workbench-section metadata-editor">
+      <h3>案件信息</h3>
+      <label>
+        标题
+        <input
+          type="text"
+          value={titleText}
+          disabled={!canPatch}
+          onChange={(event) => onTitleChange(event.target.value)}
+          placeholder="给作者和导出文件识别用的标题"
+        />
+      </label>
+      <label>
+        案件名
+        <input
+          type="text"
+          value={caseNameText}
+          disabled={!canPatch}
+          onChange={(event) => onCaseNameChange(event.target.value)}
+          placeholder="可留空；留空时使用标题"
+        />
+      </label>
+      <div className="metadata-editor-row">
+        <label>
+          难度
+          <select
+            value={difficultyText}
+            disabled={!canPatch}
+            onChange={(event) => onDifficultyChange(event.target.value)}
+          >
+            {[1, 2, 3, 4, 5].map((difficulty) => (
+              <option key={difficulty} value={difficulty}>{difficulty}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          状态
+          <select
+            value={statusText}
+            disabled={!canPatch}
+            onChange={(event) => onStatusChange(event.target.value)}
+          >
+            {METADATA_STATUSES.map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label>
+        标签
+        <input
+          type="text"
+          value={tagsText}
+          disabled={!canPatch}
+          onChange={(event) => onTagsChange(event.target.value)}
+          placeholder="用逗号分隔；不会写入玩家选择器"
+        />
+      </label>
+      <label>
+        备注
+        <textarea
+          value={notesText}
+          disabled={!canPatch}
+          onChange={(event) => onNotesChange(event.target.value)}
+          placeholder="记录作者判断、限制或不推广理由"
+        />
+      </label>
+      <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
+        应用案件信息
+      </button>
+      <PatchStatus status={patchStatus} />
+    </section>
+  )
+}
+
 function RulesJsonEditor({
   jsonText,
   patchStatus,
@@ -769,6 +977,14 @@ function parseBoardSize(widthText: string, heightText: string): BoardSize | unde
   if (width < 1 || width > 26 || height < 1 || height > 26) return undefined
 
   return { width, height }
+}
+
+function isMetadataDifficulty(value: number): value is PuzzleDefinition['metadata']['difficulty'] {
+  return value === 1 || value === 2 || value === 3 || value === 4 || value === 5
+}
+
+function isMetadataStatus(value: string): value is PuzzleDefinition['metadata']['status'] {
+  return METADATA_STATUSES.some((status) => status === value)
 }
 
 function ImportExportSummary({

@@ -24,6 +24,7 @@ import {
   failWorkbenchDiagnostics,
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
+  patchWorkbenchMetadata,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
   patchWorkbenchScopeCollectionsJson,
@@ -269,6 +270,56 @@ describe('authoring workbench shell model', () => {
     expect(model.exported.puzzle?.rules.find((rule) => rule.id === 'R1')?.presentation).toEqual({
       title: '这条规则已经改名',
       flavor: '这是一条给作者检查的玩家可见说明。',
+    })
+  })
+
+  it('patches metadata through the same schema-validated draft path', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchMetadata(draft, {
+      title: '工作台元数据测试',
+      caseName: '元数据草稿',
+      difficulty: 3,
+      tags: ['phase-25', 'metadata-editor'],
+      status: 'draft',
+      notes: '只用于验证维护者工作台的元数据编辑。',
+    })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Metadata patch failed.')
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, patch.state)
+    expect(model.exported.ok).toBe(true)
+    if (!model.exported.ok) throw new Error('Metadata export failed.')
+    expect(model.exported.puzzle).toMatchObject({
+      title: '工作台元数据测试',
+      caseName: '元数据草稿',
+      metadata: {
+        difficulty: 3,
+        tags: ['phase-25', 'metadata-editor'],
+        status: 'draft',
+        notes: '只用于验证维护者工作台的元数据编辑。',
+      },
+    })
+    expect(model.caseOptions.find((option) => option.id === DEFAULT_CASE_ID)).toMatchObject({
+      id: DEFAULT_CASE_ID,
+    })
+  })
+
+  it('rejects metadata that breaks schema semantics without mutating the draft', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchMetadata(draft, {
+      title: '',
+    })
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state: draft,
+      issues: [
+        expect.objectContaining({
+          code: 'SCHEMA_INVALID',
+          path: ['title'],
+        }),
+      ],
     })
   })
 

@@ -1720,11 +1720,13 @@ h3 {
   margin: 7px 0 0;
 }
 
+.metadata-editor,
 .rule-copy-editor {
   display: grid;
   gap: 9px;
 }
 
+.metadata-editor label,
 .rule-copy-editor label {
   color: var(--muted);
   display: grid;
@@ -1732,6 +1734,9 @@ h3 {
   gap: 5px;
 }
 
+.metadata-editor input,
+.metadata-editor select,
+.metadata-editor textarea,
 .rule-copy-editor input,
 .rule-copy-editor textarea {
   background: var(--surface-0);
@@ -1742,13 +1747,21 @@ h3 {
   width: 100%;
 }
 
+.metadata-editor textarea,
 .rule-copy-editor textarea {
   min-height: 82px;
   resize: vertical;
 }
 
+.metadata-editor .small-button,
 .rule-copy-editor .small-button {
   justify-self: start;
+}
+
+.metadata-editor-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .scope-collections-editor,
