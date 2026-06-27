@@ -58,7 +58,7 @@ Workflow details live in `docs/phase-26/authoring-workflow.md`.
 
 | Case | Source candidate | Promoted path | PASS gate evidence | Notes |
 | --- | --- | --- | --- | --- |
-| TBD | TBD | TBD | pending | No Phase 26 promotion yet. |
+| None after Round 17 audit | 12 attempted candidates | None | `docs/phase-26/promotion-gate-audit.md` | No Phase 26 candidate currently passes the full promotion gate; selector remains unchanged. |
 
 ## Rejection Themes
 
