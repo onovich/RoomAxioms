@@ -90,6 +90,10 @@ default:
   content;
 - confirmation that historical rejected cases remain unselected.
 
+Round 23 runtime and selector QA is recorded in
+`docs/phase-26/runtime-selector-qa.md`. It found no player-facing runtime or
+selector defect and left the selector unchanged.
+
 Rounds 25-27 should be treated as repair/buffer rounds:
 
 - fix only concrete QA failures;
