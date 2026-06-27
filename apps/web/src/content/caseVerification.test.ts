@@ -23,7 +23,7 @@ describe('case content verification harness', () => {
   })
 
   it('keeps selector summaries stable and free of hidden case data', () => {
-    const internalCasePrefix = /^phase-\d+-/
+    const internalCasePrefix = /^(?:phase-\d+-|p26-)/
 
     expect(caseSummaries.map((summary) => summary.id)).toEqual(contentCases.map((puzzle) => puzzle.id))
     expect(contentCases).toHaveLength(10)
@@ -39,6 +39,7 @@ describe('case content verification harness', () => {
       'case-008',
       'case-009',
       'case-010',
+      'case-019',
     ].includes(puzzle.id))).toBe(false)
     expect(caseSummaries.find((summary) => summary.id === 'case-011')).toMatchObject({
       title: '客房 11：交汇视线',

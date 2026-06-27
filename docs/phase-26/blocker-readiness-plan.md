@@ -94,6 +94,11 @@ Round 23 runtime and selector QA is recorded in
 `docs/phase-26/runtime-selector-qa.md`. It found no player-facing runtime or
 selector defect and left the selector unchanged.
 
+Round 24 experimental/rejected isolation QA is recorded in
+`docs/phase-26/experimental-isolation-qa.md`. It hardens the selector tests for
+`p26-*` and `case-019` exclusions and confirms Phase 26 candidates remain
+outside player-facing web paths.
+
 Rounds 25-27 should be treated as repair/buffer rounds:
 
 - fix only concrete QA failures;

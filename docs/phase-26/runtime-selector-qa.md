@@ -114,3 +114,12 @@ analysis, or developer diagnostics into normal player mode.
 
 Remaining Phase 26 work should continue with Round 24 QA and final blocker
 preparation unless a concrete P0/P1 issue appears.
+
+## Round 24 Follow-up
+
+Round 24 experimental/rejected isolation QA is recorded in
+`docs/phase-26/experimental-isolation-qa.md`.
+
+It hardens the web content test so `p26-*` ids and historical `case-019` are
+explicitly excluded from player-facing content, then verifies that Phase 26
+candidate ids appear only in experimental files and Phase 26 evidence docs.
