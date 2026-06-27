@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "p28-c15-a-remove-direct-safe-region",
+  "title": "Phase 28 Candidate 15A Remove Direct Safe Region",
+  "caseName": "Phase 28 - C15A overlap rewrite",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "entry-check",
+      "title": "A1, C1, D1",
+      "cells": [
+        "A1",
+        "C1",
+        "D1"
+      ]
+    },
+    {
+      "id": "north-hook",
+      "title": "A1, B1, C1, A2",
+      "cells": [
+        "A1",
+        "B1",
+        "C1",
+        "A2"
+      ]
+    },
+    {
+      "id": "west-hook",
+      "title": "A1, B1, A2, A3",
+      "cells": [
+        "A1",
+        "B1",
+        "A2",
+        "A3"
+      ]
+    },
+    {
+      "id": "bottom-pressure",
+      "title": "B3, C3, D3, D4",
+      "cells": [
+        "B3",
+        "C3",
+        "D3",
+        "D4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "Three guests",
+        "flavor": "There are exactly 3 guests in the room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "entry-check",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Entry three cells",
+        "flavor": "A1, C1, and D1 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "scopeOverlapCount",
+      "left": {
+        "kind": "region",
+        "regionId": "north-hook"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "west-hook"
+      },
+      "mode": "intersection",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "A1, B1, A2 overlap",
+        "flavor": "The shared cells A1, B1, and A2 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle orthogonal neighbors",
+        "flavor": "For every bottle, its orthogonal neighbors contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "regionCount",
+      "regionId": "bottom-pressure",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottom pressure",
+        "flavor": "B3, C3, D3, and D4 contain exactly 1 guest."
+      }
+    }
+  ],
+  "initialReveals": [
+    "C1",
+    "D1",
+    "A3",
+    "A4",
+    "C4"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "guest",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-28",
+      "scope-overlap-count",
+      "c15-rewrite",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Attempt A removes C15's direct B3/C3/D3 no-guest region. Intended proof: R2 derives A1 as a guest, R3 saturates the A1/B1/A2 overlap, R4 turns the derived B1 bottle into later local pressure, and R5/global pressure should create a bottom frontier without a public zero-guest giveaway."
+  }
+}

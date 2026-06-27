@@ -42,7 +42,7 @@ Do not promote or count a candidate as a target-4 win unless it passes:
 
 | # | Candidate | Path | Source | Intended skeleton | Report | Score | Minimize | Degeneracy / clone | Copy | Decision |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `p28-c15-a-remove-direct-safe-region` | `content/experimental/phase-28/p28-c15-a-remove-direct-safe-region.json` | C15 | Preserve derived overlap and local follow-up while replacing the direct `B3/C3/D3` no-guest region with an indirect late frontier. | pending | pending | pending | pending | pending | pending |
+| 1 | `p28-c15-a-remove-direct-safe-region` | `content/experimental/phase-28/p28-c15-a-remove-direct-safe-region.json` | C15 | Preserve derived overlap and local follow-up while replacing the direct `B3/C3/D3` no-guest region with an indirect late frontier. | FAIL: `repair-proof`; 16 initial guest layouts; 3 waves / 4 deductions; `GUESS_POINT`; final uniqueness false. | PASS: 21.51 / band 5 uncalibrated. | FAIL: required overlap/local techniques retained, but minimized proof still no-guess false and final uniqueness false. | FAIL: R5 replacement passes degeneracy, but R2 remains `singleton-effective-scope:direct-count-giveaway`; anti-clone status `fail`. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 2 | `p28-c15-b-broaden-entry-opener` | `content/experimental/phase-28/p28-c15-b-broaden-entry-opener.json` | C15 | Broaden the entry opener so the overlap saturation depends on a derived frontier instead of two opening empties. | pending | pending | pending | pending | pending | pending |
 | 3 | `p28-c15-c-larger-effective-board` | `content/experimental/phase-28/p28-c15-c-larger-effective-board.json` | C15 | Move the overlap/local chain onto a larger effective board where the overlap result unlocks later pressure rather than closing the case. | pending | pending | pending | pending | pending | pending |
 | 4 | `p28-c10-a-late-closure-frontier` | `content/experimental/phase-28/p28-c10-a-late-closure-frontier.json` | C10 | Preserve the two-wave bottle frontier and add one honest late-closure rule for `D2/A3/B3` without a direct no-guest giveaway. | pending | pending | pending | pending | pending | pending |
@@ -77,6 +77,52 @@ C10 is the preferred late-closure backup:
 
 The C10 rewrite must explain those gaps with a readable late frontier, not by
 public observations or a direct no-guest region over the gap cells.
+
+## Candidate Notes
+
+### 1. `p28-c15-a-remove-direct-safe-region`
+
+Round 3 attempted C15 rewrite path A.
+
+Intended change:
+
+- Remove C15's direct `B3/C3/D3` no-guest region.
+- Keep the derived `A1` guest feeding `SCOPE_OVERLAP_COUNT_SATURATED`.
+- Keep the bottle-local follow-up.
+- Add a bottom four-cell pressure rule instead of a public zero-guest region.
+
+Evidence:
+
+```text
+pnpm authoring -- report content\experimental\phase-28\p28-c15-a-remove-direct-safe-region.json
+pnpm authoring -- score content\experimental\phase-28\p28-c15-a-remove-direct-safe-region.json
+pnpm authoring -- minimize content\experimental\phase-28\p28-c15-a-remove-direct-safe-region.json --require-technique SCOPE_OVERLAP_COUNT_SATURATED --require-technique LOCAL_COUNT_SATURATED
+pnpm authoring -- anti-clone content\experimental\phase-26\candidates\p26-c15-overlap-chain-repair.json content\experimental\phase-28\p28-c15-a-remove-direct-safe-region.json --include-degeneracy
+```
+
+Result:
+
+- Schema, target rules, and initial satisfiability pass.
+- Initial guest layouts increase to 16, so the draft preserves opening
+  ambiguity.
+- Proof advances to 3 waves but stops at `GUESS_POINT`; no-guess and final
+  guest-layout uniqueness fail.
+- Required `SCOPE_OVERLAP_COUNT_SATURATED` and `LOCAL_COUNT_SATURATED`
+  techniques are retained under minimization.
+- The replacement R5 bottom-pressure rule passes degeneracy with four effective
+  unknown cells and is material.
+- R2 remains a hard degeneracy failure:
+  `region:R2:singleton-effective-scope:direct-count-giveaway`.
+- Target-4 still misses proof-wave, deduction-count, shared-variable-overlap,
+  and degeneracy thresholds.
+
+Decision:
+
+Reject. This is useful evidence, not a survivor. Removing the direct safe region
+improved one C15 weakness, but the narrow R2 entry opener remains a direct
+giveaway, and the new bottom pressure becomes a solver-level/global-count
+combination that the approved human proof cannot close. Attempt B should attack
+R2 rather than only replacing the closing rule.
 
 ## Planned Command Pattern
 
