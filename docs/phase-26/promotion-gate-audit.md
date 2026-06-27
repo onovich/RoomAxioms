@@ -60,6 +60,7 @@ The current player selector still imports only shipped cases in
 | `p26-c11-replacement-attempt` | Replaces hard singleton baseline shape mechanically. | Opening guest layout already unique; zero proof waves; three near-count warnings; redundant R6. | Reject; do not promote. |
 | `p26-c12-final-synthesis` | Comparative technique retained; degeneracy pass. | No-guess false; final uniqueness false; exact proof-trace clone of C09; object-local rules redundant. | Reject; do not promote. |
 | `p26-c13-frontier-closure` | Retains the C10 local-count plus region-count proof techniques. | No-guess false; final uniqueness false; hard degeneracy on fully observed R2; R1/R2/R4/R5 redundant; R6 is direct three-cell no-guest closure. | Reject; do not promote. |
+| `p26-c14-comparative-object-bridge` | Object-bridge rules become material. | Opening guest layout already unique; zero proof waves; hard degeneracy on singleton comparative-left; required proof techniques absent. | Reject; do not promote. |
 
 ## Phase 24 Grammar Finding
 
@@ -89,7 +90,9 @@ Best repair candidates:
   did so by adding direct safety and public observations; it still failed final
   uniqueness and introduced hard degeneracy/redundancy.
 - `p26-c12-final-synthesis`: best compact grammar evidence, blocked by C09
-  proof-trace clone and redundant object rules.
+  proof-trace clone and redundant object rules. Round 19's C14 repair made the
+  object rules material, but only by collapsing the opening into a singleton
+  comparative side and a zero-wave solution.
 - `p26-c08-overlap-repair`: best scope-overlap retention evidence, blocked by
   direct opening-observation giveaway.
 
@@ -128,3 +131,32 @@ Conclusion: C13 is useful blocker evidence, not promotion material. It proves
 that forcing the C10 closure by public observations and a direct three-cell
 no-guest region preserves the desired technique labels but weakens the actual
 player experience and still does not produce a complete no-guess proof.
+
+## Round 19 Repair Update
+
+Round 19 attempted a narrow repair of the C09/C12 comparative line as
+`p26-c14-comparative-object-bridge`.
+
+Evidence:
+
+- The first C14 draft kept both A1/B1 hidden. It preserved opening ambiguity
+  but produced explanation gaps on A3, B3, and B4 before the intended object
+  bridge could fire.
+- Revealing B1 as a guest was rejected by the schema (`INITIAL_REVEAL_GUEST`),
+  so the legal repair changed B1 to a public mirror and adjusted the
+  comparative offset.
+- `pnpm authoring -- report content\experimental\phase-26\candidates\p26-c14-comparative-object-bridge.json`
+  then reports schema/target/initial pass, no truncation, noGuess true, final
+  uniqueness true, but only because `initialGuestLayouts = 1`; proof has 0 waves
+  and 0 deductions.
+- `pnpm authoring -- score content\experimental\phase-26\candidates\p26-c14-comparative-object-bridge.json`
+  reports 5.60 / band 1 uncalibrated.
+- `pnpm authoring -- minimize ... --require-technique COMPARATIVE_COUNT_ALL_REMAINING --require-technique LOCAL_COUNT_ALL_REMAINING --require-technique LOCAL_COUNT_SATURATED`
+  reports all required techniques missing because there is no proof wave.
+- Anti-clone/degeneracy against C09/C12/C14 reports C14 hard degeneracy
+  `comparative-left:R2:singleton-effective-scope`.
+
+Conclusion: C14 is useful blocker evidence, not promotion material. It confirms
+that making the C12 object bridge mechanically material is possible, but the
+tested legal repair over-closes the puzzle before play begins and recreates the
+singleton-comparative trap that Phase 26 is supposed to avoid.

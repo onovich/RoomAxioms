@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c14-comparative-object-bridge",
+  "title": "Phase 26 Candidate 14 Comparative Object Bridge",
+  "caseName": "Phase 26 - 比较与物件桥接候选 14",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "mirror",
+    "bin",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "left-front",
+      "title": "A1、B1、A2、B2",
+      "cells": [
+        "A1",
+        "B1",
+        "A2",
+        "B2"
+      ]
+    },
+    {
+      "id": "right-front",
+      "title": "C1、D1、C2、D2",
+      "cells": [
+        "C1",
+        "D1",
+        "C2",
+        "D2"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "三名访客",
+        "flavor": "房间里一共有 3 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "comparativeCount",
+      "left": {
+        "kind": "region",
+        "regionId": "left-front"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "right-front"
+      },
+      "target": "guest",
+      "comparison": {
+        "op": "eq",
+        "offset": 1
+      },
+      "presentation": {
+        "title": "左前四格多一人",
+        "flavor": "A1、B1、A2、B2 这 4 格里的访客数，比 C1、D1、C2、D2 这 4 格里的访客数多 1。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶旁有一个垃圾桶",
+        "flavor": "每个酒瓶上下左右相邻格里，恰好有 1 个垃圾桶。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "垃圾桶邻格没有访客",
+        "flavor": "每个垃圾桶上下左右相邻格里，没有未登记访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "垃圾桶周围有一名访客",
+        "flavor": "每个垃圾桶周围一圈，恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "A2",
+    "B2",
+    "C1",
+    "D1",
+    "C2",
+    "D2",
+    "C3",
+    "A4"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "mirror",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bin",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "bottle",
+    "C4": "guest",
+    "D4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "comparative-count",
+      "object-bridge",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 19 repair attempt from the C09/C12 comparative line. Intended proof: comparativeCount confirms A1 from the public B1 mirror and right-front empty side, the public B2 bottle should expose B3 as the bridge garbage bin, the B3 orthogonal no-guest rule should reveal B4 as a bottle, and the B3 adjacent-count rule should then force C4 without using the C09 near-count region. Earlier draft without public B1 produced explanation gaps on A3/B3/B4 before the local bridge could fire; revealing a guest was invalid, so this version uses a non-guest mirror."
+  }
+}
