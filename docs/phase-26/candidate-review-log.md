@@ -23,6 +23,8 @@ Each serious candidate must record:
 - decision: rejected, deferred, repaired, promoted, or quarantined;
 - exact reason for rejection or promotion.
 
+Workflow details live in `docs/phase-26/authoring-workflow.md`.
+
 ## Skeleton Catalog
 
 | Skeleton | Template | Intended use |
@@ -39,18 +41,18 @@ Each serious candidate must record:
 
 | # | Candidate | Path | Skeleton | Report | Score | Workbench / diagnostics | Anti-clone / degeneracy | Novelty | Copy | Decision | Reason |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 2 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 3 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 4 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 5 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 6 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 5+ candidate. |
-| 7 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
-| 8 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
-| 9 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
-| 10 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
-| 11 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
-| 12 | TBD | TBD | TBD | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate. |
+| 1 | `p26-c01-overlap-unlock` | `content/experimental/phase-26/candidates/p26-c01-overlap-unlock.json` | P26-S1 | pending | pending | pending | pending | pending | pending | pending | Round 5 candidate: non-singleton `scopeOverlapCount` plus classic count. |
+| 2 | `p26-c02-comparative-balance` | `content/experimental/phase-26/candidates/p26-c02-comparative-balance.json` | P26-S2 | pending | pending | pending | pending | pending | pending | pending | Round 6 candidate: material `comparativeCount` pressure. |
+| 3 | `p26-c03-conditional-frontier` | `content/experimental/phase-26/candidates/p26-c03-conditional-frontier.json` | P26-S3 | pending | pending | pending | pending | pending | pending | pending | Round 7 candidate: `conditionalCount` activated after an earlier deduction. |
+| 4 | `p26-c04-difference-braid` | `content/experimental/phase-26/candidates/p26-c04-difference-braid.json` | P26-S4 | pending | pending | pending | pending | pending | pending | pending | Round 8 candidate: difference/intersection braid without baseline answer-pattern clone. |
+| 5 | `p26-c05-object-gated` | `content/experimental/phase-26/candidates/p26-c05-object-gated.json` | P26-S5 | pending | pending | pending | pending | pending | pending | pending | Round 9 candidate: object identification unlocks later local saturation. |
+| 6 | `p26-c06-two-wave-frontier` | `content/experimental/phase-26/candidates/p26-c06-two-wave-frontier.json` | P26-S6 | pending | pending | pending | pending | pending | pending | pending | Round 10 candidate: two proof waves with changed material scope. |
+| 7 | `p26-c07-grammar-classic` | `content/experimental/phase-26/candidates/p26-c07-grammar-classic.json` | P26-S7 | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate: explicit Phase 24 grammar/classic hybrid if first grammar attempts fail. |
+| 8 | `p26-c08-overlap-repair` | `content/experimental/phase-26/candidates/p26-c08-overlap-repair.json` | P26-S1 | pending | pending | pending | pending | pending | pending | pending | Round 11+ candidate: repair or alternate overlap after C01 evidence. |
+| 9 | `p26-c09-comparative-repair` | `content/experimental/phase-26/candidates/p26-c09-comparative-repair.json` | P26-S2 | pending | pending | pending | pending | pending | pending | pending | Round 12+ candidate: repair or alternate comparative case after C02 evidence. |
+| 10 | `p26-c10-frontier-repair` | `content/experimental/phase-26/candidates/p26-c10-frontier-repair.json` | P26-S6 | pending | pending | pending | pending | pending | pending | pending | Round 13+ candidate: second two-wave frontier with different board pressure. |
+| 11 | `p26-c11-replacement-attempt` | `content/experimental/phase-26/candidates/p26-c11-replacement-attempt.json` | P26-S5 | pending | pending | pending | pending | pending | pending | pending | Round 14+ candidate: target a replacement for one singleton-giveaway baseline. |
+| 12 | `p26-c12-final-synthesis` | `content/experimental/phase-26/candidates/p26-c12-final-synthesis.json` | TBD | pending | pending | pending | pending | pending | pending | pending | Round 15+ candidate: choose skeleton based on accumulated rejection evidence. |
 
 ## Promotion Accounting
 

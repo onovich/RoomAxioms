@@ -8,7 +8,8 @@ into `content/cases`, updates `content/novelty-claims.json`, wires it through
 ## Directories
 
 - `templates/`: report-only proof-skeleton templates used to start authored or
-  sampled candidates.
+  sampled candidates. These are skeleton scaffolds, not automatically valid
+  `pnpm authoring -- sample` inputs until concrete generator rules are filled in.
 - `candidates/`: hand-authored or repaired candidate JSON files that are still
   experimental.
 - `rejected/`: candidates kept as negative evidence after workbench/CLI review.
