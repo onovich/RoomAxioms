@@ -116,6 +116,11 @@ Rounds 28-32 should produce the final report, run the full validation matrix,
 record local smoke and Pages evidence, and send `READY_FOR_CHECK_WITH_BLOCKER`
 if promotion count remains below four.
 
+Round 26 final-report preparation is recorded in
+`docs/phase-26/final-report-evidence-matrix.md`. It maps final report sections
+to evidence and keeps final validation, smoke, Pages, and planner notification
+as pending final-round requirements.
+
 ## Round 22 Architecture Decision
 
 No source code, shipped case JSON, selector order, default case, or novelty
