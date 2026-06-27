@@ -39,12 +39,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last completed check: Phase 27 - Proof And Authoring Bridge Hardening, accepted with blocker
-- Current executor result: Phase 28 dispatched to executor
-- Final report: `docs/phase-27-proof-authoring-bridge-hardening-final-report.md`
-- Active executor phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
+- Last completed check: Phase 28 - Nondegenerate Puzzle Rewrite Sprint, accepted with blocker
+- Current executor result: Phase 28 complete with blocker; Phase 29 pending dispatch
+- Final report: `docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md`
+- Active executor phase: none pending planner dispatch
 - Guide: `docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md`
-- Active budget: 18 executor rounds
+- Next planned phase: Phase 29 - Proof Skeleton Authoring Workflow
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.
@@ -52,6 +52,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 25 delivered a maintainer-only authoring editor and live diagnostics workbench with import/edit/export, solver/proof/degeneracy/clone/copy/difficulty diagnostics, bad-case fixtures, and real-case QA.
 - Latest phase result: Phase 26 attempted 15 serious workbench-guided candidates and promoted none under strict gates; the blocker is proof/authoring support for derived facts, late closure, and Phase 24 grammar material, not runtime correctness.
 - Latest phase result: Phase 27 hardened derived-fact and grammar-count proof bridges, improved proof-closure diagnostics, and turned C15 from a proof blocker into a degeneracy/content blocker; no player-facing cases changed.
+- Latest phase result: Phase 28 attempted three C15 rewrites and two C10 late-closure rewrites; all were rejected under strict gates, confirming that the next method should start from human-readable proof skeletons before JSON editing.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

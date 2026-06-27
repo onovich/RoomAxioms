@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T01:26:49+08:00
+updated_at: 2026-06-28T02:44:27+08:00
 
 planner:
   role: architect
@@ -23,20 +23,20 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
-  active_goal_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
+  active_goal_guide: none
+  active_goal_phase: none
   last_planner_dispatch: 2026-06-28T01:26:49+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
   last_planner_dispatch_commit: 29f899b
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
-  last_check_phase: Phase 27 - Proof And Authoring Bridge Hardening
-  last_check_report: docs/phase-27-proof-authoring-bridge-hardening-final-report.md
-  last_check_commit: e9d8b9d
-  last_check_at: 2026-06-28T01:23:10+08:00
-  last_check_blocker: bridge hardening pass criteria met, but no non-degenerate target-4+ case was promoted; C15 still needs content rewrite and C06/C10/C09 need late-closure redesign
-  last_executor_report_commit: b19ff07
+  last_check_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
+  last_check_report: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md
+  last_check_commit: f55ef7e
+  last_check_at: 2026-06-28T02:44:27+08:00
+  last_check_blocker: all five serious rewrites rejected under strict gates; next method should start from human-readable proof skeletons before JSON editing
+  last_executor_report_commit: f55ef7e
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
   last_executor_report_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
   last_executor_report: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md

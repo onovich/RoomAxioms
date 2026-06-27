@@ -42,15 +42,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 26 - Workbench-Guided Puzzle Ladder Production | Use the Phase 25 workbench to author, repair, and promote genuinely non-degenerate high-quality puzzles while preserving strict anti-clone, proof, copy, and playability gates | Phase 24/25 follow-up | 32 rounds |
 | Phase 27 - Proof And Authoring Bridge Hardening | Harden proof/authoring support for derived-fact reuse, late closure, comparative/overlap/conditional material, and targeted fixtures before another broad puzzle-production pass | Phase 26 blocker follow-up | 24 rounds |
 | Phase 28 - Nondegenerate Puzzle Rewrite Sprint | Use Phase 27 proof/diagnostic improvements to rewrite the best near-miss skeletons into non-degenerate target-4 candidates, prioritizing C15 first and late-closure redesign for C06/C10/C09 second | Phase 27 blocker follow-up | 18 rounds |
+| Phase 29 - Proof Skeleton Authoring Workflow | Pivot from JSON mutation to proof-skeleton-first authoring: define wave-by-wave human proof templates, add private skeleton review artifacts/tooling, and produce reviewable skeleton briefs before any further content promotion attempt | Phase 28 blocker follow-up | 16 rounds |
 
 ## Current Execution State
 
-- Recently checked: Phase 27 - Proof And Authoring Bridge Hardening, accepted with blocker, final commit `e9d8b9d`.
-- Current executor result: Phase 28 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: `docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md`.
-- Executor budget: 18 rounds.
-- Executor status: executing non-degenerate puzzle rewrite sprint.
-- Last completed final report: `docs/phase-27-proof-authoring-bridge-hardening-final-report.md`.
+- Recently checked: Phase 28 - Nondegenerate Puzzle Rewrite Sprint, accepted with blocker, final commit `f55ef7e`.
+- Current executor result: no active executor phase after Phase 28 acceptance; Phase 29 is planned but not dispatched.
+- Active guide: none.
+- Executor budget: none.
+- Executor status: awaiting planner dispatch.
+- Last completed final report: `docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -82,6 +83,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 27 target: build focused fixtures, proof techniques, diagnostics, and a small near-miss repair trial so Phase 26 failure modes become explainable or detectable earlier; do not run another broad content batch.
 - Phase 27 result: accepted with blocker. Derived object and grammar-count bridge support now works for focused fixtures, proof closure diagnostics are more precise, and C15 now reaches no-guess/human-explainable status; no case was promoted because C15 remains degenerate and C06/C10/C09 still need new late-closure content design.
 - Planned Phase 28 direction: run a narrow rewrite sprint instead of a broad generation batch, starting from C15's now-proven overlap skeleton and only promoting content that passes non-degeneracy, target-4, anti-clone, proof, and copy gates.
+- Phase 28 result: accepted with blocker. Three serious C15 rewrites and two C10 late-closure rewrites were rejected under strict gates; no shipped content changed. The evidence says local JSON mutation is exhausted for these skeletons.
+- Planned Phase 29 direction: create a proof-skeleton-first authoring workflow so humans and tools design intended wave-by-wave reasoning before committing to board/rule JSON.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -116,5 +119,6 @@ These are accepted as candidates, not active execution scope:
 - Authoring editor and live diagnostics workbench budget: 28 rounds, covering Phase 25, completed.
 - Workbench-guided puzzle ladder production budget: 32 rounds, covering Phase 26, completed with blocker.
 - Proof and authoring bridge hardening budget: 24 rounds, covering Phase 27, completed with blocker.
-- Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering active Phase 28.
+- Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering Phase 28, completed with blocker.
+- Proof skeleton authoring workflow budget: 16 rounds, reserved for Phase 29 after planner dispatch.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
