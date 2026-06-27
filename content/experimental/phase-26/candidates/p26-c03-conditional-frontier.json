@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c03-conditional-frontier",
+  "title": "Phase 26 Candidate 03 Conditional Frontier",
+  "caseName": "Phase 26 - 条件前线候选 03",
+  "board": {
+    "width": 3,
+    "height": 3
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "bottle-check",
+      "title": "B1、A2 两格",
+      "cells": [
+        "B1",
+        "A2"
+      ]
+    },
+    {
+      "id": "quiet-middle",
+      "title": "B2、C2 两格",
+      "cells": [
+        "B2",
+        "C2"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "访客总数",
+        "flavor": "房间里恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "酒瓶十字邻格",
+        "flavor": "每个酒瓶上下左右邻格里，没有访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "conditionalCount",
+      "condition": {
+        "scope": {
+          "kind": "region",
+          "regionId": "bottle-check"
+        },
+        "target": "bottle",
+        "count": {
+          "op": "eq",
+          "value": 1
+        }
+      },
+      "then": {
+        "scope": {
+          "kind": "region",
+          "regionId": "quiet-middle"
+        },
+        "target": "guest",
+        "count": {
+          "op": "eq",
+          "value": 0
+        }
+      },
+      "presentation": {
+        "title": "发现一只酒瓶后的中段限制",
+        "flavor": "如果 B1、A2 这 2 格里恰好有 1 个酒瓶，那么 B2、C2 这 2 格里没有访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "lineCount",
+      "scope": {
+        "kind": "column",
+        "index": 2
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "C 列访客",
+        "flavor": "C1、C2、C3 这一列里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "C1"
+  ],
+  "target": {
+    "A1": "bottle",
+    "B1": "bottle",
+    "C1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "conditional-count",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 7 serious candidate for P26-S3. Intended delayed-trigger proof: A1 bottle clears B1/A2 as safe, revealing B1 as the bottle that should activate R3. A public-condition repair was also tried during the round, but collapsed to opening-unique zero-wave evidence, so this file keeps the more useful delayed-trigger failure."
+  }
+}
