@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c13-frontier-closure",
+  "title": "Phase 26 Candidate 13 Frontier Closure",
+  "caseName": "Phase 26 - 前线闭合候选 13",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-three",
+      "title": "A1、B1、C1",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    },
+    {
+      "id": "bottom-lane",
+      "title": "B4、C4、D4",
+      "cells": [
+        "B4",
+        "C4",
+        "D4"
+      ]
+    },
+    {
+      "id": "middle-clear",
+      "title": "D2、A3、B3",
+      "cells": [
+        "D2",
+        "A3",
+        "B3"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "north-three",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北边 A1、B1、C1",
+        "flavor": "A1、B1、C1 这 3 格里，没有未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶邻格",
+        "flavor": "每个酒瓶上下左右相邻格里，恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "guest",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "访客不相邻",
+        "flavor": "每名访客周围一圈，没有其他未登记访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "regionCount",
+      "regionId": "bottom-lane",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "底边 B4、C4、D4",
+        "flavor": "B4、C4、D4 这 3 格里，恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "regionCount",
+      "regionId": "middle-clear",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "D2、A3、B3",
+        "flavor": "D2、A3、B3 这 3 格里，没有未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "D1",
+    "B1",
+    "C1",
+    "A2",
+    "C2",
+    "C3",
+    "D3",
+    "A4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "guest",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "two-wave-frontier",
+      "frontier-closure-repair",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 18 repair attempt from p26-c10-frontier-repair. It adds one explicit three-cell no-guest region for D2/A3/B3 and makes A1/B1/C1 public so the bottle-local rule can explain B2 from opening observations. This tests whether closing the solver-only safety gap produces a valid promotion candidate or merely turns the puzzle into a direct safe-cell giveaway."
+  }
+}

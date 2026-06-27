@@ -59,6 +59,7 @@ The current player selector still imports only shipped cases in
 | `p26-c10-frontier-repair` | Better S6 repair with no redundant bottle global. | No-guess false; final uniqueness false; D2/A3/B3 remain solver-only. | Reject; do not promote. |
 | `p26-c11-replacement-attempt` | Replaces hard singleton baseline shape mechanically. | Opening guest layout already unique; zero proof waves; three near-count warnings; redundant R6. | Reject; do not promote. |
 | `p26-c12-final-synthesis` | Comparative technique retained; degeneracy pass. | No-guess false; final uniqueness false; exact proof-trace clone of C09; object-local rules redundant. | Reject; do not promote. |
+| `p26-c13-frontier-closure` | Retains the C10 local-count plus region-count proof techniques. | No-guess false; final uniqueness false; hard degeneracy on fully observed R2; R1/R2/R4/R5 redundant; R6 is direct three-cell no-guest closure. | Reject; do not promote. |
 
 ## Phase 24 Grammar Finding
 
@@ -84,7 +85,9 @@ Rounds 18-20 cannot produce four honest promotions.
 Best repair candidates:
 
 - `p26-c10-frontier-repair`: strongest two-wave non-grammar near miss, blocked by
-  late solver-only safety.
+  late solver-only safety. Round 18's C13 repair tried to close that gap, but
+  did so by adding direct safety and public observations; it still failed final
+  uniqueness and introduced hard degeneracy/redundancy.
 - `p26-c12-final-synthesis`: best compact grammar evidence, blocked by C09
   proof-trace clone and redundant object rules.
 - `p26-c08-overlap-repair`: best scope-overlap retention evidence, blocked by
@@ -101,3 +104,27 @@ Avoid:
 No `content/cases`, selector, default-case, or novelty-manifest changes were made
 in this round. The honest player-facing ladder remains unchanged until a case
 passes the full gate or the phase pivots to a documented blocker.
+
+## Round 18 Repair Update
+
+Round 18 attempted a narrow repair of `p26-c10-frontier-repair` as
+`p26-c13-frontier-closure`.
+
+Evidence:
+
+- `pnpm authoring -- report content\experimental\phase-26\candidates\p26-c13-frontier-closure.json`
+  reports schema/target/initial pass, initial guest layouts 3, no truncation,
+  noGuess false, final guest layout not unique, `GUESS_POINT`, 2 waves, and 4
+  deductions.
+- `pnpm authoring -- score content\experimental\phase-26\candidates\p26-c13-frontier-closure.json`
+  reports 13.50 / band 3 uncalibrated.
+- `pnpm authoring -- minimize ... --require-technique LOCAL_COUNT_ALL_REMAINING --require-technique REGION_COUNT_SATURATED`
+  confirms both techniques are retained, but proof/final uniqueness still fail.
+- A lightweight anti-clone/degeneracy run against C06/C10/C13 reports C13 hard
+  degeneracy `region:R2:singleton-effective-scope` and reviewer-blocking
+  redundant rules.
+
+Conclusion: C13 is useful blocker evidence, not promotion material. It proves
+that forcing the C10 closure by public observations and a direct three-cell
+no-guest region preserves the desired technique labels but weakens the actual
+player experience and still does not produce a complete no-guess proof.
