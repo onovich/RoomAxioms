@@ -26,9 +26,9 @@ idempotency:
   active_goal_guide: docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md
   active_goal_phase: Phase 31 - Rule Expression Builder And Theme Packaging Workflow
   last_planner_dispatch: 2026-06-28T04:37:11+08:00
-  last_planner_dispatch_status: pending_commit
+  last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: 600aada
+  last_planner_dispatch_commit: 6af68bc
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
   last_check_phase: Phase 30 - Non-Singleton Overlap Proof Bridge
