@@ -5,7 +5,7 @@ Guide: `docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execut
 
 ## Purpose
 
-This audit starts the Phase 26 promotion pass. It checks whether any of the 12
+This audit starts the Phase 26 promotion pass. It checks whether any of the
 serious Phase 26 candidates can honestly enter `content/cases` and the
 player-facing selector under the strict promotion gate.
 
@@ -191,3 +191,17 @@ human proof still does not turn a derived A1 guest into a later
 therefore split into either "technique retained only by opening-observation
 giveaway" (C08) or "non-degenerate overlap that never becomes a proof
 technique" (C15).
+
+## Round 21 Ladder And Copy Review
+
+Round 21 review is recorded in
+`docs/phase-26/ladder-copy-review.md`.
+
+Result:
+
+- No Phase 26 candidate is promoted.
+- Current player selector and `DEFAULT_CASE_ID = case-004` remain unchanged.
+- Phase 26 experimental candidates remain isolated from `content/cases` and
+  `apps/web/src/content/cases.ts`.
+- The current 10-case selector is retained with explicit caveats rather than
+  padded or reordered around rejected experimental content.
