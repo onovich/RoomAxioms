@@ -48,10 +48,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 29 - Proof Skeleton Authoring Workflow, accepted with blocker, final commit `ae7085a`.
-- Current executor result: no active executor phase after Phase 29 acceptance; Phase 30 is planned but not dispatched.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: awaiting planner dispatch.
+- Current executor result: Phase 30 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: `docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md`.
+- Executor budget: 18 rounds.
+- Executor status: executing non-singleton overlap proof bridge.
 - Last completed final report: `docs/phase-29-proof-skeleton-authoring-workflow-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -124,5 +124,5 @@ These are accepted as candidates, not active execution scope:
 - Proof and authoring bridge hardening budget: 24 rounds, covering Phase 27, completed with blocker.
 - Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering Phase 28, completed with blocker.
 - Proof skeleton authoring workflow budget: 16 rounds, covering Phase 29, completed with blocker.
-- Non-singleton overlap proof bridge budget: 18 rounds, reserved for Phase 30 after planner dispatch.
+- Non-singleton overlap proof bridge budget: 18 rounds, covering active Phase 30.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

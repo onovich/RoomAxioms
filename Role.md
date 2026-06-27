@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T03:39:36+08:00
+updated_at: 2026-06-28T03:42:32+08:00
 
 planner:
   role: architect
@@ -23,12 +23,12 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
-  last_planner_dispatch: 2026-06-28T02:47:28+08:00
+  active_goal_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
+  active_goal_phase: Phase 30 - Non-Singleton Overlap Proof Bridge
+  last_planner_dispatch: 2026-06-28T03:42:32+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: ae46222
+  last_planner_dispatch_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: d553100
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
   last_check_phase: Phase 29 - Proof Skeleton Authoring Workflow
