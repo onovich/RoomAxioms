@@ -39,12 +39,12 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last completed check: Phase 29 - Proof Skeleton Authoring Workflow, accepted with blocker
-- Current executor result: Phase 30 dispatched to executor
-- Final report: `docs/phase-29-proof-skeleton-authoring-workflow-final-report.md`
-- Active executor phase: Phase 30 - Non-Singleton Overlap Proof Bridge
-- Guide: `docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md`
-- Active budget: 18 executor rounds
+- Last completed check: Phase 30 - Non-Singleton Overlap Proof Bridge, accepted with blocker
+- Current executor result: Phase 30 complete; Phase 31 pending dispatch
+- Final report: `docs/phase-30-non-singleton-overlap-proof-bridge-final-report.md`
+- Active executor phase: none
+- Guide: none
+- Active budget: none
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.
@@ -54,6 +54,8 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 27 hardened derived-fact and grammar-count proof bridges, improved proof-closure diagnostics, and turned C15 from a proof blocker into a degeneracy/content blocker; no player-facing cases changed.
 - Latest phase result: Phase 28 attempted three C15 rewrites and two C10 late-closure rewrites; all were rejected under strict gates, confirming that the next method should start from human-readable proof skeletons before JSON editing.
 - Latest phase result: Phase 29 built the proof-skeleton-first workflow and proved that a non-singleton overlap-frontier skeleton can avoid old degeneracy while still lacking a human-visible overlap proof bridge.
+- Latest phase result: Phase 30 added the non-singleton overlap scope-difference proof bridge and diagnostics; the Phase 29 overlap opener is now human-explainable, but the trial still stalls later at `GUESS_POINT`, so no content was promoted.
+- Next planned direction: stop broad AI puzzle-production attempts for now. Prioritize a maintainer-usable rule expression builder where logic determines generated readable text, JSON is export/storage only, and theme/VN packaging is planned for user-provided art while manual puzzle authoring proceeds in parallel.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

@@ -3,6 +3,8 @@
 Status: READY_FOR_CHECK_WITH_BLOCKER
 Guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
 Final implementation commit before this report: 6989e79
+Report commit: a081b85
+Final route commit: c29e043
 
 ## Summary
 
@@ -104,7 +106,11 @@ Local smoke:
 - `Smoke.cmd`: PASS for `/RoomAxioms/`
 - `StopDevServer.cmd`: PASS, stopped process tree
 
-Final Pages deployment should be checked after the final report commit lands.
+Final Pages deployment:
+
+- GitHub Pages run 28300739471 completed successfully for `c29e043`.
+- `https://onovich.github.io/RoomAxioms/` returned HTTP 200.
+- `http://blog.onovich.com/RoomAxioms/` returned HTTP 200.
 
 ## Boundary Scans
 

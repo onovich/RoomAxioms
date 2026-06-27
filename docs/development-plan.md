@@ -44,15 +44,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 28 - Nondegenerate Puzzle Rewrite Sprint | Use Phase 27 proof/diagnostic improvements to rewrite the best near-miss skeletons into non-degenerate target-4 candidates, prioritizing C15 first and late-closure redesign for C06/C10/C09 second | Phase 27 blocker follow-up | 18 rounds |
 | Phase 29 - Proof Skeleton Authoring Workflow | Pivot from JSON mutation to proof-skeleton-first authoring: define wave-by-wave human proof templates, add private skeleton review artifacts/tooling, and produce reviewable skeleton briefs before any further content promotion attempt | Phase 28 blocker follow-up | 16 rounds |
 | Phase 30 - Non-Singleton Overlap Proof Bridge | Add the smallest proof/authoring bridge or early diagnostic for non-singleton overlap-frontier skeletons that current solver constraints find material but HumanReasoner cannot explain | Phase 29 blocker follow-up | 18 rounds |
+| Phase 31 - Rule Expression Builder And Theme Packaging Workflow | Turn the private workbench into a rule-expression authoring surface where authors compose rules instead of editing JSON, generated text follows rule logic, and the Unregistered Scene theme/VN packaging workflow is split for parallel art-driven implementation | Phase 30 blocker-aware product pivot | 22 rounds |
 
 ## Current Execution State
 
-- Recently checked: Phase 29 - Proof Skeleton Authoring Workflow, accepted with blocker, final commit `ae7085a`.
-- Current executor result: Phase 30 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: `docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md`.
-- Executor budget: 18 rounds.
-- Executor status: executing non-singleton overlap proof bridge.
-- Last completed final report: `docs/phase-29-proof-skeleton-authoring-workflow-final-report.md`.
+- Recently checked: Phase 30 - Non-Singleton Overlap Proof Bridge, accepted with blocker, final commit `c29e043`.
+- Current executor result: Phase 30 complete; Phase 31 pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: none until Phase 31 dispatch.
+- Executor budget: none until Phase 31 dispatch.
+- Executor status: idle/pending next guide.
+- Last completed final report: `docs/phase-30-non-singleton-overlap-proof-bridge-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -88,6 +89,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 29 direction: create a proof-skeleton-first authoring workflow so humans and tools design intended wave-by-wave reasoning before committing to board/rule JSON.
 - Phase 29 result: accepted with blocker. The skeleton format, review rubric, target-4 checklist, authoring helper, three skeleton briefs, and one translation trial are complete. The trial avoided C15's old degeneracy but produced no human-visible overlap deduction, identifying a focused proof/authoring bridge gap.
 - Planned Phase 30 direction: implement or explicitly diagnose the smallest non-singleton overlap proof bridge needed by the Phase 29 overlap-frontier skeleton; do not run another content production sprint.
+- Phase 30 result: accepted with blocker. The non-singleton overlap scope-difference bridge now produces human-visible deductions for the Phase 29 trial opener, and diagnostics distinguish unsupported overlap material from partial bridge stalls. The trial still reaches a later `GUESS_POINT`, so it remains non-promotable and the next phase should not be another broad JSON mutation or AI puzzle-production sprint.
+- Planned Phase 31 direction: serve human level design and presentation work. Build a private rule expression builder so authors compose rule logic through controls, generated copy follows that logic, JSON becomes export/storage only, and theme/VN packaging is broken into asset intake and implementation tracks that can run in parallel with manual puzzle authoring.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -125,4 +128,5 @@ These are accepted as candidates, not active execution scope:
 - Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering Phase 28, completed with blocker.
 - Proof skeleton authoring workflow budget: 16 rounds, covering Phase 29, completed with blocker.
 - Non-singleton overlap proof bridge budget: 18 rounds, covering active Phase 30.
+- Rule expression builder and theme packaging workflow budget: 22 rounds, covering planned Phase 31.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
