@@ -1,14 +1,14 @@
 # Phase 26 Workbench-Guided Puzzle Ladder Production Final Report
 
-Status: DRAFT - final validation, final push, Pages evidence, and planner notification pending
+Status: READY_FOR_CHECK_WITH_BLOCKER
 Guide: docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md
-Final commit: pending final report commit
+Final commit: reported by the executor completion-routing message after terminal push
 
 ## Summary
 
 Phase 26 used the Phase 25 private workbench and authoring CLI to attempt a stricter, workbench-guided puzzle ladder. The phase produced a high-quality rejection corpus instead of padding the player selector with weak content.
 
-Current intended result is `READY_FOR_CHECK_WITH_BLOCKER`, pending final validation and deployment evidence. No Phase 26 candidates have been promoted. The existing player selector remains unchanged and honest: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`, with `case-004` still the default.
+Result: `READY_FOR_CHECK_WITH_BLOCKER`. No Phase 26 candidates have been promoted. The existing player selector remains unchanged and honest: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`, with `case-004` still the default.
 
 The blocker is content-production quality under strict gates, not runtime correctness. Fifteen serious candidates were authored or repaired under `content/experimental/phase-26/`, and all were rejected because they failed correctness, no-guess, final uniqueness, degeneracy, anti-clone, novelty, or proof-support gates.
 
@@ -93,34 +93,41 @@ Known caveat: this is an honest selector, not the desired improved 6-10 case lad
 
 ## Validation Evidence
 
-Round-level validation has passed after each committed Phase 26 round. Final validation is still pending for this draft final report.
+Round-level validation passed after each committed Phase 26 round. Final validation evidence:
 
-Required final commands before terminal reporting:
+- `rg "p26-c|phase-26" apps\web\src\workbench apps\web\src\content apps\web\src\view apps\web\src\runtime apps\web\src\logic content\cases -n`: PASS, no matches.
+- `rg "case-001|case-002|case-003|case-005|case-006|case-007|case-008|case-009|case-010|case-019" apps\web\src -n`: PASS, matches only the selector-isolation assertions in `apps\web\src\content\caseVerification.test.ts`.
+- `git diff --check`: PASS.
+- `C:\Users\Administrator\.codex\skills\project-ops-workflow\scripts\ops\Validate.cmd`: PASS; lint, typecheck, test, and build passed.
 
-- `C:\Users\Administrator\.codex\skills\project-git-workflow\scripts\git\Status.cmd`
-- `rg "p26-c|phase-26" apps\web\src\workbench apps\web\src\content apps\web\src\view apps\web\src\runtime apps\web\src\logic content\cases -n` expected no matches
-- `cmd /c pnpm.cmd --filter @room-axioms/web test -- src/content/caseVerification.test.ts src/content/runtimeSmoke.test.ts`
-- `cmd /c pnpm.cmd --filter @room-axioms/authoring test`
-- `git diff --check`
-- `C:\Users\Administrator\.codex\skills\project-ops-workflow\scripts\ops\Validate.cmd`
+Focused package evidence from the final rounds:
 
-Round 28 validation for this draft report is pending.
+- `cmd /c pnpm.cmd --filter @room-axioms/web test -- src/content/caseVerification.test.ts src/content/runtimeSmoke.test.ts`: PASS, 14 files / 113 tests.
+- `cmd /c pnpm.cmd --filter @room-axioms/authoring test`: PASS, 8 files / 86 tests.
 
 ## Smoke / Pages Evidence
 
-Round 23 local smoke passed after selector/runtime QA:
+Local smoke evidence:
 
-- `StartDevServer.cmd`: PASS
-- `Smoke.cmd`: PASS
-- `StopDevServer.cmd`: PASS
+- Round 23 selector/runtime QA: `StartDevServer.cmd`, `Smoke.cmd`, and `StopDevServer.cmd` passed.
+- Final local smoke: `StartDevServer.cmd` PASS, `Smoke.cmd` PASS, `StopDevServer.cmd` PASS.
 
-Final local smoke after the terminal final-report commit is pending. Final GitHub Pages deployment evidence after the terminal final push is pending.
+Pages evidence:
+
+- Deploy Pages run `28293650451` completed with conclusion `success` for commit `a2a7f1095cb843c693881de1ed65a05aafd79985`.
+- `https://onovich.github.io/RoomAxioms/`: HTTP 200, served `assets/index-B1CzZQsr.js`; JS contains `case-004` and `case-021`.
+- `http://blog.onovich.com/RoomAxioms/`: HTTP 200, served `assets/index-B1CzZQsr.js`; JS contains `case-004` and `case-021`.
+
+The executor completion-routing message should report the terminal commit and any successor Pages run triggered by the terminal report update.
 
 ## Boundary Scans
 
 Round 23 and Round 24 scans found no Phase 26 experimental candidates in the player-facing selector/runtime path. The focused selector tests also assert that rejected IDs and internal Phase 26 IDs stay out of `contentCases`.
 
-Final boundary scans are pending for this draft report.
+Final boundary scan evidence:
+
+- Phase 26 experimental/internal ID scan across `apps\web\src\workbench`, `apps\web\src\content`, `apps\web\src\view`, `apps\web\src\runtime`, `apps\web\src\logic`, and `content\cases`: PASS, no matches.
+- Historical rejected-case ID scan across `apps\web\src`: PASS, matches only test assertions that keep rejected cases out of `contentCases`.
 
 ## Blockers Or Caveats
 
@@ -138,14 +145,13 @@ This blocker is accepted by the guide when backed by a serious rejection corpus 
 
 | Criterion | Status | Evidence |
 | --- | --- | --- |
-| Final report exists | Draft pending final evidence | This file. |
+| Final report exists | PASS | This file. |
 | At least 12 serious candidates attempted | PASS | 15 candidates recorded in `docs/phase-26/candidate-review-log.md`. |
-| Four promotions or accepted blocker | Pending final check, blocker route supported | No promotions; strong rejection corpus and blocker recommendations recorded. |
+| Four promotions or accepted blocker | READY_FOR_CHECK_WITH_BLOCKER | No promotions; strong rejection corpus and blocker recommendations recorded. |
 | Promoted cases pass full gates | N/A | No promoted cases. |
-| Phase 24 grammar materially used, or blocker documented | Blocker route supported | C01, C02, C03, C07, C08, C09, C12, C14, and C15 attempted grammar material but failed strict gates. |
-| Player selector honest and excludes rejected/experimental content | Supported, final scan pending | Selector unchanged; tests and scans cover rejected/internal IDs. |
-| No public UGC/editor/backend/analytics/theme/VN scope added | Supported, final scan pending | Phase 26 changes are content/evidence/test/docs only. |
-| Full validation passes | Pending | Final `Validate.cmd` still required. |
-| Local smoke passes | Pending final smoke | Round 23 smoke passed; final smoke still required. |
-| Pages deployment evidence recorded | Pending | Must be recorded after final push. |
-
+| Phase 24 grammar materially used, or blocker documented | PASS via blocker route | C01, C02, C03, C07, C08, C09, C12, C14, and C15 attempted grammar material but failed strict gates. |
+| Player selector honest and excludes rejected/experimental content | PASS | Selector unchanged; tests and scans cover rejected/internal IDs. |
+| No public UGC/editor/backend/analytics/theme/VN scope added | PASS | Phase 26 changes are content/evidence/test/docs only. |
+| Full validation passes | PASS | `Validate.cmd` passed. |
+| Local smoke passes | PASS | Final `StartDevServer.cmd`, `Smoke.cmd`, and `StopDevServer.cmd` passed. |
+| Pages deployment evidence recorded | PASS | Deploy Pages run `28293650451` succeeded; both online URLs returned HTTP 200 with the expected JS asset. |
