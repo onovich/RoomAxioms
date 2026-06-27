@@ -190,11 +190,11 @@ export function evaluateWorkbenchDiagnostics(
   caps: WorkbenchDiagnosticsCaps = defaultWorkbenchDiagnosticsCaps(),
   comparisonPuzzles: readonly PuzzleDefinition[] = [],
 ): AuthoringDraftDiagnosticsReport | undefined {
-  const parse = parseDraftJson(draft.jsonText)
-  if (!parse.ok) return undefined
+  const parsedDraft = parseDraftJsonValue(draft.jsonText)
+  if (parsedDraft === undefined) return undefined
 
   return evaluateDraftDiagnostics({
-    draft: parse.puzzle,
+    draft: parsedDraft,
     sourcePath: `<workbench:${selectedCaseId}>`,
     caps,
     comparisonPuzzles,
@@ -567,6 +567,14 @@ function exportStatus(exported: WorkbenchDraftExportResult, selectedCaseId: stri
     fileName: `${exported.puzzle?.id ?? selectedCaseId}-workbench-draft.json`,
     message: '导出只生成本地 JSON，不会写入 content/cases 或玩家选择器。',
     issueCount: 0,
+  }
+}
+
+function parseDraftJsonValue(jsonText: string): unknown | undefined {
+  try {
+    return JSON.parse(jsonText) as unknown
+  } catch {
+    return undefined
   }
 }
 

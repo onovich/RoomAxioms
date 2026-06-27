@@ -18,7 +18,7 @@ remaining final-round work without claiming phase completion early.
 | Workbench can edit board facts and opening observations. | `patchWorkbenchTargetCell`, `patchWorkbenchBoardSize`, `toggleWorkbenchInitialReveal`, and tests in `workbench.test.ts`. | Evidence present. |
 | Workbench can edit rules/scopes and copy. | `patchWorkbenchRulesJson`, `patchWorkbenchScopeCollectionsJson`, `patchWorkbenchRulePresentation`, raw JSON editors in `AuthoringWorkbenchScreen`, and tests in `workbench.test.ts` / `authoringTrial.test.ts`. | Evidence present. |
 | Workbench can edit title/case name/difficulty metadata/tags/copy. | `patchWorkbenchMetadata`, structured metadata editor in `AuthoringWorkbenchScreen`, metadata tests in `workbench.test.ts`, and Round 24 update to `workbench-authoring-trial.md`. | Evidence present. |
-| Live diagnostics show correctness/proof/quality/clone/difficulty/copy/performance signals. | `evaluateWorkbenchDiagnostics`, `createWorkbenchDiagnosticsOverview`, `createWorkbenchDiagnosticsGroupDetails`, and focused tests in `workbench.test.ts`, `realCaseQa.test.ts`, and `authoringTrial.test.ts`. | Evidence present. |
+| Live diagnostics show schema/correctness/proof/quality/clone/difficulty/copy/performance signals. | `evaluateWorkbenchDiagnostics`, `createWorkbenchDiagnosticsOverview`, `createWorkbenchDiagnosticsGroupDetails`, and focused tests in `workbench.test.ts`, `realCaseQa.test.ts`, and `authoringTrial.test.ts`. Round 26 specifically verifies parseable schema-invalid JSON returns an `invalid-draft` blocking diagnostics report instead of disappearing as unavailable. | Evidence present. |
 | Known bad-case failures are caught. | `docs/phase-25/bad-case-diagnostics-corpus.md`, private fixtures under `content/experimental/phase-25`, and tests for singleton giveaway, one-rule solution, padded clone, highlight-dependent copy, capped counts, and duplicate contribution. | Evidence present. |
 | Real shipped/rejected cases were QA'd through workbench diagnostics. | `docs/phase-25/real-case-workbench-qa.md` and `apps/web/src/workbench/realCaseQa.test.ts`. | Evidence present. |
 | Existing player selector/default case remain stable. | `apps/web/src/content/cases.ts` still imports only shipped cases and keeps `DEFAULT_CASE_ID = 'case-004'`; workbench tests assert private fixtures stay out of `contentCases`. | Evidence present. |
@@ -51,6 +51,9 @@ Run on 2026-06-27 during Round 25.
   authoring/CLI workflow.
 - The private workbench is intentionally not a public editor, UGC feature,
   backend, or content promotion workflow.
+- Raw JSON syntax errors still stop full diagnostics until the text parses.
+  Parseable but schema-invalid JSON now receives a normal `invalid-draft`
+  diagnostics report through the authoring source-of-truth API.
 
 ## Final-Round Checklist
 

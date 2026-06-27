@@ -142,6 +142,38 @@ describe('authoring workbench shell model', () => {
     expect(model.ruleSummaries).toEqual([])
   })
 
+  it('returns invalid-draft diagnostics for parseable schema-invalid JSON', () => {
+    const defaultCase = getCaseById(DEFAULT_CASE_ID)
+    const draft = updateDraftJsonText(
+      createWorkbenchDraftFromPuzzle(defaultCase),
+      JSON.stringify({ id: 'broken-schema-draft' }, null, 2),
+    )
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, draft)
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
+
+    expect(model.parse).toMatchObject({
+      ok: false,
+    })
+    expect(diagnostics).toMatchObject({
+      ok: false,
+      status: 'invalid-draft',
+      validation: {
+        schema: {
+          ok: false,
+          issueCount: expect.any(Number),
+        },
+        recommendation: 'repair-schema',
+      },
+    })
+    expect(diagnostics?.groups.find((group) => group.id === 'blocking-errors')).toMatchObject({
+      status: 'fail',
+    })
+    expect(diagnostics?.validation.schema.issueCount).toBeGreaterThan(0)
+    expect(createWorkbenchDiagnosticsOverview(diagnostics)?.metrics.find((metric) => metric.id === 'recommendation')).toMatchObject({
+      tone: 'fail',
+    })
+  })
+
   it('patches target cell facts through schema-validated draft state', () => {
     const defaultCase = getCaseById(DEFAULT_CASE_ID)
     const draft = createWorkbenchDraftFromPuzzle(defaultCase)
