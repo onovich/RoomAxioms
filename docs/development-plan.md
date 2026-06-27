@@ -40,15 +40,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 24 - Rule Grammar Expressiveness Expansion | Expand the rule grammar deliberately after Phase 23 evidence shows which puzzle interactions remain too shallow; prioritize shared variables, overlapping scopes, conditional/comparative constraints, and contaminated-record variants that create deeper proof frontiers | User direction: rule grammar expansion is the next planning priority | 24 rounds |
 | Phase 25 - Authoring Editor And Live Diagnostics Workbench | Build a maintainer-facing level editor plus immediate diagnostics for uniqueness, no-guess proof, rule contribution, degeneracy, effective board, clone risk, and difficulty signals so human authors can design faster without relying on bulk AI generation | User direction: editor + instant diagnostics is the next-stage plan | 28 rounds |
 | Phase 26 - Workbench-Guided Puzzle Ladder Production | Use the Phase 25 workbench to author, repair, and promote genuinely non-degenerate high-quality puzzles while preserving strict anti-clone, proof, copy, and playability gates | Phase 24/25 follow-up | 32 rounds |
+| Phase 27 - Proof And Authoring Bridge Hardening | Harden proof/authoring support for derived-fact reuse, late closure, comparative/overlap/conditional material, and targeted fixtures before another broad puzzle-production pass | Phase 26 blocker follow-up | 24 rounds |
 
 ## Current Execution State
 
-- Recently checked: Phase 25 - Authoring Editor And Live Diagnostics Workbench, accepted, final commit `d1ba960`.
-- Current executor result: Phase 26 dispatched for execution.
+- Recently checked: Phase 26 - Workbench-Guided Puzzle Ladder Production, accepted with blocker, final commit `e326c04`.
+- Current executor result: no active executor phase after Phase 26 acceptance; Phase 27 is planned but not dispatched.
 - Active guide: `docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md`.
 - Executor budget: 32 rounds.
-- Executor status: executing workbench-guided puzzle ladder production.
-- Last completed final report: `docs/phase-25-authoring-editor-live-diagnostics-final-report.md`.
+- Executor status: awaiting planner dispatch.
+- Last completed final report: `docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -75,6 +76,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 25 result: accepted. The private workbench exists behind `#authoring-workbench` / `?authoring=workbench`, supports import/edit/export, and surfaces schema, solver, proof, degeneracy, clone-risk, rule contribution, copy-warning, difficulty, and cap/truncation diagnostics while keeping normal player flow unchanged.
 - Planned Phase 26 direction: use the workbench to produce and validate a smaller but genuinely non-degenerate puzzle ladder, prioritizing quality over quantity and treating subjective fun/novelty as human-review gates.
 - Phase 26 target: attempt at least 12 serious workbench-guided candidates, promote at least 4 genuinely non-degenerate cases if strict gates allow, and otherwise report an honest blocker with a high-quality rejection corpus.
+- Phase 26 result: accepted with blocker. Fifteen serious workbench-guided candidates were attempted and all were rejected under strict gates; the player selector remains unchanged. The blocker points to proof/authoring readiness gaps around derived-fact reuse, late closure, and Phase 24 grammar material.
+- Planned Phase 27 direction: harden proof and authoring fixtures for derived facts, late closure, comparative/overlap/conditional techniques, and no-guess closure before attempting another broad puzzle ladder pass.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -107,5 +110,6 @@ These are accepted as candidates, not active execution scope:
 - Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23, completed with blocker.
 - Rule grammar expressiveness expansion budget: 24 rounds, covering Phase 24, completed with blocker.
 - Authoring editor and live diagnostics workbench budget: 28 rounds, covering Phase 25, completed.
-- Workbench-guided puzzle ladder production budget: 32 rounds, covering active Phase 26.
+- Workbench-guided puzzle ladder production budget: 32 rounds, covering Phase 26, completed with blocker.
+- Proof and authoring bridge hardening budget: 24 rounds, reserved for Phase 27 after planner dispatch.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
