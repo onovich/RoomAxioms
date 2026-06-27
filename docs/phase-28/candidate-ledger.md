@@ -44,7 +44,7 @@ Do not promote or count a candidate as a target-4 win unless it passes:
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | `p28-c15-a-remove-direct-safe-region` | `content/experimental/phase-28/p28-c15-a-remove-direct-safe-region.json` | C15 | Preserve derived overlap and local follow-up while replacing the direct `B3/C3/D3` no-guest region with an indirect late frontier. | FAIL: `repair-proof`; 16 initial guest layouts; 3 waves / 4 deductions; `GUESS_POINT`; final uniqueness false. | PASS: 21.51 / band 5 uncalibrated. | FAIL: required overlap/local techniques retained, but minimized proof still no-guess false and final uniqueness false. | FAIL: R5 replacement passes degeneracy, but R2 remains `singleton-effective-scope:direct-count-giveaway`; anti-clone status `fail`. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 2 | `p28-c15-b-broaden-entry-opener` | `content/experimental/phase-28/p28-c15-b-broaden-entry-opener.json` | C15 | Broaden the entry opener so the overlap saturation depends on a derived frontier instead of two opening empties. | FAIL: `repair-proof`; 32 initial guest layouts; 1 wave / 0 deductions; `EXPLANATION_GAP` on B1. | PASS: 15.24 / band 4 uncalibrated. | FAIL: required overlap/local techniques missing before and after minimization. | BLOCKED: R2 improves to warning rather than hard fail, but R4 becomes redundant and anti-clone status is `fail` against C15 due baseline hard fail plus B warning. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
-| 3 | `p28-c15-c-larger-effective-board` | `content/experimental/phase-28/p28-c15-c-larger-effective-board.json` | C15 | Move the overlap/local chain onto a larger effective board where the overlap result unlocks later pressure rather than closing the case. | pending | pending | pending | pending | pending | pending |
+| 3 | `p28-c15-c-larger-effective-board` | `content/experimental/phase-28/p28-c15-c-larger-effective-board.json` | C15 | Move the overlap/local chain onto a larger effective board where the overlap result unlocks later pressure rather than closing the case. | FAIL: `repair-proof`; 18 initial guest layouts; 1 wave / 3 deductions; `EXPLANATION_GAP` on B3/C3; final uniqueness false. | PASS: 20.44 / band 5 uncalibrated. | FAIL: overlap retained, but `LOCAL_COUNT_SATURATED` missing; proof/final uniqueness fail. | FAIL: R2 remains `singleton-effective-scope:direct-count-giveaway`; R4 redundant; 6 irrelevant cells. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 4 | `p28-c10-a-late-closure-frontier` | `content/experimental/phase-28/p28-c10-a-late-closure-frontier.json` | C10 | Preserve the two-wave bottle frontier and add one honest late-closure rule for `D2/A3/B3` without a direct no-guest giveaway. | pending | pending | pending | pending | pending | pending |
 
 ## Baseline Rejection Knowledge
@@ -167,6 +167,50 @@ overlap count to derive `B1` safely. This confirms that C15 cannot be salvaged
 by widening R2 alone; attempt C should change the board/chain enough that an
 overlap result creates a later frontier without depending on a direct or
 near-direct entry count.
+
+### 3. `p28-c15-c-larger-effective-board`
+
+Round 5 attempted C15 rewrite path C.
+
+Intended change:
+
+- Move the C15 overlap/local chain onto a 5x4 board.
+- Add wide bottom and east-corner pressure so the third guest has a later
+  frontier instead of a direct no-guest region.
+- Test whether the larger board creates real proof depth or only pads the same
+  shallow entry/overlap move.
+
+Evidence:
+
+```text
+pnpm authoring -- report content\experimental\phase-28\p28-c15-c-larger-effective-board.json
+pnpm authoring -- score content\experimental\phase-28\p28-c15-c-larger-effective-board.json
+pnpm authoring -- minimize content\experimental\phase-28\p28-c15-c-larger-effective-board.json --require-technique SCOPE_OVERLAP_COUNT_SATURATED --require-technique LOCAL_COUNT_SATURATED
+pnpm authoring -- anti-clone content\experimental\phase-26\candidates\p26-c15-overlap-chain-repair.json content\experimental\phase-28\p28-c15-c-larger-effective-board.json --include-degeneracy
+```
+
+Result:
+
+- Schema, target rules, and initial satisfiability pass.
+- Initial guest layouts: 18.
+- Proof reaches only 1 wave / 3 deductions and reports explanation gaps on
+  `B3` and `C3`.
+- `SCOPE_OVERLAP_COUNT_SATURATED` is retained, but `LOCAL_COUNT_SATURATED` is
+  absent; the bottle-local rule becomes redundant.
+- Difficulty review reports 12 effective unknown cells but also 6 irrelevant
+  cells.
+- R2 remains the same hard direct-count giveaway as the C15 seed.
+- Wide bottom/east rules pass degeneracy individually, but they do not create a
+  human-explainable later frontier.
+
+Decision:
+
+Reject. Larger board area and extra overlapping bottom rules do not repair the
+C15 player experience. The result has more solver search and a higher
+uncalibrated score, but less proof depth than attempt A, no local follow-up, and
+the same R2 hard degeneracy. Future work should not treat board expansion as a
+repair unless the new cells create approved human deductions after the overlap
+step.
 
 ## Planned Command Pattern
 

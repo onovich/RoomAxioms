@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "id": "p28-c15-c-larger-effective-board",
+  "title": "Phase 28 Candidate 15C Larger Effective Board",
+  "caseName": "Phase 28 - C15C overlap rewrite",
+  "board": {
+    "width": 5,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "entry-check",
+      "title": "A1, C1, D1",
+      "cells": [
+        "A1",
+        "C1",
+        "D1"
+      ]
+    },
+    {
+      "id": "north-hook",
+      "title": "A1, B1, C1, A2",
+      "cells": [
+        "A1",
+        "B1",
+        "C1",
+        "A2"
+      ]
+    },
+    {
+      "id": "west-hook",
+      "title": "A1, B1, A2, A3",
+      "cells": [
+        "A1",
+        "B1",
+        "A2",
+        "A3"
+      ]
+    },
+    {
+      "id": "wide-bottom",
+      "title": "B3, C3, D3, E3, E4",
+      "cells": [
+        "B3",
+        "C3",
+        "D3",
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "id": "east-corner",
+      "title": "D3, E3, E4",
+      "cells": [
+        "D3",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "Three guests",
+        "flavor": "There are exactly 3 guests in the room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "entry-check",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Entry three cells",
+        "flavor": "A1, C1, and D1 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "scopeOverlapCount",
+      "left": {
+        "kind": "region",
+        "regionId": "north-hook"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "west-hook"
+      },
+      "mode": "intersection",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "A1, B1, A2 overlap",
+        "flavor": "The shared cells A1, B1, and A2 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle orthogonal neighbors",
+        "flavor": "For every bottle, its orthogonal neighbors contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "regionCount",
+      "regionId": "wide-bottom",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Wide bottom pressure",
+        "flavor": "B3, C3, D3, E3, and E4 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "regionCount",
+      "regionId": "east-corner",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "East corner pressure",
+        "flavor": "D3, E3, and E4 contain exactly 1 guest."
+      }
+    }
+  ],
+  "initialReveals": [
+    "C1",
+    "D1",
+    "A3",
+    "A4",
+    "C4",
+    "E1"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "E1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "guest",
+    "D2": "empty",
+    "E2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "E3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "empty",
+    "E4": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-28",
+      "scope-overlap-count",
+      "c15-rewrite",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Attempt C moves the C15 overlap/local chain to a 5x4 board and adds overlapping bottom/east pressure. It deliberately tests whether added space creates a real later frontier or is merely padding around the same direct entry opener."
+  }
+}
