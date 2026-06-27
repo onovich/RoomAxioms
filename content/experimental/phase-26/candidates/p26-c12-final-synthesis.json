@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c12-final-synthesis",
+  "title": "Phase 26 Candidate 12 Final Synthesis",
+  "caseName": "Phase 26 - 最终综合候选 12",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "left-front",
+      "title": "左前四格",
+      "cells": [
+        "A1",
+        "B1",
+        "A2",
+        "B2"
+      ]
+    },
+    {
+      "id": "right-front",
+      "title": "右前四格",
+      "cells": [
+        "C1",
+        "D1",
+        "C2",
+        "D2"
+      ]
+    },
+    {
+      "id": "south-three",
+      "title": "B4、C4、D4",
+      "cells": [
+        "B4",
+        "C4",
+        "D4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 4
+      },
+      "presentation": {
+        "title": "四名访客",
+        "flavor": "房间里一共有 4 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "comparativeCount",
+      "left": {
+        "kind": "region",
+        "regionId": "left-front"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "right-front"
+      },
+      "target": "guest",
+      "comparison": {
+        "op": "eq",
+        "offset": 2
+      },
+      "presentation": {
+        "title": "左前四格多两人",
+        "flavor": "A1、B1、A2、B2 这 4 格里的访客数，比 C1、D1、C2、D2 这 4 格里的访客数多 2。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶邻格",
+        "flavor": "每个酒瓶上下左右相邻格里，恰好有 1 名未登记访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "垃圾桶邻格",
+        "flavor": "每个垃圾桶上下左右相邻格里，没有未登记访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "regionCount",
+      "regionId": "south-three",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "底边 B4、C4、D4",
+        "flavor": "B4、C4、D4 这 3 格里，恰好有 1 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A2",
+    "B2",
+    "C1",
+    "D1",
+    "C2",
+    "D2",
+    "C3"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "guest",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "empty",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bottle",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "guest",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "bin"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "grammar-classic-hybrid",
+      "comparative-count",
+      "final-synthesis",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 16 final second-batch synthesis. Intended proof: reuse C09's non-singleton comparative opener to find A1/B1, then use a bottle neighbor rule and garbage-bin exclusion to test whether classic object-local pressure can close A4/B4/D4 without the near-count east-lane shortcut that blocked C09."
+  }
+}
