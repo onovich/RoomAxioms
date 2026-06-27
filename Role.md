@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T01:23:10+08:00
+updated_at: 2026-06-28T01:26:49+08:00
 
 planner:
   role: architect
@@ -23,12 +23,12 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
-  last_planner_dispatch: 2026-06-28T00:01:53+08:00
+  active_goal_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
+  active_goal_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
+  last_planner_dispatch: 2026-06-28T01:26:49+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: a7517a9
+  last_planner_dispatch_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: 29f899b
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
   last_check_phase: Phase 27 - Proof And Authoring Bridge Hardening

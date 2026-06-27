@@ -46,10 +46,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 27 - Proof And Authoring Bridge Hardening, accepted with blocker, final commit `e9d8b9d`.
-- Current executor result: no active executor phase after Phase 27 acceptance; Phase 28 is planned but not dispatched.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: awaiting planner dispatch.
+- Current executor result: Phase 28 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: `docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md`.
+- Executor budget: 18 rounds.
+- Executor status: executing non-degenerate puzzle rewrite sprint.
 - Last completed final report: `docs/phase-27-proof-authoring-bridge-hardening-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -116,5 +116,5 @@ These are accepted as candidates, not active execution scope:
 - Authoring editor and live diagnostics workbench budget: 28 rounds, covering Phase 25, completed.
 - Workbench-guided puzzle ladder production budget: 32 rounds, covering Phase 26, completed with blocker.
 - Proof and authoring bridge hardening budget: 24 rounds, covering Phase 27, completed with blocker.
-- Nondegenerate puzzle rewrite sprint budget: 18 rounds, reserved for Phase 28 after planner dispatch.
+- Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering active Phase 28.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
