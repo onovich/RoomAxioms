@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T00:01:53+08:00
+updated_at: 2026-06-28T01:23:10+08:00
 
 planner:
   role: architect
@@ -23,25 +23,25 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md
-  active_goal_phase: Phase 27 - Proof And Authoring Bridge Hardening
+  active_goal_guide: none
+  active_goal_phase: none
   last_planner_dispatch: 2026-06-28T00:01:53+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md
   last_planner_dispatch_commit: a7517a9
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
-  last_check_phase: Phase 26 - Workbench-Guided Puzzle Ladder Production
-  last_check_report: docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md
-  last_check_commit: e326c04
-  last_check_at: 2026-06-27T23:56:54+08:00
-  last_check_blocker: 15 serious candidates attempted, 0 promoted under strict gates; proof/authoring bridge needs hardening before another broad puzzle-production pass
-  last_executor_report_commit: e326c04
+  last_check_phase: Phase 27 - Proof And Authoring Bridge Hardening
+  last_check_report: docs/phase-27-proof-authoring-bridge-hardening-final-report.md
+  last_check_commit: e9d8b9d
+  last_check_at: 2026-06-28T01:23:10+08:00
+  last_check_blocker: bridge hardening pass criteria met, but no non-degenerate target-4+ case was promoted; C15 still needs content rewrite and C06/C10/C09 need late-closure redesign
+  last_executor_report_commit: e9d8b9d
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
-  last_executor_report_phase: Phase 26 - Workbench-Guided Puzzle Ladder Production
-  last_executor_report: docs/phase-26-workbench-guided-puzzle-ladder-production-final-report.md
-  last_executor_report_at: 2026-06-27T23:56:54+08:00
-  last_executor_report_guide: docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 27 - Proof And Authoring Bridge Hardening
+  last_executor_report: docs/phase-27-proof-authoring-bridge-hardening-final-report.md
+  last_executor_report_at: 2026-06-28T01:23:10+08:00
+  last_executor_report_guide: docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
