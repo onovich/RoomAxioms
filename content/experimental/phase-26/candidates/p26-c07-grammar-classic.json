@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c07-grammar-classic",
+  "title": "Phase 26 Candidate 07 Grammar Classic",
+  "caseName": "Phase 26 - 语法经典混合候选 07",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "left-front",
+      "title": "A1、B1、A2 这三格",
+      "cells": [
+        "A1",
+        "B1",
+        "A2"
+      ]
+    },
+    {
+      "id": "right-front",
+      "title": "C1、D1、C2 这三格",
+      "cells": [
+        "C1",
+        "D1",
+        "C2"
+      ]
+    },
+    {
+      "id": "bottom-lane",
+      "title": "B4、C4、D4 这三格",
+      "cells": [
+        "B4",
+        "C4",
+        "D4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "comparativeCount",
+      "left": {
+        "kind": "region",
+        "regionId": "left-front"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "right-front"
+      },
+      "target": "guest",
+      "comparison": {
+        "op": "eq"
+      },
+      "presentation": {
+        "title": "前排左右人数相同",
+        "flavor": "A1、B1、A2 这三格里的访客数，等于 C1、D1、C2 这三格里的访客数。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "垃圾桶邻格",
+        "flavor": "每个垃圾桶上下左右邻格里，没有访客。"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "regionCount",
+      "regionId": "bottom-lane",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "底侧三格",
+        "flavor": "B4、C4、D4 这三格里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "C1",
+    "D1",
+    "C2",
+    "A2",
+    "B2",
+    "A3"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "empty",
+    "D2": "guest",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "phase-24-grammar",
+      "comparative-count",
+      "classic-hybrid",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 11 serious candidate for P26-S7. Intended proof: comparativeCount clears the left-front unknowns using the public right-front side, then the bin-local and bottom-lane classic counts test whether classic pressure can close the remaining guests without becoming a one-rule fixture."
+  }
+}
