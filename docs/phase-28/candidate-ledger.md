@@ -46,6 +46,7 @@ Do not promote or count a candidate as a target-4 win unless it passes:
 | 2 | `p28-c15-b-broaden-entry-opener` | `content/experimental/phase-28/p28-c15-b-broaden-entry-opener.json` | C15 | Broaden the entry opener so the overlap saturation depends on a derived frontier instead of two opening empties. | FAIL: `repair-proof`; 32 initial guest layouts; 1 wave / 0 deductions; `EXPLANATION_GAP` on B1. | PASS: 15.24 / band 4 uncalibrated. | FAIL: required overlap/local techniques missing before and after minimization. | BLOCKED: R2 improves to warning rather than hard fail, but R4 becomes redundant and anti-clone status is `fail` against C15 due baseline hard fail plus B warning. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 3 | `p28-c15-c-larger-effective-board` | `content/experimental/phase-28/p28-c15-c-larger-effective-board.json` | C15 | Move the overlap/local chain onto a larger effective board where the overlap result unlocks later pressure rather than closing the case. | FAIL: `repair-proof`; 18 initial guest layouts; 1 wave / 3 deductions; `EXPLANATION_GAP` on B3/C3; final uniqueness false. | PASS: 20.44 / band 5 uncalibrated. | FAIL: overlap retained, but `LOCAL_COUNT_SATURATED` missing; proof/final uniqueness fail. | FAIL: R2 remains `singleton-effective-scope:direct-count-giveaway`; R4 redundant; 6 irrelevant cells. | PASS for this private draft: fixed scopes are explicit coordinate text; no hidden named-region semantics. | rejected |
 | 4 | `p28-c10-a-late-closure-frontier` | `content/experimental/phase-28/p28-c10-a-late-closure-frontier.json` | C10 | Preserve the two-wave bottle frontier and add one late conditional closure plus east-column follow-up for `D2/A3/B3/D4`. | FAIL QUALITY: machine `ok true`, but proof collapses to 1 wave / 3 deductions with only `REGION_COUNT_SATURATED`; R7/R5 redundant. | PASS: 12.38 / band 3 uncalibrated. | FAIL: minimizer collapses 6 reveals to `C3`; required `LOCAL_COUNT_ALL_REMAINING`, `CONDITIONAL_COUNT_SATURATED`, and `REGION_COUNT_ALL_REMAINING` missing. | FAIL: R7 condition is `singleton-effective-scope:direct-count-giveaway`; R8 is `near-count-giveaway`; anti-clone status `fail`. | PASS text scope clarity: coordinates explicit; FAIL design clarity: R7 is a direct conditional safe dump. | rejected |
+| 5 | `p28-c10-b-broadened-condition-frontier` | `content/experimental/phase-28/p28-c10-b-broadened-condition-frontier.json` | C10 | Broaden A's singleton condition into a four-cell `gte 1` trigger while keeping the same late shadow and east-column follow-up. | FAIL QUALITY: machine `ok true`, but initial guest layouts = 1 and proof has 0 waves / 0 deductions. | PASS: 6.73 / band 2 uncalibrated. | FAIL: no required techniques present before or after minimization; opening already unique. | FAIL: R8 still `near-count-giveaway`; R4/R5 redundant; anti-clone status `fail`. | PASS text scope clarity; FAIL design clarity: condition over-constrains the opening and removes gameplay. | rejected |
 
 ## Baseline Rejection Knowledge
 
@@ -257,6 +258,50 @@ dump to cover C10's explanation gaps can make the machine verifier happy while
 making the player experience much weaker. The next C10 attempt, if any, must
 broaden the trigger condition into a real multi-cell frontier and must retain
 `LOCAL_COUNT_ALL_REMAINING` plus a late closure technique under minimization.
+
+### 5. `p28-c10-b-broadened-condition-frontier`
+
+Round 10 attempted a narrow repair after C10-A.
+
+Intended change:
+
+- Replace A's singleton `B2 == guest` condition with a four-cell trigger:
+  `B2/D2/A3/B3 has at least 1 guest`.
+- Keep the same explicit `D2/A3/B3` consequence and east-column follow-up.
+- Test whether a non-singleton conditional condition preserves opening
+  ambiguity and lets the late closure fire after the bottle-local deduction.
+
+Evidence:
+
+```text
+pnpm authoring -- report content\experimental\phase-28\p28-c10-b-broadened-condition-frontier.json
+pnpm authoring -- score content\experimental\phase-28\p28-c10-b-broadened-condition-frontier.json
+pnpm authoring -- minimize content\experimental\phase-28\p28-c10-b-broadened-condition-frontier.json --require-technique LOCAL_COUNT_ALL_REMAINING --require-technique REGION_COUNT_SATURATED --require-technique CONDITIONAL_COUNT_SATURATED --require-technique REGION_COUNT_ALL_REMAINING
+pnpm authoring -- anti-clone content\experimental\phase-26\candidates\p26-c10-frontier-repair.json content\experimental\phase-28\p28-c10-a-late-closure-frontier.json content\experimental\phase-28\p28-c10-b-broadened-condition-frontier.json --include-degeneracy
+```
+
+Result:
+
+- Schema, target rules, initial satisfiability, no-guess, final uniqueness, and
+  no truncation pass.
+- The condition no longer hard-fails degeneracy; R7 condition has 4 effective
+  unknown cells and passes the direct giveaway check.
+- The repair overcorrects: initial guest layouts drop to 1, so the opening is
+  already uniquely solved.
+- The proof has 0 waves / 0 deductions and no technique ids because no human
+  step is needed once the initial observations and rules are combined.
+- Difficulty score drops to 6.73 / band 2 uncalibrated.
+- R4/R5 are redundant, R8 remains a `near-count-giveaway`, and the anti-clone
+  status remains `fail`.
+
+Decision:
+
+Reject. B proves the inverse failure mode from A. Broadening the condition does
+remove the singleton-condition hard fail, but coupling it with the same
+conditional safe consequence and east-column count over-constrains the puzzle at
+the start. A viable late-closure rewrite needs a third shape: a non-singleton
+trigger that is not already forced by the opening and a follow-up that cannot
+collapse final uniqueness before any human deduction.
 
 ## Planned Command Pattern
 
