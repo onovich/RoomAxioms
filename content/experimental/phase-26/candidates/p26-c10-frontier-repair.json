@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c10-frontier-repair",
+  "title": "Phase 26 Candidate 10 Frontier Repair",
+  "caseName": "Phase 26 - 双波前线修复候选 10",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-three",
+      "title": "A1、B1、C1 这三格",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    },
+    {
+      "id": "bottom-lane",
+      "title": "B4、C4、D4 这三格",
+      "cells": [
+        "B4",
+        "C4",
+        "D4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "regionCount",
+      "regionId": "north-three",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北侧三格",
+        "flavor": "A1、B1、C1 这三格里，没有访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶邻格",
+        "flavor": "每个酒瓶上下左右邻格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "guest",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "访客不相邻",
+        "flavor": "每名访客周围一圈，没有其他访客。"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "regionCount",
+      "regionId": "bottom-lane",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "底侧三格",
+        "flavor": "B4、C4、D4 这三格里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "D1",
+    "A2",
+    "C2",
+    "C3",
+    "D3",
+    "A4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "guest",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "two-wave-frontier",
+      "frontier-repair",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 14 serious repair candidate for P26-S6. It starts from C06's two-wave shape, then adds a guest-neighborhood rule so the B2 guest found in wave two can explain the A3/B3 safe cells that were solver-only in C06. C3 is public to avoid the opening explanation gap seen in the first repair draft."
+  }
+}
