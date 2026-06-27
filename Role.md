@@ -36,12 +36,12 @@ idempotency:
   last_check_commit: e9d8b9d
   last_check_at: 2026-06-28T01:23:10+08:00
   last_check_blocker: bridge hardening pass criteria met, but no non-degenerate target-4+ case was promoted; C15 still needs content rewrite and C06/C10/C09 need late-closure redesign
-  last_executor_report_commit: e9d8b9d
+  last_executor_report_commit: b19ff07
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
-  last_executor_report_phase: Phase 27 - Proof And Authoring Bridge Hardening
-  last_executor_report: docs/phase-27-proof-authoring-bridge-hardening-final-report.md
-  last_executor_report_at: 2026-06-28T01:23:10+08:00
-  last_executor_report_guide: docs/phase-27-proof-authoring-bridge-hardening-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
+  last_executor_report: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md
+  last_executor_report_at: 2026-06-28T02:36:00+08:00
+  last_executor_report_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
