@@ -9,6 +9,8 @@ Round 3 added focused proof fixtures for blocker class B01/F01 from the Phase 27
 - Derived guest/object/safe facts can now be reused by Phase 24 grammar count summaries without converting them into target data or observations.
 - A derived guest fact can now saturate a later `scopeOverlapCount` over a non-singleton overlap scope.
 - A derived safe fact can now make all remaining cells in a later `scopeOverlapCount` forced guests.
+- A derived guest fact can now activate a later `conditionalCount` condition.
+- A derived safe fact can now close a later `comparativeCount` side.
 - The proof graph preserves the parent dependency from the object deduction to the later safe-cell deduction.
 
 ## Fixtures
@@ -17,6 +19,8 @@ Round 3 added focused proof fixtures for blocker class B01/F01 from the Phase 27
 - `packages/proof/src/reasoner.test.ts`: `uses a derived object as a local subject with proof dependencies`
 - `packages/proof/src/reasoner.test.ts`: `uses a derived guest fact to saturate a non-singleton overlap scope`
 - `packages/proof/src/reasoner.test.ts`: `uses a derived safe fact to force all remaining overlap cells`
+- `packages/proof/src/reasoner.test.ts`: `activates after the condition is forced by a derived guest fact`
+- `packages/proof/src/reasoner.test.ts`: `closes a comparison side with a derived safe fact`
 
 The local/anchor fixtures use a tiny center-cell bin deduction from a region count, then reuse that derived bin as the visible subject for a zero-guest orthogonal scope. The assertions verify:
 
@@ -30,6 +34,12 @@ The scope-overlap fixtures use non-singleton overlap scopes and verify both dire
 - `REGION_COUNT_ALL_REMAINING` derives a guest, then `SCOPE_OVERLAP_COUNT_SATURATED` reuses it to mark the rest of the overlap safe.
 - `REGION_COUNT_SATURATED` derives a safe cell, then `SCOPE_OVERLAP_COUNT_ALL_REMAINING` reuses it as known non-guest material to force the remaining overlap guests.
 - Both resulting proof nodes have the earlier derived-fact node as a parent.
+
+The conditional/comparative fixtures cover the other Phase 24 grammar families:
+
+- `REGION_COUNT_ALL_REMAINING` derives a condition guest before `CONDITIONAL_COUNT_SATURATED` applies the consequence.
+- `REGION_COUNT_SATURATED` derives a safe cell on one comparison side before `COMPARATIVE_COUNT_SATURATED` closes the matching side.
+- Both resulting proof nodes preserve the earlier derived fact as a parent.
 
 ## Scope Notes
 

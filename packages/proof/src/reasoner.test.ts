@@ -364,6 +364,59 @@ describe('conditional count human techniques', () => {
       { kind: 'safe', cellId: 'C2' },
     ]);
   });
+
+  it('activates after the condition is forced by a derived guest fact', () => {
+    const state = makeState({
+      board: { width: 3, height: 2 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'trigger', title: 'Trigger', cells: ['A1'] },
+        { id: 'quiet', title: 'Quiet', cells: ['A2', 'B2', 'C2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'trigger', 'guest', { op: 'eq', value: 1 }),
+        {
+          id: 'CR1',
+          type: 'conditionalCount',
+          condition: {
+            scope: { kind: 'region', regionId: 'trigger' },
+            target: 'guest',
+            count: { op: 'eq', value: 1 },
+          },
+          then: {
+            scope: { kind: 'region', regionId: 'quiet' },
+            target: 'guest',
+            count: { op: 'eq', value: 0 },
+          },
+          presentation: { title: 'conditional quiet region' },
+        },
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const conditionDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_ALL_REMAINING');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'CONDITIONAL_COUNT_SATURATED');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'A1' },
+    ]);
+    expect(conclusionsFor(deductions, 'CONDITIONAL_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'B2' },
+      { kind: 'safe', cellId: 'C2' },
+    ]);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: conditionDeduction?.id,
+        cellIds: ['A1'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(conditionDeduction?.proofNodeIds[0]);
+  });
 });
 
 describe('comparative count human techniques', () => {
@@ -438,6 +491,53 @@ describe('comparative count human techniques', () => {
     ]);
     expect(result.satisfiable).toBe(false);
     expect(result.stats.truncated).toBe(false);
+  });
+
+  it('closes a comparison side with a derived safe fact', () => {
+    const state = makeState({
+      board: { width: 3, height: 2 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'quiet', title: 'Quiet', cells: ['A2'] },
+        { id: 'left', title: 'Left', cells: ['A1', 'B1'] },
+        { id: 'right', title: 'Right', cells: ['A2', 'B2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'quiet', 'guest', { op: 'eq', value: 0 }),
+        {
+          id: 'CP1',
+          type: 'comparativeCount',
+          left: { kind: 'region', regionId: 'left' },
+          right: { kind: 'region', regionId: 'right' },
+          target: 'guest',
+          comparison: { op: 'eq' },
+          presentation: { title: 'left and right guest counts match' },
+        },
+      ],
+      observations: [{ cellId: 'B2', kind: 'empty' }],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const fixedSideDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_SATURATED');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'COMPARATIVE_COUNT_SATURATED');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'A2' },
+    ]);
+    expect(conclusionsFor(deductions, 'COMPARATIVE_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'A1' },
+      { kind: 'safe', cellId: 'B1' },
+    ]);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: fixedSideDeduction?.id,
+        cellIds: ['A2'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(fixedSideDeduction?.proofNodeIds[0]);
   });
 });
 
