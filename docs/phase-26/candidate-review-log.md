@@ -41,7 +41,7 @@ Workflow details live in `docs/phase-26/authoring-workflow.md`.
 
 | # | Candidate | Path | Skeleton | Report | Score | Workbench / diagnostics | Anti-clone / degeneracy | Novelty | Copy | Decision | Reason |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `p26-c01-overlap-unlock` | `content/experimental/phase-26/candidates/p26-c01-overlap-unlock.json` | P26-S1 | pending | pending | pending | pending | pending | pending | pending | Round 5 candidate: non-singleton `scopeOverlapCount` plus classic count. |
+| 1 | `p26-c01-overlap-unlock` | `content/experimental/phase-26/candidates/p26-c01-overlap-unlock.json` | P26-S1 | PASS: ok true; initial guest layouts 9; final guests D1,B4; proof 1 wave / 13 deductions; no truncation. | PASS: 22.16 / band 5 uncalibrated. | CLI diagnostics PASS mechanically, but target-4 review misses `proof-wave-count` and `frontier-unlock-count`; proof techniques do not include any `SCOPE_OVERLAP_*` technique. | FAIL: full selector anti-clone reports exact proof-trace match for `case-004,p26-c01-overlap-unlock`; no C01-specific degeneracy hard-fail observed, but baseline selector still contains known inherited failures. | Not promotion-ready; no novelty claim added because clone gate fails. | PASS for experimental copy: R7 names the seven cells explicitly and does not rely on a hidden region label. | rejected | Serious candidate rejected. It is schema/solver/proof valid, but the scope-overlap rule does not materially enter the human proof (`minimize --require-technique SCOPE_OVERLAP_COUNT_SATURATED` reports `TECHNIQUE_RETENTION_FAILED`) and anti-clone finds an exact proof-trace clone of `case-004`. |
 | 2 | `p26-c02-comparative-balance` | `content/experimental/phase-26/candidates/p26-c02-comparative-balance.json` | P26-S2 | pending | pending | pending | pending | pending | pending | pending | Round 6 candidate: material `comparativeCount` pressure. |
 | 3 | `p26-c03-conditional-frontier` | `content/experimental/phase-26/candidates/p26-c03-conditional-frontier.json` | P26-S3 | pending | pending | pending | pending | pending | pending | pending | Round 7 candidate: `conditionalCount` activated after an earlier deduction. |
 | 4 | `p26-c04-difference-braid` | `content/experimental/phase-26/candidates/p26-c04-difference-braid.json` | P26-S4 | pending | pending | pending | pending | pending | pending | pending | Round 8 candidate: difference/intersection braid without baseline answer-pattern clone. |
@@ -66,6 +66,6 @@ Use this section to summarize repeated failures as evidence accumulates.
 
 - Singleton or direct-count giveaway: none yet.
 - One-family closure: none yet.
-- Clone-like proof trace or shrink signature: none yet.
+- Clone-like proof trace or shrink signature: `p26-c01-overlap-unlock` is mechanically valid but anti-clone reports an exact proof-trace match with `case-004`, so adding a `scopeOverlapCount` shell did not create a distinct proof shape.
 - Highlight-dependent or internal copy: none yet.
-- Phase 24 grammar support/copy blocker: none yet.
+- Phase 24 grammar support/copy blocker: `p26-c01-overlap-unlock` has a `scopeOverlapCount` rule family, but proof techniques do not include `SCOPE_OVERLAP_*` and `minimize --require-technique SCOPE_OVERLAP_COUNT_SATURATED` reports `TECHNIQUE_RETENTION_FAILED`.
