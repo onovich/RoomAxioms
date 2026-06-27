@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c04-difference-braid",
+  "title": "Phase 26 Candidate 04 Difference Braid",
+  "caseName": "Phase 26 - 差集交织候选 04",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字线索",
+        "flavor": "每个酒瓶上下左右邻格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "mirror",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "镜子周围",
+        "flavor": "每面镜子周围一圈，没有访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "empty",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "已确认空格十字",
+        "flavor": "每个已确认没有物件的格子上下左右邻格里，没有访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "访客总数",
+        "flavor": "房间里恰好有 3 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "C1",
+    "B2",
+    "D2",
+    "D4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "mirror",
+    "C1": "empty",
+    "D1": "bin",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "bottle",
+    "D2": "empty",
+    "A3": "bin",
+    "B3": "guest",
+    "C3": "guest",
+    "D3": "bin",
+    "A4": "bin",
+    "B4": "bin",
+    "C4": "guest",
+    "D4": "bottle"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "local-scope-difference",
+      "local-scope-intersection",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 8 serious candidate for P26-S4. Intended proof: the B1 mirror and early empty cells create a quiet band, B2/C2 bottle counts then use remaining difference cells, while the public D4 bottle tests whether the third guest can be derived without repeating the case-012 bottom-pair pattern."
+  }
+}
