@@ -25,10 +25,10 @@ artist:
 idempotency:
   active_goal_guide: docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md
   active_goal_phase: Phase 26 - Workbench-Guided Puzzle Ladder Production
-  last_planner_dispatch: 2026-06-27T00:06:22+08:00
+  last_planner_dispatch: 2026-06-27T18:17:41+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: a718edd
+  last_planner_dispatch_guide: docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: fcf3d28
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 25 - Authoring Editor And Live Diagnostics Workbench
