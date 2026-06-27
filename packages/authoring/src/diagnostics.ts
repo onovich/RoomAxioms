@@ -138,6 +138,7 @@ export function evaluateDraftDiagnostics(
   const capWarnings = capWarningsFor(result.validation)
   const status = diagnosticsStatus(result.validation, quality, copyWarnings, cloneRisk)
   const groups = diagnosticsGroups({
+    puzzle,
     validation: result.validation,
     quality,
     cloneRisk,
@@ -365,6 +366,7 @@ function evaluateDraftQuality(
 }
 
 function diagnosticsGroups(input: {
+  readonly puzzle?: PuzzleDefinition
   readonly validation: AuthoringCaseValidationReport
   readonly quality?: AuthoringDraftQualityReport
   readonly cloneRisk?: AntiCloneReport
@@ -374,7 +376,7 @@ function diagnosticsGroups(input: {
   return [
     blockingGroup(input.validation),
     correctnessGroup(input.validation),
-    humanProofGroup(input.validation),
+    humanProofGroup(input.validation, input.puzzle),
     qualityGroup(input.quality),
     cloneRiskGroup(input.cloneRisk),
     difficultyGroup(input.validation),
@@ -436,7 +438,10 @@ function correctnessGroup(validation: AuthoringCaseValidationReport): AuthoringD
   return group('correctness', 'Correctness', items)
 }
 
-function humanProofGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
+function humanProofGroup(
+  validation: AuthoringCaseValidationReport,
+  puzzle: PuzzleDefinition | undefined,
+): AuthoringDiagnosticsGroup {
   if (!validation.schema.ok) return skippedGroup('human-proof', 'Human Proof', 'Draft must pass schema validation first.')
   if (validation.proof === undefined) {
     return group('human-proof', 'Human Proof', [{
@@ -472,15 +477,17 @@ function humanProofGroup(validation: AuthoringCaseValidationReport): AuthoringDi
       message: `${validation.proof.waveCount} wave(s), ${validation.proof.deductionCount} deduction(s).`,
       refs: validation.proof.techniqueIds,
     },
-    ...proofIssueDiagnosticItems(validation.proof),
+    ...proofIssueDiagnosticItems(validation.proof, puzzle),
   ])
 }
 
 function proofIssueDiagnosticItems(
   proof: NonNullable<AuthoringCaseValidationReport['proof']>,
+  puzzle: PuzzleDefinition | undefined,
 ): readonly AuthoringDiagnosticsItem[] {
   const issueCodes = uniqueSorted(proof.issueCodes)
-  if (issueCodes.length === 0) return []
+  const overlapItems = scopeOverlapProofDiagnosticItems(proof, puzzle)
+  if (issueCodes.length === 0) return overlapItems
 
   const items: AuthoringDiagnosticsItem[] = [{
     code: 'PROOF_ISSUE_CODES',
@@ -543,7 +550,37 @@ function proofIssueDiagnosticItems(
     })
   }
 
+  items.push(...overlapItems)
+
   return items
+}
+
+function scopeOverlapProofDiagnosticItems(
+  proof: NonNullable<AuthoringCaseValidationReport['proof']>,
+  puzzle: PuzzleDefinition | undefined,
+): readonly AuthoringDiagnosticsItem[] {
+  if (!puzzle?.rules.some((rule) => rule.type === 'scopeOverlapCount')) return []
+
+  const overlapTechniqueIds = proof.techniqueIds.filter((techniqueId) => techniqueId.startsWith('SCOPE_OVERLAP'))
+  if (overlapTechniqueIds.length === 0 && !proof.noGuess) {
+    return [{
+      code: 'PROOF_SCOPE_OVERLAP_UNSUPPORTED',
+      severity: 'fail',
+      message: 'This draft uses scopeOverlapCount, but no approved overlap proof technique fired. Add proof support or redesign the overlap skeleton before patching with singleton or direct-safe reveals.',
+      refs: ['scopeOverlapCount'],
+    }]
+  }
+
+  if (overlapTechniqueIds.includes('SCOPE_OVERLAP_SCOPE_DIFFERENCE') && !proof.noGuess) {
+    return [{
+      code: 'PROOF_SCOPE_OVERLAP_BRIDGE_PARTIAL',
+      severity: 'warning',
+      message: 'An overlap scope-difference deduction fired, but the proof still stalls before no-guess final uniqueness. Continue designing late closure instead of mutating the opener.',
+      refs: overlapTechniqueIds,
+    }]
+  }
+
+  return []
 }
 
 function qualityGroup(quality: AuthoringDraftQualityReport | undefined): AuthoringDiagnosticsGroup {

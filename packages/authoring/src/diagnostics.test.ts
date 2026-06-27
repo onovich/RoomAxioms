@@ -18,6 +18,10 @@ const phase26C06Path = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-26/candidates/p26-c06-two-wave-frontier.json',
 )
+const phase29OverlapTrialPath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-29/p29-overlap-frontier-ledger-trial.json',
+)
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8')) as unknown
@@ -148,6 +152,42 @@ describe('in-memory authoring diagnostics', () => {
       'PROOF_ISSUE_CODES',
       'PROOF_GUESS_POINT',
       'PROOF_FINAL_UNIQUENESS_BLOCKER',
+    ]))
+    expect(groupStatus(report, 'human-proof')).toBe('fail')
+  })
+
+  it('reports a partial non-singleton overlap bridge separately from later proof stalls', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: readJson(phase29OverlapTrialPath),
+    })
+    const proofItems = groupItems(report, 'human-proof')
+
+    expect(report.validation.proof?.techniqueIds).toContain('SCOPE_OVERLAP_SCOPE_DIFFERENCE')
+    expect(report.validation.proof?.issueCodes).toContain('GUESS_POINT')
+    expect(proofItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'PROOF_SCOPE_OVERLAP_BRIDGE_PARTIAL',
+        refs: expect.arrayContaining(['SCOPE_OVERLAP_SCOPE_DIFFERENCE']),
+      }),
+    ]))
+    expect(groupStatus(report, 'human-proof')).toBe('fail')
+  }, 60_000)
+
+  it('reports overlap-count drafts that have no supported overlap proof technique', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: unsupportedOverlapProofCase(),
+    })
+    const proofItems = groupItems(report, 'human-proof')
+
+    expect(report.validation.proof?.techniqueIds.some((techniqueId) => (
+      techniqueId.startsWith('SCOPE_OVERLAP')
+    ))).toBe(false)
+    expect(report.validation.proof?.issueCodes).toContain('GUESS_POINT')
+    expect(proofItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'PROOF_SCOPE_OVERLAP_UNSUPPORTED',
+        refs: ['scopeOverlapCount'],
+      }),
     ]))
     expect(groupStatus(report, 'human-proof')).toBe('fail')
   })
@@ -370,6 +410,58 @@ function ambiguousNoProgressCase(): PuzzleDefinition {
       C3: 'empty',
     },
     metadata: { difficulty: 4, tags: ['phase-27', 'bad-case'], status: 'draft' },
+  }
+}
+
+function unsupportedOverlapProofCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'phase-30-unsupported-overlap-proof',
+    title: 'Phase 30 unsupported overlap proof',
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'guest'],
+    regions: [
+      { id: 'left-ledger', title: 'A1, B1, C1', cells: ['A1', 'B1', 'C1'] },
+      { id: 'right-ledger', title: 'B1, C1, A2', cells: ['B1', 'C1', 'A2'] },
+    ],
+    rules: [
+      {
+        id: 'R1',
+        type: 'globalCount',
+        target: 'guest',
+        count: { op: 'eq', value: 2 },
+        presentation: {
+          title: 'Two guests',
+          flavor: 'Exactly two cells have guests.',
+        },
+      },
+      {
+        id: 'R2',
+        type: 'scopeOverlapCount',
+        left: { kind: 'region', regionId: 'left-ledger' },
+        right: { kind: 'region', regionId: 'right-ledger' },
+        mode: 'intersection',
+        target: 'guest',
+        count: { op: 'eq', value: 1 },
+        presentation: {
+          title: 'Shared ledger',
+          flavor: 'B1 and C1 contain exactly one guest.',
+        },
+      },
+    ],
+    initialReveals: [],
+    target: {
+      A1: 'guest',
+      B1: 'guest',
+      C1: 'empty',
+      A2: 'empty',
+      B2: 'empty',
+      C2: 'empty',
+      A3: 'empty',
+      B3: 'empty',
+      C3: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['phase-30', 'bad-case'], status: 'draft' },
   }
 }
 
