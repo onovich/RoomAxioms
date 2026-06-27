@@ -14,6 +14,10 @@ const scopeOverlapFixturePath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-24/phase-24-overlap-cross-001.json',
 )
+const phase26C06Path = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/experimental/phase-26/candidates/p26-c06-two-wave-frontier.json',
+)
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8')) as unknown
@@ -114,6 +118,38 @@ describe('in-memory authoring diagnostics', () => {
     ]))
     expect(groupStatus(report, 'copy')).toBe('warning')
     expect(report.status).toBe('valid-review-needed')
+  })
+
+  it('classifies explanation gaps separately from final uniqueness blockers', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: readJson(phase26C06Path),
+    })
+    const proofItemCodes = groupItems(report, 'human-proof').map((item) => item.code)
+
+    expect(report.validation.proof?.issueCodes).toContain('EXPLANATION_GAP')
+    expect(report.validation.proof?.guestLayoutUniqueAtEnd).toBe(false)
+    expect(proofItemCodes).toEqual(expect.arrayContaining([
+      'PROOF_ISSUE_CODES',
+      'PROOF_EXPLANATION_GAP',
+      'PROOF_FINAL_UNIQUENESS_BLOCKER',
+    ]))
+    expect(groupStatus(report, 'human-proof')).toBe('fail')
+  })
+
+  it('classifies guess points separately from final uniqueness blockers', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: ambiguousNoProgressCase(),
+    })
+    const proofItemCodes = groupItems(report, 'human-proof').map((item) => item.code)
+
+    expect(report.validation.proof?.issueCodes).toContain('GUESS_POINT')
+    expect(report.validation.proof?.guestLayoutUniqueAtEnd).toBe(false)
+    expect(proofItemCodes).toEqual(expect.arrayContaining([
+      'PROOF_ISSUE_CODES',
+      'PROOF_GUESS_POINT',
+      'PROOF_FINAL_UNIQUENESS_BLOCKER',
+    ]))
+    expect(groupStatus(report, 'human-proof')).toBe('fail')
   })
 
   it('reports small padding clones against comparison puzzles without touching shipped content', () => {
@@ -218,6 +254,13 @@ function groupStatus(
   return report.groups.find((group) => group.id === id)?.status
 }
 
+function groupItems(
+  report: ReturnType<typeof evaluateDraftDiagnostics>,
+  id: string,
+): readonly { readonly code: string }[] {
+  return report.groups.find((group) => group.id === id)?.items ?? []
+}
+
 function singletonRegionGiveawayCase(): PuzzleDefinition {
   return {
     schemaVersion: 1,
@@ -276,7 +319,7 @@ function oneRuleSolutionCase(): PuzzleDefinition {
         flavor: 'No cell has a guest.',
       },
     }],
-    initialReveals: [],
+    initialReveals: ['B1'],
     target: empty3x3Target(),
     metadata: { difficulty: 4, tags: ['phase-25', 'bad-case'], status: 'draft' },
   }
@@ -294,6 +337,39 @@ function paddedOneRuleSolutionCase(): PuzzleDefinition {
       D2: 'empty',
       D3: 'empty',
     },
+  }
+}
+
+function ambiguousNoProgressCase(): PuzzleDefinition {
+  return {
+    schemaVersion: 1,
+    id: 'phase-27-ambiguous-no-progress',
+    title: 'Phase 27 ambiguous no progress',
+    board: { width: 3, height: 3 },
+    allowedKinds: ['empty', 'guest'],
+    rules: [{
+      id: 'R1',
+      type: 'globalCount',
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: {
+        title: 'One visitor',
+        flavor: 'Exactly one room has a guest.',
+      },
+    }],
+    initialReveals: [],
+    target: {
+      A1: 'guest',
+      B1: 'empty',
+      C1: 'empty',
+      A2: 'empty',
+      B2: 'empty',
+      C2: 'empty',
+      A3: 'empty',
+      B3: 'empty',
+      C3: 'empty',
+    },
+    metadata: { difficulty: 4, tags: ['phase-27', 'bad-case'], status: 'draft' },
   }
 }
 

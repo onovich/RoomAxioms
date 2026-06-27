@@ -472,7 +472,78 @@ function humanProofGroup(validation: AuthoringCaseValidationReport): AuthoringDi
       message: `${validation.proof.waveCount} wave(s), ${validation.proof.deductionCount} deduction(s).`,
       refs: validation.proof.techniqueIds,
     },
+    ...proofIssueDiagnosticItems(validation.proof),
   ])
+}
+
+function proofIssueDiagnosticItems(
+  proof: NonNullable<AuthoringCaseValidationReport['proof']>,
+): readonly AuthoringDiagnosticsItem[] {
+  const issueCodes = uniqueSorted(proof.issueCodes)
+  if (issueCodes.length === 0) return []
+
+  const items: AuthoringDiagnosticsItem[] = [{
+    code: 'PROOF_ISSUE_CODES',
+    severity: 'info',
+    message: `Proof verifier issue code(s): ${issueCodes.join(', ')}.`,
+    refs: issueCodes,
+  }]
+
+  if (!proof.guestLayoutUniqueAtEnd) {
+    items.push({
+      code: 'PROOF_FINAL_UNIQUENESS_BLOCKER',
+      severity: 'fail',
+      message: 'Final guest layout remains non-unique after the current human-proof waves.',
+      refs: issueCodes,
+    })
+  }
+
+  if (issueCodes.includes('EXPLANATION_GAP')) {
+    items.push({
+      code: 'PROOF_EXPLANATION_GAP',
+      severity: 'fail',
+      message: 'Solver found forced cells that the approved human-proof templates did not explain.',
+      refs: ['EXPLANATION_GAP'],
+    })
+  }
+
+  if (issueCodes.includes('GUESS_POINT')) {
+    items.push({
+      code: 'PROOF_GUESS_POINT',
+      severity: 'fail',
+      message: 'The proof reached a state where no valid human deduction can advance the puzzle.',
+      refs: ['GUESS_POINT'],
+    })
+  }
+
+  if (issueCodes.includes('NON_PROGRESS')) {
+    items.push({
+      code: 'PROOF_NON_PROGRESS',
+      severity: 'fail',
+      message: 'The proof repeated a state or exhausted proof waves before reaching uniqueness.',
+      refs: ['NON_PROGRESS'],
+    })
+  }
+
+  if (issueCodes.includes('INVALID_DEDUCTION')) {
+    items.push({
+      code: 'PROOF_INVALID_DEDUCTION',
+      severity: 'fail',
+      message: 'At least one human deduction was not solver-backed.',
+      refs: ['INVALID_DEDUCTION'],
+    })
+  }
+
+  if (issueCodes.includes('SOLVER_TRUNCATED')) {
+    items.push({
+      code: 'PROOF_SOLVER_TRUNCATED',
+      severity: 'fail',
+      message: 'A solver cap truncated proof verification; raise caps or simplify before judging the draft.',
+      refs: ['SOLVER_TRUNCATED'],
+    })
+  }
+
+  return items
 }
 
 function qualityGroup(quality: AuthoringDraftQualityReport | undefined): AuthoringDiagnosticsGroup {
@@ -641,6 +712,10 @@ function gateSeverity(status: 'pass' | 'warning' | 'fail'): AuthoringDiagnostics
   if (status === 'warning') return 'warning'
 
   return 'pass'
+}
+
+function uniqueSorted(values: readonly string[]): readonly string[] {
+  return [...new Set(values)].sort()
 }
 
 function formatIssuePath(path: readonly (string | number)[]): string {
