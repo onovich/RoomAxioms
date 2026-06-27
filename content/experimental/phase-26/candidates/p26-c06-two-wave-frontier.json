@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c06-two-wave-frontier",
+  "title": "Phase 26 Candidate 06 Two Wave Frontier",
+  "caseName": "Phase 26 - 双波前线候选 06",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-three",
+      "title": "A1、B1、C1 这三格",
+      "cells": [
+        "A1",
+        "B1",
+        "C1"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "bottle",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "唯一酒瓶",
+        "flavor": "房间里一共有 1 个酒瓶。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "regionCount",
+      "regionId": "north-three",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "北侧三格",
+        "flavor": "A1、B1、C1 这三格，没有访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶十字",
+        "flavor": "每个酒瓶上下左右邻格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "lineCount",
+      "origin": "A4",
+      "scope": {
+        "kind": "ray",
+        "direction": "east"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "底行视线",
+        "flavor": "从 A4 向右看，B4、C4、D4 里恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "D1",
+    "A2",
+    "C2",
+    "D3",
+    "A4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "guest",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "two-wave-frontier",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 10 serious candidate for P26-S6. Intended proof: R3 first reveals the north-three cells and exposes B1 as the only bottle; R4 then confirms B2 as a guest, while R5 intentionally tests whether a second frontier can close without a direct singleton bottom-row giveaway."
+  }
+}
