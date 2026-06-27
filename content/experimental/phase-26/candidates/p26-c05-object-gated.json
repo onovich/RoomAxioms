@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c05-object-gated",
+  "title": "Phase 26 Candidate 05 Object Gated",
+  "caseName": "Phase 26 - 物件解锁候选 05",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶旁的垃圾桶",
+        "flavor": "每个酒瓶上下左右邻格里，恰好有 1 个垃圾桶。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "adjacent"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "垃圾桶周围",
+        "flavor": "每个垃圾桶周围一圈，没有访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 2
+      },
+      "presentation": {
+        "title": "两名访客",
+        "flavor": "房间里一共有 2 名未登记访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "A2",
+    "B2",
+    "C2"
+  ],
+  "target": {
+    "A1": "guest",
+    "B1": "empty",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "empty",
+    "B2": "bottle",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bin",
+    "C3": "empty",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "guest"
+  },
+  "metadata": {
+    "difficulty": 3,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "object-gated-local-saturation",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 9 serious candidate for P26-S5. Intended proof: R1 first identifies B3 as a garbage bin, then R2 turns that newly known object into local no-guest pressure; this draft deliberately tests whether that object gate leaves enough independent pressure for final uniqueness."
+  }
+}
