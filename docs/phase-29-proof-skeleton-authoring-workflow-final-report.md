@@ -2,7 +2,7 @@
 
 Status: READY_FOR_CHECK_WITH_BLOCKER
 Guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
-Final commit: reported by executor after final report commit
+Final commit: ae7085ab92a76b2f595eb4faec218dca640f1b0e
 
 ## Summary
 

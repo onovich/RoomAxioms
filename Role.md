@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T03:35:00+08:00
+updated_at: 2026-06-28T03:39:36+08:00
 
 planner:
   role: architect
@@ -23,20 +23,20 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
-  active_goal_phase: Phase 29 - Proof Skeleton Authoring Workflow
+  active_goal_guide: none
+  active_goal_phase: none
   last_planner_dispatch: 2026-06-28T02:47:28+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
   last_planner_dispatch_commit: ae46222
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: blocked_accepted
-  last_check_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
-  last_check_report: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md
-  last_check_commit: f55ef7e
-  last_check_at: 2026-06-28T02:44:27+08:00
-  last_check_blocker: all five serious rewrites rejected under strict gates; next method should start from human-readable proof skeletons before JSON editing
-  last_executor_report_commit: final-commit-reported-in-planner-notification
+  last_check_phase: Phase 29 - Proof Skeleton Authoring Workflow
+  last_check_report: docs/phase-29-proof-skeleton-authoring-workflow-final-report.md
+  last_check_commit: ae7085a
+  last_check_at: 2026-06-28T03:39:36+08:00
+  last_check_blocker: skeleton workflow pass criteria met, but non-singleton overlap-frontier translation still lacks a human-visible overlap proof bridge
+  last_executor_report_commit: ae7085a
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
   last_executor_report_phase: Phase 29 - Proof Skeleton Authoring Workflow
   last_executor_report: docs/phase-29-proof-skeleton-authoring-workflow-final-report.md
