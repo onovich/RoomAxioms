@@ -79,3 +79,12 @@ Before sending the planner completion message, final rounds must still gather:
 - planner notification routing result.
 
 Do not mark Phase 26 complete before these final-round items exist.
+
+## Round 27 Preflight
+
+Round 27 final preflight is recorded in
+`docs/phase-26/final-preflight-checklist.md`.
+
+It confirms the final report file is intentionally still absent, fixes the
+final command checklist, and preserves final validation, local smoke, Pages
+deployment evidence, and planner notification as mandatory remaining work.

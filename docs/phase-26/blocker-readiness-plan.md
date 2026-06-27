@@ -121,6 +121,10 @@ Round 26 final-report preparation is recorded in
 to evidence and keeps final validation, smoke, Pages, and planner notification
 as pending final-round requirements.
 
+Round 27 final preflight is recorded in
+`docs/phase-26/final-preflight-checklist.md`. It fixes the final command and
+deployment checklist before the final report rounds begin.
+
 ## Round 22 Architecture Decision
 
 No source code, shipped case JSON, selector order, default case, or novelty
