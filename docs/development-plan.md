@@ -39,15 +39,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 23 - Difficulty 4+ Puzzle Expansion And Degeneracy Gates | Turn user playtest ratings into stricter difficulty, copy, degeneracy, and anti-giveaway gates, then attempt 20 target-difficulty and 10 super-hard new cases | User rejection of low-difficulty Phase 22 cases | 40 rounds |
 | Phase 24 - Rule Grammar Expressiveness Expansion | Expand the rule grammar deliberately after Phase 23 evidence shows which puzzle interactions remain too shallow; prioritize shared variables, overlapping scopes, conditional/comparative constraints, and contaminated-record variants that create deeper proof frontiers | User direction: rule grammar expansion is the next planning priority | 24 rounds |
 | Phase 25 - Authoring Editor And Live Diagnostics Workbench | Build a maintainer-facing level editor plus immediate diagnostics for uniqueness, no-guess proof, rule contribution, degeneracy, effective board, clone risk, and difficulty signals so human authors can design faster without relying on bulk AI generation | User direction: editor + instant diagnostics is the next-stage plan | 28 rounds |
+| Phase 26 - Workbench-Guided Puzzle Ladder Production | Use the Phase 25 workbench to author, repair, and promote genuinely non-degenerate high-quality puzzles while preserving strict anti-clone, proof, copy, and playability gates | Phase 24/25 follow-up | 32 rounds |
 
 ## Current Execution State
 
-- Recently checked: Phase 24 - Rule Grammar Expressiveness Expansion, accepted with blocker, final commit `5f6d5f2`.
-- Current executor result: Phase 25 dispatched for execution.
-- Active guide: `docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md`.
-- Executor budget: 28 rounds.
-- Executor status: executing authoring editor and live diagnostics workbench.
-- Last completed final report: `docs/phase-24-rule-grammar-expressiveness-expansion-final-report.md`.
+- Recently checked: Phase 25 - Authoring Editor And Live Diagnostics Workbench, accepted, final commit `d1ba960`.
+- Current executor result: Phase 26 dispatched for execution.
+- Active guide: `docs/phase-26-workbench-guided-puzzle-ladder-production-goal-mode-execution-guide.md`.
+- Executor budget: 32 rounds.
+- Executor status: executing workbench-guided puzzle ladder production.
+- Last completed final report: `docs/phase-25-authoring-editor-live-diagnostics-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -71,6 +72,9 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 24 result: accepted with blocker. `scopeOverlapCount`, `comparativeCount`, and `conditionalCount` are implemented end to end across domain/schema/oracle/solver/proof/authoring/web copy and hints; `recordContamination` remains deferred. The blocker is content expressiveness: Phase 24 experimental cases validate grammar integration but have `initialGuestLayouts = 1` and `proofWaveCount = 0`, so they are not non-degenerate high-difficulty puzzles.
 - Planned Phase 25 direction: build a maintainer-facing authoring editor and live diagnostics workbench so level design becomes an inspectable human-in-the-loop workflow rather than pure AI generation.
 - Phase 25 target: implement a private maintainer-only workbench that can import/edit/export puzzle drafts and show immediate schema, solver, proof, degeneracy, clone-risk, rule contribution, copy-warning, and difficulty diagnostics without exposing public UGC.
+- Phase 25 result: accepted. The private workbench exists behind `#authoring-workbench` / `?authoring=workbench`, supports import/edit/export, and surfaces schema, solver, proof, degeneracy, clone-risk, rule contribution, copy-warning, difficulty, and cap/truncation diagnostics while keeping normal player flow unchanged.
+- Planned Phase 26 direction: use the workbench to produce and validate a smaller but genuinely non-degenerate puzzle ladder, prioritizing quality over quantity and treating subjective fun/novelty as human-review gates.
+- Phase 26 target: attempt at least 12 serious workbench-guided candidates, promote at least 4 genuinely non-degenerate cases if strict gates allow, and otherwise report an honest blocker with a high-quality rejection corpus.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -102,5 +106,6 @@ These are accepted as candidates, not active execution scope:
 - Expressive mechanics and content expansion lab budget: 24 rounds, covering Phase 22, completed.
 - Difficulty 4+ puzzle expansion budget: 40 rounds, covering Phase 23, completed with blocker.
 - Rule grammar expressiveness expansion budget: 24 rounds, covering Phase 24, completed with blocker.
-- Authoring editor and live diagnostics workbench budget: 28 rounds, covering active Phase 25.
+- Authoring editor and live diagnostics workbench budget: 28 rounds, covering Phase 25, completed.
+- Workbench-guided puzzle ladder production budget: 32 rounds, covering active Phase 26.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

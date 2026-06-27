@@ -2,7 +2,7 @@
 
 Status: READY_FOR_CHECK
 Guide: docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md
-Final commit: recorded in the executor planner notification after this final report commit is pushed.
+Final commit: `d1ba960`
 
 ## Summary
 
