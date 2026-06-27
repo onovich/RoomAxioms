@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c02-comparative-balance",
+  "title": "Phase 26 Candidate 02 Comparative Balance",
+  "caseName": "Phase 26 - 比较接力候选 02",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "left-check",
+      "title": "左侧 A1、B1、A2",
+      "cells": [
+        "A1",
+        "B1",
+        "A2"
+      ]
+    },
+    {
+      "id": "right-check",
+      "title": "右侧 C1、D1、C2",
+      "cells": [
+        "C1",
+        "D1",
+        "C2"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "垃圾桶总数",
+        "flavor": "房间里恰好有 1 个垃圾桶。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "访客总数",
+        "flavor": "房间里恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "comparativeCount",
+      "left": {
+        "kind": "region",
+        "regionId": "left-check"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "right-check"
+      },
+      "target": "guest",
+      "comparison": {
+        "op": "eq"
+      },
+      "presentation": {
+        "title": "两组三格访客数相同",
+        "flavor": "A1、B1、A2 这 3 格里的访客数，等于 C1、D1、C2 这 3 格里的访客数。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "bin",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶旁的垃圾桶",
+        "flavor": "每个酒瓶上下左右邻格里，必有 1 个垃圾桶。"
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "酒瓶旁的访客",
+        "flavor": "每个酒瓶上下左右邻格里，没有访客。"
+      }
+    },
+    {
+      "id": "R6",
+      "type": "forEachCount",
+      "subject": "bin",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 0
+      },
+      "presentation": {
+        "title": "垃圾桶十字邻格",
+        "flavor": "每个垃圾桶上下左右邻格里，没有访客。"
+      }
+    },
+    {
+      "id": "R7",
+      "type": "lineCount",
+      "scope": {
+        "kind": "column",
+        "index": 1
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "B 列访客",
+        "flavor": "B1、B2、B3、B4 这一列里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "B1",
+    "C1",
+    "D1",
+    "C2",
+    "A2"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "bottle",
+    "B2": "bin",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "empty",
+    "C3": "mirror",
+    "D3": "empty",
+    "A4": "empty",
+    "B4": "guest",
+    "C4": "empty",
+    "D4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "comparative-count",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 6 serious candidate for P26-S2. Intended proof: the two bottles and the right three-cell comparison side are public; comparativeCount proves A1 safe, while the bottle/bin rules then clear B2 and B3 so the B-column count forces B4."
+  }
+}
