@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "id": "p29-overlap-frontier-ledger-trial",
+  "title": "Phase 29 Overlap Frontier Ledger Trial",
+  "caseName": "Phase 29 - overlap frontier ledger trial",
+  "board": {
+    "width": 5,
+    "height": 5
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "west-hall-ledger",
+      "title": "A2, B2, C2, B3, C3",
+      "cells": [
+        "A2",
+        "B2",
+        "C2",
+        "B3",
+        "C3"
+      ]
+    },
+    {
+      "id": "east-hall-ledger",
+      "title": "C3, D3, E3, D4, E4",
+      "cells": [
+        "C3",
+        "D3",
+        "E3",
+        "D4",
+        "E4"
+      ]
+    },
+    {
+      "id": "overlap-left-ledger",
+      "title": "B2, C2, C3, D3",
+      "cells": [
+        "B2",
+        "C2",
+        "C3",
+        "D3"
+      ]
+    },
+    {
+      "id": "overlap-right-ledger",
+      "title": "B2, C2, C3, C4",
+      "cells": [
+        "B2",
+        "C2",
+        "C3",
+        "C4"
+      ]
+    },
+    {
+      "id": "lower-pocket",
+      "title": "B4, C4, D4, C5",
+      "cells": [
+        "B4",
+        "C4",
+        "D4",
+        "C5"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "Three guests",
+        "flavor": "There are exactly 3 guests in the room."
+      }
+    },
+    {
+      "id": "R2",
+      "type": "regionCount",
+      "regionId": "west-hall-ledger",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "West hall ledger",
+        "flavor": "A2, B2, C2, B3, and C3 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R3",
+      "type": "regionCount",
+      "regionId": "east-hall-ledger",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "East hall ledger",
+        "flavor": "C3, D3, E3, D4, and E4 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R4",
+      "type": "scopeOverlapCount",
+      "left": {
+        "kind": "region",
+        "regionId": "overlap-left-ledger"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "overlap-right-ledger"
+      },
+      "mode": "intersection",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Middle shared cells",
+        "flavor": "B2, C2, and C3 contain exactly 1 guest."
+      }
+    },
+    {
+      "id": "R5",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Bottle neighbor ledger",
+        "flavor": "Every bottle has exactly 1 guest in its orthogonal neighboring cells."
+      }
+    },
+    {
+      "id": "R6",
+      "type": "regionCount",
+      "regionId": "lower-pocket",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "Lower pocket ledger",
+        "flavor": "B4, C4, D4, and C5 contain exactly 1 guest."
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "C1",
+    "D1",
+    "E1",
+    "A3",
+    "E3",
+    "A5",
+    "E5"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "bottle",
+    "C1": "empty",
+    "D1": "empty",
+    "E1": "empty",
+    "A2": "empty",
+    "B2": "guest",
+    "C2": "empty",
+    "D2": "empty",
+    "E2": "empty",
+    "A3": "empty",
+    "B3": "bottle",
+    "C3": "empty",
+    "D3": "guest",
+    "E3": "empty",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "bottle",
+    "D4": "empty",
+    "E4": "empty",
+    "A5": "empty",
+    "B5": "empty",
+    "C5": "guest",
+    "D5": "empty",
+    "E5": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-29",
+      "proof-skeleton-trial",
+      "scope-overlap-count",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Single Phase 29 feasibility translation for the overlap-frontier-ledger skeleton. This draft is not player-facing and must stay out of shipped content unless all strict gates pass in a later phase."
+  }
+}
