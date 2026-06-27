@@ -220,6 +220,102 @@ describe('scope overlap count human techniques', () => {
     expect(result.satisfiable).toBe(false);
     expect(result.stats.truncated).toBe(false);
   });
+
+  it('uses a derived guest fact to saturate a non-singleton overlap scope', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'seed', title: 'Seed', cells: ['A1'] },
+        { id: 'north', title: 'North', cells: ['A1', 'B1', 'C1'] },
+        { id: 'wide', title: 'Wide', cells: ['A1', 'B1', 'C1', 'A2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'seed', 'guest', { op: 'eq', value: 1 }),
+        {
+          id: 'OR1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'north' },
+          right: { kind: 'region', regionId: 'wide' },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'overlap guest count' },
+        },
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const guestDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_ALL_REMAINING');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'SCOPE_OVERLAP_COUNT_SATURATED');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'A1' },
+    ]);
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'C1' },
+    ]);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: guestDeduction?.id,
+        cellIds: ['A1'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(guestDeduction?.proofNodeIds[0]);
+  });
+
+  it('uses a derived safe fact to force all remaining overlap cells', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'quiet', title: 'Quiet', cells: ['B1'] },
+        { id: 'north', title: 'North', cells: ['A1', 'B1', 'C1'] },
+        { id: 'wide', title: 'Wide', cells: ['A1', 'B1', 'C1', 'A2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'quiet', 'guest', { op: 'eq', value: 0 }),
+        {
+          id: 'OR1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'north' },
+          right: { kind: 'region', regionId: 'wide' },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 2 },
+          presentation: { title: 'overlap guest count' },
+        },
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_SATURATED');
+    const guestDeduction = deductions.find((deduction) => deduction.technique === 'SCOPE_OVERLAP_COUNT_ALL_REMAINING');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+    ]);
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'guest', cellId: 'A1' },
+      { kind: 'guest', cellId: 'C1' },
+    ]);
+    expect(guestDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: safeDeduction?.id,
+        cellIds: ['B1'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
+    const guestNode = graph.nodes.find((node) => node.id === guestDeduction?.proofNodeIds[0]);
+    expect(guestNode?.parents).toContain(safeDeduction?.proofNodeIds[0]);
+  });
 });
 
 describe('conditional count human techniques', () => {

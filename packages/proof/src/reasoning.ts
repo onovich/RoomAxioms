@@ -17,7 +17,7 @@ import type {
   ScopeOverlapCountRule,
 } from '@room-axioms/domain';
 
-import type { KnowledgeState, ProofPremise } from './types.js';
+import type { Deduction, KnowledgeState, ProofPremise } from './types.js';
 
 export interface KnowledgeIndex {
   readonly observationsByCell: ReadonlyMap<CellId, Observation>;
@@ -38,6 +38,7 @@ export interface CountSummary {
   readonly knownTargetCellIds: readonly CellId[];
   readonly knownOtherCellIds: readonly CellId[];
   readonly unknownCellIds: readonly CellId[];
+  readonly derivedPremises: readonly ProofPremise[];
 }
 
 export function createKnowledgeIndex(state: KnowledgeState): KnowledgeIndex {
@@ -55,76 +56,124 @@ export function createKnowledgeIndex(state: KnowledgeState): KnowledgeIndex {
   };
 }
 
-export function summarizeGlobalCount(state: KnowledgeState, rule: GlobalCountRule): CountSummary {
-  return summarizeCountInCells(state, rule, allCells(state.puzzle.board));
+export function summarizeGlobalCount(
+  state: KnowledgeState,
+  rule: GlobalCountRule,
+  derivedDeductions: readonly Deduction[] = [],
+): CountSummary {
+  return summarizeCountInCells(state, rule, allCells(state.puzzle.board), derivedDeductions);
 }
 
-export function summarizeRegionCount(state: KnowledgeState, rule: RegionCountRule): CountSummary {
+export function summarizeRegionCount(
+  state: KnowledgeState,
+  rule: RegionCountRule,
+  derivedDeductions: readonly Deduction[] = [],
+): CountSummary {
   const region = state.puzzle.regions?.find((candidate) => candidate.id === rule.regionId);
   if (region === undefined) throw new Error(`Rule ${rule.id} references unknown region ${rule.regionId}.`);
 
-  return summarizeCountInCells(state, rule, regionCells(region, state.puzzle.board));
+  return summarizeCountInCells(state, rule, regionCells(region, state.puzzle.board), derivedDeductions);
 }
 
-export function summarizeLineCount(state: KnowledgeState, rule: LineCountRule): CountSummary {
-  return summarizeCountInCells(state, rule, lineScopeCells(state, rule));
+export function summarizeLineCount(
+  state: KnowledgeState,
+  rule: LineCountRule,
+  derivedDeductions: readonly Deduction[] = [],
+): CountSummary {
+  return summarizeCountInCells(state, rule, lineScopeCells(state, rule), derivedDeductions);
 }
 
 export function summarizeScopeOverlapCount(
   state: KnowledgeState,
   rule: ScopeOverlapCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
-  return summarizeCountInCells(state, rule, scopeOverlapCells(state, rule));
+  return summarizeCountInCells(state, rule, scopeOverlapCells(state, rule), derivedDeductions);
 }
 
 export function summarizeConditionalClause(
   state: KnowledgeState,
   ruleId: string,
   clause: ConditionalCountClause,
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
-  return summarizeCountInCells(state, { id: ruleId, target: clause.target, count: clause.count }, countScopeCells(state, clause.scope));
+  return summarizeCountInCells(
+    state,
+    { id: ruleId, target: clause.target, count: clause.count },
+    countScopeCells(state, clause.scope),
+    derivedDeductions,
+  );
 }
 
 export function summarizeComparativeScope(
   state: KnowledgeState,
   rule: ComparativeCountRule,
   side: 'left' | 'right',
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
   const scope = side === 'left' ? rule.left : rule.right;
-  return summarizeCountInCells(state, { id: rule.id, target: rule.target, count: { op: 'gte', value: 0 } }, countScopeCells(state, scope));
+  return summarizeCountInCells(
+    state,
+    { id: rule.id, target: rule.target, count: { op: 'gte', value: 0 } },
+    countScopeCells(state, scope),
+    derivedDeductions,
+  );
 }
 
 export function summarizeAnchorScope(
   state: KnowledgeState,
   rule: AnchorCountRule,
   anchorCellId: CellId,
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
-  return summarizeCountInCells(state, rule, anchorScopeCells(state.puzzle, rule, anchorCellId));
+  return summarizeCountInCells(
+    state,
+    rule,
+    anchorScopeCells(state.puzzle, rule, anchorCellId),
+    derivedDeductions,
+  );
 }
 
 export function summarizeForEachScope(
   state: KnowledgeState,
   rule: ForEachCountRule,
   subjectCellId: CellId,
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
-  return summarizeCountInCells(state, rule, scopeCellsForRule(state.puzzle, rule, subjectCellId));
+  return summarizeCountInCells(
+    state,
+    rule,
+    scopeCellsForRule(state.puzzle, rule, subjectCellId),
+    derivedDeductions,
+  );
 }
 
 export function summarizeCountInCells(
   state: KnowledgeState,
   rule: Pick<RuleDefinition, 'id'> & { readonly target: CellKind; readonly count: Comparator },
   scopeCellIds: readonly CellId[],
+  derivedDeductions: readonly Deduction[] = [],
 ): CountSummary {
   const index = createKnowledgeIndex(state);
   const sortedScope = sortCellIds(scopeCellIds, state.puzzle.board);
   const knownTargetCellIds: CellId[] = [];
   const knownOtherCellIds: CellId[] = [];
   const unknownCellIds: CellId[] = [];
+  const derivedPremisesByLabel = new Map<string, ProofPremise>();
 
   for (const cellId of sortedScope) {
     const observation = index.observationsByCell.get(cellId);
     if (observation === undefined) {
-      unknownCellIds.push(cellId);
+      const derivedFact = derivedCountFactForCell(rule.target, cellId, derivedDeductions);
+      if (derivedFact === null) {
+        unknownCellIds.push(cellId);
+      } else if (derivedFact.kind === 'target') {
+        knownTargetCellIds.push(cellId);
+        derivedPremisesByLabel.set(derivedFact.premise.label, derivedFact.premise);
+      } else {
+        knownOtherCellIds.push(cellId);
+        derivedPremisesByLabel.set(derivedFact.premise.label, derivedFact.premise);
+      }
     } else if (observation.kind === rule.target) {
       knownTargetCellIds.push(cellId);
     } else {
@@ -140,6 +189,7 @@ export function summarizeCountInCells(
     knownTargetCellIds,
     knownOtherCellIds,
     unknownCellIds,
+    derivedPremises: [...derivedPremisesByLabel.values()],
   };
 }
 
@@ -254,6 +304,57 @@ export function countPremise(summary: CountSummary): ProofPremise {
     ].join('; '),
     cellIds: summary.scopeCellIds,
     ruleIds: [summary.ruleId],
+  };
+}
+
+export function countPremises(summary: CountSummary): readonly ProofPremise[] {
+  return [...summary.derivedPremises, countPremise(summary)];
+}
+
+interface DerivedCountFact {
+  readonly kind: 'target' | 'other';
+  readonly premise: ProofPremise;
+}
+
+function derivedCountFactForCell(
+  target: CellKind,
+  cellId: CellId,
+  deductions: readonly Deduction[],
+): DerivedCountFact | null {
+  for (const deduction of deductions) {
+    if (deduction.conclusion.cellId !== cellId) continue;
+
+    if (deduction.conclusion.kind === 'guest') {
+      return {
+        kind: target === 'guest' ? 'target' : 'other',
+        premise: derivedPremise(deduction),
+      };
+    }
+
+    if (deduction.conclusion.kind === 'object') {
+      return {
+        kind: deduction.conclusion.object === target ? 'target' : 'other',
+        premise: derivedPremise(deduction),
+      };
+    }
+
+    if (deduction.conclusion.kind === 'safe' && target === 'guest') {
+      return {
+        kind: 'other',
+        premise: derivedPremise(deduction),
+      };
+    }
+  }
+
+  return null;
+}
+
+function derivedPremise(deduction: Deduction): ProofPremise {
+  return {
+    kind: 'derived',
+    label: deduction.id,
+    cellIds: [deduction.conclusion.cellId],
+    ruleIds: deduction.ruleIds,
   };
 }
 

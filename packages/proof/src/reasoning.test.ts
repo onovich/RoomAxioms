@@ -44,6 +44,7 @@ describe('knowledge state summaries', () => {
       knownTargetCellIds: ['A1'],
       knownOtherCellIds: ['B1'],
       unknownCellIds: ['C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3'],
+      derivedPremises: [],
     });
     expect(countPremise(summary)).toEqual({
       kind: 'count',
@@ -96,6 +97,7 @@ describe('rule scope summaries', () => {
       knownTargetCellIds: ['B1'],
       knownOtherCellIds: ['A2'],
       unknownCellIds: ['C2', 'B3'],
+      derivedPremises: [],
     });
   });
 

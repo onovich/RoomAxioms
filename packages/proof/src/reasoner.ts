@@ -19,7 +19,7 @@ import {
   comparatorBounds,
   anchorScopePremise,
   comparativePremise,
-  countPremise,
+  countPremises,
   countScopePremise,
   createKnowledgeIndex,
   lineScopePremise,
@@ -62,26 +62,48 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
   }
 
   const intersectionDeductions = deriveUniqueTargetNeighborIntersectionDeductions(state);
-  const initialObjectDeductions = mergeDeductions([
+  const initialKnownDeductions = mergeDeductions([
     ...baseDeductions,
     ...intersectionDeductions,
+  ]);
+  const derivedGrammarDeductions: Deduction[] = [];
+
+  for (const rule of state.puzzle.rules) {
+    if (rule.type === 'scopeOverlapCount') {
+      derivedGrammarDeductions.push(
+        ...deriveScopeOverlapCountDeductions(state, rule, initialKnownDeductions),
+      );
+    } else if (rule.type === 'conditionalCount') {
+      derivedGrammarDeductions.push(
+        ...deriveConditionalCountDeductions(state, rule, initialKnownDeductions),
+      );
+    } else if (rule.type === 'comparativeCount') {
+      derivedGrammarDeductions.push(
+        ...deriveComparativeCountDeductions(state, rule, initialKnownDeductions),
+      );
+    }
+  }
+
+  const preLocalDeductions = mergeDeductions([
+    ...initialKnownDeductions,
+    ...derivedGrammarDeductions,
   ]);
   const derivedLocalDeductions: Deduction[] = [];
 
   for (const rule of state.puzzle.rules) {
     if (rule.type === 'forEachCount') {
       derivedLocalDeductions.push(
-        ...deriveLocalCountDeductions(state, rule, initialObjectDeductions),
+        ...deriveLocalCountDeductions(state, rule, preLocalDeductions),
       );
     } else if (rule.type === 'anchorCount') {
       derivedLocalDeductions.push(
-        ...deriveAnchorCountDeductions(state, rule, initialObjectDeductions),
+        ...deriveAnchorCountDeductions(state, rule, preLocalDeductions),
       );
     }
   }
 
   const objectDeductions = mergeDeductions([
-    ...initialObjectDeductions,
+    ...preLocalDeductions,
     ...derivedLocalDeductions,
   ]);
   const localScopeIntersectionDeductions = deriveLocalScopeIntersectionDeductions(
@@ -218,9 +240,10 @@ export function deriveLocalScopeDifferenceDeductions(
 export function deriveGlobalCountDeductions(
   state: KnowledgeState,
   rule: GlobalCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
-  const summary = summarizeGlobalCount(state, rule);
-  const premises = [rulePremise(rule), countPremise(summary)];
+  const summary = summarizeGlobalCount(state, rule, derivedDeductions);
+  const premises = [rulePremise(rule), ...countPremises(summary)];
   const deductions: Deduction[] = [];
   const upperBound = summary.bounds.upperBound;
 
@@ -257,9 +280,10 @@ export function deriveGlobalCountDeductions(
 export function deriveRegionCountDeductions(
   state: KnowledgeState,
   rule: RegionCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
-  const summary = summarizeRegionCount(state, rule);
-  const premises = [rulePremise(rule), regionScopePremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const summary = summarizeRegionCount(state, rule, derivedDeductions);
+  const premises = [rulePremise(rule), regionScopePremise(rule, summary.scopeCellIds), ...countPremises(summary)];
   const deductions: Deduction[] = [];
   const upperBound = summary.bounds.upperBound;
 
@@ -296,9 +320,10 @@ export function deriveRegionCountDeductions(
 export function deriveLineCountDeductions(
   state: KnowledgeState,
   rule: LineCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
-  const summary = summarizeLineCount(state, rule);
-  const premises = [rulePremise(rule), lineScopePremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const summary = summarizeLineCount(state, rule, derivedDeductions);
+  const premises = [rulePremise(rule), lineScopePremise(rule, summary.scopeCellIds), ...countPremises(summary)];
   const deductions: Deduction[] = [];
   const upperBound = summary.bounds.upperBound;
 
@@ -335,9 +360,10 @@ export function deriveLineCountDeductions(
 export function deriveScopeOverlapCountDeductions(
   state: KnowledgeState,
   rule: ScopeOverlapCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
-  const summary = summarizeScopeOverlapCount(state, rule);
-  const premises = [rulePremise(rule), scopeOverlapPremise(rule, summary.scopeCellIds), countPremise(summary)];
+  const summary = summarizeScopeOverlapCount(state, rule, derivedDeductions);
+  const premises = [rulePremise(rule), scopeOverlapPremise(rule, summary.scopeCellIds), ...countPremises(summary)];
   const deductions: Deduction[] = [];
   const upperBound = summary.bounds.upperBound;
 
@@ -374,15 +400,16 @@ export function deriveScopeOverlapCountDeductions(
 export function deriveConditionalCountDeductions(
   state: KnowledgeState,
   rule: ConditionalCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
-  const conditionSummary = summarizeConditionalClause(state, rule.id, rule.condition);
+  const conditionSummary = summarizeConditionalClause(state, rule.id, rule.condition, derivedDeductions);
   if (!conditionIsForcedTrue(conditionSummary, rule.condition.count)) return [];
 
-  const thenSummary = summarizeConditionalClause(state, rule.id, rule.then);
+  const thenSummary = summarizeConditionalClause(state, rule.id, rule.then, derivedDeductions);
   const premises = [
     rulePremise(rule),
     countScopePremise(rule.id, rule.condition.scope, conditionSummary.scopeCellIds),
-    countPremise(conditionSummary),
+    ...countPremises(conditionSummary),
     {
       kind: 'count' as const,
       label: `${rule.id} condition is forced true from current observations`,
@@ -390,7 +417,7 @@ export function deriveConditionalCountDeductions(
       ruleIds: [rule.id],
     },
     countScopePremise(rule.id, rule.then.scope, thenSummary.scopeCellIds),
-    countPremise(thenSummary),
+    ...countPremises(thenSummary),
   ];
   const deductions: Deduction[] = [];
   const upperBound = thenSummary.bounds.upperBound;
@@ -428,12 +455,13 @@ export function deriveConditionalCountDeductions(
 export function deriveComparativeCountDeductions(
   state: KnowledgeState,
   rule: ComparativeCountRule,
+  derivedDeductions: readonly Deduction[] = [],
 ): readonly Deduction[] {
   if (rule.comparison.op !== 'eq') return [];
 
   const offset = rule.comparison.offset ?? 0;
-  const leftSummary = summarizeComparativeScope(state, rule, 'left');
-  const rightSummary = summarizeComparativeScope(state, rule, 'right');
+  const leftSummary = summarizeComparativeScope(state, rule, 'left', derivedDeductions);
+  const rightSummary = summarizeComparativeScope(state, rule, 'right', derivedDeductions);
   const deductions: Deduction[] = [];
   const fixedRightCount = exactKnownCount(rightSummary);
   if (fixedRightCount !== null) {
@@ -482,7 +510,7 @@ export function deriveAnchorCountDeductions(
       rulePremise(rule),
       anchorFact.premise,
       anchorScopePremise(rule, anchorFact.cellId, summary.scopeCellIds),
-      countPremise(summary),
+      ...countPremises(summary),
     ];
     const upperBound = summary.bounds.upperBound;
 
@@ -530,7 +558,7 @@ export function deriveLocalCountDeductions(
       rulePremise(rule),
       subjectFact.premise,
       scopePremise(rule, subjectFact.cellId, summary.scopeCellIds),
-      countPremise(summary),
+      ...countPremises(summary),
     ];
     const upperBound = summary.bounds.upperBound;
 
@@ -597,12 +625,12 @@ export function deriveUniqueTargetNeighborIntersectionDeductions(
         ruleIds: [globalRule.id, localRule.id],
         premises: [
           rulePremise(globalRule),
-          countPremise(globalSummary),
+          ...countPremises(globalSummary),
           rulePremise(localRule),
           ...subjectScopes.flatMap((scope) => [
             scope.subjectPremise,
             scopePremise(localRule, scope.subjectCellId, scope.summary.scopeCellIds),
-            countPremise(scope.summary),
+            ...countPremises(scope.summary),
           ]),
         ],
       }));
@@ -663,7 +691,7 @@ function deriveFixedComparativeSideDeductions(input: {
   const premises = [
     rulePremise(input.rule),
     countScopePremise(input.rule.id, input.fixedSide === 'left' ? input.rule.left : input.rule.right, input.fixedSummary.scopeCellIds),
-    countPremise(input.fixedSummary),
+    ...countPremises(input.fixedSummary),
     comparativePremise(input.rule, input.fixedSide, input.fixedCount),
     countScopePremise(input.rule.id, input.targetScope, input.targetSummary.scopeCellIds),
     {
@@ -780,11 +808,11 @@ function localScopeIntersectionPremises(input: {
     rulePremise(consumer.rule),
     consumer.subjectPremise,
     scopePremise(consumer.rule, consumer.subjectCellId, consumer.summary.scopeCellIds),
-    countPremise(consumer.summary),
+    ...countPremises(consumer.summary),
     rulePremise(provider.rule),
     provider.subjectPremise,
     scopePremise(provider.rule, provider.subjectCellId, provider.summary.scopeCellIds),
-    countPremise(provider.summary),
+    ...countPremises(provider.summary),
     {
       kind: 'scope',
       label: [
@@ -828,11 +856,11 @@ function localScopeDifferencePremises(input: {
     rulePremise(outer.rule),
     outer.subjectPremise,
     scopePremise(outer.rule, outer.subjectCellId, outer.summary.scopeCellIds),
-    countPremise(outer.summary),
+    ...countPremises(outer.summary),
     rulePremise(inner.rule),
     inner.subjectPremise,
     scopePremise(inner.rule, inner.subjectCellId, inner.summary.scopeCellIds),
-    countPremise(inner.summary),
+    ...countPremises(inner.summary),
     {
       kind: 'scope',
       label: [
