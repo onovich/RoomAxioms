@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T02:47:28+08:00
+updated_at: 2026-06-28T03:35:00+08:00
 
 planner:
   role: architect
@@ -36,12 +36,13 @@ idempotency:
   last_check_commit: f55ef7e
   last_check_at: 2026-06-28T02:44:27+08:00
   last_check_blocker: all five serious rewrites rejected under strict gates; next method should start from human-readable proof skeletons before JSON editing
-  last_executor_report_commit: f55ef7e
+  last_executor_report_commit: final-commit-reported-in-planner-notification
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
-  last_executor_report_phase: Phase 28 - Nondegenerate Puzzle Rewrite Sprint
-  last_executor_report: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-final-report.md
-  last_executor_report_at: 2026-06-28T02:36:00+08:00
-  last_executor_report_guide: docs/phase-28-nondegenerate-puzzle-rewrite-sprint-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 29 - Proof Skeleton Authoring Workflow
+  last_executor_report: docs/phase-29-proof-skeleton-authoring-workflow-final-report.md
+  last_executor_report_at: 2026-06-28T03:35:00+08:00
+  last_executor_report_guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
+  last_executor_report_blocker: non-singleton overlap skeleton avoids C15 degeneracy but still produces no human proof bridge; recommend targeted proof/authoring bridge before another JSON mutation sprint
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
