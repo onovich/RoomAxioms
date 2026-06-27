@@ -19,6 +19,7 @@ import {
   comparatorBounds,
   anchorScopePremise,
   comparativePremise,
+  type CountSummary,
   countPremises,
   countScopePremise,
   createKnowledgeIndex,
@@ -84,9 +85,17 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
     }
   }
 
-  const preLocalDeductions = mergeDeductions([
+  const preScopeDifferenceDeductions = mergeDeductions([
     ...initialKnownDeductions,
     ...derivedGrammarDeductions,
+  ]);
+  const scopeOverlapDifferenceDeductions = deriveScopeOverlapScopeDifferenceDeductions(
+    state,
+    preScopeDifferenceDeductions,
+  );
+  const preLocalDeductions = mergeDeductions([
+    ...preScopeDifferenceDeductions,
+    ...scopeOverlapDifferenceDeductions,
   ]);
   const derivedLocalDeductions: Deduction[] = [];
 
@@ -227,6 +236,58 @@ export function deriveLocalScopeDifferenceDeductions(
         deductions.push(createDeduction({
           technique: 'LOCAL_SCOPE_DIFFERENCE',
           conclusion: { kind: 'guest', cellId },
+          ruleIds: [outer.rule.id, inner.rule.id],
+          premises,
+        }));
+      }
+    }
+  }
+
+  return sortDeductions(state, mergeDeductions(deductions));
+}
+
+export function deriveScopeOverlapScopeDifferenceDeductions(
+  state: KnowledgeState,
+  derivedDeductions: readonly Deduction[] = [],
+): readonly Deduction[] {
+  const scopes = countScopesForDifference(state, derivedDeductions)
+    .filter((scope) => scope.rule.target === 'guest')
+    .filter((scope) => scope.summary.bounds.upperBound !== null);
+  const deductions: Deduction[] = [];
+
+  for (const outer of scopes) {
+    const outerRemainingCapacity = remainingCapacity(outer.summary);
+    if (outerRemainingCapacity === null || outerRemainingCapacity < 0) continue;
+
+    for (const inner of scopes) {
+      if (outer.rule.id === inner.rule.id) continue;
+      if (!outer.hasScopeOverlapRule && !inner.hasScopeOverlapRule) continue;
+      if (!isSubset(inner.summary.scopeCellIds, outer.summary.scopeCellIds)) continue;
+      if (!isSubset(inner.summary.unknownCellIds, outer.summary.unknownCellIds)) continue;
+
+      const differenceUnknown = subtractCellIds(
+        state,
+        outer.summary.unknownCellIds,
+        inner.summary.unknownCellIds,
+      );
+      if (differenceUnknown.length === 0) continue;
+
+      const innerRemainingRequired = remainingRequired(inner.summary);
+      if (innerRemainingRequired <= 0) continue;
+      if (innerRemainingRequired < outerRemainingCapacity) continue;
+
+      const premises = scopeOverlapScopeDifferencePremises({
+        outer,
+        inner,
+        differenceUnknown,
+        innerRemainingRequired,
+        outerRemainingCapacity,
+      });
+
+      for (const cellId of differenceUnknown) {
+        deductions.push(createDeduction({
+          technique: 'SCOPE_OVERLAP_SCOPE_DIFFERENCE',
+          conclusion: { kind: 'safe', cellId },
           ruleIds: [outer.rule.id, inner.rule.id],
           premises,
         }));
@@ -766,6 +827,14 @@ interface LocalTargetScope {
   readonly remainingCapacity: number | null;
 }
 
+type CountScopeDifferenceRule = GlobalCountRule | RegionCountRule | LineCountRule | ScopeOverlapCountRule;
+
+interface CountScopeDifferenceScope {
+  readonly rule: CountScopeDifferenceRule;
+  readonly summary: CountSummary;
+  readonly hasScopeOverlapRule: boolean;
+}
+
 function localTargetScopes(
   state: KnowledgeState,
   objectDeductions: readonly Deduction[],
@@ -784,6 +853,43 @@ function localTargetScopes(
         summary,
         remainingRequired: summary.bounds.lowerBound - summary.knownTargetCellIds.length,
         remainingCapacity: upperBound === null ? null : upperBound - summary.knownTargetCellIds.length,
+      });
+    }
+  }
+
+  return scopes;
+}
+
+function countScopesForDifference(
+  state: KnowledgeState,
+  derivedDeductions: readonly Deduction[],
+): readonly CountScopeDifferenceScope[] {
+  const scopes: CountScopeDifferenceScope[] = [];
+
+  for (const rule of state.puzzle.rules) {
+    if (rule.type === 'globalCount') {
+      scopes.push({
+        rule,
+        summary: summarizeGlobalCount(state, rule, derivedDeductions),
+        hasScopeOverlapRule: false,
+      });
+    } else if (rule.type === 'regionCount') {
+      scopes.push({
+        rule,
+        summary: summarizeRegionCount(state, rule, derivedDeductions),
+        hasScopeOverlapRule: false,
+      });
+    } else if (rule.type === 'lineCount') {
+      scopes.push({
+        rule,
+        summary: summarizeLineCount(state, rule, derivedDeductions),
+        hasScopeOverlapRule: false,
+      });
+    } else if (rule.type === 'scopeOverlapCount') {
+      scopes.push({
+        rule,
+        summary: summarizeScopeOverlapCount(state, rule, derivedDeductions),
+        hasScopeOverlapRule: true,
       });
     }
   }
@@ -890,6 +996,72 @@ function localScopeDifferencePremises(input: {
       ruleIds: [outer.rule.id, inner.rule.id],
     },
   ];
+}
+
+function scopeOverlapScopeDifferencePremises(input: {
+  readonly outer: CountScopeDifferenceScope;
+  readonly inner: CountScopeDifferenceScope;
+  readonly differenceUnknown: readonly CellId[];
+  readonly innerRemainingRequired: number;
+  readonly outerRemainingCapacity: number;
+}): readonly ProofPremise[] {
+  const { outer, inner } = input;
+
+  return [
+    rulePremise(outer.rule),
+    genericCountScopePremise(outer),
+    ...countPremises(outer.summary),
+    rulePremise(inner.rule),
+    genericCountScopePremise(inner),
+    ...countPremises(inner.summary),
+    {
+      kind: 'scope',
+      label: [
+        `${inner.rule.id} scope is contained in ${outer.rule.id}`,
+        inner.summary.scopeCellIds.join(', '),
+      ].join(': '),
+      cellIds: inner.summary.scopeCellIds,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+    {
+      kind: 'scope',
+      label: [
+        `${outer.rule.id}/${inner.rule.id} difference cells`,
+        input.differenceUnknown.join(', '),
+      ].join(': '),
+      cellIds: input.differenceUnknown,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+    {
+      kind: 'count',
+      label: [
+        `${inner.rule.id} needs ${input.innerRemainingRequired} remaining guest cell(s)`,
+        `${outer.rule.id} has remaining guest capacity ${input.outerRemainingCapacity}`,
+        'the contained overlap consumes the outer capacity',
+      ].join('; '),
+      cellIds: outer.summary.scopeCellIds,
+      ruleIds: [outer.rule.id, inner.rule.id],
+    },
+  ];
+}
+
+function genericCountScopePremise(scope: CountScopeDifferenceScope): ProofPremise {
+  return {
+    kind: 'scope',
+    label: `${scope.rule.id} count scope: ${scope.summary.scopeCellIds.join(', ')}`,
+    cellIds: scope.summary.scopeCellIds,
+    ruleIds: [scope.rule.id],
+  };
+}
+
+function remainingRequired(summary: CountSummary): number {
+  return summary.bounds.lowerBound - summary.knownTargetCellIds.length;
+}
+
+function remainingCapacity(summary: CountSummary): number | null {
+  return summary.bounds.upperBound === null
+    ? null
+    : summary.bounds.upperBound - summary.knownTargetCellIds.length;
 }
 
 function knownSubjectFacts(

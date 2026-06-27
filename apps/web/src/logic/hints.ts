@@ -59,6 +59,8 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
       return '重叠范围已经数够了'
     case 'SCOPE_OVERLAP_COUNT_ALL_REMAINING':
       return '重叠范围剩下的都要算'
+    case 'SCOPE_OVERLAP_SCOPE_DIFFERENCE':
+      return '重叠范围排除了外层差集'
     case 'CONDITIONAL_COUNT_SATURATED':
       return '条件成立后已经数够了'
     case 'CONDITIONAL_COUNT_ALL_REMAINING':

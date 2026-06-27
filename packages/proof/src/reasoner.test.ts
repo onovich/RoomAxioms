@@ -4,6 +4,7 @@ import { findForcedCells, isSatisfiable } from '@room-axioms/solver';
 import { describe, expect, it } from 'vitest';
 import type { BoardSize, CellId, CellKind, Comparator, Observation, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 import case004Fixture from '../../../content/cases/case-004.json' with { type: 'json' };
+import phase29OverlapTrialFixture from '../../../content/experimental/phase-29/p29-overlap-frontier-ledger-trial.json' with { type: 'json' };
 
 import { buildProofGraph, deriveHumanDeductions } from './index.js';
 import type { Deduction, KnowledgeState } from './index.js';
@@ -315,6 +316,69 @@ describe('scope overlap count human techniques', () => {
     ]));
     const guestNode = graph.nodes.find((node) => node.id === guestDeduction?.proofNodeIds[0]);
     expect(guestNode?.parents).toContain(safeDeduction?.proofNodeIds[0]);
+  });
+
+  it('uses a non-singleton overlap count to clear the outer scope difference', () => {
+    const state = makeState({
+      board: { width: 5, height: 2 },
+      allowedKinds: ['empty', 'guest'],
+      regions: [
+        { id: 'outer', title: 'Outer', cells: ['A1', 'B1', 'C1', 'D1', 'E1'] },
+        { id: 'left', title: 'Left', cells: ['B1', 'C1', 'D1', 'A2'] },
+        { id: 'right', title: 'Right', cells: ['B1', 'C1', 'D1', 'E2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'outer', 'guest', { op: 'eq', value: 1 }),
+        {
+          id: 'OR1',
+          type: 'scopeOverlapCount',
+          left: { kind: 'region', regionId: 'left' },
+          right: { kind: 'region', regionId: 'right' },
+          mode: 'intersection',
+          target: 'guest',
+          count: { op: 'eq', value: 1 },
+          presentation: { title: 'overlap guest count' },
+        },
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'SCOPE_OVERLAP_SCOPE_DIFFERENCE');
+
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_SCOPE_DIFFERENCE')).toEqual([
+      { kind: 'safe', cellId: 'A1' },
+      { kind: 'safe', cellId: 'E1' },
+    ]);
+    expect(safeDeduction?.ruleIds).toEqual(['OR1', 'ZR1']);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'scope',
+        label: 'OR1 scope is contained in ZR1: B1, C1, D1',
+        cellIds: ['B1', 'C1', 'D1'],
+        ruleIds: ['OR1', 'ZR1'],
+      }),
+      expect.objectContaining({
+        kind: 'count',
+        label: expect.stringContaining('the contained overlap consumes the outer capacity'),
+        ruleIds: ['OR1', 'ZR1'],
+      }),
+    ]));
+  });
+
+  it('explains the Phase 29 overlap trial opening safe cells without singleton degeneration', () => {
+    const puzzle = assertPuzzleDefinition(phase29OverlapTrialFixture);
+    const state = {
+      puzzle,
+      observations: initialObservations(puzzle),
+    } satisfies KnowledgeState;
+    const deductions = deriveHumanDeductions(state);
+
+    expect(conclusionsFor(deductions, 'SCOPE_OVERLAP_SCOPE_DIFFERENCE')).toEqual([
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(deductions.find((deduction) => deduction.technique === 'SCOPE_OVERLAP_SCOPE_DIFFERENCE')?.ruleIds)
+      .toEqual(['R2', 'R4']);
   });
 });
 
