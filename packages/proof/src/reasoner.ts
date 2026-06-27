@@ -62,23 +62,26 @@ export function deriveHumanDeductions(state: KnowledgeState): readonly Deduction
   }
 
   const intersectionDeductions = deriveUniqueTargetNeighborIntersectionDeductions(state);
+  const initialObjectDeductions = mergeDeductions([
+    ...baseDeductions,
+    ...intersectionDeductions,
+  ]);
   const derivedLocalDeductions: Deduction[] = [];
 
   for (const rule of state.puzzle.rules) {
     if (rule.type === 'forEachCount') {
       derivedLocalDeductions.push(
-        ...deriveLocalCountDeductions(state, rule, intersectionDeductions),
+        ...deriveLocalCountDeductions(state, rule, initialObjectDeductions),
       );
     } else if (rule.type === 'anchorCount') {
       derivedLocalDeductions.push(
-        ...deriveAnchorCountDeductions(state, rule, intersectionDeductions),
+        ...deriveAnchorCountDeductions(state, rule, initialObjectDeductions),
       );
     }
   }
 
   const objectDeductions = mergeDeductions([
-    ...baseDeductions,
-    ...intersectionDeductions,
+    ...initialObjectDeductions,
     ...derivedLocalDeductions,
   ]);
   const localScopeIntersectionDeductions = deriveLocalScopeIntersectionDeductions(

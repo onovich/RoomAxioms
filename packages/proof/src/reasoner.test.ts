@@ -380,6 +380,52 @@ describe('anchor count human techniques', () => {
     ]);
     expect(forced.safe).toEqual(['B1', 'A2', 'C2', 'B3']);
   });
+
+  it('uses a derived object as an anchor subject with proof dependencies', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bin', 'guest'],
+      regions: [
+        { id: 'center', title: 'Center', cells: ['B2'] },
+      ],
+      anchors: [
+        {
+          id: 'known-bin',
+          title: 'Known bin',
+          subject: 'bin',
+        },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'center', 'bin', { op: 'eq', value: 1 }),
+        anchorCountRule('AR1', 'known-bin', 'orthogonal', 'guest', { op: 'eq', value: 0 }),
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const objectDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_ALL_REMAINING');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'ANCHOR_COUNT_SATURATED');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'object', cellId: 'B2', object: 'bin' },
+    ]);
+    expect(conclusionsFor(deductions, 'ANCHOR_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'C2' },
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: objectDeduction?.id,
+        cellIds: ['B2'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(objectDeduction?.proofNodeIds[0]);
+  });
 });
 
 describe('local count human techniques', () => {
@@ -470,6 +516,45 @@ describe('local count human techniques', () => {
     ]);
     expect(objectResult.satisfiable).toBe(false);
     expect(safeResult.satisfiable).toBe(false);
+    const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
+    expect(safeNode?.parents).toContain(objectDeduction?.proofNodeIds[0]);
+  });
+
+  it('uses a derived object as a local subject with proof dependencies', () => {
+    const state = makeState({
+      board: { width: 3, height: 3 },
+      allowedKinds: ['empty', 'bin', 'guest'],
+      regions: [
+        { id: 'center', title: 'Center', cells: ['B2'] },
+      ],
+      rules: [
+        regionCountRule('ZR1', 'center', 'bin', { op: 'eq', value: 1 }),
+        forEachCountRule('R2', 'bin', 'orthogonal', 'guest', { op: 'eq', value: 0 }),
+      ],
+      observations: [],
+    });
+    const deductions = deriveHumanDeductions(state);
+    const graph = buildProofGraph(state, deductions);
+    const objectDeduction = deductions.find((deduction) => deduction.technique === 'REGION_COUNT_ALL_REMAINING');
+    const safeDeduction = deductions.find((deduction) => deduction.technique === 'LOCAL_COUNT_SATURATED');
+
+    expect(conclusionsFor(deductions, 'REGION_COUNT_ALL_REMAINING')).toEqual([
+      { kind: 'object', cellId: 'B2', object: 'bin' },
+    ]);
+    expect(conclusionsFor(deductions, 'LOCAL_COUNT_SATURATED')).toEqual([
+      { kind: 'safe', cellId: 'B1' },
+      { kind: 'safe', cellId: 'A2' },
+      { kind: 'safe', cellId: 'C2' },
+      { kind: 'safe', cellId: 'B3' },
+    ]);
+    expect(safeDeduction?.premises).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'derived',
+        label: objectDeduction?.id,
+        cellIds: ['B2'],
+        ruleIds: ['ZR1'],
+      }),
+    ]));
     const safeNode = graph.nodes.find((node) => node.id === safeDeduction?.proofNodeIds[0]);
     expect(safeNode?.parents).toContain(objectDeduction?.proofNodeIds[0]);
   });
