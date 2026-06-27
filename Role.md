@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T03:42:32+08:00
+updated_at: 2026-06-28T04:11:35+08:00
 
 planner:
   role: architect
@@ -23,8 +23,8 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
-  active_goal_phase: Phase 30 - Non-Singleton Overlap Proof Bridge
+  active_goal_guide: none
+  active_goal_phase: none
   last_planner_dispatch: 2026-06-28T03:42:32+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
@@ -36,13 +36,13 @@ idempotency:
   last_check_commit: ae7085a
   last_check_at: 2026-06-28T03:39:36+08:00
   last_check_blocker: skeleton workflow pass criteria met, but non-singleton overlap-frontier translation still lacks a human-visible overlap proof bridge
-  last_executor_report_commit: ae7085a
+  last_executor_report_commit: a081b85
   last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
-  last_executor_report_phase: Phase 29 - Proof Skeleton Authoring Workflow
-  last_executor_report: docs/phase-29-proof-skeleton-authoring-workflow-final-report.md
-  last_executor_report_at: 2026-06-28T03:35:00+08:00
-  last_executor_report_guide: docs/phase-29-proof-skeleton-authoring-workflow-goal-mode-execution-guide.md
-  last_executor_report_blocker: non-singleton overlap skeleton avoids C15 degeneracy but still produces no human proof bridge; recommend targeted proof/authoring bridge before another JSON mutation sprint
+  last_executor_report_phase: Phase 30 - Non-Singleton Overlap Proof Bridge
+  last_executor_report: docs/phase-30-non-singleton-overlap-proof-bridge-final-report.md
+  last_executor_report_at: 2026-06-28T04:11:35+08:00
+  last_executor_report_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
+  last_executor_report_blocker: overlap scope-difference bridge now fires for the Phase 29 trial, but the trial still stalls at GUESS_POINT and remains non-promotable
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
