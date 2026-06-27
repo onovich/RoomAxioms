@@ -342,5 +342,5 @@ describe('case content verification harness', () => {
       },
     })
     expect(report.stats.truncated).toBe(false)
-  })
+  }, SHIPPED_CASE_VERIFICATION_TIMEOUT_MS)
 })
