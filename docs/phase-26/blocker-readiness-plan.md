@@ -106,6 +106,12 @@ Rounds 25-27 should be treated as repair/buffer rounds:
   novelty claim;
 - otherwise prepare final blocker evidence and do not force weak content.
 
+Round 25 blocker follow-up recommendations are recorded in
+`docs/phase-26/blocker-follow-up-recommendations.md`. They identify proof-side
+derived-fact reuse, comparative late closure, conditional activation, targeted
+replacement strategy, and human difficulty review as the concrete follow-up
+areas instead of more same-shape candidate padding.
+
 Rounds 28-32 should produce the final report, run the full validation matrix,
 record local smoke and Pages evidence, and send `READY_FOR_CHECK_WITH_BLOCKER`
 if promotion count remains below four.

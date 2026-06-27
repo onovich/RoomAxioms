@@ -220,3 +220,16 @@ Result:
   later repair produces at least four strict-gate promotions.
 - Remaining non-final rounds should prioritize runtime/selector QA and concrete
   repair of any discovered P0/P1 issue, not additional content padding.
+
+## Round 25 Follow-up Recommendation
+
+Round 25 follow-up recommendations are recorded in
+`docs/phase-26/blocker-follow-up-recommendations.md`.
+
+Result:
+
+- No Phase 26 candidate is promoted.
+- The blocker is now framed as proof/authoring content-production readiness, not
+  selector/runtime correctness.
+- Recommended follow-up is proof fixture hardening for derived-fact reuse and
+  late-closure patterns before another broad authoring batch.
