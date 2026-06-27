@@ -4,6 +4,7 @@ import { contentCases } from '../content/cases'
 import phase10IntersectionFixture from '../../../../content/experimental/phase-10/phase-10-local-scope-intersection-001.json' with { type: 'json' }
 import phase12DifferenceFixture from '../../../../content/experimental/phase-12/phase-12-local-scope-difference-001.json' with { type: 'json' }
 import phase22ContaminatedFixture from '../../../../content/experimental/phase-22/fixtures/contaminated-record-cross-check.json' with { type: 'json' }
+import phase23RejectedProbeFixture from '../../../../content/experimental/phase-23/rejected/phase-23-probe-022-double-row-anchor-chain.json' with { type: 'json' }
 import phase24ComparativeFixture from '../../../../content/experimental/phase-24/phase-24-comparative-balance-001.json' with { type: 'json' }
 import phase24ConditionalFixture from '../../../../content/experimental/phase-24/phase-24-conditional-frontier-001.json' with { type: 'json' }
 import phase25SingletonGiveawayFixture from '../../../../content/experimental/phase-25/phase-25-singleton-region-giveaway.json' with { type: 'json' }
@@ -36,6 +37,10 @@ export const experimentalWorkbenchCases: readonly WorkbenchCaseImport[] = [
   experimentalCase(
     phase22ContaminatedFixture,
     'content/experimental/phase-22/fixtures/contaminated-record-cross-check.json',
+  ),
+  experimentalCase(
+    phase23RejectedProbeFixture,
+    'content/experimental/phase-23/rejected/phase-23-probe-022-double-row-anchor-chain.json',
   ),
   experimentalCase(
     phase24ComparativeFixture,

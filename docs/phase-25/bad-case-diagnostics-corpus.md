@@ -1,6 +1,6 @@
 # Phase 25 Bad-Case Diagnostics Corpus
 
-Status: Round 21 workbench-import evidence.
+Status: Round 22 workbench-import and real-case QA evidence.
 Guide: `docs/phase-25-authoring-editor-live-diagnostics-goal-mode-execution-guide.md`
 
 This corpus is private authoring-workbench evidence. It is not shipped content, not
@@ -32,6 +32,10 @@ source-of-truth diagnostics from `@room-axioms/authoring`.
 - Workbench diagnostics now pass comparison puzzles from the private workbench
   library into `@room-axioms/authoring`, so clone-risk can be visible in the
   maintainer surface instead of always showing "not run".
+- Round 22 adds `docs/phase-25/real-case-workbench-qa.md` and
+  `apps/web/src/workbench/realCaseQa.test.ts` so the same diagnostic surface is
+  exercised against shipped cases plus representative rejected/experimental
+  fixtures.
 
 ## Notes
 
