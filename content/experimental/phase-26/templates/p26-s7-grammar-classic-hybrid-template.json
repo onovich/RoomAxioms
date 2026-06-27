@@ -1,0 +1,67 @@
+{
+  "skeletonId": "P26-S7",
+  "skeletonName": "Grammar And Classic Hybrid",
+  "intendedProofShape": "One Phase 24 grammar rule is necessary, but classic counts carry enough readable pressure that the puzzle is not merely a grammar fixture.",
+  "board": {
+    "width": 5,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 3,
+    "max": 4
+  },
+  "requiredRulePressure": [
+    "scopeOverlapCount",
+    "comparativeCount",
+    "conditionalCount",
+    "regionCount",
+    "forEachCount"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 6,
+    "minProofWaves": 2,
+    "minDeductions": 8,
+    "requiresPhase24Grammar": true
+  },
+  "rejectIf": [
+    "initial guest layout is already unique",
+    "Phase 24 rule contributes only to parser coverage",
+    "plain Chinese copy cannot explain the grammar rule without hidden highlights"
+  ],
+  "initialRevealRange": {
+    "min": 5,
+    "max": 8
+  },
+  "caps": {
+    "maxAttempts": 320,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s7-grammar-classic",
+    "titlePrefix": "Phase 26 S7 Grammar Classic Candidate",
+    "caseNamePrefix": "Phase 26 S7 Grammar Classic",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "phase-24-grammar",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for a promoted-case attempt that materially uses Phase 24 grammar."
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "skeletonId": "P26-S6",
+  "skeletonName": "Two Wave Reveal Frontier",
+  "intendedProofShape": "Opening observations leave multiple layouts. The first proof wave finds a safe or object cell that changes the material scope for a second proof wave.",
+  "board": {
+    "width": 5,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 3,
+    "max": 4
+  },
+  "requiredRulePressure": [
+    "lineCount",
+    "regionCount",
+    "anchorCount",
+    "forEachCount"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 6,
+    "minProofWaves": 2,
+    "minDeductions": 8,
+    "requiresPhase24Grammar": false
+  },
+  "rejectIf": [
+    "effective board removes a padded side",
+    "ray or region has one effective unknown after opening reveals",
+    "second wave only repeats the first wave's rule family"
+  ],
+  "initialRevealRange": {
+    "min": 5,
+    "max": 8
+  },
+  "caps": {
+    "maxAttempts": 320,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s6-two-wave-frontier",
+    "titlePrefix": "Phase 26 S6 Two Wave Frontier Candidate",
+    "caseNamePrefix": "Phase 26 S6 Two Wave Frontier",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "two-wave-frontier",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for non-padded two-wave frontier authoring."
+    }
+  }
+}

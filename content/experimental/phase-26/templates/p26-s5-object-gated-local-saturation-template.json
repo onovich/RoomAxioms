@@ -1,0 +1,65 @@
+{
+  "skeletonId": "P26-S5",
+  "skeletonName": "Object Gated Local Saturation",
+  "intendedProofShape": "A rule first identifies or excludes an object kind. Only then does a local neighborhood or ring count become saturated.",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 2,
+    "max": 3
+  },
+  "requiredRulePressure": [
+    "forEachCount",
+    "anchorCount",
+    "regionCount"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 4,
+    "minProofWaves": 2,
+    "minDeductions": 7,
+    "requiresPhase24Grammar": false
+  },
+  "rejectIf": [
+    "object labels expose internal anchor terminology",
+    "one object rule immediately identifies all guests",
+    "safe/no-guest copy reads like an already discovered conclusion"
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 7
+  },
+  "caps": {
+    "maxAttempts": 256,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s5-object-gated",
+    "titlePrefix": "Phase 26 S5 Object Gated Candidate",
+    "caseNamePrefix": "Phase 26 S5 Object Gated",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "object-gated-local-saturation",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for object identification that unlocks later local saturation."
+    }
+  }
+}

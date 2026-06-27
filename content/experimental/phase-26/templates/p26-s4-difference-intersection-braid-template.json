@@ -1,0 +1,67 @@
+{
+  "skeletonId": "P26-S4",
+  "skeletonName": "Difference Intersection Braid",
+  "intendedProofShape": "Local-scope difference and intersection deductions alternate so an early safe or object conclusion unlocks a later guest conclusion.",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 2,
+    "max": 3
+  },
+  "requiredRulePressure": [
+    "forEachCount",
+    "globalCount",
+    "local-scope-difference",
+    "local-scope-intersection"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 3,
+    "minProofWaves": 2,
+    "minDeductions": 7,
+    "requiresPhase24Grammar": false
+  },
+  "rejectIf": [
+    "final guest layout repeats case-011 or case-012 answer pattern",
+    "only one material rule family contributes",
+    "difference technique disappears after reveal minimization"
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 7
+  },
+  "caps": {
+    "maxAttempts": 256,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s4-difference-intersection",
+    "titlePrefix": "Phase 26 S4 Difference Intersection Candidate",
+    "caseNamePrefix": "Phase 26 S4 Difference Intersection",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "local-scope-difference",
+        "local-scope-intersection",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for a retained difference/intersection braid that avoids prior answer-pattern clones."
+    }
+  }
+}

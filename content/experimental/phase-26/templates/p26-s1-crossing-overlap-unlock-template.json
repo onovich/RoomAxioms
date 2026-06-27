@@ -1,0 +1,65 @@
+{
+  "skeletonId": "P26-S1",
+  "skeletonName": "Crossing Overlap Unlock",
+  "intendedProofShape": "Two readable public scopes overlap. A classic count resolves one side, then a scopeOverlapCount rule makes the overlap or remainder saturated without becoming a singleton giveaway.",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 2,
+    "max": 3
+  },
+  "requiredRulePressure": [
+    "scopeOverlapCount",
+    "regionCount",
+    "forEachCount"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 3,
+    "minProofWaves": 2,
+    "minDeductions": 6,
+    "requiresPhase24Grammar": true
+  },
+  "rejectIf": [
+    "derived overlap has zero or one effective unknown cell",
+    "scope membership requires highlight-only interpretation",
+    "candidate is a case-004 cleaning-chain clone"
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 7
+  },
+  "caps": {
+    "maxAttempts": 256,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s1-overlap-unlock",
+    "titlePrefix": "Phase 26 S1 Overlap Unlock Candidate",
+    "caseNamePrefix": "Phase 26 S1 Overlap Unlock",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "scope-overlap-count",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for a non-singleton crossing-overlap proof frontier."
+    }
+  }
+}

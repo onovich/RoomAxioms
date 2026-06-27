@@ -1,0 +1,65 @@
+{
+  "skeletonId": "P26-S2",
+  "skeletonName": "Comparative Balance Fork",
+  "intendedProofShape": "Two readable scopes are compared. An early deduction fixes part of one side, turning a comparison into later guest or no-guest pressure.",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "bin",
+    "mirror",
+    "guest"
+  ],
+  "guestCountRange": {
+    "min": 2,
+    "max": 3
+  },
+  "requiredRulePressure": [
+    "comparativeCount",
+    "regionCount",
+    "anchorCount"
+  ],
+  "preferredProofSignals": {
+    "minInitialGuestLayouts": 4,
+    "minProofWaves": 2,
+    "minDeductions": 6,
+    "requiresPhase24Grammar": true
+  },
+  "rejectIf": [
+    "comparison uses the same scope on both sides",
+    "comparison is decorative and removing it preserves proof and final uniqueness",
+    "one side is already fully public in the opening state"
+  ],
+  "initialRevealRange": {
+    "min": 4,
+    "max": 7
+  },
+  "caps": {
+    "maxAttempts": 256,
+    "maxNodes": 20000,
+    "maxModels": 20000,
+    "maxGuestLayouts": 100,
+    "maxAccepted": 3
+  },
+  "artifactPolicy": "report-only",
+  "template": {
+    "idPrefix": "phase-26-s2-comparative-balance",
+    "titlePrefix": "Phase 26 S2 Comparative Balance Candidate",
+    "caseNamePrefix": "Phase 26 S2 Comparative Balance",
+    "metadata": {
+      "difficulty": 4,
+      "tags": [
+        "experimental",
+        "phase-26",
+        "comparative-count",
+        "private"
+      ],
+      "author": "room-axioms-maintainers",
+      "status": "draft",
+      "notes": "Private Phase 26 template for comparative-count pressure that survives rule-contribution review."
+    }
+  }
+}
