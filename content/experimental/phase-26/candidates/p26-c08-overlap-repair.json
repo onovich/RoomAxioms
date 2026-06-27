@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "id": "p26-c08-overlap-repair",
+  "title": "Phase 26 Candidate 08 Overlap Repair",
+  "caseName": "Phase 26 - 重叠线索修复候选 08",
+  "board": {
+    "width": 4,
+    "height": 4
+  },
+  "allowedKinds": [
+    "empty",
+    "bottle",
+    "guest"
+  ],
+  "regions": [
+    {
+      "id": "north-strip",
+      "title": "A1、B1、C1、A2、A3 这五格",
+      "cells": [
+        "A1",
+        "B1",
+        "C1",
+        "A2",
+        "A3"
+      ]
+    },
+    {
+      "id": "west-strip",
+      "title": "A1、B1、A2、A3、A4 这五格",
+      "cells": [
+        "A1",
+        "B1",
+        "A2",
+        "A3",
+        "A4"
+      ]
+    },
+    {
+      "id": "bottom-lane",
+      "title": "C4、D3、D4 这三格",
+      "cells": [
+        "C4",
+        "D3",
+        "D4"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "type": "globalCount",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 3
+      },
+      "presentation": {
+        "title": "三名访客",
+        "flavor": "房间里一共有 3 名未登记访客。"
+      }
+    },
+    {
+      "id": "R2",
+      "type": "scopeOverlapCount",
+      "left": {
+        "kind": "region",
+        "regionId": "north-strip"
+      },
+      "right": {
+        "kind": "region",
+        "regionId": "west-strip"
+      },
+      "mode": "intersection",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "左上交会四格",
+        "flavor": "同时属于 A1、B1、C1、A2、A3 这五格和 A1、B1、A2、A3、A4 这五格的 A1、B1、A2、A3 这四格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R3",
+      "type": "forEachCount",
+      "subject": "bottle",
+      "scope": {
+        "kind": "orthogonal"
+      },
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "酒瓶邻格",
+        "flavor": "每个酒瓶上下左右邻格里，恰好有 1 名访客。"
+      }
+    },
+    {
+      "id": "R4",
+      "type": "regionCount",
+      "regionId": "bottom-lane",
+      "target": "guest",
+      "count": {
+        "op": "eq",
+        "value": 1
+      },
+      "presentation": {
+        "title": "右下三格",
+        "flavor": "C4、D3、D4 这三格里，恰好有 1 名访客。"
+      }
+    }
+  ],
+  "initialReveals": [
+    "A1",
+    "B1",
+    "A3",
+    "B3",
+    "C4"
+  ],
+  "target": {
+    "A1": "empty",
+    "B1": "empty",
+    "C1": "empty",
+    "D1": "empty",
+    "A2": "guest",
+    "B2": "empty",
+    "C2": "empty",
+    "D2": "empty",
+    "A3": "empty",
+    "B3": "bottle",
+    "C3": "guest",
+    "D3": "guest",
+    "A4": "empty",
+    "B4": "empty",
+    "C4": "empty",
+    "D4": "empty"
+  },
+  "metadata": {
+    "difficulty": 4,
+    "tags": [
+      "experimental",
+      "phase-26",
+      "scope-overlap-count",
+      "overlap-repair",
+      "private"
+    ],
+    "author": "room-axioms-maintainers",
+    "status": "draft",
+    "notes": "Round 12 serious repair candidate for P26-S1. Earlier drafts tried to feed classic safe or guest deductions into scopeOverlapCount, but proof summaries only use exact observations for later count triggers. This final draft makes the overlap fire from public non-guest observations so the round can measure whether direct overlap retention is useful or merely degenerates into a giveaway."
+  }
+}
