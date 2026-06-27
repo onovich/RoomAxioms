@@ -4,6 +4,7 @@ import {
   importPuzzleToDraftState,
   patchDraftAnchors,
   patchDraftBoardSize,
+  patchDraftMetadata,
   patchDraftRegions,
   patchDraftRulePresentation,
   patchDraftRules,
@@ -11,6 +12,7 @@ import {
   parseDraftJson,
   toggleDraftInitialReveal,
   type PatchDraftRulePresentationInput,
+  type PatchDraftMetadataInput,
   type WorkbenchDraftExportResult,
   type WorkbenchDraftPatchResult,
   type WorkbenchDraftParseResult,
@@ -458,6 +460,13 @@ export function patchWorkbenchRulePresentation(
   input: PatchDraftRulePresentationInput,
 ): WorkbenchDraftPatchResult {
   return patchDraftRulePresentation(draft, input)
+}
+
+export function patchWorkbenchMetadata(
+  draft: WorkbenchDraftState,
+  input: PatchDraftMetadataInput,
+): WorkbenchDraftPatchResult {
+  return patchDraftMetadata(draft, input)
 }
 
 export function createWorkbenchScopeCollectionsJson(

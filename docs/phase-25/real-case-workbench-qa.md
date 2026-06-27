@@ -8,6 +8,8 @@ real shipped cases and representative rejected/experimental cases. It is
 authoring evidence only; it does not promote or demote player-facing content.
 
 Executable coverage lives in `apps/web/src/workbench/realCaseQa.test.ts`.
+Round 23 adds a separate authoring trial at
+`docs/phase-25/workbench-authoring-trial.md`.
 
 ## Shipped Case QA
 
