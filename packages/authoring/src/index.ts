@@ -104,6 +104,21 @@ export {
   type RuleTextLocale,
 } from './ruleText.js'
 export {
+  createEmptyThemePackageDraft,
+  evaluateThemePackageDraft,
+  REQUIRED_THEME_ASSET_KINDS,
+  type DialogueHookKind,
+  type ThemeAssetIntakeItem,
+  type ThemeAssetKind,
+  type ThemeAssetStatus,
+  type ThemeDialogueHook,
+  type ThemeDialogueLine,
+  type ThemePackageDraft,
+  type ThemePackageEvaluation,
+  type ThemePackageIssue,
+  type ThemePackageIssueCode,
+} from './themePackage.js'
+export {
   evaluateNoveltyClaimManifest,
   type NoveltyClaim,
   type NoveltyClaimEvidence,
