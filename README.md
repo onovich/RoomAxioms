@@ -42,9 +42,9 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Last completed check: Phase 33 - VN UX Hardening And Asset Intake, accepted
 - Current executor result: Phase 33 complete
 - Final report: `docs/phase-33-vn-ux-hardening-asset-intake-final-report.md`
-- Active executor phase: none
-- Guide: none
-- Active budget: none
+- Active executor phase: Phase 34 - Unregistered Scene Frontend Adaptation
+- Guide: `docs/phase-34-unregistered-scene-frontend-adaptation-goal-mode-execution-guide.md`
+- Active budget: 28 rounds
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.
@@ -58,7 +58,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 31 added the private rule-expression builder, generated Chinese rule text, schema-validated rule import/export, workbench rule controls, real-case builder QA, and theme/VN intake/secrecy helper scaffolding.
 - Latest phase result: Phase 32 added placeholder-safe theme asset manifests, VN dialogue contracts, safe non-final dialogue scenes, a VN overlay renderer, trigger integration for intro/tutorial/hint/failure/success, and secrecy tests without changing puzzle mechanics.
 - Latest phase result: Phase 33 added VN enable/disable, replay, text-speed, reduced-motion, focus-return, reset-safe behavior, an asset intake kit, and a private Theme/VN review summary without final art, AI art, mechanics changes, or case promotion.
-- Next planned direction: pause automatic dispatch until the user provides either approved original art/visual direction for theme polish or manual puzzle drafts for authoring QA.
+- Next planned direction: Phase 34 formally moves the player-facing frontend toward `未登记现场 / UNREGISTERED SCENE` before final art slicing, focusing on terminology, layout, CSS tokens, scene-map layers, rule cards, record log, partner-review dock, asset slots, responsive behavior, and secrecy scans without changing puzzle mechanics.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

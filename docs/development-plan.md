@@ -47,14 +47,15 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 31 - Rule Expression Builder And Theme Packaging Workflow | Turn the private workbench into a rule-expression authoring surface where authors compose rules instead of editing JSON, generated text follows rule logic, and the Unregistered Scene theme/VN packaging workflow is split for parallel art-driven implementation | Phase 30 blocker-aware product pivot | 22 rounds |
 | Phase 32 - Theme VN Runtime Foundation | Build the safe presentation foundation for the Unregistered Scene wrapper: asset manifest, placeholder-safe theme hooks, VN dialogue data/renderer, trigger integration, and secrecy tests without final art claims or mechanics changes | Phase 31 theme packaging follow-up | 24 rounds |
 | Phase 33 - VN UX Hardening And Asset Intake | Harden VN player UX with skip/replay/preferences/focus behavior and create a concrete asset intake plus private preview workflow for user-provided original art | Phase 32 theme runtime follow-up | 20 rounds |
+| Phase 34 - Unregistered Scene Frontend Adaptation | Refit the player-facing frontend around the approved `未登记现场 / UNREGISTERED SCENE` direction before final art slicing: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record panel, partner-review dock, manifest slots, responsive behavior, and secrecy scans | User/artist art-sample direction after Phase 33 | 28 rounds |
 
 ## Current Execution State
 
 - Recently checked: Phase 33 - VN UX Hardening And Asset Intake, accepted, final commit `2b0b32c`.
-- Current executor result: Phase 33 complete; no active executor phase.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: idle, awaiting user-provided art/visual direction or manual puzzle drafts.
+- Current executor result: Phase 33 complete; Phase 34 is being dispatched for the user-approved `未登记现场 / UNREGISTERED SCENE` frontend adaptation.
+- Active guide: `docs/phase-34-unregistered-scene-frontend-adaptation-goal-mode-execution-guide.md`.
+- Executor budget: 28 rounds.
+- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
 - Last completed final report: `docs/phase-33-vn-ux-hardening-asset-intake-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -98,7 +99,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 32 result: accepted. The player runtime now has placeholder-safe theme manifests, VN dialogue scene contracts, safe non-final dialogue scenes, a VN overlay renderer, trigger integration for intro/tutorial/hint/failure/success, and secrecy tests; no puzzle mechanics or cases changed.
 - Planned Phase 33 direction: harden the VN UX and art handoff layer before importing final art: player-safe skip/replay/preferences/focus behavior, asset naming/status/review docs, private preview/review tooling, and secrecy/responsive QA.
 - Phase 33 result: accepted. VN preferences, replay, text speed, reduced motion, focus-return, reset-safe behavior, asset intake docs, manifest review fields, and private Theme/VN workbench review summary are complete. No final art, AI art, puzzle mechanics, or case content changed.
-- Next planning gate: do not auto-dispatch Phase 34 without user input. If original art/visual direction is available, plan user-art import and visual polish through the Phase 33 intake gates. If manual puzzle drafts are available, plan manual authoring QA and playtest evaluation instead.
+- Planned Phase 34 direction: formally enter the `未登记现场 / UNREGISTERED SCENE` packaging stage and adapt the frontend structure before final art slicing. This is a presentation adaptation phase, not a mechanics/schema expansion phase.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -139,5 +140,5 @@ These are accepted as candidates, not active execution scope:
 - Rule expression builder and theme packaging workflow budget: 22 rounds, covering Phase 31, completed.
 - Theme VN runtime foundation budget: 24 rounds, covering Phase 32, completed.
 - VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
-- Next phase budget: pending user input for either art import/visual polish or manual puzzle QA.
+- Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
