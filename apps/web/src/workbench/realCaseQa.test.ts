@@ -9,8 +9,10 @@ import {
 } from './caseLibrary'
 import {
   createWorkbenchDraftFromPuzzle,
+  createWorkbenchShellModel,
   defaultWorkbenchDiagnosticsCaps,
   evaluateWorkbenchDiagnostics,
+  patchWorkbenchRuleBuilderDrafts,
 } from './model'
 
 describe('authoring workbench real-case QA', () => {
@@ -96,6 +98,46 @@ describe('authoring workbench real-case QA', () => {
     }
   }, 90_000)
 
+  it('imports shipped baseline QA cases through the rule builder without lossy export', () => {
+    const summaries = ['case-004', 'case-011', 'case-012', 'case-021'].map(summarizeRuleBuilderCase)
+
+    expect(summaries).toEqual([
+      expect.objectContaining({
+        id: 'case-004',
+        exportedOk: true,
+        patchedOk: true,
+        warningCount: 0,
+        readOnlyFamilies: [],
+      }),
+      expect.objectContaining({
+        id: 'case-011',
+        exportedOk: true,
+        patchedOk: true,
+        warningCount: 0,
+        readOnlyFamilies: [],
+      }),
+      expect.objectContaining({
+        id: 'case-012',
+        exportedOk: true,
+        patchedOk: true,
+        warningCount: 0,
+        readOnlyFamilies: [],
+      }),
+      expect.objectContaining({
+        id: 'case-021',
+        exportedOk: true,
+        patchedOk: true,
+        warningCount: 0,
+        readOnlyFamilies: ['anchorCount', 'anchorCount'],
+      }),
+    ])
+
+    for (const summary of summaries) {
+      expect(summary.ruleCount).toBeGreaterThan(0)
+      expect(summary.editableCount).toBeGreaterThan(0)
+    }
+  })
+
   it('rejects representative failed and bad-case QA cases with the intended signals', () => {
     const rejectedProbe = summarizeCase('phase-23-probe-022')
     const singleton = summarizeCase('phase-25-singleton-region-giveaway')
@@ -164,6 +206,16 @@ interface RealCaseQaSummary {
   readonly copyWarnings: readonly string[]
 }
 
+interface RuleBuilderCaseSummary {
+  readonly id: string
+  readonly ruleCount: number
+  readonly editableCount: number
+  readonly readOnlyFamilies: readonly string[]
+  readonly warningCount: number
+  readonly exportedOk: boolean
+  readonly patchedOk: boolean
+}
+
 function summarizeCase(
   caseId: string,
   comparisonPuzzles: readonly PuzzleDefinition[] = [],
@@ -201,6 +253,28 @@ function summarizeCase(
     targetFour: report.validation.difficultyReview?.targetFour.pass,
     superHard: report.validation.difficultyReview?.superHard.pass,
     copyWarnings: report.copyWarnings.map((warning) => warning.code),
+  }
+}
+
+function summarizeRuleBuilderCase(caseId: string): RuleBuilderCaseSummary {
+  const item = getWorkbenchCaseImportById(caseId)
+  const draft = createWorkbenchDraftFromPuzzle(item.puzzle)
+  const model = createWorkbenchShellModel([], caseId, draft)
+  const patch = patchWorkbenchRuleBuilderDrafts(draft, model.ruleBuilderDrafts)
+
+  return {
+    id: item.puzzle.id,
+    ruleCount: model.ruleBuilderDrafts.length,
+    editableCount: model.ruleBuilderDrafts.filter((rule) => rule.support === 'editable').length,
+    readOnlyFamilies: model.ruleBuilderDrafts
+      .filter((rule) => rule.support === 'read-only-unsupported')
+      .map((rule) => rule.family),
+    warningCount: model.ruleBuilderDrafts.reduce(
+      (total, rule) => total + rule.generatedText.warnings.length,
+      0,
+    ),
+    exportedOk: model.exported.ok,
+    patchedOk: patch.ok,
   }
 }
 
