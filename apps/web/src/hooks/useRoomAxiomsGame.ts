@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { allCells, lineCells, neighbors, rayCells, regionCells } from '@room-axioms/domain'
-import { cellLabels } from '../data/case004'
 import type { AnalysisResult } from '../logic/analysis'
 import { createHint, kindIsInspectable, type Hint } from '../logic/hints'
 import {
@@ -42,6 +41,7 @@ import type {
   RuleDefinition,
 } from '@room-axioms/domain'
 import type { SolverStats } from '@room-axioms/solver'
+import { sceneCellLabels, sceneMarkLabels } from '../theme/vocabulary'
 import type { Tool } from '../view/types'
 
 type StatusKind = 'normal' | 'success' | 'error'
@@ -302,8 +302,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
       setStatusMessage(
         value === 'guest'
-          ? `${cellId} 已切换访客标记。标记只是你的笔记。`
-          : `${cellId} 已切换安全笔记。`,
+          ? `${cellId} 已切换为${sceneMarkLabels.guest}。标注只是工作笔记。`
+          : `${cellId} 已切换为${sceneMarkLabels.safe}。`,
       )
       if (value === 'guest') openDialogueScene(staticDialogueSceneByCategory('firstAnomalyMark'))
     },
@@ -315,7 +315,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       if (revealed.has(cellId) || failed) return
 
       if (marks.get(cellId) === 'guest') {
-        setStatusMessage(`${cellId} 已被你标记为访客。先撤销标记，再决定是否调查。`, 'error')
+        setStatusMessage(`${cellId} 已标注为${sceneCellLabels.guest}。先撤销标注，再决定是否勘察。`, 'error')
         return
       }
 
@@ -332,13 +332,13 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         setFailed(true)
         setResult({
           kind: 'failure',
-          eyebrow: '调查失败',
-          title: `${cellId} 是访客`,
-          body: '这里有访客。你可以重开再试。',
+          eyebrow: '现场级灾害',
+          title: `${cellId} 是${sceneCellLabels.guest}`,
+          body: '该区域不能被主动勘察。你可以重置调查后再试。',
           stats: [
-            { label: '主动调查', value: inspectCount + 1 },
-            { label: '提示次数', value: hintCount },
-            { label: '触发访客', value: 1 },
+            { label: '主动勘察', value: inspectCount + 1 },
+            { label: '搭档复核', value: hintCount },
+            { label: '触发异常', value: 1 },
           ],
         })
         openDialogueScene(staticDialogueSceneByCategory('failure'))
@@ -350,7 +350,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         next.delete(cellId)
         return next
       })
-      setStatusMessage(`${cellId} 是${cellLabels[kind]}。`, 'success')
+      setStatusMessage(`${cellId} 已登记：${sceneCellLabels[kind]}。`, 'success')
       openDialogueScene(staticDialogueSceneByCategory('firstSafeInspect'))
     },
     [failed, hintCount, inspectCount, marks, openDialogueScene, puzzle, revealed, setStatusMessage],
@@ -498,24 +498,24 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     const conclusion = evaluateGuestConclusion(targetGuests, guestMarks)
 
     if (conclusion.kind === 'incomplete') {
-      setStatusMessage(`需要标出 ${conclusion.required} 名访客；现在标了 ${conclusion.marked} 名。`, 'error')
+      setStatusMessage(`需要标出 ${conclusion.required} 处${sceneCellLabels.guest}；现在标了 ${conclusion.marked} 处。`, 'error')
       return
     }
 
     if (conclusion.kind === 'incorrect') {
-      setStatusMessage('这个答案不对。你可以继续改笔记。', 'error')
+      setStatusMessage('现场登记图未通过复核。你可以继续调整标注。', 'error')
       return
     }
 
     setResult({
       kind: 'success',
       eyebrow: '调查完成',
-      title: `${targetGuests.length} 名访客已经定位`,
-      body: `你找到了所有访客：${guestMarks.join('、')}。`,
+      title: `${targetGuests.length} 处${sceneCellLabels.guest}已定位`,
+      body: `你提交的异常标注为：${guestMarks.join('、')}。`,
       stats: [
-        { label: '访客标记', value: guestMarks.length },
-        { label: '主动调查', value: inspectCount },
-        { label: '提示次数', value: hintCount },
+        { label: sceneMarkLabels.guest, value: guestMarks.length },
+        { label: '主动勘察', value: inspectCount },
+        { label: '搭档复核', value: hintCount },
       ],
     })
     openDialogueScene(staticDialogueSceneByCategory('success'))
@@ -766,5 +766,5 @@ export function evaluateGuestConclusion(
 }
 
 function initialStatusText(): string {
-  return '选择格子调查，或先做访客/安全笔记。'
+  return '选择区域进行受控勘察，或先做异常/可勘察标注。'
 }

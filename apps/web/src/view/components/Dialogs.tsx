@@ -34,17 +34,17 @@ function HintDialog({ game }: { readonly game: RoomAxiomsGame }) {
       <section className="dialog-card hint-dialog" role="dialog" aria-modal="true" aria-labelledby="hintTitle">
         <div className="dialog-header">
           <div>
-            <span className="eyebrow">可解释提示</span>
+            <span className="eyebrow">搭档复核</span>
             <h2 id="hintTitle">{hint.title}</h2>
           </div>
-          <button className="icon-button" type="button" onClick={game.closeHint} aria-label="关闭">
+          <button className="icon-button" type="button" onClick={game.closeHint} aria-label="关闭复核">
             <X size={20} aria-hidden="true" />
           </button>
         </div>
         <div className="hint-body">
           <div className="hint-conclusion">{hint.conclusion}</div>
           <section className="hint-section">
-            <h3>用到的信息</h3>
+            <h3>用到的公开信息</h3>
             <ul>
               {hint.premises.map((premise) => (
                 <li key={premise}>{premise}</li>
@@ -52,13 +52,13 @@ function HintDialog({ game }: { readonly game: RoomAxiomsGame }) {
             </ul>
           </section>
           <section className="hint-section">
-            <h3>为什么</h3>
+            <h3>复核理由</h3>
             <p>{hint.reasoning}</p>
           </section>
         </div>
         <div className="dialog-actions">
           <button className="primary-button" type="button" onClick={game.closeHint}>
-            返回棋盘
+            返回现场图
           </button>
         </div>
       </section>
@@ -93,7 +93,7 @@ function ResultDialog({ game }: { readonly game: RoomAxiomsGame }) {
             关闭
           </button>
           <button className="primary-button" type="button" onClick={game.reset}>
-            重新调查
+            重置调查
           </button>
         </div>
       </section>

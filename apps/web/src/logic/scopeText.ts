@@ -1,4 +1,5 @@
 import type { Comparator, RuleDefinition } from '@room-axioms/domain'
+import { sanitizePlayerRuleCopy, sceneKindLabel, sceneKindUnit } from '../theme/vocabulary'
 
 export function ruleChip(rule: RuleDefinition): string {
   if (rule.type === 'globalCount') {
@@ -37,22 +38,22 @@ export function ruleChip(rule: RuleDefinition): string {
 }
 
 export function rulePlainText(rule: RuleDefinition): string {
-  if (rule.presentation.flavor !== undefined) return rule.presentation.flavor
+  if (rule.presentation.flavor !== undefined) return sanitizePlayerRuleCopy(rule.presentation.flavor)
 
   if (rule.type === 'globalCount') {
-    return `房间里${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `本现场${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'regionCount') {
-    return `${rule.presentation.title}区域，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${rule.presentation.title}区域：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'lineCount') {
-    return `${lineLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${lineLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'anchorCount') {
-    return `${rule.presentation.title}的${anchorScopeLabel(rule)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${rule.presentation.title}的${anchorScopeLabel(rule)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'recordSet') {
@@ -60,22 +61,22 @@ export function rulePlainText(rule: RuleDefinition): string {
   }
 
   if (rule.type === 'scopeOverlapCount') {
-    return `${rule.presentation.title}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+    return `${rule.presentation.title}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
   }
 
   if (rule.type === 'comparativeCount') {
-    return `${rule.presentation.title}，${comparisonText(rule.comparison.op, rule.comparison.offset ?? 0)}。`
+    return `${rule.presentation.title}：${comparisonText(rule.comparison.op, rule.comparison.offset ?? 0)}。`
   }
 
   if (rule.type === 'conditionalCount') {
-    return rule.presentation.title
+    return sanitizePlayerRuleCopy(rule.presentation.title)
   }
 
   if (rule.count.op === 'eq' && rule.count.value === 0) {
     return `${kindLabel(rule.target)}不在${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}。`
   }
 
-  return `${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}，${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
+  return `${kindLabel(rule.subject)}的${scopeLabel(rule.scope.kind)}：${countTargetPhrase(rule.target, rule.count.op, rule.count.value)}。`
 }
 
 export function ruleSemantics(rule: RuleDefinition): string {
@@ -84,7 +85,7 @@ export function ruleSemantics(rule: RuleDefinition): string {
 
 export function comparatorText(op: Comparator['op'], value: number): string {
   if (op === 'eq') return `= ${value}`
-  if (op === 'neq') return `≠ ${value}`
+  if (op === 'neq') return `!= ${value}`
   if (op === 'gt') return `> ${value}`
   if (op === 'gte') return `>= ${value}`
   if (op === 'lt') return `< ${value}`
@@ -92,11 +93,7 @@ export function comparatorText(op: Comparator['op'], value: number): string {
 }
 
 function kindLabel(kind: string): string {
-  if (kind === 'bottle') return '酒瓶'
-  if (kind === 'bin') return '垃圾桶'
-  if (kind === 'mirror') return '镜子'
-  if (kind === 'guest') return '访客'
-  return '空地'
+  return sceneKindLabel(kind)
 }
 
 function scopeLabel(scope: 'orthogonal' | 'adjacent'): string {
@@ -157,7 +154,5 @@ function comparisonText(op: Comparator['op'], offset: number): string {
 }
 
 function kindUnit(kind: string): string {
-  if (kind === 'guest') return '名'
-  if (kind === 'mirror') return '面'
-  return '个'
+  return sceneKindUnit(kind)
 }

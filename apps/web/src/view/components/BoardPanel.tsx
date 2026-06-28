@@ -1,10 +1,16 @@
 import { Circle, Flag, Search } from 'lucide-react'
 import { columnsForWidth, parseCellId } from '@room-axioms/domain'
-import { cellLabels, toolLabels } from '../../data/case004'
 import { nextCellForArrowKey } from '../keyboardNavigation'
 import type { CSSProperties, KeyboardEvent } from 'react'
 import type { BoardSize, CellId } from '@room-axioms/domain'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import {
+  sceneCellLabels,
+  sceneMarkLabels,
+  scenePanels,
+  sceneToolDescriptions,
+  sceneToolLabels,
+} from '../../theme/vocabulary'
 import type { Tool } from '../types'
 import { ObjectIcon } from './ObjectIcon'
 
@@ -20,20 +26,21 @@ export function BoardPanel({ game }: BoardPanelProps) {
   } as CSSProperties
 
   return (
-    <section className="board-panel" data-panel="board" aria-labelledby="boardHeading">
+    <section className="board-panel scene-map-panel" data-panel="board" aria-labelledby="boardHeading">
       <div className="board-heading">
         <div>
-          <span className="eyebrow">翻格子找证据</span>
-          <h2 id="boardHeading">房间棋盘</h2>
+          <span className="eyebrow">Scene Map</span>
+          <h2 id="boardHeading">{scenePanels.map}</h2>
         </div>
-        <div className="mode-badge">{toolLabels[game.tool]}</div>
+        <div className="mode-badge">{sceneToolLabels[game.tool]}</div>
       </div>
 
-      <div className="board-stage">
+      <div className="board-stage scene-map-stage">
+        <div className="scene-map-floorplan" aria-hidden="true" />
         <div
-          className="board-coordinates"
+          className="board-coordinates scene-map-grid"
           role="grid"
-          aria-label={`${game.puzzle.board.width} by ${game.puzzle.board.height} investigation board`}
+          aria-label={`${game.puzzle.board.width} by ${game.puzzle.board.height} scene map`}
           aria-rowcount={game.puzzle.board.height}
           aria-colcount={game.puzzle.board.width}
           style={boardStyle}
@@ -51,7 +58,7 @@ export function BoardPanel({ game }: BoardPanelProps) {
         <div className="board-caption">{captionFor(game)}</div>
       </div>
 
-      <div className="tool-row" role="toolbar" aria-label="调查工具">
+      <div className="tool-row" role="toolbar" aria-label="现场勘察工具">
         <ToolButton tool="inspect" active={game.tool === 'inspect'} onClick={() => game.setTool('inspect')} />
         <ToolButton tool="guest" active={game.tool === 'guest'} onClick={() => game.setTool('guest')} />
         <ToolButton tool="safe" active={game.tool === 'safe'} onClick={() => game.setTool('safe')} />
@@ -92,11 +99,11 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
   const kind = game.observedKind(cellId)
   const targetKind = game.developerTargetKind(cellId)
   const mark = game.marks.get(cellId)
-  const classes = ['cell', ...game.highlightedCells(cellId)]
+  const classes = ['cell', 'scene-map-cell', ...game.highlightedCells(cellId)]
   const coord = parseCellId(cellId, game.puzzle.board)
 
   if (revealed) classes.push('revealed')
-  if (mark === 'guest') classes.push('mark-guest')
+  if (mark === 'guest') classes.push('mark-guest', 'mark-anomaly')
   if (mark === 'safe') classes.push('mark-safe')
   if (game.devMode && !revealed && game.analysis.forcedSafe.includes(cellId)) classes.push('dev-safe')
   if (game.devMode && !revealed && game.analysis.forcedGuests.includes(cellId)) classes.push('dev-guest')
@@ -121,16 +128,17 @@ function CellButton({ game, cellId }: { readonly game: RoomAxiomsGame; readonly 
       aria-label={cellAria(cellId, revealed, kind, mark)}
     >
       <span className="coord">{cellId}</span>
+      <span className="scene-cell-hit-target" aria-hidden="true" />
       {revealed && kind !== null ? (
-        <span className="object">
+        <span className="object scene-object-layer">
           <ObjectIcon kind={kind} />
-          <span>{cellLabels[kind]}</span>
+          <span>{sceneCellLabels[kind]}</span>
         </span>
       ) : (
         <CellUnknown mark={mark} />
       )}
       {targetKind !== null ? (
-        <span className="target-tag">{cellLabels[targetKind]}</span>
+        <span className="target-tag">{sceneCellLabels[targetKind]}</span>
       ) : null}
     </button>
   )
@@ -141,7 +149,7 @@ function CellUnknown({ mark }: { readonly mark?: 'guest' | 'safe' }) {
     return (
       <span className="player-mark">
         <Flag size={22} aria-hidden="true" />
-        <small>访客？</small>
+        <small>{sceneMarkLabels.guest}</small>
       </span>
     )
   }
@@ -150,7 +158,7 @@ function CellUnknown({ mark }: { readonly mark?: 'guest' | 'safe' }) {
     return (
       <span className="player-mark">
         <Circle size={22} aria-hidden="true" />
-        <small>安全？</small>
+        <small>{sceneMarkLabels.safe}</small>
       </span>
     )
   }
@@ -168,14 +176,12 @@ function ToolButton({
   readonly onClick: () => void
 }) {
   const Icon = tool === 'inspect' ? Search : tool === 'guest' ? Flag : Circle
-  const description =
-    tool === 'inspect' ? '翻开格子' : tool === 'guest' ? '做访客笔记' : '做安全笔记'
 
   return (
     <button className={`tool-button${active ? ' active' : ''}`} type="button" onClick={onClick}>
       <Icon className="tool-icon" size={22} aria-hidden="true" />
-      <span>{toolLabels[tool]}</span>
-      <small>{description}</small>
+      <span>{sceneToolLabels[tool]}</span>
+      <small>{sceneToolDescriptions[tool]}</small>
     </button>
   )
 }
@@ -186,30 +192,30 @@ function captionFor(game: RoomAxiomsGame): string {
     const observedKind = game.observedKind(game.hoveredCell)
     const stateText = game.revealed.has(game.hoveredCell)
       ? observedKind === null
-        ? '已揭示'
-        : cellLabels[observedKind]
+        ? '已登记'
+        : sceneCellLabels[observedKind]
       : mark === 'guest'
-        ? '玩家标记：访客？'
+        ? `玩家标注：${sceneMarkLabels.guest}`
         : mark === 'safe'
-          ? '玩家标记：安全？'
-          : '尚未调查'
-    return `${game.hoveredCell} · ${stateText}`
+          ? `玩家标注：${sceneMarkLabels.safe}`
+          : '尚未勘察'
+    return `${game.hoveredCell} / ${stateText}`
   }
 
-  if (game.selectedRule) return '蓝框是这条规则会看的格子；金框是规则的起点物品。'
-  return '选中规则，可以查看规则生效的格子。右键格子可快速切换笔记。'
+  if (game.selectedRule) return '蓝色区域是当前定则的公开作用范围；高亮只用于可视化，不额外提供隐藏信息。'
+  return '选择现场定则可查看公开作用范围。右键区域可快速切换工作标注。'
 }
 
 function cellAria(
   cellId: CellId,
   revealed: boolean,
-  kind: keyof typeof cellLabels | null,
+  kind: keyof typeof sceneCellLabels | null,
   mark: 'guest' | 'safe' | undefined,
 ): string {
-  if (revealed) return `${cellId}，已揭示，${kind === null ? '未知' : cellLabels[kind]}`
-  if (mark === 'guest') return `${cellId}，未知，玩家标记为访客`
-  if (mark === 'safe') return `${cellId}，未知，玩家标记为安全`
-  return `${cellId}，未知，未标记`
+  if (revealed) return `${cellId}，已登记，${kind === null ? '未知内容' : sceneCellLabels[kind]}`
+  if (mark === 'guest') return `${cellId}，未知区域，玩家标注为${sceneMarkLabels.guest}`
+  if (mark === 'safe') return `${cellId}，未知区域，玩家标注为${sceneMarkLabels.safe}`
+  return `${cellId}，未知区域，未标注`
 }
 
 function focusNextCellForKey(

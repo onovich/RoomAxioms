@@ -21,7 +21,7 @@ describe('proof-backed hints', () => {
     const hint = createHint(case004, runtimeAnalysis.hint)
 
     expect(hint.highlight).toBe('A1')
-    expect(hint.conclusion).toBe('A1 可以安全调查。')
+    expect(hint.conclusion).toBe('A1 可以继续勘察。')
     expect(hint.premises.length).toBeGreaterThan(0)
     expect(hint.reasoning).toBe('这一步不用猜。')
   })
@@ -81,7 +81,7 @@ describe('proof-backed hints', () => {
     expect(runtimeAnalysis.forcedGuests).toEqual([])
     expect(runtimeAnalysis.noGuess).toBeUndefined()
     expect(hint.highlight).toBe('D1')
-    expect(hint.conclusion).toBe('D1 可以安全调查。')
+    expect(hint.conclusion).toBe('D1 可以继续勘察。')
     expect(hint.premises.length).toBeGreaterThan(0)
     expect(hint.reasoning).toBe('这一步不用猜。')
   })

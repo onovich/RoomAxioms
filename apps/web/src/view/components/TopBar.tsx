@@ -1,6 +1,13 @@
 import { Lightbulb, MessageSquareText, Play, RotateCcw } from 'lucide-react'
 import type { CaseSummary, CaseTier } from '../../content/cases'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import {
+  SCENE_DEPARTMENT,
+  SCENE_DEPARTMENT_EN,
+  SCENE_TITLE,
+  SCENE_TITLE_EN,
+  scenePanels,
+} from '../../theme/vocabulary'
 import type { VNTextSpeed } from '../../vn/preferences'
 
 interface TopBarProps {
@@ -11,27 +18,28 @@ interface TopBarProps {
 }
 
 export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProps) {
-  const guestMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
+  const anomalyMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
   const caseGroups = groupCasesByTier(cases)
 
   return (
-    <header className="topbar">
-      <div className="brand-block">
+    <header className="topbar scene-topbar">
+      <div className="brand-block scene-brand">
         <div className="brand-mark" aria-hidden="true">
-          RA
+          US
         </div>
         <div>
           <div className="brand">
-            房间公理 <span>Room Axioms</span>
+            {SCENE_TITLE} <span>{SCENE_TITLE_EN}</span>
           </div>
+          <div className="department-line">{SCENE_DEPARTMENT} / {SCENE_DEPARTMENT_EN}</div>
           <div className="case-meta">
             <div className="case-name">{game.puzzle.caseName}</div>
-            <label className="case-picker">
-              <span>Case</span>
+            <label className="case-picker scene-case-file">
+              <span>案卷</span>
               <select
                 value={selectedCaseId}
                 onChange={(event) => onSelectCase(event.target.value)}
-                aria-label="Select case"
+                aria-label="选择案卷"
               >
                 {caseGroups.map((group) => (
                   <optgroup label={group.label} key={group.tier}>
@@ -48,11 +56,12 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
         </div>
       </div>
 
-      <div className="top-stats" aria-label="关卡进度">
-        <ProgressStat label="已标访客" value={`${guestMarks} / ${game.targetGuestCount}`} />
+      <div className="top-stats scene-progress" aria-label="现场调查进度">
+        <ProgressStat label="异常标注" value={`${anomalyMarks} / ${game.targetGuestCount}`} />
+        <ProgressStat label="勘察进度" value={`${game.revealed.size} / ${game.cells.length}`} />
       </div>
 
-      <div className="top-actions">
+      <div className="top-actions scene-actions">
         <div className="vn-preferences" aria-label="VN dialogue controls">
           <button
             className="ghost-button"
@@ -96,9 +105,9 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
         </div>
         <button className="ghost-button" type="button" onClick={game.requestHint}>
           <Lightbulb size={17} aria-hidden="true" />
-          <span>解释一步</span>
+          <span>{scenePanels.partnerReview}</span>
         </button>
-        <button className="icon-button" type="button" onClick={game.reset} aria-label="重置关卡">
+        <button className="icon-button" type="button" onClick={game.reset} aria-label={scenePanels.resetSurvey}>
           <RotateCcw size={20} aria-hidden="true" />
         </button>
       </div>
@@ -109,9 +118,9 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
 const CASE_TIER_ORDER: readonly CaseTier[] = ['baseline', 'target-4', 'super-hard']
 
 const CASE_TIER_LABELS = {
-  baseline: '基础 / 机制样例',
-  'target-4': '4+ 候选',
-  'super-hard': '6-7 高难候选',
+  baseline: '基础案卷',
+  'target-4': '进阶案卷',
+  'super-hard': '高危案卷',
 } as const satisfies Record<CaseTier, string>
 
 function groupCasesByTier(cases: readonly CaseSummary[]): readonly {

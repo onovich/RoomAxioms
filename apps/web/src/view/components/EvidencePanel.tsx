@@ -1,17 +1,17 @@
 import { Circle, Flag } from 'lucide-react'
-import { cellLabels } from '../../data/case004'
 import {
   createDeveloperInspectorModel,
   type DeveloperInspectorModel,
 } from '../../logic/developerInspector'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import { sceneCellLabels, sceneMarkLabels, scenePanels } from '../../theme/vocabulary'
 
 interface EvidencePanelProps {
   readonly game: RoomAxiomsGame
 }
 
 export function EvidencePanel({ game }: EvidencePanelProps) {
-  const guestMarks = [...game.marks.entries()]
+  const anomalyMarks = [...game.marks.entries()]
     .filter(([, value]) => value === 'guest')
     .map(([id]) => id)
     .sort()
@@ -21,22 +21,22 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
     .sort()
 
   return (
-    <aside className="panel evidence-panel" data-panel="evidence" aria-labelledby="evidenceHeading">
+    <aside className="panel evidence-panel scene-record-panel" data-panel="evidence" aria-labelledby="evidenceHeading">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">只记录已知事实</span>
-          <h2 id="evidenceHeading">证据与笔记</h2>
+          <span className="eyebrow">Record Log</span>
+          <h2 id="evidenceHeading">{scenePanels.record}</h2>
         </div>
       </div>
 
-      <section className="evidence-section">
-        <h3>已揭示物证</h3>
+      <section className="evidence-section record-log-section">
+        <h3>已登记区域 ({game.actionLog.length})</h3>
         <ol className="evidence-log">
           {[...game.actionLog].reverse().map((entry) => (
             <li className="evidence-item" key={`${entry.id}-${entry.order}`}>
               <span className="evidence-coord">{entry.id}</span>
               <span>
-                <b>{cellLabels[entry.kind]}</b>
+                <b>{sceneCellLabels[entry.kind]}</b>
               </span>
             </li>
           ))}
@@ -44,14 +44,14 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
       </section>
 
       <section className="evidence-section notes-section">
-        <h3>玩家笔记</h3>
+        <h3>{scenePanels.marks}</h3>
         <div className="note-group">
           <span className="note-symbol guest-note">
             <Flag size={16} aria-hidden="true" />
           </span>
           <div>
-            <b>访客</b>
-            <p>{guestMarks.length > 0 ? guestMarks.join('、') : '尚未标记'}</p>
+            <b>{sceneMarkLabels.guest} ({anomalyMarks.length} / {game.targetGuestCount})</b>
+            <p>{anomalyMarks.length > 0 ? anomalyMarks.join('、') : '尚未标注'}</p>
           </div>
         </div>
         <div className="note-group">
@@ -59,16 +59,16 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
             <Circle size={16} aria-hidden="true" />
           </span>
           <div>
-            <b>安全</b>
-            <p>{safeMarks.length > 0 ? safeMarks.join('、') : '尚未标记'}</p>
+            <b>{sceneMarkLabels.safe} ({safeMarks.length})</b>
+            <p>{safeMarks.length > 0 ? safeMarks.join('、') : '尚未标注'}</p>
           </div>
         </div>
       </section>
 
       {game.devMode ? <DeveloperPanel game={game} /> : null}
 
-      <button className="primary-button submit-button" type="button" onClick={game.submitConclusion}>
-        提交访客结论
+      <button className="primary-button submit-button scene-submit-button" type="button" onClick={game.submitConclusion}>
+        {scenePanels.submitSurvey}
       </button>
     </aside>
   )
@@ -99,7 +99,7 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
         <DevStat label="候选危险布局" value={game.analysisLayoutCountText} />
         <DevStat label="垃圾桶候选" value={game.analysis.binCandidates.join('、') || '无'} />
         <DevStat label="强制安全" value={game.analysis.forcedSafe.join('、') || '-'} />
-        <DevStat label="强制访客" value={game.analysis.forcedGuests.join('、') || '-'} />
+        <DevStat label="强制异常" value={game.analysis.forcedGuests.join('、') || '-'} />
         <DevStat label="危险布局唯一" value={game.analysis.unique ? '是' : '否'} />
         <DevStat label="查询耗时" value={`${game.analysis.elapsed.toFixed(2)} ms`} />
       </dl>
@@ -109,14 +109,14 @@ function DeveloperPanel({ game }: EvidencePanelProps) {
           checked={game.showTarget}
           onChange={(event) => game.setShowTarget(event.target.checked)}
         />
-        <span>显示目标棋盘（剧透）</span>
+        <span>显示目标现场图（维护者剧透）</span>
       </label>
       <div className="dev-legend">
         <span>
           <i className="legend-safe">S</i> 强制安全
         </span>
         <span>
-          <i className="legend-guest">G</i> 强制访客
+          <i className="legend-guest">A</i> 强制异常
         </span>
       </div>
       {inspector ? <DeveloperInspector model={inspector} /> : null}
@@ -133,7 +133,7 @@ function DeveloperInspector({ model }: { readonly model: DeveloperInspectorModel
         <DevStat label="Satisfiable" value={model.satisfiable} />
         <DevStat label="Guest layouts" value={model.candidateGuestLayouts} />
         <DevStat label="Forced safe" value={model.forcedSafe} />
-        <DevStat label="Forced guests" value={model.forcedGuests} />
+        <DevStat label="Forced anomalies" value={model.forcedGuests} />
         <DevStat label="Solver" value={model.solverStats} />
         <DevStat label="Proof" value={model.proofStats} />
         <DevStat label="No-guess" value={model.noGuess} />

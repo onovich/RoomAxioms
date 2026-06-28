@@ -1,4 +1,5 @@
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import { scenePanels } from '../../theme/vocabulary'
 
 interface MobileTabsProps {
   readonly game: RoomAxiomsGame
@@ -6,29 +7,28 @@ interface MobileTabsProps {
 
 export function MobileTabs({ game }: MobileTabsProps) {
   return (
-    <nav className="mobile-tabs" aria-label="移动端面板">
+    <nav className="mobile-tabs" aria-label="移动端现场面板">
       <button
         type="button"
         className={game.mobilePanel === 'rules' ? 'active' : ''}
         onClick={() => game.setMobilePanel('rules')}
       >
-        规则
+        {scenePanels.rules}
       </button>
       <button
         type="button"
         className={game.mobilePanel === 'board' ? 'active' : ''}
         onClick={() => game.setMobilePanel('board')}
       >
-        棋盘
+        {scenePanels.map}
       </button>
       <button
         type="button"
         className={game.mobilePanel === 'evidence' ? 'active' : ''}
         onClick={() => game.setMobilePanel('evidence')}
       >
-        证据
+        {scenePanels.record}
       </button>
     </nav>
   )
 }
-

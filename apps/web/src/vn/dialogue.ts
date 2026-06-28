@@ -111,7 +111,7 @@ export const STATIC_DIALOGUE_SCENES = [
       {
         id: 'first-safe-inspect-1',
         speaker: '调查员',
-        text: '这次调查没有触发访客。把新看到的物件和规则重新对照。',
+        text: '这次勘察没有触发异常。把新看到的物件和规则重新对照。',
         portraitId: 'investigator',
         portraitSlot: 'left',
         expressionId: 'neutral',
@@ -145,7 +145,7 @@ export const STATIC_DIALOGUE_SCENES = [
       {
         id: 'failure-wrap-1',
         speaker: '调度员',
-        text: '这次调查触发了访客记录。复盘公开规则后可以重新开始。',
+        text: '这次勘察触发了异常记录。复盘公开规则后可以重新开始。',
         portraitId: 'dispatcher',
         portraitSlot: 'right',
         expressionId: 'neutral',
@@ -162,7 +162,7 @@ export const STATIC_DIALOGUE_SCENES = [
       {
         id: 'success-wrap-1',
         speaker: '调查员',
-        text: '所有访客记录已经归档。公开规则和现场记录互相吻合。',
+        text: '所有异常记录已经归档。公开规则和现场记录互相吻合。',
         portraitId: 'investigator',
         portraitSlot: 'left',
         expressionId: 'neutral',

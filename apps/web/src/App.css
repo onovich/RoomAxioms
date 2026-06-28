@@ -20,6 +20,15 @@
   --info-soft: #1e3444;
   --panel-shadow: 0 18px 52px rgba(0, 0, 0, 0.28);
   --radius: 8px;
+  --scene-paper: #f4ecdc;
+  --scene-paper-aged: #eadfc9;
+  --scene-ink: #0d2544;
+  --scene-ink-soft: #49617a;
+  --scene-red: #a83a33;
+  --scene-green: #477d55;
+  --scene-line: rgba(13, 37, 68, 0.72);
+  --scene-faint-line: rgba(13, 37, 68, 0.28);
+  --scene-shadow: rgba(13, 37, 68, 0.18);
   font-family:
     'Noto Sans SC',
     'PingFang SC',
@@ -41,8 +50,9 @@ body,
 body {
   margin: 0;
   background:
-    linear-gradient(180deg, #0c1112 0%, var(--bg) 42%, #070909 100%);
-  color: var(--text);
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.52), transparent 34%),
+    linear-gradient(180deg, #efe5d1 0%, var(--scene-paper) 42%, #d8c9ad 100%);
+  color: var(--scene-ink);
   font-size: 15px;
 }
 
@@ -95,6 +105,14 @@ h3 {
   padding-bottom: 0;
 }
 
+.scene-shell {
+  background:
+    linear-gradient(90deg, rgba(13, 37, 68, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(13, 37, 68, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--scene-ink);
+}
+
 .topbar {
   align-items: center;
   background: rgba(10, 14, 14, 0.94);
@@ -107,6 +125,16 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+.scene-topbar {
+  background: rgba(244, 236, 220, 0.96);
+  border: 2px solid var(--scene-line);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 10px 24px var(--scene-shadow);
+  color: var(--scene-ink);
+  margin: 10px 10px 0;
+  top: 0;
 }
 
 .brand-block {
@@ -129,6 +157,35 @@ h3 {
   justify-content: center;
   letter-spacing: 0;
   width: 44px;
+}
+
+.scene-brand .brand-mark {
+  background: transparent;
+  border-color: var(--scene-ink);
+  color: var(--scene-ink);
+}
+
+.scene-brand .brand {
+  color: var(--scene-ink);
+  font-family: ui-monospace, 'Noto Sans SC', monospace;
+  letter-spacing: 0;
+}
+
+.department-line {
+  color: var(--scene-ink-soft);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.scene-case-file,
+.scene-progress > div,
+.scene-actions .ghost-button,
+.scene-actions .icon-button,
+.scene-actions .compact-select,
+.scene-actions .compact-checkbox {
+  background: rgba(255, 250, 239, 0.72);
+  border-color: var(--scene-line);
+  color: var(--scene-ink);
 }
 
 .brand {
@@ -668,6 +725,195 @@ h3 {
   right: 5px;
   top: 5px;
   z-index: 4;
+}
+
+.scene-workstation {
+  grid-template-columns: minmax(290px, 340px) minmax(500px, 1fr) minmax(290px, 320px);
+}
+
+.scene-rules-panel,
+.scene-map-panel,
+.scene-record-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 42%),
+    var(--scene-paper);
+  border: 2px solid var(--scene-line);
+  box-shadow: 0 14px 30px var(--scene-shadow);
+  color: var(--scene-ink);
+}
+
+.scene-rules-panel .panel-heading,
+.scene-map-panel .board-heading,
+.scene-record-panel .panel-heading {
+  border-bottom: 1px solid var(--scene-line);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+}
+
+.scene-rules-panel .eyebrow,
+.scene-map-panel .eyebrow,
+.scene-record-panel .eyebrow {
+  color: var(--scene-ink-soft);
+}
+
+.scene-rule-card {
+  background: rgba(255, 251, 241, 0.68);
+  border-color: var(--scene-faint-line);
+  grid-template-areas:
+    'index copy diagram';
+  grid-template-columns: 42px 1fr 58px;
+}
+
+.scene-rule-card:hover,
+.scene-rule-card.active {
+  background: rgba(234, 223, 201, 0.92);
+  border-color: var(--scene-line);
+}
+
+.scene-rule-card.active {
+  box-shadow: inset 4px 0 0 var(--scene-red);
+}
+
+.scene-rule-card .rule-index {
+  background: transparent;
+  color: var(--scene-red);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 18px;
+}
+
+.scene-rule-card .rule-copy b {
+  color: var(--scene-ink);
+  line-height: 1.55;
+}
+
+.scene-rule-card .rule-copy em {
+  color: var(--scene-ink-soft);
+}
+
+.rule-mini-diagram {
+  align-self: center;
+  display: grid;
+  gap: 2px;
+  grid-area: diagram;
+  grid-template-columns: repeat(3, 12px);
+  justify-self: end;
+}
+
+.rule-mini-diagram span {
+  border: 1px solid var(--scene-faint-line);
+  height: 12px;
+  width: 12px;
+}
+
+.rule-mini-diagram .scope {
+  background: rgba(13, 37, 68, 0.12);
+  border-color: var(--scene-line);
+}
+
+.rule-mini-diagram .subject {
+  background: var(--scene-ink);
+  border-color: var(--scene-ink);
+}
+
+.rule-mini-diagram .dot {
+  background: var(--scene-red);
+  border-color: var(--scene-red);
+  border-radius: 999px;
+  transform: scale(0.62);
+}
+
+.scene-map-stage {
+  background:
+    linear-gradient(90deg, rgba(13, 37, 68, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(13, 37, 68, 0.08) 1px, transparent 1px),
+    rgba(255, 251, 241, 0.62);
+  background-size: 32px 32px;
+  border: 2px solid var(--scene-line);
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+}
+
+.scene-map-floorplan {
+  border: 1px dashed var(--scene-faint-line);
+  inset: 46px 24px 56px 58px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.scene-map-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.scene-map-cell {
+  background: rgba(244, 236, 220, 0.84);
+  border-color: var(--scene-faint-line);
+  border-radius: 2px;
+  color: var(--scene-ink);
+}
+
+.scene-map-cell:hover {
+  background: rgba(234, 223, 201, 0.94);
+  border-color: var(--scene-line);
+}
+
+.scene-map-cell.revealed {
+  background: rgba(255, 251, 241, 0.92);
+  border-color: var(--scene-line);
+}
+
+.scene-map-cell.mark-anomaly {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(168, 58, 51, 0.16) 0,
+      rgba(168, 58, 51, 0.16) 6px,
+      rgba(255, 251, 241, 0.88) 6px,
+      rgba(255, 251, 241, 0.88) 12px
+    );
+  border-color: var(--scene-red);
+}
+
+.scene-map-cell.mark-safe {
+  background: rgba(71, 125, 85, 0.12);
+  border-color: var(--scene-green);
+}
+
+.scene-map-cell .coord,
+.scene-map-cell .object span {
+  color: var(--scene-ink-soft);
+}
+
+.scene-map-cell .object svg {
+  stroke: var(--scene-ink);
+}
+
+.scene-map-cell.mark-anomaly .player-mark {
+  color: var(--scene-red);
+}
+
+.scene-map-cell.mark-safe .player-mark {
+  color: var(--scene-green);
+}
+
+.scene-map-cell.scope-highlight {
+  border-color: var(--scene-ink);
+  box-shadow: 0 0 0 3px rgba(13, 37, 68, 0.22);
+}
+
+.scene-map-cell.hint-highlight {
+  border-color: var(--scene-red);
+  box-shadow: 0 0 0 3px rgba(168, 58, 51, 0.24);
+}
+
+.scene-submit-button {
+  background: transparent;
+  border: 2px solid var(--scene-red);
+  color: var(--scene-red);
+  font-family: ui-monospace, 'Noto Sans SC', monospace;
+  font-size: 18px;
+  min-height: 72px;
 }
 
 .board-caption {

@@ -1,5 +1,6 @@
 import type { RuntimeHint } from '../runtime/contracts'
 import type { CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
+import { sceneCellLabels } from '../theme/vocabulary'
 
 export interface Hint {
   readonly title: string
@@ -70,9 +71,9 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
     case 'COMPARATIVE_COUNT_ALL_REMAINING':
       return '比较后剩下的都要算'
     case 'ANCHOR_COUNT_SATURATED':
-      return '锚点周围已经数够了'
+      return '已知物件周围已经数够了'
     case 'ANCHOR_COUNT_ALL_REMAINING':
-      return '锚点周围剩下的都要算'
+      return '已知物件周围剩下的都要算'
     case 'LOCAL_COUNT_SATURATED':
       return '这个范围已经数够了'
     case 'LOCAL_COUNT_ALL_REMAINING':
@@ -84,7 +85,7 @@ function techniqueTitle(technique: RuntimeHint['technique']): string {
     case 'LOCAL_SCOPE_DIFFERENCE':
       return '两个范围相减出了答案'
     case 'KNOWN_SAFE_FROM_NON_GUEST_OBJECT':
-      return '已知物品不是访客'
+      return '已知物品不是异常区域'
   }
 }
 
@@ -93,9 +94,9 @@ function conclusionText(runtimeHint: RuntimeHint): string {
 
   switch (conclusion.kind) {
     case 'safe':
-      return `${conclusion.cellId} 可以安全调查。`
+      return `${conclusion.cellId} 可以继续勘察。`
     case 'guest':
-      return `${conclusion.cellId} 一定是访客。`
+      return `${conclusion.cellId} 一定是${sceneCellLabels.guest}。`
     case 'object':
       return `${conclusion.cellId} 一定是 ${objectText(conclusion.object)}。`
   }
@@ -105,6 +106,6 @@ function objectText(kind: CellKind): string {
   if (kind === 'bottle') return '酒瓶'
   if (kind === 'bin') return '垃圾桶'
   if (kind === 'mirror') return '镜子'
-  if (kind === 'guest') return '访客'
-  return '空地'
+  if (kind === 'guest') return sceneCellLabels.guest
+  return sceneCellLabels.empty
 }

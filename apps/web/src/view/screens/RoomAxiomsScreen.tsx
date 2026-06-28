@@ -35,14 +35,14 @@ function RoomAxiomsCaseView({
   const game = useRoomAxiomsGame(puzzle)
 
   return (
-    <div className="room-axioms-app" data-mobile-panel={game.mobilePanel}>
+    <div className="room-axioms-app scene-shell" data-mobile-panel={game.mobilePanel}>
       <TopBar
         game={game}
         cases={caseSummaries}
         selectedCaseId={selectedCaseId}
         onSelectCase={onSelectCase}
       />
-      <main className="app-shell">
+      <main className="app-shell scene-workstation">
         <RulePanel game={game} />
         <BoardPanel game={game} />
         <EvidencePanel game={game} />
