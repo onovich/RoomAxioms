@@ -1488,7 +1488,6 @@ h3 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: inherit;
-  cursor: pointer;
   display: grid;
   gap: 7px;
   min-width: 0;
@@ -1515,6 +1514,20 @@ h3 {
   display: flex;
   gap: 8px;
   justify-content: space-between;
+}
+
+.rule-builder-select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.rule-builder-select:hover b {
+  color: var(--accent);
 }
 
 .rule-builder-card-head b,
@@ -1547,6 +1560,36 @@ h3 {
   background: var(--accent-soft);
   border: 1px solid #806536;
   color: #e1c990;
+}
+
+.rule-builder-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, 28px);
+}
+
+.rule-builder-actions button {
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  width: 28px;
+}
+
+.rule-builder-actions button:hover:not(:disabled) {
+  border-color: var(--border-bright);
+  color: var(--accent);
+}
+
+.rule-builder-actions button:disabled {
+  color: var(--faint);
+  cursor: not-allowed;
 }
 
 .rule-builder-card p,

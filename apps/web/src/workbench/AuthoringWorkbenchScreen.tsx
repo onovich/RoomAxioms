@@ -1,10 +1,14 @@
-import { FileDown, FolderOpen, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, RotateCcw, Trash2 } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
-import type { RuleBuilderDraft } from '@room-axioms/authoring/rule-builder'
+import {
+  duplicateRuleBuilderDraft,
+  moveRuleBuilderDraft,
+  type RuleBuilderDraft,
+} from '@room-axioms/authoring/rule-builder'
 import type { BoardSize, CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
@@ -26,6 +30,7 @@ import {
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
   patchWorkbenchMetadata,
+  patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
   patchWorkbenchScopeCollectionsJson,
@@ -61,6 +66,7 @@ export default function AuthoringWorkbenchScreen() {
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
+  const [ruleBuilderPatchStatus, setRuleBuilderPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulesPatchStatus, setRulesPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [scopePatchStatus, setScopePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
@@ -106,6 +112,7 @@ export default function AuthoringWorkbenchScreen() {
     setRulesJsonText(createWorkbenchRulesJson(item.puzzle))
     setScopeCollectionsText(createWorkbenchScopeCollectionsJson(item.puzzle))
     setPatchStatus({ kind: 'idle' })
+    setRuleBuilderPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
     setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
@@ -130,6 +137,7 @@ export default function AuthoringWorkbenchScreen() {
     setRulesJsonText('')
     setScopeCollectionsText('')
     setPatchStatus({ kind: 'idle' })
+    setRuleBuilderPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
     setRulesPatchStatus({ kind: 'idle' })
     setScopePatchStatus({ kind: 'idle' })
@@ -182,6 +190,74 @@ export default function AuthoringWorkbenchScreen() {
   function selectRuleById(ruleId: string): void {
     const rule = model.ruleSummaries.find((candidate) => candidate.id === ruleId)
     if (rule !== undefined) selectRule(rule)
+  }
+
+  function applyRuleBuilderDraftsPatch(
+    ruleDrafts: readonly RuleBuilderDraft[],
+    message: string,
+    nextSelectedRuleId: string | undefined = selectedRuleId,
+  ): void {
+    const patch = patchWorkbenchRuleBuilderDrafts(draft, ruleDrafts)
+    if (!patch.ok) {
+      setRuleBuilderPatchStatus({
+        kind: 'rejected',
+        message: '规则表达式未应用。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    const nextRule = nextSelectedRuleId === undefined
+      ? undefined
+      : patch.puzzle.rules.find((rule) => rule.id === nextSelectedRuleId)
+    setDraft(patch.state)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
+    setRuleBuilderPatchStatus({ kind: 'applied', message })
+
+    if (nextRule === undefined) {
+      setSelectedRuleId(undefined)
+      setRuleTitleText('')
+      setRuleFlavorText('')
+      setRulePatchStatus({ kind: 'idle' })
+      return
+    }
+
+    setSelectedRuleId(nextRule.id)
+    setRuleTitleText(nextRule.presentation.title)
+    setRuleFlavorText(nextRule.presentation.flavor ?? '')
+    setRulePatchStatus({ kind: 'idle' })
+  }
+
+  function duplicateBuilderRule(ruleId: string): void {
+    const index = model.ruleBuilderDrafts.findIndex((candidate) => candidate.id === ruleId)
+    const source = model.ruleBuilderDrafts[index]
+    if (source === undefined) return
+
+    const nextId = nextRuleDuplicateId(model.ruleBuilderDrafts, ruleId)
+    const nextDrafts = [...model.ruleBuilderDrafts]
+    nextDrafts.splice(index + 1, 0, duplicateRuleBuilderDraft(source, nextId))
+    applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已复制为 ${nextId}。`, nextId)
+  }
+
+  function removeBuilderRule(ruleId: string): void {
+    const index = model.ruleBuilderDrafts.findIndex((candidate) => candidate.id === ruleId)
+    if (index < 0) return
+
+    const nextDrafts = model.ruleBuilderDrafts.filter((candidate) => candidate.id !== ruleId)
+    const nextSelectedRuleId = selectedRuleId === ruleId
+      ? nextDrafts[Math.min(index, nextDrafts.length - 1)]?.id
+      : selectedRuleId
+    applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已从草稿规则列表移除。`, nextSelectedRuleId)
+  }
+
+  function moveBuilderRule(ruleId: string, direction: -1 | 1): void {
+    const index = model.ruleBuilderDrafts.findIndex((candidate) => candidate.id === ruleId)
+    if (index < 0) return
+
+    const nextIndex = index + direction
+    const nextDrafts = moveRuleBuilderDraft(model.ruleBuilderDrafts, index, nextIndex)
+    applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已调整顺序。`, ruleId)
   }
 
   function applyTargetCellPatch(): void {
@@ -576,7 +652,11 @@ export default function AuthoringWorkbenchScreen() {
           <RuleExpressionBuilder
             drafts={model.ruleBuilderDrafts}
             selectedRuleId={selectedRuleId}
+            patchStatus={ruleBuilderPatchStatus}
             onSelectRuleId={selectRuleById}
+            onDuplicateRule={duplicateBuilderRule}
+            onRemoveRule={removeBuilderRule}
+            onMoveRule={moveBuilderRule}
           />
           <RuleCopyEditor
             selectedRule={selectedRule}
@@ -745,14 +825,33 @@ function PatchStatus({ status }: { readonly status: DraftPatchStatus }) {
   )
 }
 
+function nextRuleDuplicateId(drafts: readonly RuleBuilderDraft[], ruleId: string): string {
+  const usedIds = new Set(drafts.map((draft) => draft.id))
+  let suffix = 2
+  let candidate = `${ruleId}-copy`
+  while (usedIds.has(candidate)) {
+    candidate = `${ruleId}-copy-${suffix}`
+    suffix += 1
+  }
+  return candidate
+}
+
 function RuleExpressionBuilder({
   drafts,
   selectedRuleId,
+  patchStatus,
   onSelectRuleId,
+  onDuplicateRule,
+  onRemoveRule,
+  onMoveRule,
 }: {
   readonly drafts: readonly RuleBuilderDraft[]
   readonly selectedRuleId: string | undefined
+  readonly patchStatus: DraftPatchStatus
   readonly onSelectRuleId: (ruleId: string) => void
+  readonly onDuplicateRule: (ruleId: string) => void
+  readonly onRemoveRule: (ruleId: string) => void
+  readonly onMoveRule: (ruleId: string, direction: -1 | 1) => void
 }) {
   const editableCount = drafts.filter((draft) => draft.support === 'editable').length
 
@@ -770,18 +869,58 @@ function RuleExpressionBuilder({
       ) : (
         <div className="rule-builder-list">
           {drafts.map((draft, index) => (
-            <button
+            <div
               key={draft.id}
               className={`rule-builder-card ${selectedRuleId === draft.id ? 'selected' : ''}`}
-              type="button"
-              onClick={() => onSelectRuleId(draft.id)}
-              aria-pressed={selectedRuleId === draft.id}
             >
               <div className="rule-builder-card-head">
-                <b>{index + 1}. {draft.id}</b>
+                <button
+                  className="rule-builder-select"
+                  type="button"
+                  onClick={() => onSelectRuleId(draft.id)}
+                  aria-pressed={selectedRuleId === draft.id}
+                >
+                  <b>{index + 1}. {draft.id}</b>
+                </button>
                 <span className={`rule-builder-support ${draft.support}`}>
                   {draft.support === 'editable' ? '结构化编辑' : '只读保留'}
                 </span>
+              </div>
+              <div className="rule-builder-actions" aria-label={`${draft.id} rule actions`}>
+                <button
+                  type="button"
+                  title="上移"
+                  aria-label={`Move ${draft.id} up`}
+                  disabled={index === 0}
+                  onClick={() => onMoveRule(draft.id, -1)}
+                >
+                  <ArrowUp size={14} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  title="下移"
+                  aria-label={`Move ${draft.id} down`}
+                  disabled={index === drafts.length - 1}
+                  onClick={() => onMoveRule(draft.id, 1)}
+                >
+                  <ArrowDown size={14} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  title="复制"
+                  aria-label={`Duplicate ${draft.id}`}
+                  onClick={() => onDuplicateRule(draft.id)}
+                >
+                  <Copy size={14} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  title="删除"
+                  aria-label={`Remove ${draft.id}`}
+                  onClick={() => onRemoveRule(draft.id)}
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
               </div>
               <span className="rule-builder-family">{ruleBuilderFamilyLabel(draft.family)}</span>
               <strong>{draft.generatedText.title}</strong>
@@ -796,10 +935,11 @@ function RuleExpressionBuilder({
               {draft.unsupportedReason === undefined ? null : (
                 <small>{draft.unsupportedReason}</small>
               )}
-            </button>
+            </div>
           ))}
         </div>
       )}
+      <PatchStatus status={patchStatus} />
     </section>
   )
 }
