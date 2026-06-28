@@ -36,13 +36,13 @@ idempotency:
   last_check_commit: c29e043
   last_check_at: 2026-06-28T04:32:36+08:00
   last_check_blocker: overlap opener bridge pass criteria met, but the Phase 29 trial still stalls later at GUESS_POINT and remains non-promotable; next direction pivots to manual authoring support and theme packaging
-  last_executor_report_commit: c29e043
-  last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
-  last_executor_report_phase: Phase 30 - Non-Singleton Overlap Proof Bridge
-  last_executor_report: docs/phase-30-non-singleton-overlap-proof-bridge-final-report.md
-  last_executor_report_at: 2026-06-28T04:11:35+08:00
-  last_executor_report_guide: docs/phase-30-non-singleton-overlap-proof-bridge-goal-mode-execution-guide.md
-  last_executor_report_blocker: overlap scope-difference bridge now fires for the Phase 29 trial, but the trial still stalls at GUESS_POINT and remains non-promotable
+  last_executor_report_commit: 8286449
+  last_executor_report_status: READY_FOR_CHECK
+  last_executor_report_phase: Phase 31 - Rule Expression Builder And Theme Packaging Workflow
+  last_executor_report: docs/phase-31-rule-expression-builder-theme-packaging-final-report.md
+  last_executor_report_at: 2026-06-28T13:53:00+08:00
+  last_executor_report_guide: docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md
+  last_executor_report_blocker: none
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
