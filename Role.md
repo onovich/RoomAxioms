@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T16:09:40+08:00
+updated_at: 2026-06-28T16:16:51+08:00
 
 planner:
   role: architect
@@ -23,12 +23,12 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
-  last_planner_dispatch: 2026-06-28T14:07:01+08:00
-  last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: 8909625
+  active_goal_guide: docs/phase-33-vn-ux-hardening-asset-intake-goal-mode-execution-guide.md
+  active_goal_phase: Phase 33 - VN UX Hardening And Asset Intake
+  last_planner_dispatch: 2026-06-28T16:16:51+08:00
+  last_planner_dispatch_status: pending_commit
+  last_planner_dispatch_guide: docs/phase-33-vn-ux-hardening-asset-intake-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: 9f67875
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 32 - Theme VN Runtime Foundation

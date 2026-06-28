@@ -51,10 +51,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 32 - Theme VN Runtime Foundation, accepted, final commit `3d37ffa`.
-- Current executor result: Phase 32 complete; Phase 33 pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: none until Phase 33 dispatch.
-- Executor budget: none until Phase 33 dispatch.
-- Executor status: idle/pending next guide.
+- Current executor result: Phase 33 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: `docs/phase-33-vn-ux-hardening-asset-intake-goal-mode-execution-guide.md`.
+- Executor budget: 20 rounds.
+- Executor status: executing VN UX hardening and asset intake.
 - Last completed final report: `docs/phase-32-theme-vn-runtime-foundation-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
