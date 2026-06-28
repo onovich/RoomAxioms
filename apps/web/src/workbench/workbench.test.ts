@@ -27,6 +27,7 @@ import {
   patchWorkbenchMetadata,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
+  patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
@@ -65,6 +66,7 @@ describe('authoring workbench shell model', () => {
     })
     expect(model.boardCells).toHaveLength(defaultCase.board.width * defaultCase.board.height)
     expect(model.ruleSummaries.map((rule) => rule.id)).toEqual(defaultCase.rules.map((rule) => rule.id))
+    expect(model.ruleBuilderDrafts.map((rule) => rule.id)).toEqual(defaultCase.rules.map((rule) => rule.id))
     expect(model.caseOptions.map((option) => option.id)).toEqual(workbenchCaseLibrary.map((item) => item.puzzle.id))
     expect(model.caseOptions.find((option) => option.id === DEFAULT_CASE_ID)).toMatchObject({
       source: 'shipped',
@@ -410,6 +412,39 @@ describe('authoring workbench shell model', () => {
         id: fixture.id,
       },
     })
+  })
+
+  it('imports rule builder drafts and exports generated rule text through schema validation', () => {
+    const fixture = getWorkbenchCaseImportById('phase-24-comparative-balance-001').puzzle
+    const draft = createWorkbenchDraftFromPuzzle(fixture)
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, fixture.id, draft)
+
+    expect(model.ruleBuilderDrafts.length).toBe(fixture.rules.length)
+    expect(model.ruleBuilderDrafts.map((rule) => rule.support)).toContain('editable')
+    expect(model.ruleBuilderDrafts[0]?.generatedText.flavor).toMatch(/。$/)
+
+    const patch = patchWorkbenchRuleBuilderDrafts(draft, model.ruleBuilderDrafts)
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Rule builder patch failed.')
+
+    const patchedModel = createWorkbenchShellModel(workbenchCaseLibrary, fixture.id, patch.state)
+    expect(patchedModel.exported).toMatchObject({
+      ok: true,
+      puzzle: {
+        id: fixture.id,
+      },
+    })
+    expect(patchedModel.ruleSummaries[0]?.flavor).toBe(model.ruleBuilderDrafts[0]?.generatedText.flavor)
+  })
+
+  it('marks non-MVP rule families read-only in the rule builder model', () => {
+    const fixture = getWorkbenchCaseImportById('case-021').puzzle
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, fixture.id, createWorkbenchDraftFromPuzzle(fixture))
+    const anchorDrafts = model.ruleBuilderDrafts.filter((rule) => rule.family === 'anchorCount')
+
+    expect(anchorDrafts.length).toBeGreaterThan(0)
+    expect(anchorDrafts.every((rule) => rule.support === 'read-only-unsupported')).toBe(true)
+    expect(anchorDrafts[0]?.unsupportedReason).toContain('Anchor rules')
   })
 
   it('rejects rule arrays that break schema semantics without mutating the draft', () => {

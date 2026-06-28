@@ -19,6 +19,11 @@ import {
   type WorkbenchDraftState,
 } from '@room-axioms/authoring/drafts'
 import {
+  createRuleBuilderDrafts,
+  exportRuleBuilderDrafts,
+  type RuleBuilderDraft,
+} from '@room-axioms/authoring/rule-builder'
+import {
   DEFAULT_CAPS,
   evaluateDraftDiagnostics,
   type AuthoringDiagnosticsGroup,
@@ -89,6 +94,7 @@ export interface WorkbenchShellModel {
   readonly caseOptions: readonly WorkbenchCaseOption[]
   readonly boardCells: readonly WorkbenchBoardCell[]
   readonly ruleSummaries: readonly WorkbenchRuleSummary[]
+  readonly ruleBuilderDrafts: readonly RuleBuilderDraft[]
 }
 
 export type WorkbenchDiagnosticsState =
@@ -181,6 +187,7 @@ export function createWorkbenchShellModel(
     caseOptions: cases.map(caseOption),
     boardCells: parse.ok ? boardCells(parse.puzzle) : [],
     ruleSummaries: parse.ok ? parse.puzzle.rules.map(ruleSummary) : [],
+    ruleBuilderDrafts: parse.ok ? createRuleBuilderDrafts(parse.puzzle) : [],
   }
 }
 
@@ -528,6 +535,13 @@ export function patchWorkbenchRulesJson(
   }
 
   return patchDraftRules(draft, parsed.value.rules)
+}
+
+export function patchWorkbenchRuleBuilderDrafts(
+  draft: WorkbenchDraftState,
+  ruleDrafts: readonly RuleBuilderDraft[],
+): WorkbenchDraftPatchResult {
+  return patchDraftRules(draft, exportRuleBuilderDrafts(ruleDrafts))
 }
 
 export function workbenchCellKindOptions(
