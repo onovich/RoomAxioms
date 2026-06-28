@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
+import type { RuleBuilderDraft } from '@room-axioms/authoring/rule-builder'
 import type { BoardSize, CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
@@ -176,6 +177,11 @@ export default function AuthoringWorkbenchScreen() {
     setRuleTitleText(rule.title)
     setRuleFlavorText(rule.flavor ?? '')
     setRulePatchStatus({ kind: 'idle' })
+  }
+
+  function selectRuleById(ruleId: string): void {
+    const rule = model.ruleSummaries.find((candidate) => candidate.id === ruleId)
+    if (rule !== undefined) selectRule(rule)
   }
 
   function applyTargetCellPatch(): void {
@@ -567,6 +573,11 @@ export default function AuthoringWorkbenchScreen() {
               ))}
             </div>
           </section>
+          <RuleExpressionBuilder
+            drafts={model.ruleBuilderDrafts}
+            selectedRuleId={selectedRuleId}
+            onSelectRuleId={selectRuleById}
+          />
           <RuleCopyEditor
             selectedRule={selectedRule}
             titleText={ruleTitleText}
@@ -731,6 +742,65 @@ function PatchStatus({ status }: { readonly status: DraftPatchStatus }) {
       <b>{status.message}</b>
       {status.kind === 'rejected' ? <IssueList issues={status.issues} /> : null}
     </div>
+  )
+}
+
+function RuleExpressionBuilder({
+  drafts,
+  selectedRuleId,
+  onSelectRuleId,
+}: {
+  readonly drafts: readonly RuleBuilderDraft[]
+  readonly selectedRuleId: string | undefined
+  readonly onSelectRuleId: (ruleId: string) => void
+}) {
+  const editableCount = drafts.filter((draft) => draft.support === 'editable').length
+
+  return (
+    <section className="workbench-section rule-expression-builder">
+      <div className="rule-builder-heading">
+        <div>
+          <h3>规则表达式</h3>
+          <p>从规则结构生成中文说明；只读规则会保留原始 JSON，不做有损改写。</p>
+        </div>
+        <span>{editableCount} / {drafts.length} editable</span>
+      </div>
+      {drafts.length === 0 ? (
+        <p className="rule-builder-empty">当前草稿没有可显示的规则表达式。</p>
+      ) : (
+        <div className="rule-builder-list">
+          {drafts.map((draft, index) => (
+            <button
+              key={draft.id}
+              className={`rule-builder-card ${selectedRuleId === draft.id ? 'selected' : ''}`}
+              type="button"
+              onClick={() => onSelectRuleId(draft.id)}
+              aria-pressed={selectedRuleId === draft.id}
+            >
+              <div className="rule-builder-card-head">
+                <b>{index + 1}. {draft.id}</b>
+                <span className={`rule-builder-support ${draft.support}`}>
+                  {draft.support === 'editable' ? '结构化编辑' : '只读保留'}
+                </span>
+              </div>
+              <span className="rule-builder-family">{ruleBuilderFamilyLabel(draft.family)}</span>
+              <strong>{draft.generatedText.title}</strong>
+              <p>{draft.generatedText.flavor}</p>
+              {draft.generatedText.warnings.length === 0 ? null : (
+                <ul className="rule-builder-warnings">
+                  {draft.generatedText.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              )}
+              {draft.unsupportedReason === undefined ? null : (
+                <small>{draft.unsupportedReason}</small>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -908,7 +978,9 @@ function RulesJsonEditor({
   readonly onApply: () => void
 }) {
   return (
-    <section className="workbench-section rules-json-editor">
+    <details className="workbench-section rules-json-editor">
+      <summary>Debug / export: rules JSON</summary>
+      <div className="rules-json-editor-body">
       <h3>规则结构 JSON</h3>
       <p>编辑完整 rules 数组；支持当前所有规则族。schema 会复验类型、引用和字段。</p>
       <textarea
@@ -927,7 +999,8 @@ function RulesJsonEditor({
         </button>
       </div>
       <PatchStatus status={patchStatus} />
-    </section>
+      </div>
+    </details>
   )
 }
 
@@ -1383,6 +1456,29 @@ function kindLabel(kind: CellKind): string {
       return '镜子'
     case 'guest':
       return '访客'
+  }
+}
+
+function ruleBuilderFamilyLabel(type: RuleBuilderDraft['family']): string {
+  switch (type) {
+    case 'globalCount':
+      return '全局数量'
+    case 'forEachCount':
+      return '局部邻格'
+    case 'regionCount':
+      return '区域数量'
+    case 'lineCount':
+      return '视线数量'
+    case 'anchorCount':
+      return '参照物数量'
+    case 'recordSet':
+      return '污染记录'
+    case 'scopeOverlapCount':
+      return '范围重叠'
+    case 'comparativeCount':
+      return '数量比较'
+    case 'conditionalCount':
+      return '条件数量'
   }
 }
 
