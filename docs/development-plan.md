@@ -51,12 +51,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently checked: Phase 33 - VN UX Hardening And Asset Intake, accepted, final commit `2b0b32c`.
-- Current executor result: Phase 33 complete; Phase 34 is being dispatched for the user-approved `未登记现场 / UNREGISTERED SCENE` frontend adaptation.
-- Active guide: `docs/phase-34-unregistered-scene-frontend-adaptation-goal-mode-execution-guide.md`.
-- Executor budget: 28 rounds.
-- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
-- Last completed final report: `docs/phase-33-vn-ux-hardening-asset-intake-final-report.md`.
+- Recently checked: Phase 34 - Unregistered Scene Frontend Adaptation, accepted, final commit `d8335be`.
+- Current executor result: Phase 34 complete; no active executor phase.
+- Active guide: none.
+- Executor budget: none.
+- Executor status: idle, awaiting user visual review or final-art intake direction.
+- Last completed final report: `docs/phase-34-unregistered-scene-frontend-adaptation-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -99,7 +99,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 32 result: accepted. The player runtime now has placeholder-safe theme manifests, VN dialogue scene contracts, safe non-final dialogue scenes, a VN overlay renderer, trigger integration for intro/tutorial/hint/failure/success, and secrecy tests; no puzzle mechanics or cases changed.
 - Planned Phase 33 direction: harden the VN UX and art handoff layer before importing final art: player-safe skip/replay/preferences/focus behavior, asset naming/status/review docs, private preview/review tooling, and secrecy/responsive QA.
 - Phase 33 result: accepted. VN preferences, replay, text speed, reduced motion, focus-return, reset-safe behavior, asset intake docs, manifest review fields, and private Theme/VN workbench review summary are complete. No final art, AI art, puzzle mechanics, or case content changed.
-- Planned Phase 34 direction: formally enter the `未登记现场 / UNREGISTERED SCENE` packaging stage and adapt the frontend structure before final art slicing. This is a presentation adaptation phase, not a mechanics/schema expansion phase.
+- Phase 34 result: accepted. The normal player frontend now presents as `未登记现场 / UNREGISTERED SCENE` with themed vocabulary, scene layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans. No puzzle mechanics, schema/domain expansion, final art import, or case content changed.
+- Next planning gate: wait for user visual review. If the themed frontend direction is accepted, plan final sliced-art intake/polish. If the user finds UX/copy/layout problems, route a focused Phase 34 repair before starting a new phase.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -140,5 +141,6 @@ These are accepted as candidates, not active execution scope:
 - Rule expression builder and theme packaging workflow budget: 22 rounds, covering Phase 31, completed.
 - Theme VN runtime foundation budget: 24 rounds, covering Phase 32, completed.
 - VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
-- Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34.
+- Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
+- Next phase budget: pending user visual review and final-art intake decision.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
