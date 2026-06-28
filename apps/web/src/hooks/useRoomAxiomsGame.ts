@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { allCells, lineCells, neighbors, rayCells, regionCells } from '@room-axioms/domain'
 import { cellLabels } from '../data/case004'
 import type { AnalysisResult } from '../logic/analysis'
@@ -11,6 +11,13 @@ import {
   targetKindForDeveloperOverlay,
 } from '../logic/targetAccess'
 import { createRuntimeAnalysisFacade, type RuntimeFacadeSnapshot } from '../runtime/facade'
+import {
+  createHintDialogueScene,
+  staticDialogueSceneByCategory,
+  type DialogueScene,
+  type DialogueSceneCategory,
+} from '../vn/dialogue'
+import { nextDialogueLineIndex } from '../vn/dialogueNavigation'
 import type {
   AnalysisStatus,
   RuntimeAnalysis,
@@ -53,6 +60,11 @@ export interface ResultDialogState {
   readonly stats: readonly { readonly label: string; readonly value: string | number }[]
 }
 
+export interface DialogueDialogState {
+  readonly scene: DialogueScene
+  readonly lineIndex: number
+}
+
 export interface RoomAxiomsGame {
   readonly puzzle: PuzzleDefinition
   readonly cells: readonly CellId[]
@@ -79,6 +91,7 @@ export interface RoomAxiomsGame {
   readonly status: StatusMessage
   readonly hint: Hint | null
   readonly result: ResultDialogState | null
+  readonly dialogue: DialogueDialogState | null
   readonly mobilePanel: MobilePanel
   readonly observedKind: (cellId: CellId) => CellKind | null
   readonly developerTargetKind: (cellId: CellId) => CellKind | null
@@ -90,6 +103,9 @@ export interface RoomAxiomsGame {
   readonly cycleMark: (cellId: CellId) => void
   readonly requestHint: () => void
   readonly closeHint: () => void
+  readonly advanceDialogue: () => void
+  readonly closeDialogue: () => void
+  readonly skipDialogue: () => void
   readonly submitConclusion: () => void
   readonly closeResult: () => void
   readonly reset: () => void
@@ -121,6 +137,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   })
   const [hint, setHint] = useState<Hint | null>(null)
   const [result, setResult] = useState<ResultDialogState | null>(null)
+  const [dialogue, setDialogue] = useState<DialogueDialogState | null>(null)
+  const shownDialogueCategories = useRef<Set<DialogueSceneCategory>>(new Set())
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>('board')
   const [analysis, setAnalysis] = useState<AnalysisResult>(() => emptyAnalysis())
   const [runtimeAnalysis, setRuntimeAnalysis] = useState<RuntimeAnalysis | null>(null)
@@ -168,6 +186,32 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setStatus({ text, kind })
   }, [])
 
+  const openDialogueScene = useCallback((scene: DialogueScene | null) => {
+    if (scene === null || shownDialogueCategories.current.has(scene.category)) return
+    shownDialogueCategories.current.add(scene.category)
+    setDialogue({ scene, lineIndex: 0 })
+  }, [])
+
+  useEffect(() => {
+    openDialogueScene(staticDialogueSceneByCategory('caseIntro'))
+  }, [openDialogueScene])
+
+  const advanceDialogue = useCallback(() => {
+    setDialogue((current) => {
+      if (current === null) return null
+      const nextIndex = nextDialogueLineIndex(current.scene, current.lineIndex)
+      if (nextIndex === null) return null
+      return {
+        scene: current.scene,
+        lineIndex: nextIndex,
+      }
+    })
+  }, [])
+
+  const closeDialogue = useCallback(() => {
+    setDialogue(null)
+  }, [])
+
   const setDevMode = useCallback((enabled: boolean) => {
     setDevModeState(enabled)
     if (!enabled) setShowTargetState(false)
@@ -209,8 +253,9 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
           ? `${cellId} 已切换访客标记。标记只是你的笔记。`
           : `${cellId} 已切换安全笔记。`,
       )
+      if (value === 'guest') openDialogueScene(staticDialogueSceneByCategory('firstAnomalyMark'))
     },
-    [failed, revealed, setStatusMessage],
+    [failed, openDialogueScene, revealed, setStatusMessage],
   )
 
   const inspect = useCallback(
@@ -244,6 +289,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
             { label: '触发访客', value: 1 },
           ],
         })
+        openDialogueScene(staticDialogueSceneByCategory('failure'))
         return
       }
 
@@ -253,8 +299,9 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         return next
       })
       setStatusMessage(`${cellId} 是${cellLabels[kind]}。`, 'success')
+      openDialogueScene(staticDialogueSceneByCategory('firstSafeInspect'))
     },
-    [failed, hintCount, inspectCount, marks, puzzle, revealed, setStatusMessage],
+    [failed, hintCount, inspectCount, marks, openDialogueScene, puzzle, revealed, setStatusMessage],
   )
 
   const handleCell = useCallback(
@@ -284,13 +331,17 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         else next.delete(cellId)
         return next
       })
+      if (marks.get(cellId) === undefined) openDialogueScene(staticDialogueSceneByCategory('firstAnomalyMark'))
     },
-    [failed, revealed],
+    [failed, marks, openDialogueScene, revealed],
   )
 
   const selectRule = useCallback(
-    (ruleId: string) => setSelectedRule((current) => (current === ruleId ? null : ruleId)),
-    [],
+    (ruleId: string) => {
+      setSelectedRule((current) => (current === ruleId ? null : ruleId))
+      openDialogueScene(staticDialogueSceneByCategory('firstRuleSelect'))
+    },
+    [openDialogueScene],
   )
 
   const highlightedCells = useCallback(
@@ -381,9 +432,11 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   )
 
   const requestHint = useCallback(() => {
+    const nextHint = createHint(puzzle, currentRuntimeHint(analysisSnapshot.status, runtimeAnalysis))
     setHintCount((value) => value + 1)
-    setHint(createHint(puzzle, currentRuntimeHint(analysisSnapshot.status, runtimeAnalysis)))
-  }, [analysisSnapshot.status, puzzle, runtimeAnalysis])
+    setHint(nextHint)
+    openDialogueScene(createHintDialogueScene(nextHint))
+  }, [analysisSnapshot.status, openDialogueScene, puzzle, runtimeAnalysis])
 
   const submitConclusion = useCallback(() => {
     const guestMarks = [...marks.entries()]
@@ -413,7 +466,8 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
         { label: '提示次数', value: hintCount },
       ],
     })
-  }, [hintCount, inspectCount, marks, setStatusMessage, targetGuests])
+    openDialogueScene(staticDialogueSceneByCategory('success'))
+  }, [hintCount, inspectCount, marks, openDialogueScene, setStatusMessage, targetGuests])
 
   const reset = useCallback(() => {
     setRevealed(new Set(puzzle.initialReveals))
@@ -428,8 +482,11 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setInspectCount(0)
     setHint(null)
     setResult(null)
+    shownDialogueCategories.current = new Set()
+    setDialogue(null)
     setStatusMessage(initialStatusText())
-  }, [puzzle, setStatusMessage])
+    openDialogueScene(staticDialogueSceneByCategory('caseIntro'))
+  }, [openDialogueScene, puzzle, setStatusMessage])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -442,6 +499,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       if (key === 'escape') {
         setHint(null)
         setResult(null)
+        setDialogue(null)
         setSelectedRule(null)
       }
     }
@@ -476,6 +534,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     status,
     hint,
     result,
+    dialogue,
     mobilePanel,
     observedKind,
     developerTargetKind,
@@ -487,8 +546,14 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     cycleMark,
     requestHint,
     closeHint: () => setHint(null),
+    advanceDialogue,
+    closeDialogue,
+    skipDialogue: closeDialogue,
     submitConclusion,
-    closeResult: () => setResult(null),
+    closeResult: () => {
+      setResult(null)
+      setDialogue(null)
+    },
     reset,
     setDevMode,
     setShowTarget,

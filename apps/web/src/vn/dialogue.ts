@@ -237,6 +237,12 @@ export function createHintDialogueScene(hint: Hint | null): DialogueScene | null
   }
 }
 
+export function staticDialogueSceneByCategory(
+  category: Exclude<DialogueSceneCategory, 'hint'>,
+): DialogueScene | null {
+  return STATIC_DIALOGUE_SCENES.find((scene) => scene.category === category) ?? null
+}
+
 export function dialogueCategoriesPresent(
   scenes: readonly DialogueScene[],
 ): readonly DialogueSceneCategory[] {
@@ -291,4 +297,3 @@ function collectTextLeaks(
     leaks.push({ sceneId, ...(lineId === undefined ? {} : { lineId }), field, term: 'cell-coordinate' })
   }
 }
-

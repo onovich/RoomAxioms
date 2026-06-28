@@ -1,5 +1,6 @@
 import { AlertTriangle, Check, X } from 'lucide-react'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import { VNDialogueOverlay } from '../../vn/VNDialogueOverlay'
 
 interface DialogProps {
   readonly game: RoomAxiomsGame
@@ -8,8 +9,17 @@ interface DialogProps {
 export function Dialogs({ game }: DialogProps) {
   return (
     <>
-      {game.hint ? <HintDialog game={game} /> : null}
-      {game.result ? <ResultDialog game={game} /> : null}
+      {game.dialogue ? (
+        <VNDialogueOverlay
+          scene={game.dialogue.scene}
+          lineIndex={game.dialogue.lineIndex}
+          onAdvance={game.advanceDialogue}
+          onClose={game.closeDialogue}
+          onSkip={game.skipDialogue}
+        />
+      ) : null}
+      {game.dialogue === null && game.hint ? <HintDialog game={game} /> : null}
+      {game.dialogue === null && game.result ? <ResultDialog game={game} /> : null}
     </>
   )
 }
