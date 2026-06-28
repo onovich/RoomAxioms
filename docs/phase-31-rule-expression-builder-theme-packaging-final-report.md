@@ -4,6 +4,8 @@ Date: 2026-06-28
 Status: READY_FOR_CHECK
 Workspace: `D:\WebProjects\RoomAxioms`
 Guide: `docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md`
+Final report commit: `8286449`
+Final route commit: `4a1c364`
 
 ## Summary
 
@@ -80,6 +82,10 @@ The phase also adds a lightweight theme/VN packaging workflow in the authoring p
   - `StartDevServer.cmd`: PASS, dev server started at `http://127.0.0.1:5173/RoomAxioms/`
   - `Smoke.cmd`: PASS
   - `StopDevServer.cmd`: PASS
+- Pages:
+  - Final report commit `8286449` deployed successfully.
+  - Final route commit `4a1c364` was still in progress when planner-side
+    acceptance checked it; both hosted URLs returned HTTP 200.
 
 ## Commit Checkpoints
 

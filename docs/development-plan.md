@@ -45,15 +45,16 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 29 - Proof Skeleton Authoring Workflow | Pivot from JSON mutation to proof-skeleton-first authoring: define wave-by-wave human proof templates, add private skeleton review artifacts/tooling, and produce reviewable skeleton briefs before any further content promotion attempt | Phase 28 blocker follow-up | 16 rounds |
 | Phase 30 - Non-Singleton Overlap Proof Bridge | Add the smallest proof/authoring bridge or early diagnostic for non-singleton overlap-frontier skeletons that current solver constraints find material but HumanReasoner cannot explain | Phase 29 blocker follow-up | 18 rounds |
 | Phase 31 - Rule Expression Builder And Theme Packaging Workflow | Turn the private workbench into a rule-expression authoring surface where authors compose rules instead of editing JSON, generated text follows rule logic, and the Unregistered Scene theme/VN packaging workflow is split for parallel art-driven implementation | Phase 30 blocker-aware product pivot | 22 rounds |
+| Phase 32 - Theme VN Runtime Foundation | Build the safe presentation foundation for the Unregistered Scene wrapper: asset manifest, placeholder-safe theme hooks, VN dialogue data/renderer, trigger integration, and secrecy tests without final art claims or mechanics changes | Phase 31 theme packaging follow-up | 24 rounds |
 
 ## Current Execution State
 
-- Recently checked: Phase 30 - Non-Singleton Overlap Proof Bridge, accepted with blocker, final commit `c29e043`.
-- Current executor result: Phase 31 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: `docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md`.
-- Executor budget: 22 rounds.
-- Executor status: executing rule expression builder and theme packaging workflow.
-- Last completed final report: `docs/phase-30-non-singleton-overlap-proof-bridge-final-report.md`.
+- Recently checked: Phase 31 - Rule Expression Builder And Theme Packaging Workflow, accepted, final commit `4a1c364`.
+- Current executor result: Phase 31 complete; Phase 32 pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: none until Phase 32 dispatch.
+- Executor budget: none until Phase 32 dispatch.
+- Executor status: idle/pending next guide.
+- Last completed final report: `docs/phase-31-rule-expression-builder-theme-packaging-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -91,6 +92,8 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 30 direction: implement or explicitly diagnose the smallest non-singleton overlap proof bridge needed by the Phase 29 overlap-frontier skeleton; do not run another content production sprint.
 - Phase 30 result: accepted with blocker. The non-singleton overlap scope-difference bridge now produces human-visible deductions for the Phase 29 trial opener, and diagnostics distinguish unsupported overlap material from partial bridge stalls. The trial still reaches a later `GUESS_POINT`, so it remains non-promotable and the next phase should not be another broad JSON mutation or AI puzzle-production sprint.
 - Planned Phase 31 direction: serve human level design and presentation work. Build a private rule expression builder so authors compose rule logic through controls, generated copy follows that logic, JSON becomes export/storage only, and theme/VN packaging is broken into asset intake and implementation tracks that can run in parallel with manual puzzle authoring.
+- Phase 31 result: accepted. The workbench now has a private structured rule-expression builder for supported rule families; generated Chinese rule text follows rule logic; raw rules JSON is debug/export instead of the normal authoring path; and theme/VN package intake plus secrecy helper scaffolding exists for later art-driven implementation.
+- Planned Phase 32 direction: build a safe, asset-ready theme/VN runtime foundation: asset manifest, placeholder-safe rendering, dialogue data and overlay, case/hint/success/failure triggers, and secrecy tests. Do not import final art, generate AI art, promote cases, or alter puzzle mechanics in this phase.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
 
 ## Candidate Future Directions
@@ -128,5 +131,6 @@ These are accepted as candidates, not active execution scope:
 - Nondegenerate puzzle rewrite sprint budget: 18 rounds, covering Phase 28, completed with blocker.
 - Proof skeleton authoring workflow budget: 16 rounds, covering Phase 29, completed with blocker.
 - Non-singleton overlap proof bridge budget: 18 rounds, covering active Phase 30.
-- Rule expression builder and theme packaging workflow budget: 22 rounds, covering planned Phase 31.
+- Rule expression builder and theme packaging workflow budget: 22 rounds, covering Phase 31, completed.
+- Theme VN runtime foundation budget: 24 rounds, covering planned Phase 32.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
