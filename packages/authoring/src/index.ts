@@ -87,6 +87,23 @@ export {
   type WorkbenchDraftState,
 } from './drafts.js'
 export {
+  createRuleBuilderDraft,
+  createRuleBuilderDrafts,
+  duplicateRuleBuilderDraft,
+  editableRuleTypes,
+  exportRuleBuilderDrafts,
+  moveRuleBuilderDraft,
+  type RuleBuilderDraft,
+  type RuleBuilderSupport,
+} from './ruleBuilder.js'
+export {
+  forbiddenRuleTextTerms,
+  generateRuleText,
+  type GeneratedRuleText,
+  type RuleTextContext,
+  type RuleTextLocale,
+} from './ruleText.js'
+export {
   evaluateNoveltyClaimManifest,
   type NoveltyClaim,
   type NoveltyClaimEvidence,

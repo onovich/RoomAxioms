@@ -18,6 +18,14 @@
     "./drafts": {
       "types": "./src/drafts.ts",
       "import": "./src/drafts.ts"
+    },
+    "./rule-builder": {
+      "types": "./src/ruleBuilder.ts",
+      "import": "./src/ruleBuilder.ts"
+    },
+    "./rule-text": {
+      "types": "./src/ruleText.ts",
+      "import": "./src/ruleText.ts"
     }
   },
   "files": [
