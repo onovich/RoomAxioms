@@ -50,12 +50,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently checked: Phase 32 - Theme VN Runtime Foundation, accepted, final commit `3d37ffa`.
-- Current executor result: Phase 33 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: `docs/phase-33-vn-ux-hardening-asset-intake-goal-mode-execution-guide.md`.
-- Executor budget: 20 rounds.
-- Executor status: executing VN UX hardening and asset intake.
-- Last completed final report: `docs/phase-32-theme-vn-runtime-foundation-final-report.md`.
+- Recently checked: Phase 33 - VN UX Hardening And Asset Intake, accepted, final commit `2b0b32c`.
+- Current executor result: Phase 33 complete; no active executor phase.
+- Active guide: none.
+- Executor budget: none.
+- Executor status: idle, awaiting user-provided art/visual direction or manual puzzle drafts.
+- Last completed final report: `docs/phase-33-vn-ux-hardening-asset-intake-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -97,7 +97,9 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 32 direction: build a safe, asset-ready theme/VN runtime foundation: asset manifest, placeholder-safe rendering, dialogue data and overlay, case/hint/success/failure triggers, and secrecy tests. Do not import final art, generate AI art, promote cases, or alter puzzle mechanics in this phase.
 - Phase 32 result: accepted. The player runtime now has placeholder-safe theme manifests, VN dialogue scene contracts, safe non-final dialogue scenes, a VN overlay renderer, trigger integration for intro/tutorial/hint/failure/success, and secrecy tests; no puzzle mechanics or cases changed.
 - Planned Phase 33 direction: harden the VN UX and art handoff layer before importing final art: player-safe skip/replay/preferences/focus behavior, asset naming/status/review docs, private preview/review tooling, and secrecy/responsive QA.
-- Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Phase 33 result: accepted. VN preferences, replay, text speed, reduced motion, focus-return, reset-safe behavior, asset intake docs, manifest review fields, and private Theme/VN workbench review summary are complete. No final art, AI art, puzzle mechanics, or case content changed.
+- Next planning gate: do not auto-dispatch Phase 34 without user input. If original art/visual direction is available, plan user-art import and visual polish through the Phase 33 intake gates. If manual puzzle drafts are available, plan manual authoring QA and playtest evaluation instead.
+- Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
 
@@ -136,5 +138,6 @@ These are accepted as candidates, not active execution scope:
 - Non-singleton overlap proof bridge budget: 18 rounds, covering active Phase 30.
 - Rule expression builder and theme packaging workflow budget: 22 rounds, covering Phase 31, completed.
 - Theme VN runtime foundation budget: 24 rounds, covering Phase 32, completed.
-- VN UX hardening and asset intake budget: 20 rounds, covering planned Phase 33.
+- VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
+- Next phase budget: pending user input for either art import/visual polish or manual puzzle QA.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
