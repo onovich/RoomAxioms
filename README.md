@@ -40,11 +40,11 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 ## Current Project Status
 
 - Last completed check: Phase 31 - Rule Expression Builder And Theme Packaging Workflow, accepted
-- Current executor result: Phase 31 complete; Phase 32 pending dispatch
+- Current executor result: Phase 32 dispatched to executor
 - Final report: `docs/phase-31-rule-expression-builder-theme-packaging-final-report.md`
-- Active executor phase: none
-- Guide: none
-- Active budget: none
+- Active executor phase: Phase 32 - Theme VN Runtime Foundation
+- Guide: `docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md`
+- Active budget: 24 executor rounds
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.

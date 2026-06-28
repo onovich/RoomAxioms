@@ -50,10 +50,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 31 - Rule Expression Builder And Theme Packaging Workflow, accepted, final commit `4a1c364`.
-- Current executor result: Phase 31 complete; Phase 32 pending dispatch to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
-- Active guide: none until Phase 32 dispatch.
-- Executor budget: none until Phase 32 dispatch.
-- Executor status: idle/pending next guide.
+- Current executor result: Phase 32 dispatched to executor thread `019ef271-256c-7be2-9663-e658e2378564`.
+- Active guide: `docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md`.
+- Executor budget: 24 rounds.
+- Executor status: executing theme VN runtime foundation.
 - Last completed final report: `docs/phase-31-rule-expression-builder-theme-packaging-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
