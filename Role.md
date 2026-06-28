@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T14:07:01+08:00
+updated_at: 2026-06-28T16:09:40+08:00
 
 planner:
   role: architect
@@ -23,25 +23,25 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md
-  active_goal_phase: Phase 32 - Theme VN Runtime Foundation
+  active_goal_guide: none
+  active_goal_phase: none
   last_planner_dispatch: 2026-06-28T14:07:01+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md
   last_planner_dispatch_commit: 8909625
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
-  last_check_phase: Phase 31 - Rule Expression Builder And Theme Packaging Workflow
-  last_check_report: docs/phase-31-rule-expression-builder-theme-packaging-final-report.md
-  last_check_commit: 4a1c364
-  last_check_at: 2026-06-28T14:01:56+08:00
+  last_check_phase: Phase 32 - Theme VN Runtime Foundation
+  last_check_report: docs/phase-32-theme-vn-runtime-foundation-final-report.md
+  last_check_commit: 3d37ffa
+  last_check_at: 2026-06-28T16:09:40+08:00
   last_check_blocker: none
-  last_executor_report_commit: 4a1c364
+  last_executor_report_commit: 3d37ffa
   last_executor_report_status: READY_FOR_CHECK
-  last_executor_report_phase: Phase 31 - Rule Expression Builder And Theme Packaging Workflow
-  last_executor_report: docs/phase-31-rule-expression-builder-theme-packaging-final-report.md
-  last_executor_report_at: 2026-06-28T13:53:00+08:00
-  last_executor_report_guide: docs/phase-31-rule-expression-builder-theme-packaging-workflow-goal-mode-execution-guide.md
+  last_executor_report_phase: Phase 32 - Theme VN Runtime Foundation
+  last_executor_report: docs/phase-32-theme-vn-runtime-foundation-final-report.md
+  last_executor_report_at: 2026-06-28T16:09:40+08:00
+  last_executor_report_guide: docs/phase-32-theme-vn-runtime-foundation-goal-mode-execution-guide.md
   last_executor_report_blocker: none
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment

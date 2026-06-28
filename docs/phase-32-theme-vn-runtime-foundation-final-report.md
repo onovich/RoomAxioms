@@ -13,6 +13,7 @@ Planner thread: `019ef0df-a626-7181-9ca6-1cc75c1f4c47`
 - `1af338a` feat: add VN dialogue overlay renderer
 - `67b33ed` feat: wire VN dialogue triggers into player runtime
 - Final report commit: this document's commit
+- Final report commit hash: `3d37ffa`
 
 ## Implemented Features
 
@@ -82,6 +83,10 @@ Planner thread: `019ef0df-a626-7181-9ca6-1cc75c1f4c47`
   - `StartDevServer.cmd` started local server on `http://127.0.0.1:5173/RoomAxioms/`;
   - `Smoke.cmd` PASS for local and online dry-run checks plus local HTTP GET;
   - `StopDevServer.cmd` stopped the process tree.
+- Pages:
+  - GitHub Pages run `28314923727` completed successfully for `3d37ffa`.
+  - `https://onovich.github.io/RoomAxioms/` returned HTTP 200.
+  - `http://blog.onovich.com/RoomAxioms/` returned HTTP 200.
 
 ## Browser Smoke
 
@@ -133,4 +138,3 @@ as a hidden clue channel.
 - No new cases promoted and no mechanics changed: PASS.
 - No final visual redesign or AI art claim: PASS.
 - Full validation and local smoke: PASS.
-
