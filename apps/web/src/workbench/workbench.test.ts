@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
 import { updateDraftJsonText } from '@room-axioms/authoring/drafts'
 
 import { contentCases, DEFAULT_CASE_ID, getCaseById } from '../content/cases'
@@ -716,24 +717,39 @@ describe('authoring workbench shell model', () => {
   }, 30_000)
 
   it('reports hidden diagnostic refs when item refs exceed the UI cap', () => {
-    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
-    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID)
-    if (diagnostics === undefined) throw new Error('Expected diagnostics report.')
     const diagnosticsWithRefs = {
-      ...diagnostics,
+      ok: false,
+      status: 'valid-review-needed',
+      validation: {
+        sourcePath: '<test>',
+        resolvedPath: '<test>',
+        caps: defaultWorkbenchDiagnosticsCaps(),
+        schema: {
+          ok: true,
+          issueCount: 0,
+          issues: [],
+        },
+        recommendation: 'ready-for-experimental-review',
+      },
+      copyWarnings: [],
+      performance: {
+        truncated: false,
+        capWarnings: [],
+      },
       groups: [
         {
-          ...diagnostics.groups[0],
+          id: 'performance',
+          title: 'Performance',
+          status: 'info',
           items: [{
             code: 'SYNTHETIC_REFS',
-            severity: 'info' as const,
+            severity: 'info',
             message: 'Synthetic refs for bounded rendering.',
             refs: ['A1', 'B2', 'R3'],
           }],
         },
-        ...diagnostics.groups.slice(1),
       ],
-    }
+    } satisfies AuthoringDraftDiagnosticsReport
     const details = createWorkbenchDiagnosticsGroupDetails(diagnosticsWithRefs, {
       maxItemsPerGroup: 6,
       maxRefsPerItem: 1,

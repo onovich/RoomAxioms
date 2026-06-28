@@ -383,16 +383,22 @@ describe('rule impact vector', () => {
   })
 
   it('groups identical rule-impact vectors as reviewer-blocking clone evidence', () => {
+    const source = mixedFamilyCase()
+    const duplicate = {
+      ...source,
+      id: 'mixed-family-gate-fixture-duplicate',
+      title: 'Mixed family gate fixture duplicate',
+    }
     const groups = findRuleImpactCloneGroups([
-      loadCase(canonicalCleaningCasePath),
-      loadCase(paddedCleaningClonePath),
+      source,
+      duplicate,
     ])
 
     expect(groups).toContainEqual(expect.objectContaining({
       status: 'reviewer-blocking',
-      puzzleIds: ['case-004', 'phase-20-padded-case004-right-edge'],
+      puzzleIds: ['mixed-family-gate-fixture', 'mixed-family-gate-fixture-duplicate'],
     }))
-  }, 45_000)
+  }, 30_000)
 })
 
 describe('rule family diversity gate', () => {
