@@ -8,6 +8,14 @@ import {
   editableRuleTypes,
   exportRuleBuilderDrafts,
   moveRuleBuilderDraft,
+  updateRuleBuilderComparison,
+  updateRuleBuilderConditionalClause,
+  updateRuleBuilderDirectCount,
+  updateRuleBuilderDirectTarget,
+  updateRuleBuilderForEachScopeKind,
+  updateRuleBuilderForEachSubject,
+  updateRuleBuilderOverlapMode,
+  updateRuleBuilderRegionId,
 } from './ruleBuilder.js'
 
 describe('rule builder model', () => {
@@ -83,6 +91,96 @@ describe('rule builder model', () => {
     expect(drafts.map((draft) => draft.id)).toEqual(['R1', 'R2', 'R3'])
     expect(moved.map((draft) => draft.id)).toEqual(['R1', 'R1_COPY', 'R2', 'R3'])
   })
+
+  it('updates direct target and count fields while regenerating schema-valid presentation', () => {
+    const puzzle = builderPuzzle([globalRule(), regionRule()])
+    const drafts = createRuleBuilderDrafts(puzzle)
+    const puzzleWithSouthRegion = {
+      ...puzzle,
+      regions: [
+        ...puzzle.regions!,
+        { id: 'south-ledger', title: '鍗椾晶璁板綍', cells: ['A3', 'B3', 'C3'] },
+      ],
+    } satisfies PuzzleDefinition
+    const updatedGlobal = updateRuleBuilderDirectCount(
+      updateRuleBuilderDirectTarget(drafts[0]!, 'bin', puzzle),
+      { op: 'gte', value: 1 },
+      puzzle,
+    )
+    const updatedRegion = updateRuleBuilderRegionId(drafts[1]!, 'south-ledger', puzzleWithSouthRegion)
+    const rules = exportRuleBuilderDrafts([updatedGlobal, updatedRegion])
+    const parsed = parsePuzzleDefinition({ ...puzzleWithSouthRegion, rules })
+
+    expect(parsed.ok).toBe(true)
+    expect(rules[0]).toMatchObject({
+      target: 'bin',
+      count: { op: 'gte', value: 1 },
+    })
+    expect(rules[0]?.presentation.title).toBe(updatedGlobal.generatedText.title)
+    expect(rules[1]).toMatchObject({
+      regionId: 'south-ledger',
+    })
+  })
+
+  it('updates for-each subject and local scope controls', () => {
+    const puzzle = builderPuzzle([localRule()])
+    const [draft] = createRuleBuilderDrafts(puzzle)
+    const updated = updateRuleBuilderForEachScopeKind(
+      updateRuleBuilderForEachSubject(draft!, 'guest', puzzle),
+      'adjacent',
+      puzzle,
+    )
+    const [rule] = exportRuleBuilderDrafts([updated])
+
+    expect(rule).toMatchObject({
+      type: 'forEachCount',
+      subject: 'guest',
+      scope: { kind: 'adjacent' },
+    })
+    expect(parsePuzzleDefinition({ ...puzzle, rules: [rule!] }).ok).toBe(true)
+  })
+
+  it('updates expressive count controls without changing scope references', () => {
+    const puzzle = builderPuzzle([overlapRule(), comparativeRule(), conditionalRule()])
+    const drafts = createRuleBuilderDrafts(puzzle)
+    const updatedOverlap = updateRuleBuilderOverlapMode(
+      updateRuleBuilderDirectCount(drafts[0]!, { op: 'lte', value: 2 }, puzzle),
+      'union',
+      puzzle,
+    )
+    const updatedComparative = updateRuleBuilderComparison(drafts[1]!, { op: 'gte', offset: 1 }, puzzle)
+    const updatedConditional = updateRuleBuilderConditionalClause(
+      drafts[2]!,
+      'then',
+      { target: 'bin', count: { op: 'eq', value: 1 } },
+      puzzle,
+    )
+    const rules = exportRuleBuilderDrafts([updatedOverlap, updatedComparative, updatedConditional])
+    const parsed = parsePuzzleDefinition({ ...puzzle, rules })
+
+    expect(parsed.ok).toBe(true)
+    expect(rules[0]).toMatchObject({ type: 'scopeOverlapCount', mode: 'union', count: { op: 'lte', value: 2 } })
+    expect(rules[1]).toMatchObject({ type: 'comparativeCount', comparison: { op: 'gte', offset: 1 } })
+    expect(rules[2]).toMatchObject({
+      type: 'conditionalCount',
+      then: { target: 'bin', count: { op: 'eq', value: 1 } },
+    })
+  })
+
+  it('leaves read-only unsupported rules untouched when edit helpers are called', () => {
+    const rule: RuleDefinition = {
+      id: 'L1',
+      type: 'lineCount',
+      scope: { kind: 'row', index: 0 },
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+      presentation: { title: 'Line original' },
+    }
+    const [draft] = createRuleBuilderDrafts(builderPuzzle([rule]))
+
+    expect(updateRuleBuilderDirectTarget(draft!, 'bin')).toBe(draft)
+    expect(updateRuleBuilderDirectCount(draft!, { op: 'gte', value: 2 })).toBe(draft)
+  })
 })
 
 function builderPuzzle(rules: readonly RuleDefinition[]): PuzzleDefinition {
@@ -140,5 +238,48 @@ function regionRule(): RuleDefinition {
     target: 'guest',
     count: { op: 'eq', value: 1 },
     presentation: { title: 'Old region' },
+  }
+}
+
+function overlapRule(): RuleDefinition {
+  return {
+    id: 'R4',
+    type: 'scopeOverlapCount',
+    left: { kind: 'global' },
+    right: { kind: 'region', regionId: 'north-ledger' },
+    mode: 'intersection',
+    target: 'guest',
+    count: { op: 'eq', value: 1 },
+    presentation: { title: 'Old overlap' },
+  }
+}
+
+function comparativeRule(): RuleDefinition {
+  return {
+    id: 'R5',
+    type: 'comparativeCount',
+    left: { kind: 'region', regionId: 'north-ledger' },
+    right: { kind: 'global' },
+    target: 'guest',
+    comparison: { op: 'gt' },
+    presentation: { title: 'Old comparative' },
+  }
+}
+
+function conditionalRule(): RuleDefinition {
+  return {
+    id: 'R6',
+    type: 'conditionalCount',
+    condition: {
+      scope: { kind: 'region', regionId: 'north-ledger' },
+      target: 'guest',
+      count: { op: 'eq', value: 1 },
+    },
+    then: {
+      scope: { kind: 'global' },
+      target: 'guest',
+      count: { op: 'gte', value: 1 },
+    },
+    presentation: { title: 'Old conditional' },
   }
 }

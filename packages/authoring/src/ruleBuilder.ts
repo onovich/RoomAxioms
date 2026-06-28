@@ -1,4 +1,13 @@
-import type { PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
+import type {
+  CellKind,
+  Comparator,
+  ConditionalCountClause,
+  CountComparison,
+  LocalScope,
+  PuzzleDefinition,
+  RuleDefinition,
+  ScopeOverlapMode,
+} from '@room-axioms/domain'
 
 import { generateRuleText, type GeneratedRuleText } from './ruleText.js'
 
@@ -96,6 +105,111 @@ export function moveRuleBuilderDraft(
   return next
 }
 
+export function updateRuleBuilderDirectTarget(
+  draft: RuleBuilderDraft,
+  target: CellKind,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable') return draft
+
+  switch (draft.rule.type) {
+    case 'globalCount':
+    case 'forEachCount':
+    case 'regionCount':
+    case 'scopeOverlapCount':
+    case 'comparativeCount':
+      return refreshEditableDraft(draft, { ...draft.rule, target }, puzzle)
+    case 'conditionalCount':
+    case 'lineCount':
+    case 'anchorCount':
+    case 'recordSet':
+      return draft
+  }
+}
+
+export function updateRuleBuilderDirectCount(
+  draft: RuleBuilderDraft,
+  count: Comparator,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable') return draft
+
+  switch (draft.rule.type) {
+    case 'globalCount':
+    case 'forEachCount':
+    case 'regionCount':
+    case 'scopeOverlapCount':
+      return refreshEditableDraft(draft, { ...draft.rule, count }, puzzle)
+    case 'comparativeCount':
+    case 'conditionalCount':
+    case 'lineCount':
+    case 'anchorCount':
+    case 'recordSet':
+      return draft
+  }
+}
+
+export function updateRuleBuilderForEachSubject(
+  draft: RuleBuilderDraft,
+  subject: CellKind,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'forEachCount') return draft
+  return refreshEditableDraft(draft, { ...draft.rule, subject }, puzzle)
+}
+
+export function updateRuleBuilderForEachScopeKind(
+  draft: RuleBuilderDraft,
+  scopeKind: LocalScope['kind'],
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'forEachCount') return draft
+  return refreshEditableDraft(draft, { ...draft.rule, scope: { kind: scopeKind } }, puzzle)
+}
+
+export function updateRuleBuilderRegionId(
+  draft: RuleBuilderDraft,
+  regionId: string,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'regionCount') return draft
+  return refreshEditableDraft(draft, { ...draft.rule, regionId }, puzzle)
+}
+
+export function updateRuleBuilderOverlapMode(
+  draft: RuleBuilderDraft,
+  mode: ScopeOverlapMode,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'scopeOverlapCount') return draft
+  return refreshEditableDraft(draft, { ...draft.rule, mode }, puzzle)
+}
+
+export function updateRuleBuilderComparison(
+  draft: RuleBuilderDraft,
+  comparison: CountComparison,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'comparativeCount') return draft
+  return refreshEditableDraft(draft, { ...draft.rule, comparison }, puzzle)
+}
+
+export function updateRuleBuilderConditionalClause(
+  draft: RuleBuilderDraft,
+  clause: 'condition' | 'then',
+  patch: Partial<ConditionalCountClause>,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  if (draft.support !== 'editable' || draft.rule.type !== 'conditionalCount') return draft
+  return refreshEditableDraft(draft, {
+    ...draft.rule,
+    [clause]: {
+      ...draft.rule[clause],
+      ...patch,
+    },
+  }, puzzle)
+}
+
 function withGeneratedPresentation(
   rule: RuleDefinition,
   generatedText: GeneratedRuleText,
@@ -107,6 +221,19 @@ function withGeneratedPresentation(
       flavor: generatedText.flavor,
     },
   } as RuleDefinition
+}
+
+function refreshEditableDraft(
+  draft: RuleBuilderDraft,
+  rule: RuleDefinition,
+  puzzle?: PuzzleDefinition,
+): RuleBuilderDraft {
+  const generatedText = generateRuleText(rule, { puzzle })
+  return {
+    ...draft,
+    rule: withGeneratedPresentation(rule, generatedText),
+    generatedText,
+  }
 }
 
 function cloneRule(rule: RuleDefinition): RuleDefinition {
