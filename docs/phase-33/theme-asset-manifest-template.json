@@ -1,0 +1,59 @@
+{
+  "id": "unregistered-scene-user-intake-template",
+  "title": "Unregistered Scene user asset intake template",
+  "assets": [
+    {
+      "id": "portrait-investigator-neutral",
+      "kind": "portrait",
+      "status": "userProvided",
+      "label": "Investigator neutral portrait",
+      "src": "assets/theme/portraits/investigator/neutral.png",
+      "alt": "Investigator portrait, neutral expression",
+      "source": {
+        "label": "User supplied original art",
+        "license": "Owned by project",
+        "owner": "Project owner"
+      },
+      "dimensions": {
+        "width": 1200,
+        "height": 1800
+      },
+      "safeForPlayerRoute": false,
+      "reviewerNotes": "Set true only after source, license, visual fit, and secrecy review pass."
+    },
+    {
+      "id": "background-field-office-night",
+      "kind": "background",
+      "status": "userProvided",
+      "label": "Field office night background",
+      "src": "assets/theme/backgrounds/field-office-night.png",
+      "source": {
+        "label": "User supplied original art",
+        "license": "Owned by project",
+        "owner": "Project owner"
+      },
+      "dimensions": {
+        "width": 1920,
+        "height": 1080
+      },
+      "safeForPlayerRoute": false,
+      "reviewerNotes": "No coordinates, solved-board marks, target answers, or hidden-cell facts in the image."
+    },
+    {
+      "id": "sound-dialogue-advance",
+      "kind": "sound",
+      "status": "userProvided",
+      "label": "Dialogue advance sound",
+      "src": "assets/theme/sound/dialogue-advance.ogg",
+      "source": {
+        "label": "User supplied or licensed sound",
+        "license": "Owned by project or compatible license"
+      },
+      "dimensions": {
+        "aspectRatio": "audio"
+      },
+      "safeForPlayerRoute": false,
+      "reviewerNotes": "Short non-verbal cue only; no voice line that contains puzzle facts."
+    }
+  ]
+}

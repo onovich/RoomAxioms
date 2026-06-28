@@ -18,6 +18,12 @@ import {
   type DialogueSceneCategory,
 } from '../vn/dialogue'
 import { nextDialogueLineIndex } from '../vn/dialogueNavigation'
+import {
+  loadVNPreferences,
+  saveVNPreferences,
+  type VNPreferences,
+  type VNTextSpeed,
+} from '../vn/preferences'
 import type {
   AnalysisStatus,
   RuntimeAnalysis,
@@ -92,6 +98,7 @@ export interface RoomAxiomsGame {
   readonly hint: Hint | null
   readonly result: ResultDialogState | null
   readonly dialogue: DialogueDialogState | null
+  readonly vnPreferences: VNPreferences
   readonly mobilePanel: MobilePanel
   readonly observedKind: (cellId: CellId) => CellKind | null
   readonly developerTargetKind: (cellId: CellId) => CellKind | null
@@ -106,6 +113,10 @@ export interface RoomAxiomsGame {
   readonly advanceDialogue: () => void
   readonly closeDialogue: () => void
   readonly skipDialogue: () => void
+  readonly replayCaseIntro: () => void
+  readonly setVNEnabled: (enabled: boolean) => void
+  readonly setVNReducedMotion: (enabled: boolean) => void
+  readonly setVNTextSpeed: (speed: VNTextSpeed) => void
   readonly submitConclusion: () => void
   readonly closeResult: () => void
   readonly reset: () => void
@@ -138,7 +149,11 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
   const [hint, setHint] = useState<Hint | null>(null)
   const [result, setResult] = useState<ResultDialogState | null>(null)
   const [dialogue, setDialogue] = useState<DialogueDialogState | null>(null)
+  const [vnPreferences, setVNPreferences] = useState<VNPreferences>(() =>
+    loadVNPreferences(browserPreferenceStorage()),
+  )
   const shownDialogueCategories = useRef<Set<DialogueSceneCategory>>(new Set())
+  const dialogueFocusReturnRef = useRef<HTMLElement | null>(null)
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>('board')
   const [analysis, setAnalysis] = useState<AnalysisResult>(() => emptyAnalysis())
   const [runtimeAnalysis, setRuntimeAnalysis] = useState<RuntimeAnalysis | null>(null)
@@ -186,11 +201,48 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setStatus({ text, kind })
   }, [])
 
-  const openDialogueScene = useCallback((scene: DialogueScene | null) => {
-    if (scene === null || shownDialogueCategories.current.has(scene.category)) return
-    shownDialogueCategories.current.add(scene.category)
-    setDialogue({ scene, lineIndex: 0 })
+  const restoreDialogueFocus = useCallback(() => {
+    const target = dialogueFocusReturnRef.current
+    dialogueFocusReturnRef.current = null
+    if (target === null || !target.isConnected) return
+    window.setTimeout(() => target.focus(), 0)
   }, [])
+
+  const closeDialogue = useCallback(() => {
+    setDialogue(null)
+    restoreDialogueFocus()
+  }, [restoreDialogueFocus])
+
+  const updateVNPreferences = useCallback((next: VNPreferences) => {
+    setVNPreferences(next)
+    saveVNPreferences(browserPreferenceStorage(), next)
+    if (!next.enabled) {
+      setDialogue(null)
+      restoreDialogueFocus()
+    }
+  }, [restoreDialogueFocus])
+
+  const setVNEnabled = useCallback((enabled: boolean) => {
+    updateVNPreferences({ ...vnPreferences, enabled })
+  }, [updateVNPreferences, vnPreferences])
+
+  const setVNReducedMotion = useCallback((enabled: boolean) => {
+    updateVNPreferences({ ...vnPreferences, reducedMotion: enabled })
+  }, [updateVNPreferences, vnPreferences])
+
+  const setVNTextSpeed = useCallback((textSpeed: VNTextSpeed) => {
+    updateVNPreferences({ ...vnPreferences, textSpeed })
+  }, [updateVNPreferences, vnPreferences])
+
+  const openDialogueScene = useCallback((scene: DialogueScene | null, options: { readonly force?: boolean } = {}) => {
+    if (scene === null || (!vnPreferences.enabled && !options.force)) return
+    if (!options.force && shownDialogueCategories.current.has(scene.category)) return
+    shownDialogueCategories.current.add(scene.category)
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      dialogueFocusReturnRef.current = document.activeElement
+    }
+    setDialogue({ scene, lineIndex: 0 })
+  }, [vnPreferences.enabled])
 
   useEffect(() => {
     openDialogueScene(staticDialogueSceneByCategory('caseIntro'))
@@ -208,9 +260,9 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     })
   }, [])
 
-  const closeDialogue = useCallback(() => {
-    setDialogue(null)
-  }, [])
+  const replayCaseIntro = useCallback(() => {
+    openDialogueScene(staticDialogueSceneByCategory('caseIntro'), { force: true })
+  }, [openDialogueScene])
 
   const setDevMode = useCallback((enabled: boolean) => {
     setDevModeState(enabled)
@@ -482,11 +534,10 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setInspectCount(0)
     setHint(null)
     setResult(null)
-    shownDialogueCategories.current = new Set()
     setDialogue(null)
     setStatusMessage(initialStatusText())
-    openDialogueScene(staticDialogueSceneByCategory('caseIntro'))
-  }, [openDialogueScene, puzzle, setStatusMessage])
+    restoreDialogueFocus()
+  }, [puzzle, restoreDialogueFocus, setStatusMessage])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -499,14 +550,14 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       if (key === 'escape') {
         setHint(null)
         setResult(null)
-        setDialogue(null)
+        closeDialogue()
         setSelectedRule(null)
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [requestHint])
+  }, [closeDialogue, requestHint])
 
   return {
     puzzle,
@@ -535,6 +586,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     hint,
     result,
     dialogue,
+    vnPreferences,
     mobilePanel,
     observedKind,
     developerTargetKind,
@@ -549,6 +601,10 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     advanceDialogue,
     closeDialogue,
     skipDialogue: closeDialogue,
+    replayCaseIntro,
+    setVNEnabled,
+    setVNReducedMotion,
+    setVNTextSpeed,
     submitConclusion,
     closeResult: () => {
       setResult(null)
@@ -559,6 +615,11 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
     setShowTarget,
     setMobilePanel,
   }
+}
+
+function browserPreferenceStorage(): Storage | undefined {
+  if (typeof window === 'undefined') return undefined
+  return window.localStorage
 }
 
 function observationsFromMap(observations: ReadonlyMap<CellId, CellKind>): readonly Observation[] {

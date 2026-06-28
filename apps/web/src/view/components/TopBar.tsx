@@ -1,6 +1,7 @@
-import { Lightbulb, RotateCcw } from 'lucide-react'
+import { Lightbulb, MessageSquareText, Play, RotateCcw } from 'lucide-react'
 import type { CaseSummary, CaseTier } from '../../content/cases'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import type { VNTextSpeed } from '../../vn/preferences'
 
 interface TopBarProps {
   readonly game: RoomAxiomsGame
@@ -52,6 +53,47 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
       </div>
 
       <div className="top-actions">
+        <div className="vn-preferences" aria-label="VN dialogue controls">
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => game.setVNEnabled(!game.vnPreferences.enabled)}
+            aria-pressed={game.vnPreferences.enabled}
+          >
+            <MessageSquareText size={17} aria-hidden="true" />
+            <span>{game.vnPreferences.enabled ? 'VN 开' : 'VN 关'}</span>
+          </button>
+          <button
+            className="icon-button"
+            type="button"
+            onClick={game.replayCaseIntro}
+            disabled={!game.vnPreferences.enabled}
+            aria-label="重播开场对话"
+            title="重播开场对话"
+          >
+            <Play size={17} aria-hidden="true" />
+          </button>
+          <label className="compact-select">
+            <span>速度</span>
+            <select
+              value={game.vnPreferences.textSpeed}
+              onChange={(event) => game.setVNTextSpeed(event.target.value as VNTextSpeed)}
+              aria-label="VN 文字速度"
+            >
+              <option value="instant">即时</option>
+              <option value="normal">标准</option>
+              <option value="slow">慢速</option>
+            </select>
+          </label>
+          <label className="compact-checkbox">
+            <input
+              type="checkbox"
+              checked={game.vnPreferences.reducedMotion}
+              onChange={(event) => game.setVNReducedMotion(event.target.checked)}
+            />
+            <span>减动画</span>
+          </label>
+        </div>
         <button className="ghost-button" type="button" onClick={game.requestHint}>
           <Lightbulb size={17} aria-hidden="true" />
           <span>解释一步</span>

@@ -13,6 +13,7 @@ export function Dialogs({ game }: DialogProps) {
         <VNDialogueOverlay
           scene={game.dialogue.scene}
           lineIndex={game.dialogue.lineIndex}
+          preferences={game.vnPreferences}
           onAdvance={game.advanceDialogue}
           onClose={game.closeDialogue}
           onSkip={game.skipDialogue}

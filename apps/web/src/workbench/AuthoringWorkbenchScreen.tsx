@@ -29,6 +29,9 @@ import type {
 } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
+import { createThemeAssetReviewReport, type ThemeAssetReviewReport } from '../theme/assetReview'
+import { DEFAULT_THEME_ASSET_MANIFEST } from '../theme/assetManifest'
+import { STATIC_DIALOGUE_SCENES } from '../vn/dialogue'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
   beginWorkbenchDiagnostics,
@@ -107,6 +110,10 @@ export default function AuthoringWorkbenchScreen() {
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
+  )
+  const themeReview = useMemo(
+    () => createThemeAssetReviewReport(DEFAULT_THEME_ASSET_MANIFEST, STATIC_DIALOGUE_SCENES),
+    [],
   )
   const parsedPuzzle = model.parse.ok ? model.parse.puzzle : undefined
   const selectedCell = selectedCellId === undefined
@@ -666,6 +673,7 @@ export default function AuthoringWorkbenchScreen() {
             selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
             exportStatus={model.exportStatus}
           />
+          <ThemeVNReviewSummary report={themeReview} />
           <DiagnosticsCapsEditor
             caps={diagnosticsCaps}
             disabled={diagnosticsState.status === 'running'}
@@ -1593,6 +1601,46 @@ function ImportExportSummary({
           <dd>{exportStatus.issueCount > 0 ? `${exportStatus.message} (${exportStatus.issueCount})` : exportStatus.message}</dd>
         </div>
       </dl>
+    </section>
+  )
+}
+
+function ThemeVNReviewSummary({ report }: { readonly report: ThemeAssetReviewReport }) {
+  const issueCount = report.intakeIssues.length + report.manifestLeaks.length + report.dialogueLeaks.length
+
+  return (
+    <section className="workbench-section theme-vn-review">
+      <h3>Theme / VN private review</h3>
+      <dl className="import-export-grid">
+        <div>
+          <dt>Manifest</dt>
+          <dd>{report.manifestId}</dd>
+        </div>
+        <div>
+          <dt>Placeholders</dt>
+          <dd>{report.placeholderAssetIds.length}</dd>
+        </div>
+        <div>
+          <dt>Pending</dt>
+          <dd>{report.pendingApprovalAssetIds.length}</dd>
+        </div>
+        <div>
+          <dt>Approved</dt>
+          <dd>{report.approvedAssetIds.length}</dd>
+        </div>
+        <div>
+          <dt>Dialogue scenes</dt>
+          <dd>{report.dialogueCategories.length}</dd>
+        </div>
+        <div>
+          <dt>Review issues</dt>
+          <dd>{issueCount}</dd>
+        </div>
+      </dl>
+      <p>
+        Placeholder art is intentional until user-provided assets pass source,
+        license, dimension, and player-route safety review.
+      </p>
     </section>
   )
 }

@@ -211,6 +211,40 @@ h3 {
   min-width: 0;
 }
 
+.vn-preferences {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.compact-select,
+.compact-checkbox {
+  align-items: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 10px;
+}
+
+.compact-select select {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  min-height: 26px;
+}
+
+.compact-checkbox input {
+  accent-color: var(--accent);
+}
+
 .ghost-button,
 .small-button,
 .icon-button,
