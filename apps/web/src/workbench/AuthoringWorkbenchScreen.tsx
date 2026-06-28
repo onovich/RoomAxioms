@@ -8,8 +8,25 @@ import {
   duplicateRuleBuilderDraft,
   moveRuleBuilderDraft,
   type RuleBuilderDraft,
+  updateRuleBuilderComparison,
+  updateRuleBuilderConditionalClause,
+  updateRuleBuilderDirectCount,
+  updateRuleBuilderDirectTarget,
+  updateRuleBuilderForEachScopeKind,
+  updateRuleBuilderForEachSubject,
+  updateRuleBuilderOverlapMode,
+  updateRuleBuilderRegionId,
 } from '@room-axioms/authoring/rule-builder'
-import type { BoardSize, CellId, CellKind, PuzzleDefinition } from '@room-axioms/domain'
+import type {
+  BoardSize,
+  CellId,
+  CellKind,
+  Comparator,
+  CountComparison,
+  PuzzleDefinition,
+  RegionDefinition,
+  ScopeOverlapMode,
+} from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
@@ -51,6 +68,10 @@ type DraftPatchStatus =
   | { readonly kind: 'rejected'; readonly message: string; readonly issues: readonly string[] }
 
 const METADATA_STATUSES = ['draft', 'validated', 'published', 'deprecated'] as const
+const RULE_BUILDER_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin', 'mirror', 'guest']
+const COMPARATOR_OPS: readonly Comparator['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
+const COMPARISON_OPS: readonly CountComparison['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
+const OVERLAP_MODES: readonly ScopeOverlapMode[] = ['intersection', 'union', 'leftOnly', 'rightOnly']
 
 export default function AuthoringWorkbenchScreen() {
   const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
@@ -258,6 +279,21 @@ export default function AuthoringWorkbenchScreen() {
     const nextIndex = index + direction
     const nextDrafts = moveRuleBuilderDraft(model.ruleBuilderDrafts, index, nextIndex)
     applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已调整顺序。`, ruleId)
+  }
+
+  function updateBuilderRule(
+    ruleId: string,
+    updater: (draft: RuleBuilderDraft) => RuleBuilderDraft,
+  ): void {
+    const index = model.ruleBuilderDrafts.findIndex((candidate) => candidate.id === ruleId)
+    const source = model.ruleBuilderDrafts[index]
+    if (source === undefined) return
+
+    const next = updater(source)
+    if (next === source) return
+    const nextDrafts = [...model.ruleBuilderDrafts]
+    nextDrafts[index] = next
+    applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已从结构化控件更新。`, ruleId)
   }
 
   function applyTargetCellPatch(): void {
@@ -653,10 +689,13 @@ export default function AuthoringWorkbenchScreen() {
             drafts={model.ruleBuilderDrafts}
             selectedRuleId={selectedRuleId}
             patchStatus={ruleBuilderPatchStatus}
+            allowedKinds={parsedPuzzle?.allowedKinds ?? []}
+            regionOptions={parsedPuzzle?.regions ?? []}
             onSelectRuleId={selectRuleById}
             onDuplicateRule={duplicateBuilderRule}
             onRemoveRule={removeBuilderRule}
             onMoveRule={moveBuilderRule}
+            onUpdateRule={updateBuilderRule}
           />
           <RuleCopyEditor
             selectedRule={selectedRule}
@@ -836,22 +875,64 @@ function nextRuleDuplicateId(drafts: readonly RuleBuilderDraft[], ruleId: string
   return candidate
 }
 
+function parseNonNegativeInteger(text: string): number | undefined {
+  const value = Number(text)
+  if (!Number.isInteger(value) || value < 0) return undefined
+  return value
+}
+
+function comparatorOpLabel(op: Comparator['op']): string {
+  switch (op) {
+    case 'eq':
+      return '恰好'
+    case 'neq':
+      return '不是'
+    case 'gt':
+      return '多于'
+    case 'gte':
+      return '至少'
+    case 'lt':
+      return '少于'
+    case 'lte':
+      return '至多'
+  }
+}
+
+function overlapModeLabel(mode: ScopeOverlapMode): string {
+  switch (mode) {
+    case 'intersection':
+      return '共同部分'
+    case 'union':
+      return '合并范围'
+    case 'leftOnly':
+      return '只在左侧'
+    case 'rightOnly':
+      return '只在右侧'
+  }
+}
+
 function RuleExpressionBuilder({
   drafts,
   selectedRuleId,
   patchStatus,
+  allowedKinds,
+  regionOptions,
   onSelectRuleId,
   onDuplicateRule,
   onRemoveRule,
   onMoveRule,
+  onUpdateRule,
 }: {
   readonly drafts: readonly RuleBuilderDraft[]
   readonly selectedRuleId: string | undefined
   readonly patchStatus: DraftPatchStatus
+  readonly allowedKinds: readonly CellKind[]
+  readonly regionOptions: readonly RegionDefinition[]
   readonly onSelectRuleId: (ruleId: string) => void
   readonly onDuplicateRule: (ruleId: string) => void
   readonly onRemoveRule: (ruleId: string) => void
   readonly onMoveRule: (ruleId: string, direction: -1 | 1) => void
+  readonly onUpdateRule: (ruleId: string, updater: (draft: RuleBuilderDraft) => RuleBuilderDraft) => void
 }) {
   const editableCount = drafts.filter((draft) => draft.support === 'editable').length
 
@@ -935,12 +1016,296 @@ function RuleExpressionBuilder({
               {draft.unsupportedReason === undefined ? null : (
                 <small>{draft.unsupportedReason}</small>
               )}
+              {draft.support === 'editable' && selectedRuleId === draft.id ? (
+                <RuleBuilderControls
+                  draft={draft}
+                  allowedKinds={allowedKinds}
+                  regionOptions={regionOptions}
+                  onUpdate={(updater) => onUpdateRule(draft.id, updater)}
+                />
+              ) : null}
             </div>
           ))}
         </div>
       )}
       <PatchStatus status={patchStatus} />
     </section>
+  )
+}
+
+function RuleBuilderControls({
+  draft,
+  allowedKinds,
+  regionOptions,
+  onUpdate,
+}: {
+  readonly draft: RuleBuilderDraft
+  readonly allowedKinds: readonly CellKind[]
+  readonly regionOptions: readonly RegionDefinition[]
+  readonly onUpdate: (updater: (draft: RuleBuilderDraft) => RuleBuilderDraft) => void
+}) {
+  const kindOptions = allowedKinds.length === 0 ? RULE_BUILDER_KIND_OPTIONS : allowedKinds
+  const rule = draft.rule
+
+  switch (rule.type) {
+    case 'globalCount':
+      return (
+        <div className="rule-builder-controls">
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparatorFields
+            label="数量"
+            count={rule.count}
+            onChange={(count) => onUpdate((current) => updateRuleBuilderDirectCount(current, count))}
+          />
+        </div>
+      )
+    case 'forEachCount':
+      return (
+        <div className="rule-builder-controls">
+          <KindSelect
+            label="参照物"
+            value={rule.subject}
+            options={kindOptions.filter((kind) => kind !== 'empty')}
+            onChange={(subject) => onUpdate((current) => updateRuleBuilderForEachSubject(current, subject))}
+          />
+          <label>
+            邻域
+            <select
+              value={rule.scope.kind}
+              onChange={(event) => onUpdate((current) => (
+                updateRuleBuilderForEachScopeKind(current, event.target.value as 'orthogonal' | 'adjacent')
+              ))}
+            >
+              <option value="orthogonal">上下左右邻格</option>
+              <option value="adjacent">周围一圈</option>
+            </select>
+          </label>
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparatorFields
+            label="数量"
+            count={rule.count}
+            onChange={(count) => onUpdate((current) => updateRuleBuilderDirectCount(current, count))}
+          />
+        </div>
+      )
+    case 'regionCount':
+      return (
+        <div className="rule-builder-controls">
+          <label>
+            区域
+            <select
+              value={rule.regionId}
+              onChange={(event) => onUpdate((current) => updateRuleBuilderRegionId(current, event.target.value))}
+            >
+              {regionOptions.map((region) => (
+                <option key={region.id} value={region.id}>{region.id} · {region.title}</option>
+              ))}
+            </select>
+          </label>
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparatorFields
+            label="数量"
+            count={rule.count}
+            onChange={(count) => onUpdate((current) => updateRuleBuilderDirectCount(current, count))}
+          />
+        </div>
+      )
+    case 'scopeOverlapCount':
+      return (
+        <div className="rule-builder-controls">
+          <label>
+            组合
+            <select
+              value={rule.mode}
+              onChange={(event) => onUpdate((current) => (
+                updateRuleBuilderOverlapMode(current, event.target.value as ScopeOverlapMode)
+              ))}
+            >
+              {OVERLAP_MODES.map((mode) => (
+                <option key={mode} value={mode}>{overlapModeLabel(mode)}</option>
+              ))}
+            </select>
+          </label>
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparatorFields
+            label="数量"
+            count={rule.count}
+            onChange={(count) => onUpdate((current) => updateRuleBuilderDirectCount(current, count))}
+          />
+        </div>
+      )
+    case 'comparativeCount':
+      return (
+        <div className="rule-builder-controls">
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparisonFields
+            comparison={rule.comparison}
+            onChange={(comparison) => onUpdate((current) => updateRuleBuilderComparison(current, comparison))}
+          />
+        </div>
+      )
+    case 'conditionalCount':
+      return (
+        <div className="rule-builder-controls conditional-controls">
+          <ConditionalClauseFields
+            label="如果"
+            clause={rule.condition}
+            kindOptions={kindOptions}
+            onChange={(patch) => onUpdate((current) => updateRuleBuilderConditionalClause(current, 'condition', patch))}
+          />
+          <ConditionalClauseFields
+            label="则"
+            clause={rule.then}
+            kindOptions={kindOptions}
+            onChange={(patch) => onUpdate((current) => updateRuleBuilderConditionalClause(current, 'then', patch))}
+          />
+        </div>
+      )
+    case 'lineCount':
+    case 'anchorCount':
+    case 'recordSet':
+      return null
+  }
+}
+
+function KindSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  readonly label: string
+  readonly value: CellKind
+  readonly options: readonly CellKind[]
+  readonly onChange: (kind: CellKind) => void
+}) {
+  return (
+    <label>
+      {label}
+      <select value={value} onChange={(event) => onChange(event.target.value as CellKind)}>
+        {options.map((kind) => (
+          <option key={kind} value={kind}>{kindLabel(kind)}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function ComparatorFields({
+  label,
+  count,
+  onChange,
+}: {
+  readonly label: string
+  readonly count: Comparator
+  readonly onChange: (count: Comparator) => void
+}) {
+  return (
+    <fieldset className="rule-builder-fieldset">
+      <legend>{label}</legend>
+      <select value={count.op} onChange={(event) => onChange({ op: event.target.value as Comparator['op'], value: count.value })}>
+        {COMPARATOR_OPS.map((op) => (
+          <option key={op} value={op}>{comparatorOpLabel(op)}</option>
+        ))}
+      </select>
+      <input
+        type="number"
+        min={0}
+        step={1}
+        value={count.value}
+        onChange={(event) => {
+          const value = parseNonNegativeInteger(event.target.value)
+          if (value !== undefined) onChange({ op: count.op, value })
+        }}
+      />
+    </fieldset>
+  )
+}
+
+function ComparisonFields({
+  comparison,
+  onChange,
+}: {
+  readonly comparison: CountComparison
+  readonly onChange: (comparison: CountComparison) => void
+}) {
+  return (
+    <fieldset className="rule-builder-fieldset">
+      <legend>比较</legend>
+      <select
+        value={comparison.op}
+        onChange={(event) => onChange({ ...comparison, op: event.target.value as CountComparison['op'] })}
+      >
+        {COMPARISON_OPS.map((op) => (
+          <option key={op} value={op}>{comparatorOpLabel(op)}</option>
+        ))}
+      </select>
+      <input
+        type="number"
+        min={0}
+        step={1}
+        value={comparison.offset ?? 0}
+        onChange={(event) => {
+          const value = parseNonNegativeInteger(event.target.value)
+          if (value !== undefined) onChange({ ...comparison, offset: value === 0 ? undefined : value })
+        }}
+        aria-label="Comparison offset"
+      />
+    </fieldset>
+  )
+}
+
+function ConditionalClauseFields({
+  label,
+  clause,
+  kindOptions,
+  onChange,
+}: {
+  readonly label: string
+  readonly clause: Extract<RuleBuilderDraft['rule'], { readonly type: 'conditionalCount' }>['condition']
+  readonly kindOptions: readonly CellKind[]
+  readonly onChange: (patch: Parameters<typeof updateRuleBuilderConditionalClause>[2]) => void
+}) {
+  return (
+    <fieldset className="rule-builder-fieldset conditional-clause">
+      <legend>{label}</legend>
+      <KindSelect
+        label="对象"
+        value={clause.target}
+        options={kindOptions}
+        onChange={(target) => onChange({ target })}
+      />
+      <ComparatorFields
+        label="数量"
+        count={clause.count}
+        onChange={(count) => onChange({ count })}
+      />
+    </fieldset>
   )
 }
 

@@ -1608,6 +1608,59 @@ h3 {
   padding-left: 18px;
 }
 
+.rule-builder-controls {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-top: 9px;
+}
+
+.rule-builder-controls label,
+.rule-builder-fieldset {
+  color: var(--muted);
+  display: grid;
+  font-size: 10px;
+  gap: 5px;
+  min-width: 0;
+}
+
+.rule-builder-controls select,
+.rule-builder-controls input {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  min-height: 30px;
+  min-width: 0;
+  padding: 5px 7px;
+  width: 100%;
+}
+
+.rule-builder-fieldset {
+  border: 0;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  margin: 0;
+  padding: 0;
+}
+
+.rule-builder-fieldset legend {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.conditional-controls,
+.conditional-clause {
+  grid-column: 1 / -1;
+}
+
+.conditional-clause {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 8px;
+}
+
 .diagnostics-group-list {
   display: flex;
   flex-direction: column;
