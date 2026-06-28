@@ -5,6 +5,7 @@ import {
   type DialogueSceneCategory,
 } from '../vn/dialogue'
 import {
+  THEME_ASSET_KINDS,
   findThemeAssetManifestLeaks,
   type ThemeAssetEntry,
   type ThemeAssetKind,
@@ -146,15 +147,7 @@ function countAssetsByStatus(
 function countAssetsByKind(
   assets: readonly ThemeAssetEntry[],
 ): Readonly<Record<ThemeAssetKind, number>> {
-  const counts: Record<ThemeAssetKind, number> = {
-    portrait: 0,
-    expression: 0,
-    background: 0,
-    dialogueFrame: 0,
-    boardTheme: 0,
-    cellIcon: 0,
-    sound: 0,
-  }
+  const counts = Object.fromEntries(THEME_ASSET_KINDS.map((kind) => [kind, 0])) as Record<ThemeAssetKind, number>
   for (const asset of assets) counts[asset.kind] += 1
   return counts
 }

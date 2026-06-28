@@ -1,6 +1,21 @@
 export type ThemeAssetStatus = 'missing' | 'placeholder' | 'userProvided' | 'approved'
 
 export type ThemeAssetKind =
+  | 'logoMark'
+  | 'paperTexture'
+  | 'panelFrame'
+  | 'topbarFrame'
+  | 'ruleCardFrame'
+  | 'boardFrame'
+  | 'boardGridTexture'
+  | 'cellUnknownTexture'
+  | 'cellMarkedAnomalyOverlay'
+  | 'cellMarkedSafeOverlay'
+  | 'scopeHighlightOverlay'
+  | 'objectIcon'
+  | 'characterPortrait'
+  | 'characterExpression'
+  | 'buttonFrame'
   | 'portrait'
   | 'expression'
   | 'background'
@@ -8,6 +23,31 @@ export type ThemeAssetKind =
   | 'boardTheme'
   | 'cellIcon'
   | 'sound'
+
+export const THEME_ASSET_KINDS = [
+  'logoMark',
+  'paperTexture',
+  'panelFrame',
+  'topbarFrame',
+  'ruleCardFrame',
+  'boardFrame',
+  'boardGridTexture',
+  'cellUnknownTexture',
+  'cellMarkedAnomalyOverlay',
+  'cellMarkedSafeOverlay',
+  'scopeHighlightOverlay',
+  'objectIcon',
+  'characterPortrait',
+  'characterExpression',
+  'buttonFrame',
+  'portrait',
+  'expression',
+  'background',
+  'dialogueFrame',
+  'boardTheme',
+  'cellIcon',
+  'sound',
+] as const satisfies readonly ThemeAssetKind[]
 
 export interface ThemeAssetEntry {
   readonly id: string
@@ -108,6 +148,115 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Default dialogue frame placeholder',
     },
     {
+      id: 'brand-mark',
+      kind: 'logoMark',
+      status: 'placeholder',
+      label: 'Unregistered Scene logo mark placeholder',
+      dimensions: { aspectRatio: '1:1' },
+    },
+    {
+      id: 'case-paper',
+      kind: 'paperTexture',
+      status: 'placeholder',
+      label: 'Case paper texture placeholder',
+    },
+    {
+      id: 'main-panel-frame',
+      kind: 'panelFrame',
+      status: 'placeholder',
+      label: 'Main panel frame placeholder',
+    },
+    {
+      id: 'case-topbar-frame',
+      kind: 'topbarFrame',
+      status: 'placeholder',
+      label: 'Top bar frame placeholder',
+    },
+    {
+      id: 'rule-card-frame',
+      kind: 'ruleCardFrame',
+      status: 'placeholder',
+      label: 'Rule card frame placeholder',
+    },
+    {
+      id: 'scene-board-frame',
+      kind: 'boardFrame',
+      status: 'placeholder',
+      label: 'Scene map frame placeholder',
+    },
+    {
+      id: 'scene-board-grid',
+      kind: 'boardGridTexture',
+      status: 'placeholder',
+      label: 'Scene map grid texture placeholder',
+    },
+    {
+      id: 'unknown-cell',
+      kind: 'cellUnknownTexture',
+      status: 'placeholder',
+      label: 'Unknown area texture placeholder',
+    },
+    {
+      id: 'anomaly-mark-overlay',
+      kind: 'cellMarkedAnomalyOverlay',
+      status: 'placeholder',
+      label: 'Anomaly mark overlay placeholder',
+    },
+    {
+      id: 'surveyable-mark-overlay',
+      kind: 'cellMarkedSafeOverlay',
+      status: 'placeholder',
+      label: 'Surveyable mark overlay placeholder',
+    },
+    {
+      id: 'scope-highlight-overlay',
+      kind: 'scopeHighlightOverlay',
+      status: 'placeholder',
+      label: 'Public rule scope highlight placeholder',
+    },
+    {
+      id: 'bottle-icon',
+      kind: 'objectIcon',
+      status: 'placeholder',
+      label: 'Bottle icon placeholder',
+    },
+    {
+      id: 'bin-icon',
+      kind: 'objectIcon',
+      status: 'placeholder',
+      label: 'Bin icon placeholder',
+    },
+    {
+      id: 'mirror-icon',
+      kind: 'objectIcon',
+      status: 'placeholder',
+      label: 'Mirror icon placeholder',
+    },
+    {
+      id: 'investigator',
+      kind: 'characterPortrait',
+      status: 'placeholder',
+      label: 'Investigator character portrait placeholder',
+    },
+    {
+      id: 'dispatcher',
+      kind: 'characterPortrait',
+      status: 'placeholder',
+      label: 'Dispatcher character portrait placeholder',
+    },
+    {
+      id: 'neutral',
+      kind: 'characterExpression',
+      status: 'placeholder',
+      label: 'Neutral character expression placeholder',
+    },
+    {
+      id: 'paper-button',
+      kind: 'buttonFrame',
+      status: 'placeholder',
+      label: 'Paper button frame placeholder',
+    },
+    {
       id: 'current-board',
       kind: 'boardTheme',
       status: 'placeholder',
@@ -123,6 +272,21 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
 }
 
 const PLACEHOLDER_LABELS = {
+  logoMark: 'Missing logo mark placeholder',
+  paperTexture: 'Missing paper texture placeholder',
+  panelFrame: 'Missing panel frame placeholder',
+  topbarFrame: 'Missing top bar frame placeholder',
+  ruleCardFrame: 'Missing rule card frame placeholder',
+  boardFrame: 'Missing board frame placeholder',
+  boardGridTexture: 'Missing board grid texture placeholder',
+  cellUnknownTexture: 'Missing unknown area texture placeholder',
+  cellMarkedAnomalyOverlay: 'Missing anomaly mark overlay placeholder',
+  cellMarkedSafeOverlay: 'Missing surveyable mark overlay placeholder',
+  scopeHighlightOverlay: 'Missing public rule scope highlight placeholder',
+  objectIcon: 'Missing object icon placeholder',
+  characterPortrait: 'Missing character portrait placeholder',
+  characterExpression: 'Missing character expression placeholder',
+  buttonFrame: 'Missing button frame placeholder',
   portrait: 'Missing portrait placeholder',
   expression: 'Missing expression placeholder',
   background: 'Missing background placeholder',

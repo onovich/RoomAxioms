@@ -1556,6 +1556,98 @@ h3 {
   gap: 8px;
 }
 
+.vn-dock {
+  align-items: stretch;
+  background:
+    linear-gradient(135deg, rgba(250, 244, 226, 0.96), rgba(235, 225, 199, 0.95)),
+    var(--scene-paper);
+  border: 1px solid rgba(36, 45, 52, 0.28);
+  border-radius: 8px 8px 0 0;
+  bottom: 0;
+  box-shadow: 0 -14px 34px rgba(24, 28, 32, 0.22);
+  color: var(--scene-ink);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(84px, 0.16fr) minmax(0, 1fr);
+  left: 50%;
+  max-width: min(1120px, calc(100vw - 28px));
+  padding: 12px;
+  position: fixed;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 45;
+}
+
+.vn-dock-portrait {
+  align-items: center;
+  background: rgba(253, 250, 239, 0.72);
+  border: 1px solid rgba(36, 45, 52, 0.22);
+  color: var(--scene-ink-soft);
+  display: flex;
+  font: 700 11px ui-monospace, Consolas, monospace;
+  justify-content: center;
+  min-height: 104px;
+  padding: 10px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.vn-dock-portrait img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.vn-dock-body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.vn-dock-header,
+.vn-dock-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.vn-dock-header h2 {
+  color: var(--scene-ink);
+  font-size: 16px;
+}
+
+.vn-dock-text {
+  background: rgba(255, 252, 240, 0.82);
+  border: 1px solid rgba(36, 45, 52, 0.22);
+  border-radius: 6px;
+  color: var(--scene-ink);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.7;
+  min-height: 56px;
+  padding: 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.vn-dock-text:hover,
+.vn-dock-text:focus-visible {
+  border-color: var(--scene-red);
+  outline: none;
+}
+
+.vn-dock-actions span {
+  color: var(--scene-ink-soft);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+
+.vn-dock-actions div {
+  display: flex;
+  gap: 8px;
+}
+
 .authoring-workbench {
   min-height: 100vh;
 }
@@ -2716,6 +2808,31 @@ h3 {
   }
 
   .vn-dialogue-actions div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vn-dock {
+    grid-template-columns: 1fr;
+    left: 10px;
+    max-height: calc(100vh - 20px);
+    max-width: none;
+    overflow: auto;
+    right: 10px;
+    transform: none;
+    width: auto;
+  }
+
+  .vn-dock-portrait {
+    min-height: 54px;
+  }
+
+  .vn-dock-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .vn-dock-actions div {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }

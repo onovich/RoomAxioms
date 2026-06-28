@@ -84,6 +84,29 @@ describe('theme asset manifest', () => {
     expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'sound')).toEqual([])
   })
 
+  it('reserves Phase 34 scene-map and packaging slots without final art', () => {
+    expect(resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'logoMark', 'brand-mark')).toMatchObject({
+      status: 'placeholder',
+      placeholder: true,
+      final: false,
+    })
+    expect(resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'boardFrame', 'scene-board-frame')).toMatchObject({
+      status: 'placeholder',
+      placeholder: true,
+      final: false,
+    })
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'objectIcon').map((asset) => asset.id)).toEqual([
+      'bottle-icon',
+      'bin-icon',
+      'mirror-icon',
+    ])
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'cellMarkedAnomalyOverlay')).toHaveLength(1)
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'characterPortrait').map((asset) => asset.id)).toEqual([
+      'investigator',
+      'dispatcher',
+    ])
+  })
+
   it('keeps the default placeholder manifest free of secrecy leaks', () => {
     expect(findThemeAssetManifestLeaks(DEFAULT_THEME_ASSET_MANIFEST)).toEqual([])
   })
@@ -117,4 +140,3 @@ describe('theme asset manifest', () => {
     ])
   })
 })
-
