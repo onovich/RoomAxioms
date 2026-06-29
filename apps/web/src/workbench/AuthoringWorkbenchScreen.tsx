@@ -1074,7 +1074,7 @@ export default function AuthoringWorkbenchScreen() {
                 aria-disabled={!model.exported.ok}
               >
                 <FileDown size={16} aria-hidden="true" />
-                导出 JSON
+                下载当前草稿
               </a>
               <pre className="export-preview">{model.exported.ok ? model.exported.jsonText : 'JSON 当前无效'}</pre>
             </div>
@@ -2170,7 +2170,7 @@ function RulesJsonEditor({
 }) {
   return (
     <details className="workbench-section rules-json-editor">
-      <summary>Debug / export: rules JSON</summary>
+      <summary>规则结构维护</summary>
       <div className="rules-json-editor-body">
       <h3>规则结构 JSON</h3>
       <p>编辑完整 rules 数组；支持当前所有规则族。schema 会复验类型、引用和字段。</p>
@@ -2212,7 +2212,7 @@ function ScopeCollectionsEditor({
 }) {
   return (
     <section className="workbench-section scope-collections-editor">
-      <h3>区域 / 参照物</h3>
+      <h3>范围集合维护</h3>
       <p>编辑 regions 与 anchors 集合；规则引用是否仍然有效会由 schema 复验。</p>
       <textarea
         value={jsonText}
@@ -2285,7 +2285,7 @@ function ImportExportSummary({
 }) {
   return (
     <section className="workbench-section">
-      <h3>导入 / 导出</h3>
+      <h3>开发者来源记录</h3>
       <dl className="import-export-grid">
         <div>
           <dt>来源</dt>
