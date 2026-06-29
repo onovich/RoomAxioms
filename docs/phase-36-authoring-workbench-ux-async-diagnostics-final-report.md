@@ -16,6 +16,7 @@ No shipped cases were promoted, removed, or rewritten. The normal player route r
 - `2f25bc1` feat: add workbench local case library
 - `1da3957` feat: wire workbench case library UI
 - `db46a9e` feat: add selectable async workbench diagnostics
+- `28e0432` fix: clean workbench debug labels
 - final docs commit: this report update
 
 ## Case Library Behavior
@@ -112,18 +113,42 @@ Focused checks run during implementation:
 - `pnpm --filter @room-axioms/web test -- src/workbench/AuthoringWorkbenchScreen.test.tsx src/workbench/localCaseLibrary.test.ts src/workbench/workbench.test.ts`: PASS
 - `pnpm --filter @room-axioms/web test -- src/workbench/asyncDiagnostics.test.ts src/workbench/AuthoringWorkbenchScreen.test.tsx src/workbench/workbench.test.ts`: PASS
 
-Final validation evidence will be appended by the executor after the final validation matrix and smoke complete.
+Final validation matrix:
+
+- `Validate.cmd`: PASS
+  - lint PASS
+  - typecheck PASS
+  - test PASS
+    - domain: 4 files / 26 tests PASS
+    - schema: 4 files / 36 tests PASS
+    - oracle: 5 files / 20 tests PASS
+    - solver: 7 files / 54 tests PASS
+    - proof: 9 files / 62 tests PASS
+    - generator: 8 files / 15 tests PASS
+    - authoring: 13 files / 122 tests PASS
+    - web: 24 files / 153 tests PASS
+  - build PASS
+- `git diff --check`: PASS
+- `StartDevServer.cmd`: PASS
+- `Smoke.cmd`: PASS
+- `StopDevServer.cmd`: PASS
+- `CommitAndPush.cmd -Message "fix: clean workbench debug labels" ...`: PASS
+  - lint PASS
+  - typecheck PASS
+  - test PASS
+  - build PASS
+  - commit `28e0432` pushed to `origin/main`
 
 ## Boundary Scans
 
-Expected final scans:
+Final scans:
 
-- no new content/cases promotions;
-- no public UGC/backend/storage service;
-- no authoring/generator imports in normal player route;
-- raw JSON/export/debug UI absent from normal workbench flow;
-- old `实验` category absent from normal workbench taxonomy;
-- diagnostic labels do not expose target layout, forced cells, candidate layouts, solver/proof internals, or proof DAG jargon.
+- `git diff --name-only 7048a67..HEAD -- content/cases apps/web/src/content`: no output; no shipped content or player selector changes.
+- `git grep -n -E "@room-axioms/(authoring|generator)" -- apps/web/src/view apps/web/src/hooks apps/web/src/logic apps/web/src/runtime apps/web/src/vn apps/web/src/theme`: no output; normal player route did not gain authoring/generator imports.
+- Workbench taxonomy scan for `实验`: only test/report assertions; not a visible normal category.
+- Diagnostic label scan for `solver`, `CSP`, `proof DAG`, `candidateGuestLayouts`, `forced`, and `target layout` in the workbench option/UI files: no output.
+- `public UGC/backend` scan only hits docs that explicitly state those features are not implemented, plus historical package documentation; no app/backend implementation was added.
+- Debug/import/export labels were moved out of the normal workflow and old labels were cleaned from the visible workbench headings.
 
 ## Blockers / Caveats
 
