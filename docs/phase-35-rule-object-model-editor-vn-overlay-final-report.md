@@ -1,15 +1,16 @@
 # Phase 35 Final Report - Rule Object Model, Editor Grammar, And VN Overlay Repair
 
-Status: READY_FOR_CHECK_WITH_BLOCKER
-Final pushed commit: b527b15 fix: clean temporary VN portrait backgrounds
+Status: READY_FOR_CHECK
+Final pushed repair implementation commit: 17041ab feat: complete workbench rule form controls
+Previous final-report commit observed by checker: 00a3471 docs: report Phase 35 completion
 Branch: main / origin/main
 Planner thread: 019ef0df-a626-7181-9ca6-1cc75c1f4c47
 
 ## Summary
 
-Phase 35 delivered the compatibility object model, normalized target-cell editing path, initial rule-expression compile model, directional local-scope support, structured workbench cell controls, and the VN scene-overlay repair with temporary bust portraits. Existing shipped cases remain on the legacy schema/runtime path and still validate through the full project gate.
+Phase 35 delivered the compatibility object model, normalized target-cell editing path, rule-expression compile model, directional local-scope support, structured workbench cell controls, and the VN scene-overlay repair with temporary bust portraits. Existing shipped cases remain on the legacy schema/runtime path and still validate through the full project gate.
 
-The phase is not claimed as a clean PASS because the workbench does not yet expose every requested rule form as first-class structured controls. The rule-expression layer can represent and compile/block several of those forms, but the normal maintainer UI still needs a fuller rule-expression editor before the user can author all requested spatial rules without JSON.
+The checker repair is complete. The workbench now exposes first-class structured controls for the user-requested authoring forms that can safely compile to the current DSL, and it shows first-class diagnostics for forms that remain unsupported instead of leaving them reachable only through raw JSON/model internals.
 
 ## Implemented
 
@@ -28,6 +29,17 @@ The phase is not claimed as a clean PASS because the workbench does not yet expo
   - scopes: global, local, row, column, corners, edge, interior, region, line of sight;
   - safe compile to existing DSL where possible;
   - explicit block diagnostics for unsupported or not-yet-materialized forms.
+- Added workbench rule-expression creation controls for:
+  - global count over target/empty/object selectors;
+  - local directional, orthogonal, and surrounding count rules;
+  - row and column constraints;
+  - four-corner constraints;
+  - existing-region count rules;
+  - generated edge and interior count rules;
+  - positive line-of-sight reachability;
+  - negative line-of-sight reachability.
+- Added live line/ray rule controls for row, column, ray origin, ray direction, target selector, and count comparator.
+- Added first-class workbench coverage diagnostics so unsupported rule forms are blocked visibly in the authoring UI instead of silently requiring raw JSON.
 - Extended domain/schema/oracle/solver/proof-compatible local scope handling for directional neighbors:
   - north, south, east, west;
   - retained orthogonal and adjacent behavior.
@@ -49,11 +61,10 @@ The phase is not claimed as a clean PASS because the workbench does not yet expo
 ## Deferred / Blocked
 
 - Full object-model migration is deferred. Existing public puzzle schema and runtime still use legacy `CellKind`; normalized cells are an explicit compatibility/authoring layer.
-- Workbench rule authoring is not yet complete for every requested rule form:
-  - row/column/corner/global/region/line-of-sight forms exist in the expression model, but not all have first-class maintainer UI controls;
-  - edge/interior/corner scopes require generated/materialized regions before safe legacy DSL compile;
-  - `all` predicate is represented but blocked until fixed-scope expansion is safe;
-  - any-object/object-group selectors are represented but blocked where legacy DSL cannot express them.
+- The requested Phase 35 repair forms are now either authorable through structured controls or explicitly blocked in the workbench. The intentionally blocked forms are:
+  - `all` / "全部都是" predicate, because safe fixed-scope expansion is not guaranteed for every selectable scope;
+  - any-object and object-group selectors where the legacy DSL cannot express them without a schema migration;
+  - distance, first-visible object, arbitrary same-line relations, and arbitrary relative-position relations, which need new schema/proof support rather than UI-only controls.
 - More advanced forms remain deferred:
   - adjacency/non-adjacency between arbitrary selectors;
   - same row/column relation between selectors;
@@ -63,6 +74,26 @@ The phase is not claimed as a clean PASS because the workbench does not yet expo
   - contaminated/lying rules.
 
 ## Validation
+
+- `CommitAndPush.cmd -Message "feat: complete workbench rule form controls" ...`: PASS
+  - lint PASS
+  - typecheck PASS
+  - test PASS
+    - domain: 4 files / 26 tests PASS
+    - schema: 4 files / 36 tests PASS
+    - oracle: 5 files / 20 tests PASS
+    - solver: 7 files / 54 tests PASS
+    - proof: 9 files / 62 tests PASS
+    - generator: 8 files / 15 tests PASS
+    - authoring: 13 files / 122 tests PASS
+    - web: 21 files / 142 tests PASS
+  - build PASS
+  - commit `17041ab` pushed to `origin/main`
+- Focused workbench/authoring repair tests:
+  - `pnpm --filter @room-axioms/authoring typecheck`: PASS
+  - `pnpm --filter @room-axioms/web typecheck`: PASS
+  - `pnpm --filter @room-axioms/authoring test -- src/ruleBuilder.test.ts`: PASS
+  - `pnpm --filter @room-axioms/web test -- src/workbench/workbench.test.ts src/workbench/authoringTrial.test.ts`: PASS
 
 - `CommitAndPush.cmd -Message "feat: overlay VN dialogue on scene" ...`: PASS
   - lint PASS
@@ -112,11 +143,25 @@ The phase is not claimed as a clean PASS because the workbench does not yet expo
 - Workbench imports `@room-axioms/authoring` intentionally; normal player route does not import the generator.
 - Existing shipped cases still pass web verification/runtime smoke through the full web suite.
 
+## Rule-Builder Coverage After Repair
+
+Authorable through structured workbench controls:
+
+- global count for target, empty, and legacy object selectors;
+- local directional, orthogonal, and surrounding count rules with none, exists, exactly, at-least, and at-most semantics;
+- row N and column M constraints;
+- four-corner constraints through generated materialized corner regions;
+- existing-region count constraints;
+- edge and interior constraints through generated materialized regions;
+- line-of-sight positive reachability through ray line-count rules;
+- line-of-sight negative reachability through ray line-count rules.
+
+First-class blocked in the workbench:
+
+- `all` predicate / "全部都是", because it needs safe fixed-scope expansion before it can be compiled honestly;
+- object groups and any-object selectors where legacy `CellKind` cannot express them;
+- arbitrary distance, first-visible, same-line relation, and relative-direction relation rules, because they need schema/proof support before UI authoring would be honest.
+
 ## Recommended Next Phase
 
-Finish the rule-expression editor as the next focused phase before more puzzle production:
-
-- expose the expression AST in structured workbench controls for global/row/column/region/corner/edge/interior/line-of-sight rules;
-- add safe generated-region materialization for positional scopes;
-- add proof/authoring support diagnostics directly in the rule builder;
-- then let the user manually author candidate puzzles with the richer UI.
+The next phase can build on this private workbench path instead of raw JSON editing. Recommended follow-ups are schema/proof support for the intentionally blocked high-level rule families, then user-guided manual puzzle authoring with the richer UI.
