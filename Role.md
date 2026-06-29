@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-29T18:52:00+08:00
+updated_at: 2026-06-30T00:30:00+08:00
 
 planner:
   role: architect
@@ -23,8 +23,8 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
+  active_goal_guide: docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md
+  active_goal_phase: Phase 36 - Authoring Workbench UX And Async Diagnostics
   last_planner_dispatch: 2026-06-29T16:42:00+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md

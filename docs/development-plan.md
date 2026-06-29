@@ -49,14 +49,15 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 33 - VN UX Hardening And Asset Intake | Harden VN player UX with skip/replay/preferences/focus behavior and create a concrete asset intake plus private preview workflow for user-provided original art | Phase 32 theme runtime follow-up | 20 rounds |
 | Phase 34 - Unregistered Scene Frontend Adaptation | Refit the player-facing frontend around the approved `未登记现场 / UNREGISTERED SCENE` direction before final art slicing: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record panel, partner-review dock, manifest slots, responsive behavior, and secrecy scans | User/artist art-sample direction after Phase 33 | 28 rounds |
 | Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair | Upgrade the rule/object authoring model toward configurable objects and richer spatial predicates, make the workbench useful for manual puzzle design without raw JSON editing, remove generic hint UX, and repair the VN portrait/dialogue overlay using temporary bust art | User rule-grammar and VN direction after Phase 34 | 40 rounds |
+| Phase 36 - Authoring Workbench UX And Async Diagnostics | Turn the private workbench into a practical case manager for manual puzzle design: left case list, draft/published local library, create/save/delete/publish/retract, simplified UI, contrast repair, selectable async diagnostics with progress/cancel, and methodology notes from Minesweeper generation practices | User editor usability feedback after Phase 35 | 32 rounds |
 
 ## Current Execution State
 
 - Recently checked: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair, accepted after repair, final commit `c2296b2`.
-- Current executor result: Phase 35 complete; no active executor phase.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: idle, awaiting user review or next planning direction.
+- Current executor result: Phase 35 complete; Phase 36 is being dispatched for authoring workbench UX and asynchronous diagnostics.
+- Active guide: `docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md`.
+- Executor budget: 32 rounds.
+- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
 - Last completed final report: `docs/phase-35-rule-object-model-editor-vn-overlay-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -104,6 +105,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Post-Phase 34 user decisions: current `未登记现场` terminology direction is accepted but still adjustable; generic hint functionality should be removed from the normal product direction; VN should cover partner rule-sensing plus success/failure, with semi-transparent always-present bust/dialogue overlay rather than a separate window; puzzle authoring should be user-led with fast validation tools rather than broad AI-generated puzzle batches; future rule semantics should migrate from hard-coded `empty | bottle | bin | mirror | guest` toward `empty / target / objects[]` with configurable object types, but only in a deliberate domain/schema expansion phase.
 - Planned Phase 35 direction: prioritize the user's manual puzzle authoring workflow by adding configurable object semantics, richer spatial rule forms, structured rule-builder controls, validation performance safeguards, generic hint removal, and VN overlay repair with temporary bust portraits.
 - Phase 35 result: accepted after repair. Object-model adapters, normalized cell editing, rule-expression compile model, directional local scopes, structured workbench controls for safe requested rule forms, visible diagnostics for unsupported forms, VN scene overlay repair, temporary bust portraits, and generic hint removal are implemented and validate. Deferred high-level rule families need separate schema/proof support before UI authoring would be honest.
+- Planned Phase 36 direction: improve the private workbench's day-to-day usability for manual puzzle design: local draft/published case library, direct case list, create/save/delete/publish/retract, simplified UI without import/debug panels, readable contrast, and selectable asynchronous diagnostics with progress/cancel.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -146,4 +148,5 @@ These are accepted as candidates, not active execution scope:
 - VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
 - Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
 - Rule object model, editor grammar, and VN overlay repair budget: 40 rounds, covering Phase 35, completed after repair.
+- Authoring workbench UX and async diagnostics budget: 32 rounds, covering Phase 36.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

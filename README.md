@@ -42,10 +42,10 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Last completed check: Phase 34 - Unregistered Scene Frontend Adaptation, accepted
 - Current executor result: Phase 35 complete
 - Final report: `docs/phase-35-rule-object-model-editor-vn-overlay-final-report.md`
-- Active executor phase: none
-- Guide: none
-- Active budget: none
-- Current check status: Phase 35 accepted after repair.
+- Active executor phase: Phase 36 - Authoring Workbench UX And Async Diagnostics
+- Guide: `docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md`
+- Active budget: 32 rounds
+- Current check status: Phase 35 accepted after repair; Phase 36 dispatched.
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.
@@ -61,7 +61,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 33 added VN enable/disable, replay, text-speed, reduced-motion, focus-return, reset-safe behavior, an asset intake kit, and a private Theme/VN review summary without final art, AI art, mechanics changes, or case promotion.
 - Latest phase result: Phase 34 adapted the normal player frontend toward `未登记现场 / UNREGISTERED SCENE`: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans are in place without changing puzzle mechanics.
 - Latest phase result: Phase 35 added object-model compatibility, normalized cell editing, structured workbench controls for the safe-to-compile requested rule forms, visible diagnostics for unsupported rule forms, VN scene overlay repair, temporary bust portraits, and generic hint removal without promoting cases or weakening validation.
-- Next planned direction: use the richer workbench for user-led manual puzzle authoring, or plan a separate schema/proof expansion for intentionally blocked high-level rule families.
+- Next planned direction: Phase 36 makes the private workbench usable for manual puzzle authoring with a left case list, draft/published local library, create/save/delete/publish/retract, simplified UI, contrast fixes, and selectable asynchronous diagnostics.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
