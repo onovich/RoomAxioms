@@ -53,12 +53,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently checked: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair, accepted after repair, final commit `c2296b2`.
-- Current executor result: Phase 35 complete; Phase 36 is being dispatched for authoring workbench UX and asynchronous diagnostics.
-- Active guide: `docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md`.
-- Executor budget: 32 rounds.
-- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
-- Last completed final report: `docs/phase-35-rule-object-model-editor-vn-overlay-final-report.md`.
+- Recently checked: Phase 36 - Authoring Workbench UX And Async Diagnostics, accepted, final commit `12af152`.
+- Current executor result: Phase 36 complete.
+- Active guide: none.
+- Executor budget: none.
+- Executor status: idle; waiting for user workbench testing and next product decision before another `GoalNext` dispatch.
+- Last completed final report: `docs/phase-36-authoring-workbench-ux-async-diagnostics-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -106,6 +106,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 35 direction: prioritize the user's manual puzzle authoring workflow by adding configurable object semantics, richer spatial rule forms, structured rule-builder controls, validation performance safeguards, generic hint removal, and VN overlay repair with temporary bust portraits.
 - Phase 35 result: accepted after repair. Object-model adapters, normalized cell editing, rule-expression compile model, directional local scopes, structured workbench controls for safe requested rule forms, visible diagnostics for unsupported forms, VN scene overlay repair, temporary bust portraits, and generic hint removal are implemented and validate. Deferred high-level rule families need separate schema/proof support before UI authoring would be honest.
 - Planned Phase 36 direction: improve the private workbench's day-to-day usability for manual puzzle design: local draft/published case library, direct case list, create/save/delete/publish/retract, simplified UI without import/debug panels, readable contrast, and selectable asynchronous diagnostics with progress/cancel.
+- Phase 36 result: accepted. The private workbench now has a left case library, local draft/published cases, create/save/delete/publish/retract, simplified normal UI, contrast repairs, selectable plain-language diagnostics, asynchronous progress/cancel/stale-response handling, and a methodology note tying Minesweeper generation ideas to modular validation/no-guess/difficulty checks without adding broad random generation.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -148,5 +149,5 @@ These are accepted as candidates, not active execution scope:
 - VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
 - Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
 - Rule object model, editor grammar, and VN overlay repair budget: 40 rounds, covering Phase 35, completed after repair.
-- Authoring workbench UX and async diagnostics budget: 32 rounds, covering Phase 36.
+- Authoring workbench UX and async diagnostics budget: 32 rounds, covering Phase 36, completed.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
