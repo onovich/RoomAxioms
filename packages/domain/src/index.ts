@@ -14,6 +14,24 @@ export {
 } from './coordinates.js'
 export { createInitialGameState, reduceGameState } from './events.js'
 export type { GameEvent, GameState, GameStatus, InitialGameStateInput } from './events.js'
+export {
+  DEFAULT_OBJECT_TYPE_REGISTRY,
+  denormalizeLegacyCellState,
+  denormalizeLegacyPuzzleTarget,
+  findObjectType,
+  findObjectTypeByLegacyKind,
+  normalizeLegacyCellKind,
+  normalizePuzzleTarget,
+} from './objectModel.js'
+export type {
+  LegacyObjectCellKind,
+  LocalizedLabel,
+  NormalizedCellState,
+  NormalizedPuzzleTarget,
+  ObjectTypeCategory,
+  ObjectTypeDefinition,
+  ObjectTypeRegistry,
+} from './objectModel.js'
 
 export { assertNever } from './types.js'
 
