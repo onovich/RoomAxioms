@@ -7,6 +7,7 @@ import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from 
 import {
   duplicateRuleBuilderDraft,
   moveRuleBuilderDraft,
+  type RuleBuilderCreateForm,
   type RuleBuilderDraft,
   updateRuleBuilderComparison,
   updateRuleBuilderConditionalClause,
@@ -14,6 +15,8 @@ import {
   updateRuleBuilderDirectTarget,
   updateRuleBuilderForEachScopeKind,
   updateRuleBuilderForEachSubject,
+  updateRuleBuilderLineOrigin,
+  updateRuleBuilderLineScope,
   updateRuleBuilderOverlapMode,
   updateRuleBuilderRegionId,
 } from '@room-axioms/authoring/rule-builder'
@@ -23,9 +26,12 @@ import type {
   CellKind,
   Comparator,
   CountComparison,
+  Direction,
+  LineCountRule,
   LocalScopeKind,
   PuzzleDefinition,
   RegionDefinition,
+  StaticLineScope,
   ScopeOverlapMode,
 } from '@room-axioms/domain'
 
@@ -51,6 +57,7 @@ import {
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
   patchWorkbenchMetadata,
+  patchWorkbenchRuleBuilderCreateRule,
   patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
@@ -76,6 +83,19 @@ const RULE_BUILDER_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin'
 const COMPARATOR_OPS: readonly Comparator['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
 const COMPARISON_OPS: readonly CountComparison['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
 const OVERLAP_MODES: readonly ScopeOverlapMode[] = ['intersection', 'union', 'leftOnly', 'rightOnly']
+const DIRECTION_OPTIONS: readonly Direction[] = ['north', 'south', 'east', 'west']
+const RULE_CREATE_FORMS: readonly RuleBuilderCreateForm[] = [
+  'globalCount',
+  'forEachCount',
+  'rowCount',
+  'columnCount',
+  'cornersCount',
+  'regionCount',
+  'edgeCount',
+  'interiorCount',
+  'lineOfSightExists',
+  'lineOfSightNone',
+]
 
 export default function AuthoringWorkbenchScreen() {
   const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
@@ -302,6 +322,32 @@ export default function AuthoringWorkbenchScreen() {
     const nextDrafts = [...model.ruleBuilderDrafts]
     nextDrafts[index] = next
     applyRuleBuilderDraftsPatch(nextDrafts, `${ruleId} 已从结构化控件更新。`, ruleId)
+  }
+
+  function createBuilderRule(form: RuleBuilderCreateForm): void {
+    const patch = patchWorkbenchRuleBuilderCreateRule(draft, { form })
+    if (!patch.ok) {
+      setRuleBuilderPatchStatus({
+        kind: 'rejected',
+        message: '新规则未创建。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    const nextRule = patch.puzzle.rules[patch.puzzle.rules.length - 1]
+    setDraft(patch.state)
+    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
+    setSelectedRuleId(nextRule?.id)
+    setRuleTitleText(nextRule?.presentation.title ?? '')
+    setRuleFlavorText(nextRule?.presentation.flavor ?? '')
+    setRuleBuilderPatchStatus({
+      kind: 'applied',
+      message: `${ruleCreateFormLabel(form)} 已加入草稿；请重新运行诊断。`,
+    })
+    setRulePatchStatus({ kind: 'idle' })
   }
 
   function applyTargetCellPatch(): void {
@@ -705,6 +751,7 @@ export default function AuthoringWorkbenchScreen() {
             onRemoveRule={removeBuilderRule}
             onMoveRule={moveBuilderRule}
             onUpdateRule={updateBuilderRule}
+            onCreateRule={createBuilderRule}
           />
           <RuleCopyEditor
             selectedRule={selectedRule}
@@ -900,6 +947,12 @@ function parseNonNegativeInteger(text: string): number | undefined {
   return value
 }
 
+function parsePositiveInteger(text: string): number | undefined {
+  const value = Number(text)
+  if (!Number.isInteger(value) || value < 1) return undefined
+  return value
+}
+
 function comparatorOpLabel(op: Comparator['op']): string {
   switch (op) {
     case 'eq':
@@ -917,6 +970,44 @@ function comparatorOpLabel(op: Comparator['op']): string {
   }
 }
 
+function directionLabel(direction: Direction): string {
+  switch (direction) {
+    case 'north':
+      return '向上'
+    case 'south':
+      return '向下'
+    case 'east':
+      return '向右'
+    case 'west':
+      return '向左'
+  }
+}
+
+function ruleCreateFormLabel(form: RuleBuilderCreateForm): string {
+  switch (form) {
+    case 'globalCount':
+      return '全局数量'
+    case 'forEachCount':
+      return '每个对象周围/方向邻格'
+    case 'regionCount':
+      return '已有区域数量'
+    case 'rowCount':
+      return '第 N 行数量'
+    case 'columnCount':
+      return '第 N 列数量'
+    case 'cornersCount':
+      return '四个角落数量'
+    case 'edgeCount':
+      return '外圈边缘数量'
+    case 'interiorCount':
+      return '内侧区域数量'
+    case 'lineOfSightExists':
+      return '视线可见至少一个对象'
+    case 'lineOfSightNone':
+      return '视线内没有对象'
+  }
+}
+
 function overlapModeLabel(mode: ScopeOverlapMode): string {
   switch (mode) {
     case 'intersection':
@@ -930,6 +1021,52 @@ function overlapModeLabel(mode: ScopeOverlapMode): string {
   }
 }
 
+function RuleBuilderCoverage() {
+  const rows: readonly {
+    readonly label: string
+    readonly status: 'authorable' | 'blocked'
+    readonly detail: string
+  }[] = [
+    {
+      label: '全局、行、列、已有区域、四角、边缘、内侧数量',
+      status: 'authorable',
+      detail: '通过结构化控件创建；四角/边缘/内侧会先物化为 generated region，再交给 schema 校验。',
+    },
+    {
+      label: '局部上下左右/周围一圈/单方向邻格',
+      status: 'authorable',
+      detail: '支持存在、没有、恰好、至少、至多等数量谓词；目标和参照物都从 allowedKinds 选择。',
+    },
+    {
+      label: '视线正向/负向可见',
+      status: 'authorable',
+      detail: '通过 lineCount ray 表达；起点格和方向可编辑，至少 1 表示可见，恰好 0 表示不可见。',
+    },
+    {
+      label: 'all / 全部都是',
+      status: 'blocked',
+      detail: '当前 DSL 需要先安全展开为固定范围大小；控件阻塞该谓词，避免生成证明/求解器不一致的规则。',
+    },
+    {
+      label: '对象组、任意物件、距离、first-visible、任意两类对象相对关系',
+      status: 'blocked',
+      detail: '表达式模型可记录方向，但当前 schema/proof promotion gate 尚未完整支持，保留为一等阻塞说明。',
+    },
+  ]
+
+  return (
+    <div className="rule-builder-coverage" aria-label="Rule builder authoring coverage">
+      {rows.map((row) => (
+        <article key={row.label} className={`rule-builder-coverage-item ${row.status}`}>
+          <b>{row.label}</b>
+          <span>{row.status === 'authorable' ? '可结构化创建' : '已阻塞'}</span>
+          <p>{row.detail}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+
 function RuleExpressionBuilder({
   drafts,
   selectedRuleId,
@@ -941,6 +1078,7 @@ function RuleExpressionBuilder({
   onRemoveRule,
   onMoveRule,
   onUpdateRule,
+  onCreateRule,
 }: {
   readonly drafts: readonly RuleBuilderDraft[]
   readonly selectedRuleId: string | undefined
@@ -952,6 +1090,7 @@ function RuleExpressionBuilder({
   readonly onRemoveRule: (ruleId: string) => void
   readonly onMoveRule: (ruleId: string, direction: -1 | 1) => void
   readonly onUpdateRule: (ruleId: string, updater: (draft: RuleBuilderDraft) => RuleBuilderDraft) => void
+  readonly onCreateRule: (form: RuleBuilderCreateForm) => void
 }) {
   const editableCount = drafts.filter((draft) => draft.support === 'editable').length
 
@@ -960,10 +1099,29 @@ function RuleExpressionBuilder({
       <div className="rule-builder-heading">
         <div>
           <h3>规则表达式</h3>
-          <p>从规则结构生成中文说明；只读规则会保留原始 JSON，不做有损改写。</p>
+          <p>从结构化控件生成中文说明；不可安全表达的形式会在这里显示阻塞原因，不要求作者手写规则 JSON。</p>
         </div>
         <span>{editableCount} / {drafts.length} editable</span>
       </div>
+      <div className="rule-builder-create">
+        <label>
+          新增规则
+          <select
+            defaultValue=""
+            onChange={(event) => {
+              if (event.target.value === '') return
+              onCreateRule(event.target.value as RuleBuilderCreateForm)
+              event.currentTarget.value = ''
+            }}
+          >
+            <option value="" disabled>选择结构化规则...</option>
+            {RULE_CREATE_FORMS.map((form) => (
+              <option key={form} value={form}>{ruleCreateFormLabel(form)}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <RuleBuilderCoverage />
       {drafts.length === 0 ? (
         <p className="rule-builder-empty">当前草稿没有可显示的规则表达式。</p>
       ) : (
@@ -1210,10 +1368,113 @@ function RuleBuilderControls({
         </div>
       )
     case 'lineCount':
+      return (
+        <div className="rule-builder-controls">
+          <LineScopeFields
+            rule={rule}
+            onScopeChange={(scope) => onUpdate((current) => updateRuleBuilderLineScope(current, scope))}
+            onOriginChange={(origin) => onUpdate((current) => updateRuleBuilderLineOrigin(current, origin))}
+          />
+          <KindSelect
+            label="对象"
+            value={rule.target}
+            options={kindOptions}
+            onChange={(target) => onUpdate((current) => updateRuleBuilderDirectTarget(current, target))}
+          />
+          <ComparatorFields
+            label="数量"
+            count={rule.count}
+            onChange={(count) => onUpdate((current) => updateRuleBuilderDirectCount(current, count))}
+          />
+        </div>
+      )
     case 'anchorCount':
     case 'recordSet':
       return null
   }
+}
+
+function LineScopeFields({
+  rule,
+  onScopeChange,
+  onOriginChange,
+}: {
+  readonly rule: LineCountRule
+  readonly onScopeChange: (scope: LineCountRule['scope']) => void
+  readonly onOriginChange: (origin: CellId) => void
+}) {
+  const scopeKind = rule.scope.kind === 'ray' ? 'ray' : rule.scope.kind
+  const rayScope = rule.scope.kind === 'ray' ? rule.scope : undefined
+  const staticScope = rayScope === undefined ? rule.scope as StaticLineScope : undefined
+  const activeRayScope: Extract<LineCountRule['scope'], { readonly kind: 'ray' }> = rayScope ?? {
+    kind: 'ray',
+    direction: 'east',
+  }
+
+  return (
+    <fieldset className="rule-builder-fieldset line-scope-fields">
+      <legend>范围</legend>
+      <label>
+        类型
+        <select
+          value={scopeKind}
+          onChange={(event) => {
+            const next = event.target.value
+            if (next === 'row' || next === 'column') {
+              onScopeChange({ kind: next, index: 0 })
+            } else {
+              onScopeChange({ kind: 'ray', direction: 'east' })
+            }
+          }}
+        >
+          <option value="row">第 N 行</option>
+          <option value="column">第 N 列</option>
+          <option value="ray">从格子出发的视线</option>
+        </select>
+      </label>
+      {staticScope !== undefined ? (
+        <label>
+          序号
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={staticScope.index + 1}
+            onChange={(event) => {
+              const value = parsePositiveInteger(event.target.value)
+              if (value !== undefined) onScopeChange({ ...staticScope, index: value - 1 })
+            }}
+          />
+        </label>
+      ) : (
+        <>
+          <label>
+            起点格
+            <input
+              type="text"
+              value={rule.origin ?? ''}
+              placeholder="A1"
+              onChange={(event) => onOriginChange(event.target.value.trim().toUpperCase())}
+            />
+          </label>
+          <label>
+            方向
+            <select
+              value={activeRayScope.direction}
+              onChange={(event) => onScopeChange({
+                ...activeRayScope,
+                direction: event.target.value as Direction,
+              })}
+            >
+              {DIRECTION_OPTIONS.map((direction) => (
+                <option key={direction} value={direction}>{directionLabel(direction)}</option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
+    </fieldset>
+  )
 }
 
 function KindSelect({

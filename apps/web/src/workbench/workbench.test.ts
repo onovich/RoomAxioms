@@ -28,6 +28,7 @@ import {
   patchWorkbenchMetadata,
   patchWorkbenchRulePresentation,
   patchWorkbenchRulesJson,
+  patchWorkbenchRuleBuilderCreateRule,
   patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchScopeCollectionsJson,
   patchWorkbenchNormalizedTargetCell,
@@ -463,6 +464,43 @@ describe('authoring workbench shell model', () => {
       },
     })
     expect(patchedModel.ruleSummaries[0]?.flavor).toBe(model.ruleBuilderDrafts[0]?.generatedText.flavor)
+  })
+
+  it('creates requested rule-builder forms without raw rules JSON editing', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const corners = patchWorkbenchRuleBuilderCreateRule(draft, {
+      form: 'cornersCount',
+    })
+
+    expect(corners.ok).toBe(true)
+    if (!corners.ok) throw new Error('Corner rule creation failed.')
+    expect(corners.puzzle.regions?.find((region) => region.id === 'generated-corners')).toMatchObject({
+      cells: expect.arrayContaining(['A1', 'D1', 'A4', 'D4']),
+    })
+    expect(corners.puzzle.rules.at(-1)).toMatchObject({
+      type: 'regionCount',
+      regionId: 'generated-corners',
+    })
+
+    const rayNone = patchWorkbenchRuleBuilderCreateRule(corners.state, {
+      form: 'lineOfSightNone',
+      origin: 'A1',
+    })
+    expect(rayNone.ok).toBe(true)
+    if (!rayNone.ok) throw new Error('Ray rule creation failed.')
+    expect(rayNone.puzzle.rules.at(-1)).toMatchObject({
+      type: 'lineCount',
+      origin: 'A1',
+      scope: { kind: 'ray', direction: 'east' },
+      count: { op: 'eq', value: 0 },
+    })
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, rayNone.state)
+    expect(model.exported.ok).toBe(true)
+    expect(model.ruleBuilderDrafts.at(-1)).toMatchObject({
+      support: 'editable',
+      family: 'lineCount',
+    })
   })
 
   it('marks non-MVP rule families read-only in the rule builder model', () => {

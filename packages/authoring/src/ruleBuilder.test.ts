@@ -4,6 +4,7 @@ import type { PuzzleDefinition, RuleDefinition } from '@room-axioms/domain'
 import { parsePuzzleDefinition } from '@room-axioms/schema'
 import {
   createRuleBuilderDrafts,
+  createRuleBuilderRule,
   duplicateRuleBuilderDraft,
   editableRuleTypes,
   exportRuleBuilderDrafts,
@@ -14,6 +15,8 @@ import {
   updateRuleBuilderDirectTarget,
   updateRuleBuilderForEachScopeKind,
   updateRuleBuilderForEachSubject,
+  updateRuleBuilderLineOrigin,
+  updateRuleBuilderLineScope,
   updateRuleBuilderOverlapMode,
   updateRuleBuilderRegionId,
 } from './ruleBuilder.js'
@@ -31,6 +34,7 @@ describe('rule builder model', () => {
       'globalCount',
       'forEachCount',
       'regionCount',
+      'lineCount',
       'scopeOverlapCount',
       'comparativeCount',
       'conditionalCount',
@@ -167,7 +171,7 @@ describe('rule builder model', () => {
     })
   })
 
-  it('leaves read-only unsupported rules untouched when edit helpers are called', () => {
+  it('edits row, column, and ray line-count rules through structured helpers', () => {
     const rule: RuleDefinition = {
       id: 'L1',
       type: 'lineCount',
@@ -177,9 +181,50 @@ describe('rule builder model', () => {
       presentation: { title: 'Line original' },
     }
     const [draft] = createRuleBuilderDrafts(builderPuzzle([rule]))
+    const asRay = updateRuleBuilderLineOrigin(
+      updateRuleBuilderLineScope(draft!, { kind: 'ray', direction: 'south' }),
+      'A1',
+    )
+    const updated = updateRuleBuilderDirectCount(
+      updateRuleBuilderDirectTarget(asRay, 'bin'),
+      { op: 'gte', value: 1 },
+    )
+    const [exported] = exportRuleBuilderDrafts([updated])
 
-    expect(updateRuleBuilderDirectTarget(draft!, 'bin')).toBe(draft)
-    expect(updateRuleBuilderDirectCount(draft!, { op: 'gte', value: 2 })).toBe(draft)
+    expect(updated.support).toBe('editable')
+    expect(exported).toMatchObject({
+      id: 'L1',
+      type: 'lineCount',
+      origin: 'A1',
+      scope: { kind: 'ray', direction: 'south' },
+      target: 'bin',
+      count: { op: 'gte', value: 1 },
+    })
+    const parsed = parsePuzzleDefinition({ ...builderPuzzle([rule]), rules: [globalRule(), exported!] })
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues, null, 2))
+    expect(parsed.ok).toBe(true)
+  })
+
+  it('creates requested authoring forms and materializes safe positional regions', () => {
+    const puzzle = builderPuzzle([globalRule()])
+    const corners = createRuleBuilderRule(puzzle, { form: 'cornersCount', id: 'CORNERS' })
+    const rayNone = createRuleBuilderRule(puzzle, { form: 'lineOfSightNone', id: 'RAY_NONE', origin: 'A1' })
+    const row = createRuleBuilderRule(puzzle, { form: 'rowCount', id: 'ROW' })
+
+    expect(corners.regions).toEqual([
+      expect.objectContaining({
+        id: 'generated-corners',
+        cells: ['A1', 'C1', 'A3', 'C3'],
+      }),
+    ])
+    expect(corners.rule).toMatchObject({ type: 'regionCount', regionId: 'generated-corners' })
+    expect(rayNone.rule).toMatchObject({
+      type: 'lineCount',
+      origin: 'A1',
+      scope: { kind: 'ray', direction: 'east' },
+      count: { op: 'eq', value: 0 },
+    })
+    expect(row.rule).toMatchObject({ type: 'lineCount', scope: { kind: 'row', index: 0 } })
   })
 })
 

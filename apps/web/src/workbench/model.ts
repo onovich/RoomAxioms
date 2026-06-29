@@ -21,7 +21,9 @@ import {
 } from '@room-axioms/authoring/drafts'
 import {
   createRuleBuilderDrafts,
+  createRuleBuilderRule,
   exportRuleBuilderDrafts,
+  type RuleBuilderCreateInput,
   type RuleBuilderDraft,
 } from '@room-axioms/authoring/rule-builder'
 import {
@@ -556,6 +558,27 @@ export function patchWorkbenchRuleBuilderDrafts(
   return patchDraftRules(draft, exportRuleBuilderDrafts(ruleDrafts))
 }
 
+export function patchWorkbenchRuleBuilderCreateRule(
+  draft: WorkbenchDraftState,
+  input: RuleBuilderCreateInput,
+): WorkbenchDraftPatchResult {
+  const parse = parseDraftJson(draft.jsonText)
+  if (!parse.ok) {
+    return {
+      ok: false,
+      state: draft,
+      issues: parse.issues,
+    }
+  }
+
+  const created = createRuleBuilderRule(parse.puzzle, input)
+  const regions = mergeRegions(parse.puzzle.regions ?? [], created.regions)
+  const regionsPatch = patchDraftRegions(draft, regions)
+  if (!regionsPatch.ok) return regionsPatch
+
+  return patchDraftRules(regionsPatch.state, [...regionsPatch.puzzle.rules, created.rule])
+}
+
 export function workbenchCellKindOptions(
   puzzle: PuzzleDefinition | undefined,
   currentKind: CellKind | undefined,
@@ -828,6 +851,16 @@ function parseRulesJson(jsonText: string): {
       rules: rulesDraft.rules as readonly RuleDefinition[],
     },
   }
+}
+
+function mergeRegions(
+  current: readonly RegionDefinition[],
+  generated: readonly RegionDefinition[],
+): readonly RegionDefinition[] {
+  if (generated.length === 0) return current
+  const byId = new Map(current.map((region) => [region.id, region]))
+  for (const region of generated) byId.set(region.id, region)
+  return [...byId.values()]
 }
 
 function scopeIssue(
