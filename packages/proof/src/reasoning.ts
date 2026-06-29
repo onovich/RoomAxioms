@@ -10,6 +10,7 @@ import type {
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
+  LocalScopeKind,
   Observation,
   PuzzleDefinition,
   RegionCountRule,
@@ -461,11 +462,22 @@ function anchorScopeCells(
   rule: AnchorCountRule,
   anchorCellId: CellId,
 ): readonly CellId[] {
-  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+  if (isLocalScopeKind(rule.scope.kind)) {
     return neighbors(anchorCellId, rule.scope.kind, puzzle.board);
   }
 
   throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
+}
+
+function isLocalScopeKind(kind: string): kind is LocalScopeKind {
+  return (
+    kind === 'orthogonal' ||
+    kind === 'adjacent' ||
+    kind === 'north' ||
+    kind === 'south' ||
+    kind === 'east' ||
+    kind === 'west'
+  );
 }
 
 export function comparatorBounds(comparator: Comparator): CountBounds {

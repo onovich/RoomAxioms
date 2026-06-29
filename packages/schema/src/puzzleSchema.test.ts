@@ -220,6 +220,46 @@ describe('puzzleDefinitionSchema', () => {
     expect(result.ok).toBe(true)
   })
 
+  it('accepts directional local count scopes', () => {
+    const result = parsePuzzleDefinition({
+      ...validMinimalPuzzle,
+      allowedKinds: ['empty', 'bin', 'guest'],
+      anchors: [
+        {
+          id: 'known-bin',
+          title: 'Known bin',
+          subject: 'bin',
+        },
+      ],
+      rules: [
+        {
+          id: 'R2',
+          type: 'forEachCount',
+          subject: 'bin',
+          scope: { kind: 'east' },
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+          presentation: { title: 'No guest east of each bin' },
+        },
+        {
+          id: 'AR1',
+          type: 'anchorCount',
+          anchorId: 'known-bin',
+          scope: { kind: 'north' },
+          target: 'guest',
+          count: { op: 'eq', value: 0 },
+          presentation: { title: 'No guest north of known bins' },
+        },
+      ],
+      target: {
+        ...validMinimalPuzzle.target,
+        A1: 'bin',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
   it('rejects anchor count rules that reference unknown anchors', () => {
     const result = parsePuzzleDefinition({
       ...validMinimalPuzzle,

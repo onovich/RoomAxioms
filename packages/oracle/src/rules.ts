@@ -5,6 +5,7 @@ import type {
   Comparator,
   ComparativeCountRule,
   CountScopeRef,
+  LocalScopeKind,
   PuzzleDefinition,
   RuleDefinition,
 } from '@room-axioms/domain';
@@ -251,11 +252,22 @@ function anchorScopeCells(
   cellId: CellId,
   puzzle: PuzzleDefinition,
 ): readonly CellId[] {
-  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+  if (isLocalScopeKind(rule.scope.kind)) {
     return neighbors(cellId, rule.scope.kind, puzzle.board);
   }
 
   throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
+}
+
+function isLocalScopeKind(kind: string): kind is LocalScopeKind {
+  return (
+    kind === 'orthogonal' ||
+    kind === 'adjacent' ||
+    kind === 'north' ||
+    kind === 'south' ||
+    kind === 'east' ||
+    kind === 'west'
+  );
 }
 
 function compareCount(actual: number, comparator: Comparator): boolean {

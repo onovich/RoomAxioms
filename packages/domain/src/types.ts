@@ -14,9 +14,11 @@ export interface BoardSize {
 
 export type PlayerMark = 'guest' | 'safe'
 
-export type ScopeKind = 'global' | 'orthogonal' | 'adjacent'
-
 export type Direction = 'north' | 'south' | 'east' | 'west'
+
+export type LocalScopeKind = 'orthogonal' | 'adjacent' | Direction
+
+export type ScopeKind = 'global' | LocalScopeKind
 
 export type Comparator =
   | { readonly op: 'eq'; readonly value: number }
@@ -40,7 +42,7 @@ export interface GlobalCountRule {
 }
 
 export interface LocalScope {
-  readonly kind: Exclude<ScopeKind, 'global'>
+  readonly kind: LocalScopeKind
 }
 
 export type Scope = { readonly kind: 'global' } | LocalScope

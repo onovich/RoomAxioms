@@ -147,7 +147,7 @@ describe('rule expression model', () => {
     })
   })
 
-  it('blocks required forms that do not have a safe DSL bridge yet', () => {
+  it('compiles directional local scopes to for-each counts', () => {
     const directional = compileRuleExpression({
       id: 'D1',
       subject: { kind: 'object', objectTypeId: 'bin' },
@@ -155,6 +155,20 @@ describe('rule expression model', () => {
       target: { kind: 'target' },
       predicate: { kind: 'none' },
     })
+
+    expect(directional).toMatchObject({
+      status: 'compiled',
+      rule: {
+        type: 'forEachCount',
+        subject: 'bin',
+        scope: { kind: 'east' },
+        target: 'guest',
+        count: { op: 'eq', value: 0 },
+      },
+    })
+  })
+
+  it('blocks selector and predicate forms that do not have a safe DSL bridge yet', () => {
     const anyObject = compileRuleExpression({
       id: 'A1',
       scope: { kind: 'global' },
@@ -168,10 +182,6 @@ describe('rule expression model', () => {
       predicate: { kind: 'all' },
     })
 
-    expect(directional).toMatchObject({
-      status: 'blocked',
-      code: 'directional-local-scope-unsupported',
-    })
     expect(anyObject).toMatchObject({
       status: 'blocked',
       code: 'selector-not-legacy-compatible',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CellKind, Comparator, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
+import type { CellKind, Comparator, LocalScopeKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
 import { evaluateRule, satisfiesRules } from './rules.js';
 import type { CellAssignment } from './types.js';
@@ -136,6 +136,30 @@ describe('rule evaluation', () => {
     });
   });
 
+  it('supports directional for-each scopes', () => {
+    const cells = makeAssignment([
+      ['bin', 'guest', 'empty'],
+      ['bin', 'empty', 'guest'],
+      ['empty', 'empty', 'empty'],
+    ]);
+    const rule = forEachCountRule('east-of-bin-no-guest', 'bin', 'east', 'guest', {
+      op: 'eq',
+      value: 0,
+    });
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      rules: [rule],
+      target: cells,
+    });
+
+    expect(evaluateRule(rule, puzzle, { cells })).toEqual({
+      ruleId: 'east-of-bin-no-guest',
+      satisfied: false,
+      actual: [1, 0],
+    });
+  });
+
   it('evaluates Phase 24 count-scope rules exactly', () => {
     const cells = makeAssignment([
       ['empty', 'guest'],
@@ -265,7 +289,7 @@ function globalCountRule(
 function forEachCountRule(
   id: string,
   subject: CellKind,
-  scope: 'adjacent' | 'orthogonal',
+  scope: LocalScopeKind,
   target: CellKind,
   count: Comparator,
 ): RuleDefinition {

@@ -85,6 +85,15 @@ describe('neighborhoods', () => {
     expect(neighbors('B1', 'orthogonal', size)).toEqual(['A1', 'C1', 'B2'])
     expect(neighbors('B2', 'orthogonal', size)).toEqual(['B1', 'A2', 'C2', 'B3'])
   })
+
+  it('supports directional single-cell local scopes', () => {
+    expect(neighbors('B2', 'north', size)).toEqual(['B1'])
+    expect(neighbors('B2', 'south', size)).toEqual(['B3'])
+    expect(neighbors('B2', 'east', size)).toEqual(['C2'])
+    expect(neighbors('B2', 'west', size)).toEqual(['A2'])
+    expect(neighbors('A1', 'north', size)).toEqual([])
+    expect(neighbors('A1', 'west', size)).toEqual([])
+  })
 })
 
 describe('expressive traversal helpers', () => {

@@ -64,6 +64,10 @@ export const globalScopeSchema = z.strictObject({
 export const localScopeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('orthogonal') }),
   z.strictObject({ kind: z.literal('adjacent') }),
+  z.strictObject({ kind: z.literal('north') }),
+  z.strictObject({ kind: z.literal('south') }),
+  z.strictObject({ kind: z.literal('east') }),
+  z.strictObject({ kind: z.literal('west') }),
 ])
 
 export const staticLineScopeSchema = z.discriminatedUnion('kind', [

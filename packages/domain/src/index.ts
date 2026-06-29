@@ -56,6 +56,7 @@ export type {
   GlobalCountRule,
   LineCountRule,
   LocalScope,
+  LocalScopeKind,
   Observation,
   ObservationEntry,
   PlayerMark,

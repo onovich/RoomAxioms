@@ -175,13 +175,6 @@ export function compileRuleExpression(
         presentation: generatedText,
       }, generatedText)
     case 'local': {
-      if (expression.scope.relation !== 'orthogonal' && expression.scope.relation !== 'surrounding') {
-        return blocked(
-          'directional-local-scope-unsupported',
-          'Directional single-neighbor local scopes need a narrow DSL extension before promotion.',
-          generatedText,
-        )
-      }
       if (!expression.subject) {
         return blocked('subject-required', 'Local per-object rules need a subject selector.', generatedText)
       }
@@ -193,7 +186,7 @@ export function compileRuleExpression(
         id: expression.id,
         type: 'forEachCount',
         subject,
-        scope: { kind: expression.scope.relation === 'orthogonal' ? 'orthogonal' : 'adjacent' },
+        scope: { kind: localRelationToScopeKind(expression.scope.relation) },
         target,
         count,
         presentation: generatedText,
@@ -375,6 +368,11 @@ function localRelationPhrase(relation: RuleExpressionLocalRelation): string {
     case 'west':
       return '左方一格'
   }
+}
+
+function localRelationToScopeKind(relation: RuleExpressionLocalRelation): 'orthogonal' | 'adjacent' | Direction {
+  if (relation === 'surrounding') return 'adjacent'
+  return relation
 }
 
 function lineOfSightPhrase(scope: Extract<RuleExpressionScope, { readonly kind: 'lineOfSight' }>): string {

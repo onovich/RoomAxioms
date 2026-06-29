@@ -3,8 +3,8 @@ import type {
   CellId,
   Coord,
   Direction,
+  LocalScopeKind,
   RegionDefinition,
-  ScopeKind,
   StaticLineScope,
 } from './types.js'
 
@@ -127,10 +127,17 @@ export function rayCells(
 
 export function neighbors(
   id: CellId,
-  scope: Exclude<ScopeKind, 'global'>,
+  scope: LocalScopeKind,
   size: BoardSize,
 ): readonly CellId[] {
   const origin = parseCellId(id, size)
+
+  if (scope === 'north' || scope === 'south' || scope === 'east' || scope === 'west') {
+    const delta = directionDelta(scope)
+    const next = { x: origin.x + delta.x, y: origin.y + delta.y }
+    return isInside(next, size) ? [formatCellId(next, size)] : []
+  }
+
   const cells: CellId[] = []
 
   for (let dy = -1; dy <= 1; dy += 1) {

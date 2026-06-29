@@ -1,4 +1,4 @@
-import type { Comparator, RuleDefinition } from '@room-axioms/domain'
+import type { Comparator, LocalScopeKind, RuleDefinition } from '@room-axioms/domain'
 import { sanitizePlayerRuleCopy, sceneKindLabel, sceneKindUnit } from '../theme/vocabulary'
 
 export function ruleChip(rule: RuleDefinition): string {
@@ -96,7 +96,11 @@ function kindLabel(kind: string): string {
   return sceneKindLabel(kind)
 }
 
-function scopeLabel(scope: 'orthogonal' | 'adjacent'): string {
+function scopeLabel(scope: LocalScopeKind): string {
+  if (scope === 'north') return 'north cell'
+  if (scope === 'south') return 'south cell'
+  if (scope === 'east') return 'east cell'
+  if (scope === 'west') return 'west cell'
   return scope === 'orthogonal' ? '上下左右邻格' : '周围一圈'
 }
 
@@ -112,7 +116,14 @@ function lineLabel(rule: Extract<RuleDefinition, { readonly type: 'lineCount' }>
 }
 
 function anchorScopeLabel(rule: Extract<RuleDefinition, { readonly type: 'anchorCount' }>): string {
-  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') return scopeLabel(rule.scope.kind)
+  if (
+    rule.scope.kind === 'orthogonal' ||
+    rule.scope.kind === 'adjacent' ||
+    rule.scope.kind === 'north' ||
+    rule.scope.kind === 'south' ||
+    rule.scope.kind === 'east' ||
+    rule.scope.kind === 'west'
+  ) return scopeLabel(rule.scope.kind)
   return rule.scope.kind
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CellKind, Comparator, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
+import type { CellKind, Comparator, LocalScopeKind, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
 import { createInitialDomains, removeKind, setCellDomain, singletonMask } from './bitset.js';
 import {
@@ -77,6 +77,35 @@ describe('constraint compilation and count bounds', () => {
     expect(bounds.entries.find((entry) => entry.cellId === 'B2')?.targetBounds).toEqual({
       minimum: 0,
       maximum: 8,
+    });
+  });
+
+  it('compiles directional local scopes with one-cell target bounds', () => {
+    const puzzle = makePuzzle({
+      width: 3,
+      height: 3,
+      allowedKinds: ['empty', 'bin', 'guest'],
+      rules: [
+        forEachCountRule('east-bin-no-guest', 'bin', 'east', 'guest', {
+          op: 'eq',
+          value: 0,
+        }),
+      ],
+    });
+    const [constraint] = compileConstraints(puzzle);
+    const bounds = evaluateConstraintBounds(constraint, createInitialDomains(puzzle));
+
+    if (bounds.kind !== 'forEachCount') {
+      throw new Error('Expected forEachCount bounds');
+    }
+
+    expect(bounds.entries.find((entry) => entry.cellId === 'A1')?.targetBounds).toEqual({
+      minimum: 0,
+      maximum: 1,
+    });
+    expect(bounds.entries.find((entry) => entry.cellId === 'C1')?.targetBounds).toEqual({
+      minimum: 0,
+      maximum: 0,
     });
   });
 
@@ -448,7 +477,7 @@ function lineCountRule(
 function anchorCountRule(
   id: string,
   anchorId: string,
-  scope: 'adjacent' | 'orthogonal',
+  scope: LocalScopeKind,
   target: CellKind,
   count: Comparator,
 ): RuleDefinition {
@@ -466,7 +495,7 @@ function anchorCountRule(
 function forEachCountRule(
   id: string,
   subject: CellKind,
-  scope: 'adjacent' | 'orthogonal',
+  scope: LocalScopeKind,
   target: CellKind,
   count: Comparator,
 ): RuleDefinition {

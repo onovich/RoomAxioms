@@ -3,6 +3,7 @@ import type {
   Comparator,
   CountComparison,
   CountScopeRef,
+  LocalScopeKind,
   PuzzleDefinition,
   RuleDefinition,
 } from '@room-axioms/domain'
@@ -112,7 +113,7 @@ function generatedRuleText(rule: RuleDefinition, context: RuleTextContext): Gene
 
 function forEachText(rule: Extract<RuleDefinition, { readonly type: 'forEachCount' }>): GeneratedRuleText {
   const subject = kindLabel(rule.subject)
-  const scope = localScopePhrase(rule.scope.kind)
+  const scope = localScopePhraseForRule(rule.scope.kind)
   if (rule.target === 'guest' && rule.count.op === 'eq' && rule.count.value === 0) {
     return {
       title: `${subject}${scope}没有访客`,
@@ -181,11 +182,31 @@ function localScopePhrase(kind: 'orthogonal' | 'adjacent'): string {
   return kind === 'orthogonal' ? '上下左右邻格' : '周围一圈'
 }
 
+function localScopePhraseForRule(kind: LocalScopeKind): string {
+  switch (kind) {
+    case 'orthogonal':
+    case 'adjacent':
+      return localScopePhrase(kind)
+    case 'north':
+      return 'north cell'
+    case 'south':
+      return 'south cell'
+    case 'east':
+      return 'east cell'
+    case 'west':
+      return 'west cell'
+  }
+}
+
 function anchorScopePhrase(scope: Extract<RuleDefinition, { readonly type: 'anchorCount' }>['scope']): string {
   switch (scope.kind) {
     case 'orthogonal':
     case 'adjacent':
-      return localScopePhrase(scope.kind)
+    case 'north':
+    case 'south':
+    case 'east':
+    case 'west':
+      return localScopePhraseForRule(scope.kind)
     case 'row':
       return `第 ${scope.index + 1} 行`
     case 'column':

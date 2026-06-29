@@ -11,6 +11,7 @@ import type {
   ForEachCountRule,
   GlobalCountRule,
   LineCountRule,
+  LocalScopeKind,
   PuzzleDefinition,
   RegionCountRule,
   RuleDefinition,
@@ -437,11 +438,22 @@ function cellsForAnchorRule(
   cellId: CellId,
   puzzle: PuzzleDefinition,
 ): readonly CellId[] {
-  if (rule.scope.kind === 'orthogonal' || rule.scope.kind === 'adjacent') {
+  if (isLocalScopeKind(rule.scope.kind)) {
     return neighbors(cellId, rule.scope.kind, puzzle.board);
   }
 
   throw new Error(`Rule ${rule.id} uses unsupported anchor scope ${rule.scope.kind}.`);
+}
+
+function isLocalScopeKind(kind: string): kind is LocalScopeKind {
+  return (
+    kind === 'orthogonal' ||
+    kind === 'adjacent' ||
+    kind === 'north' ||
+    kind === 'south' ||
+    kind === 'east' ||
+    kind === 'west'
+  );
 }
 
 function cellsForRegionRule(rule: RegionCountRule, puzzle: PuzzleDefinition): readonly CellId[] {
