@@ -23,6 +23,7 @@ import type {
   CellKind,
   Comparator,
   CountComparison,
+  LocalScopeKind,
   PuzzleDefinition,
   RegionDefinition,
   ScopeOverlapMode,
@@ -839,16 +840,26 @@ function CellFactEditor({
       <div className="cell-editor-controls">
         <label>
           对象
-          <select
-            value={activeKind}
-            onChange={(event) => onKindChange(event.target.value as CellKind)}
+          <input
+            type="checkbox"
+            checked={activeKind === 'guest'}
+            onChange={(event) => onKindChange(event.target.checked ? 'guest' : 'empty')}
             disabled={!canPatch}
-          >
-            {kindOptions.map((kind) => (
-              <option key={kind} value={kind}>{kindLabel(kind)}</option>
-            ))}
-          </select>
+          />
         </label>
+        <div className="cell-object-toggles" aria-label="Objects">
+          {kindOptions.filter((kind) => kind !== 'empty' && kind !== 'guest').map((kind) => (
+            <label key={kind}>
+              {kindLabel(kind)}
+              <input
+                type="checkbox"
+                checked={activeKind === kind}
+                disabled={!canPatch || activeKind === 'guest'}
+                onChange={(event) => onKindChange(event.target.checked ? kind : 'empty')}
+              />
+            </label>
+          ))}
+        </div>
         <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
           应用对象
         </button>
@@ -1086,11 +1097,15 @@ function RuleBuilderControls({
             <select
               value={rule.scope.kind}
               onChange={(event) => onUpdate((current) => (
-                updateRuleBuilderForEachScopeKind(current, event.target.value as 'orthogonal' | 'adjacent')
+                updateRuleBuilderForEachScopeKind(current, event.target.value as LocalScopeKind)
               ))}
             >
               <option value="orthogonal">上下左右邻格</option>
               <option value="adjacent">周围一圈</option>
+              <option value="north">north cell</option>
+              <option value="south">south cell</option>
+              <option value="east">east cell</option>
+              <option value="west">west cell</option>
             </select>
           </label>
           <KindSelect
