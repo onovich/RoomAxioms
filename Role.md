@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-30T00:30:00+08:00
+updated_at: 2026-06-30T02:42:00+08:00
 
 planner:
   role: architect
@@ -25,10 +25,10 @@ artist:
 idempotency:
   active_goal_guide: docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md
   active_goal_phase: Phase 36 - Authoring Workbench UX And Async Diagnostics
-  last_planner_dispatch: 2026-06-29T16:42:00+08:00
+  last_planner_dispatch: 2026-06-30T02:42:00+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: eceb8ca
+  last_planner_dispatch_guide: docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: 7048a67
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair
