@@ -53,10 +53,10 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 ## Current Execution State
 
 - Recently checked: Phase 34 - Unregistered Scene Frontend Adaptation, accepted, final commit `d8335be`.
-- Current executor result: Phase 34 complete; Phase 35 is being dispatched for rule/object authoring and VN overlay repair.
+- Current executor result: Phase 35 returned `READY_FOR_CHECK_WITH_BLOCKER`; checker routed a focused repair because the structured workbench rule-expression controls do not yet expose every user-requested rule form without raw JSON editing.
 - Active guide: `docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md`.
 - Executor budget: 40 rounds.
-- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
+- Executor status: active repair request sent to `019ef271-256c-7be2-9663-e658e2378564`.
 - Last completed final report: `docs/phase-34-unregistered-scene-frontend-adaptation-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -103,6 +103,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 34 result: accepted. The normal player frontend now presents as `未登记现场 / UNREGISTERED SCENE` with themed vocabulary, scene layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans. No puzzle mechanics, schema/domain expansion, final art import, or case content changed.
 - Post-Phase 34 user decisions: current `未登记现场` terminology direction is accepted but still adjustable; generic hint functionality should be removed from the normal product direction; VN should cover partner rule-sensing plus success/failure, with semi-transparent always-present bust/dialogue overlay rather than a separate window; puzzle authoring should be user-led with fast validation tools rather than broad AI-generated puzzle batches; future rule semantics should migrate from hard-coded `empty | bottle | bin | mirror | guest` toward `empty / target / objects[]` with configurable object types, but only in a deliberate domain/schema expansion phase.
 - Planned Phase 35 direction: prioritize the user's manual puzzle authoring workflow by adding configurable object semantics, richer spatial rule forms, structured rule-builder controls, validation performance safeguards, generic hint removal, and VN overlay repair with temporary bust portraits.
+- Phase 35 checkpoint: object-model adapters, normalized cell editing, rule-expression compile model, directional local scopes, VN scene overlay repair, temporary bust portraits, and generic hint removal are implemented and validate. The phase is blocked for repair until structured workbench controls cover the requested global/row/column/corner/region/line-of-sight/local-count forms, or clearly block unsupported forms in the UI with diagnostics.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions

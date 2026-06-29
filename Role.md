@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-29T16:42:00+08:00
+updated_at: 2026-06-29T18:15:00+08:00
 
 planner:
   role: architect
@@ -30,19 +30,23 @@ idempotency:
   last_planner_dispatch_guide: docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md
   last_planner_dispatch_commit: eceb8ca
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
-  last_check_status: pass
-  last_check_phase: Phase 34 - Unregistered Scene Frontend Adaptation
-  last_check_report: docs/phase-34-unregistered-scene-frontend-adaptation-final-report.md
-  last_check_commit: d8335be
-  last_check_at: 2026-06-28T22:47:30+08:00
-  last_check_blocker: none
-  last_executor_report_commit: d8335be
-  last_executor_report_status: READY_FOR_CHECK
-  last_executor_report_phase: Phase 34 - Unregistered Scene Frontend Adaptation
-  last_executor_report: docs/phase-34-unregistered-scene-frontend-adaptation-final-report.md
-  last_executor_report_at: 2026-06-28T22:47:30+08:00
-  last_executor_report_guide: docs/phase-34-unregistered-scene-frontend-adaptation-goal-mode-execution-guide.md
-  last_executor_report_blocker: none
+  last_check_status: blocked_for_repair
+  last_check_phase: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair
+  last_check_report: docs/phase-35-rule-object-model-editor-vn-overlay-final-report.md
+  last_check_commit: 00a3471
+  last_check_at: 2026-06-29T18:15:00+08:00
+  last_check_blocker: workbench rule-expression controls do not yet expose every user-requested rule form without JSON editing
+  last_repair_request: 2026-06-29T18:15:00+08:00
+  last_repair_request_status: sent
+  last_repair_request_phase: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair
+  last_repair_request_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
+  last_executor_report_commit: 00a3471
+  last_executor_report_status: READY_FOR_CHECK_WITH_BLOCKER
+  last_executor_report_phase: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair
+  last_executor_report: docs/phase-35-rule-object-model-editor-vn-overlay-final-report.md
+  last_executor_report_at: 2026-06-29T18:15:00+08:00
+  last_executor_report_guide: docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md
+  last_executor_report_blocker: workbench rule-expression controls incomplete
   last_hotfix_status: pass
   last_hotfix_phase: Phase 24 interrupt - case-021 Pages deployment
   last_hotfix_commit: e35f7fe
