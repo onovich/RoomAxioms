@@ -59,7 +59,7 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 32 added placeholder-safe theme asset manifests, VN dialogue contracts, safe non-final dialogue scenes, a VN overlay renderer, trigger integration for intro/tutorial/hint/failure/success, and secrecy tests without changing puzzle mechanics.
 - Latest phase result: Phase 33 added VN enable/disable, replay, text-speed, reduced-motion, focus-return, reset-safe behavior, an asset intake kit, and a private Theme/VN review summary without final art, AI art, mechanics changes, or case promotion.
 - Latest phase result: Phase 34 adapted the normal player frontend toward `未登记现场 / UNREGISTERED SCENE`: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans are in place without changing puzzle mechanics.
-- Next planned direction: wait for user visual review and either continue to final sliced-art intake/polish or route a focused repair if the themed frontend needs adjustment.
+- Next planned direction: wait for user visual review and either continue to final sliced-art intake/polish or route a focused repair if the themed frontend needs adjustment. Separate future planning is needed for the desired object-model migration from hard-coded `empty | bottle | bin | mirror | guest` toward `empty / target / objects[]`.
 - Development plan: `docs/development-plan.md`
 
 ## Commands
