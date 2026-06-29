@@ -9,8 +9,15 @@ describe('theme asset review workflow', () => {
     const report = createThemeAssetReviewReport(DEFAULT_THEME_ASSET_MANIFEST, STATIC_DIALOGUE_SCENES)
 
     expect(report.manifestId).toBe('unregistered-scene-placeholder')
-    expect(report.statusCounts.placeholder).toBe(DEFAULT_THEME_ASSET_MANIFEST.assets.length)
+    expect(report.statusCounts.placeholder).toBe(DEFAULT_THEME_ASSET_MANIFEST.assets.length - 4)
+    expect(report.statusCounts.userProvided).toBe(4)
     expect(report.placeholderAssetIds).toContain('field-office')
+    expect(report.pendingApprovalAssetIds).toEqual([
+      'investigator',
+      'dispatcher',
+      'investigator-thinking',
+      'dispatcher-sensing',
+    ])
     expect(report.dialogueCategories).toContain('caseIntro')
     expect(report.dialogueLeaks).toEqual([])
     expect(report.manifestLeaks).toEqual([])

@@ -31,7 +31,7 @@ describe('VN dialogue dock', () => {
     expect(html).not.toContain('aria-modal="true"')
     expect(html).toContain('调度员')
     expect(html).toContain('可以解释的一步')
-    expect(html).toContain('Neutral dispatcher portrait placeholder')
+    expect(html).toContain('theme/portraits/phase-35/dispatcher-sensing.png')
     expect(html).toContain('1 / 4')
   })
 })

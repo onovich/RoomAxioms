@@ -104,8 +104,7 @@ export function VNDialogueOverlay({
   return (
     <section
       className="vn-backdrop"
-      role="dialog"
-      aria-modal="true"
+      role="region"
       aria-labelledby="vnDialogueTitle"
       tabIndex={-1}
       ref={dialogRef}

@@ -31,12 +31,13 @@ describe('VN dialogue overlay', () => {
       />,
     )
 
-    expect(html).toContain('role="dialog"')
+    expect(html).toContain('role="region"')
+    expect(html).not.toContain('aria-modal')
     expect(html).toContain('调度员')
     expect(html).toContain('档案已打开')
     expect(html).toContain('1 / 2')
     expect(html).toContain('Field office placeholder background')
-    expect(html).toContain('Neutral dispatcher portrait placeholder')
+    expect(html).toContain('theme/portraits/phase-35/dispatcher-normal.png')
   })
 
   it('renders approved asset URLs when the manifest supplies them', () => {

@@ -17,12 +17,14 @@ describe('theme asset manifest', () => {
     expect(portrait).toMatchObject({
       requestedId: 'investigator',
       kind: 'portrait',
-      status: 'placeholder',
-      placeholder: true,
+      status: 'userProvided',
+      placeholder: false,
       final: false,
     })
-    expect(isPlaceholderLikeThemeAsset(portrait)).toBe(true)
+    expect(isPlaceholderLikeThemeAsset(portrait)).toBe(false)
     expect(isFinalThemeAsset(portrait)).toBe(false)
+    expect(portrait.src).toContain('theme/portraits/phase-35/investigator-normal.png')
+    expect(portrait.entry?.notes).toContain('Not final approved art')
   })
 
   it('returns a safe missing placeholder for absent assets', () => {
@@ -80,6 +82,8 @@ describe('theme asset manifest', () => {
     expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'portrait').map((asset) => asset.id)).toEqual([
       'investigator',
       'dispatcher',
+      'investigator-thinking',
+      'dispatcher-sensing',
     ])
     expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'sound')).toEqual([])
   })

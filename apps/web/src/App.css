@@ -1418,45 +1418,31 @@ h3 {
 }
 
 .vn-backdrop {
-  align-items: stretch;
-  background: rgba(3, 6, 6, 0.82);
-  display: flex;
+  align-items: end;
+  background: linear-gradient(180deg, rgba(9, 14, 15, 0) 0%, rgba(9, 14, 15, 0.18) 48%, rgba(9, 14, 15, 0.34) 100%);
+  display: grid;
   inset: 0;
   justify-content: center;
-  padding: 18px;
+  padding: 0;
+  pointer-events: none;
   position: fixed;
   z-index: 60;
 }
 
 .vn-stage {
-  background: #101717;
-  border: 1px solid var(--border-bright);
-  border-radius: var(--radius);
-  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
-  display: grid;
-  grid-template-rows: 1fr auto;
+  align-items: end;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: flex;
   isolation: isolate;
-  max-height: calc(100vh - 36px);
-  max-width: 980px;
-  min-height: min(620px, calc(100vh - 36px));
-  overflow: hidden;
+  min-height: 100vh;
   position: relative;
-  width: min(100%, 980px);
+  width: 100vw;
 }
 
 .vn-background {
-  align-items: center;
-  background:
-    linear-gradient(135deg, rgba(74, 166, 138, 0.16), transparent 44%),
-    linear-gradient(45deg, rgba(233, 201, 128, 0.12), transparent 58%),
-    var(--surface-0);
-  color: var(--faint);
-  display: flex;
-  font-size: 13px;
-  justify-content: center;
-  min-height: 280px;
-  padding: 24px;
-  text-align: center;
+  display: none;
 }
 
 .vn-background img {
@@ -1470,24 +1456,23 @@ h3 {
 
 .vn-portrait {
   align-items: center;
-  background: rgba(18, 24, 24, 0.78);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  bottom: 180px;
+  bottom: clamp(118px, 18vh, 196px);
   color: var(--muted);
   display: flex;
   font-size: 12px;
-  height: min(42vh, 320px);
+  height: min(68vh, 620px);
   justify-content: center;
-  max-width: 220px;
-  padding: 16px;
+  max-width: min(32vw, 430px);
+  padding: 0;
+  pointer-events: none;
   position: absolute;
   text-align: center;
-  width: 22%;
+  width: 30vw;
+  z-index: 1;
 }
 
 .vn-portrait.left {
-  left: 24px;
+  left: clamp(-48px, 1vw, 24px);
 }
 
 .vn-portrait.center {
@@ -1496,21 +1481,36 @@ h3 {
 }
 
 .vn-portrait.right {
-  right: 24px;
+  right: clamp(-48px, 1vw, 24px);
 }
 
 .vn-portrait img {
+  filter: drop-shadow(0 22px 34px rgba(18, 23, 24, 0.38));
   height: 100%;
   object-fit: contain;
   width: 100%;
 }
 
 .vn-dialogue-box {
-  background: rgba(18, 24, 24, 0.94);
-  border-top: 1px solid var(--border-bright);
+  background:
+    linear-gradient(180deg, rgba(253, 250, 239, 0.94), rgba(239, 230, 205, 0.96)),
+    var(--scene-paper);
+  border: 1px solid rgba(44, 50, 48, 0.36);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -18px 44px rgba(29, 31, 32, 0.28);
+  color: var(--scene-ink);
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: 10px;
+  left: 50%;
+  max-width: min(1180px, calc(100vw - 32px));
+  padding: 14px 18px 16px;
+  pointer-events: auto;
+  position: fixed;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 2;
 }
 
 .vn-dialogue-header,
@@ -1522,18 +1522,19 @@ h3 {
 }
 
 .vn-dialogue-header h2 {
+  color: var(--scene-ink);
   font-size: 20px;
 }
 
 .vn-dialogue-text {
-  background: var(--surface-0);
-  border: 1px solid var(--border);
+  background: rgba(255, 252, 240, 0.78);
+  border: 1px solid rgba(44, 50, 48, 0.22);
   border-radius: var(--radius);
-  color: var(--text);
+  color: var(--scene-ink);
   cursor: pointer;
   font: inherit;
   line-height: 1.75;
-  min-height: 76px;
+  min-height: 70px;
   padding: 14px;
   text-align: left;
   width: 100%;
@@ -1546,7 +1547,7 @@ h3 {
 }
 
 .vn-dialogue-actions span {
-  color: var(--faint);
+  color: var(--scene-ink-soft);
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;
 }
@@ -2767,38 +2768,44 @@ h3 {
   }
 
   .vn-backdrop {
-    padding: 10px;
+    align-items: end;
+    padding: 0;
   }
 
   .vn-stage {
-    max-height: calc(100vh - 20px);
-    min-height: calc(100vh - 20px);
+    min-height: 100vh;
   }
 
   .vn-background {
-    min-height: 180px;
+    display: none;
   }
 
   .vn-portrait {
-    bottom: auto;
-    height: 72px;
-    left: 12px;
+    bottom: 166px;
+    height: min(46vh, 360px);
+    left: -36px;
     max-width: none;
-    padding: 10px;
-    right: 12px;
-    top: 12px;
+    padding: 0;
+    right: auto;
+    top: auto;
     transform: none;
-    width: auto;
+    width: 42vw;
   }
 
-  .vn-portrait.center,
   .vn-portrait.right {
-    left: 12px;
-    right: 12px;
+    left: auto;
+    right: -36px;
     transform: none;
+  }
+
+  .vn-portrait.center {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 
   .vn-dialogue-box {
+    max-width: calc(100vw - 16px);
     padding: 14px;
   }
 
