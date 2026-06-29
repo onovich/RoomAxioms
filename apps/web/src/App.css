@@ -2415,6 +2415,92 @@ h3 {
   width: 100%;
 }
 
+.diagnostic-options-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.diagnostic-options-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.diagnostic-options-heading h3 {
+  margin: 0;
+}
+
+.diagnostic-option-list {
+  display: grid;
+  gap: 8px;
+}
+
+.diagnostic-option {
+  align-items: flex-start;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto 1fr;
+  padding: 9px;
+}
+
+.diagnostic-option input {
+  accent-color: var(--accent);
+  margin-top: 3px;
+}
+
+.diagnostic-option span {
+  display: grid;
+  gap: 3px;
+}
+
+.diagnostic-option b {
+  font-size: 12px;
+}
+
+.diagnostic-option small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.diagnostics-progress {
+  background: #101719;
+  border: 1px solid #4f7895;
+  border-radius: var(--radius);
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+}
+
+.diagnostics-progress-copy {
+  align-items: center;
+  color: #e5f5ff;
+  display: flex;
+  font-size: 12px;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.diagnostics-progress-track {
+  background: #243238;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.diagnostics-progress-track span {
+  background: var(--accent);
+  display: block;
+  height: 100%;
+  transition: width 0.15s ease;
+}
+
 .diagnostics-overview {
   display: grid;
   gap: 8px;

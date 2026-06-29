@@ -1,0 +1,144 @@
+import { describe, expect, it } from 'vitest'
+
+import type { AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
+
+import { getCaseById } from '../content/cases'
+import {
+  DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+  filterDiagnosticsReport,
+  runSelectedWorkbenchDiagnostics,
+  WORKBENCH_DIAGNOSTIC_OPTIONS,
+} from './asyncDiagnostics'
+import {
+  createWorkbenchDraftFromPuzzle,
+  defaultWorkbenchDiagnosticsCaps,
+  evaluateWorkbenchDiagnostics,
+} from './model'
+
+describe('workbench async diagnostics', () => {
+  it('defines plain-language selectable checks without internal primary labels', () => {
+    expect(WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => option.label)).toEqual([
+      '能不能成立',
+      '答案是不是唯一',
+      '能不能不靠猜解开',
+      '每条规则有没有用',
+      '有没有白送答案',
+      '有没有太像旧案例',
+      '大概难度',
+      '文案是否清晰',
+      '会不会太慢',
+    ])
+    expect(WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => `${option.label} ${option.description}`).join('\n'))
+      .not.toMatch(/solver|CSP|proof DAG|candidateGuestLayouts|truncated/i)
+  })
+
+  it('filters a full diagnostics report to selected user checks', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
+    const report = evaluateWorkbenchDiagnostics(draft, 'case-004')
+    if (report === undefined) throw new Error('Expected diagnostics report.')
+
+    const filtered = filterDiagnosticsReport(report, ['can-solve', 'copy'])
+
+    expect(filtered.groups.map((group) => group.id)).toEqual([
+      'blocking-errors',
+      'correctness',
+      'copy',
+    ])
+  }, 30_000)
+
+  it('runs selected diagnostics with progress and filtered results', async () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
+    const progressLabels: string[] = []
+    const result = await runSelectedWorkbenchDiagnostics({
+      draft,
+      selectedCaseId: 'case-004',
+      selectedIds: ['can-solve', 'difficulty'],
+      caps: defaultWorkbenchDiagnosticsCaps(),
+      comparisonPuzzles: [],
+      signal: new AbortController().signal,
+      onProgress: (progress) => progressLabels.push(progress.currentLabel),
+    })
+
+    expect(result.status).toBe('completed')
+    if (result.status !== 'completed' || result.report === undefined) throw new Error('Expected completed report.')
+    expect(result.report.groups.map((group) => group.id)).toEqual([
+      'blocking-errors',
+      'correctness',
+      'difficulty',
+    ])
+    expect(progressLabels).toEqual(expect.arrayContaining([
+      '准备诊断草稿',
+      '运行已选择的核心检查',
+      '诊断完成',
+    ]))
+  }, 30_000)
+
+  it('returns partial results when cancellation happens after the core report is available', async () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
+    const controller = new AbortController()
+    let progressCount = 0
+    const result = await runSelectedWorkbenchDiagnostics({
+      draft,
+      selectedCaseId: 'case-004',
+      selectedIds: DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+      caps: defaultWorkbenchDiagnosticsCaps(),
+      comparisonPuzzles: [],
+      signal: controller.signal,
+      evaluate: () => syntheticReport(),
+      onProgress: () => {
+        progressCount += 1
+        if (progressCount === 3) controller.abort()
+      },
+    })
+
+    expect(result.status).toBe('cancelled')
+    if (result.status !== 'cancelled') throw new Error('Expected cancelled diagnostics.')
+    expect(result.report?.groups.length).toBeGreaterThan(0)
+  })
+})
+
+function syntheticReport(): AuthoringDraftDiagnosticsReport {
+  return {
+    ok: false,
+    status: 'valid-review-needed',
+    validation: {
+      sourcePath: '<test>',
+      resolvedPath: '<test>',
+      caps: defaultWorkbenchDiagnosticsCaps(),
+      schema: {
+        ok: true,
+        issueCount: 0,
+        issues: [],
+      },
+      recommendation: 'ready-for-experimental-review',
+    },
+    copyWarnings: [],
+    groups: [
+      group('blocking-errors'),
+      group('correctness'),
+      group('human-proof'),
+      group('quality'),
+      group('clone-risk'),
+      group('difficulty'),
+      group('copy'),
+      group('performance'),
+    ],
+    performance: {
+      truncated: false,
+      capWarnings: [],
+    },
+  }
+}
+
+function group(id: AuthoringDraftDiagnosticsReport['groups'][number]['id']): AuthoringDraftDiagnosticsReport['groups'][number] {
+  return {
+    id,
+    title: id,
+    status: 'info',
+    items: [{
+      code: `${id}-ok`,
+      severity: 'info',
+      message: id,
+    }],
+  }
+}

@@ -135,6 +135,12 @@ export type WorkbenchDiagnosticsState =
       readonly message: string
       readonly report?: AuthoringDraftDiagnosticsReport
     }
+  | {
+      readonly status: 'cancelled'
+      readonly requestId: number
+      readonly message: string
+      readonly report?: AuthoringDraftDiagnosticsReport
+    }
 
 export type WorkbenchDiagnosticsOverviewTone = 'pass' | 'info' | 'warning' | 'fail'
 
@@ -273,6 +279,21 @@ export function failWorkbenchDiagnostics(
   }
 }
 
+export function cancelWorkbenchDiagnostics(
+  state: WorkbenchDiagnosticsState,
+  requestId: number,
+  report: AuthoringDraftDiagnosticsReport | undefined,
+): WorkbenchDiagnosticsState {
+  if (state.status !== 'running' || state.requestId !== requestId) return state
+
+  return {
+    status: 'cancelled',
+    requestId,
+    message: report === undefined ? '诊断已取消。' : '诊断已取消；已保留完成的部分结果。',
+    ...(report === undefined ? {} : { report }),
+  }
+}
+
 export function markWorkbenchDiagnosticsStale(
   state: WorkbenchDiagnosticsState,
   message = 'Draft changed after diagnostics ran. Re-run diagnostics before trusting these results.',
@@ -301,6 +322,7 @@ export function diagnosticsReportForState(
     case 'running':
     case 'stale':
     case 'failed':
+    case 'cancelled':
       return state.report
     case 'idle':
     case 'unavailable':

@@ -53,6 +53,7 @@ import {
 } from './localCaseLibrary'
 import {
   beginWorkbenchDiagnostics,
+  cancelWorkbenchDiagnostics,
   completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
   createWorkbenchDiagnosticsState,
@@ -63,7 +64,6 @@ import {
   createWorkbenchShellModel,
   defaultWorkbenchDiagnosticsCaps,
   diagnosticsReportForState,
-  evaluateWorkbenchDiagnostics,
   failWorkbenchDiagnostics,
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
@@ -83,6 +83,13 @@ import {
   type WorkbenchDiagnosticsState,
   type WorkbenchRuleSummary,
 } from './model'
+import {
+  DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+  runSelectedWorkbenchDiagnostics,
+  WORKBENCH_DIAGNOSTIC_OPTIONS,
+  type WorkbenchDiagnosticOptionId,
+  type WorkbenchDiagnosticProgress,
+} from './asyncDiagnostics'
 
 type DraftPatchStatus =
   | { readonly kind: 'idle' }
@@ -126,6 +133,11 @@ export default function AuthoringWorkbenchScreen() {
   const [diagnosticsCaps, setDiagnosticsCaps] = useState<WorkbenchDiagnosticsCaps>(
     () => defaultWorkbenchDiagnosticsCaps(),
   )
+  const [selectedDiagnosticIds, setSelectedDiagnosticIds] = useState<readonly WorkbenchDiagnosticOptionId[]>(
+    () => DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+  )
+  const [diagnosticsProgress, setDiagnosticsProgress] = useState<WorkbenchDiagnosticProgress | undefined>()
+  const [diagnosticsAbortController, setDiagnosticsAbortController] = useState<AbortController | undefined>()
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
@@ -388,21 +400,63 @@ export default function AuthoringWorkbenchScreen() {
   }
 
   function runDiagnostics(): void {
+    if (diagnosticsState.status === 'running') {
+      diagnosticsAbortController?.abort()
+      setDiagnosticsProgress((current) => current === undefined
+        ? undefined
+        : { ...current, currentLabel: '正在取消诊断' })
+      return
+    }
+
+    if (selectedDiagnosticIds.length === 0) {
+      setDiagnosticsState((current) => failWorkbenchDiagnostics(
+        beginWorkbenchDiagnostics(current),
+        current.requestId + 1,
+        new Error('请至少选择一项诊断。'),
+      ))
+      return
+    }
+
     const started = beginWorkbenchDiagnostics(diagnosticsState)
     const requestId = started.requestId
     const caps = diagnosticsCaps
-    const comparisonPuzzles = workbenchCaseLibrary
-      .map((item) => item.puzzle)
+    const localPublishedPuzzles = localGroups.published
+      .map((record) => parsePuzzleJson(record.jsonText))
+      .filter((puzzle): puzzle is PuzzleDefinition => puzzle !== undefined)
+    const comparisonPuzzles = [
+      ...workbenchCaseLibrary.map((item) => item.puzzle),
+      ...localPublishedPuzzles,
+    ]
       .filter((puzzle) => puzzle.id !== parsedPuzzle?.id)
+    const controller = new AbortController()
     setDiagnosticsState(started)
-    globalThis.setTimeout(() => {
-      try {
-        const report = evaluateWorkbenchDiagnostics(draft, selectedCaseId, caps, comparisonPuzzles)
-        setDiagnosticsState((current) => completeWorkbenchDiagnostics(current, requestId, report))
-      } catch (error) {
-        setDiagnosticsState((current) => failWorkbenchDiagnostics(current, requestId, error))
-      }
-    }, 0)
+    setDiagnosticsAbortController(controller)
+    setDiagnosticsProgress({
+      completedSteps: 0,
+      totalSteps: selectedDiagnosticIds.length + 2,
+      currentLabel: '准备诊断草稿',
+    })
+    void runSelectedWorkbenchDiagnostics({
+      draft,
+      selectedCaseId,
+      selectedIds: selectedDiagnosticIds,
+      caps,
+      comparisonPuzzles,
+      signal: controller.signal,
+      onProgress: setDiagnosticsProgress,
+    }).then((result) => {
+      setDiagnosticsAbortController(undefined)
+      setDiagnosticsProgress(undefined)
+      setDiagnosticsState((current) => (
+        result.status === 'completed'
+          ? completeWorkbenchDiagnostics(current, requestId, result.report)
+          : cancelWorkbenchDiagnostics(current, requestId, result.report)
+      ))
+    }).catch((error: unknown) => {
+      setDiagnosticsAbortController(undefined)
+      setDiagnosticsProgress(undefined)
+      setDiagnosticsState((current) => failWorkbenchDiagnostics(current, requestId, error))
+    })
   }
 
   function updateDiagnosticsCap(field: keyof WorkbenchDiagnosticsCaps, value: number): void {
@@ -905,9 +959,8 @@ export default function AuthoringWorkbenchScreen() {
               className="small-button"
               type="button"
               onClick={runDiagnostics}
-              disabled={diagnosticsState.status === 'running'}
             >
-              {diagnosticsState.status === 'running' ? '诊断中' : '运行诊断'}
+              {diagnosticsState.status === 'running' ? '取消诊断' : '运行诊断'}
             </button>
           </div>
           <WorkbenchStatus
@@ -920,6 +973,12 @@ export default function AuthoringWorkbenchScreen() {
             disabled={diagnosticsState.status === 'running'}
             onCapChange={updateDiagnosticsCap}
           />
+          <DiagnosticOptionsPanel
+            selectedIds={selectedDiagnosticIds}
+            disabled={diagnosticsState.status === 'running'}
+            onSelectionChange={setSelectedDiagnosticIds}
+          />
+          <DiagnosticsProgress progress={diagnosticsProgress} />
           <DiagnosticsSummary state={diagnosticsState} parseOk={model.parse.ok} />
           <section className="workbench-section">
             <h3>规则</h3>
@@ -2358,6 +2417,81 @@ function DiagnosticsCapInput({
   )
 }
 
+function DiagnosticOptionsPanel({
+  selectedIds,
+  disabled,
+  onSelectionChange,
+}: {
+  readonly selectedIds: readonly WorkbenchDiagnosticOptionId[]
+  readonly disabled: boolean
+  readonly onSelectionChange: (ids: readonly WorkbenchDiagnosticOptionId[]) => void
+}) {
+  const selected = new Set(selectedIds)
+
+  function toggle(id: WorkbenchDiagnosticOptionId): void {
+    if (disabled) return
+    const next = selected.has(id)
+      ? selectedIds.filter((candidate) => candidate !== id)
+      : [...selectedIds, id]
+    onSelectionChange(next)
+  }
+
+  return (
+    <section className="workbench-section diagnostic-options-panel">
+      <div className="diagnostic-options-heading">
+        <h3>选择诊断</h3>
+        <button
+          className="small-button"
+          type="button"
+          disabled={disabled}
+          onClick={() => onSelectionChange(
+            selectedIds.length === WORKBENCH_DIAGNOSTIC_OPTIONS.length
+              ? []
+              : DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+          )}
+        >
+          {selectedIds.length === WORKBENCH_DIAGNOSTIC_OPTIONS.length ? '清空' : '全选'}
+        </button>
+      </div>
+      <div className="diagnostic-option-list">
+        {WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => (
+          <label key={option.id} className="diagnostic-option">
+            <input
+              type="checkbox"
+              checked={selected.has(option.id)}
+              disabled={disabled}
+              onChange={() => toggle(option.id)}
+            />
+            <span>
+              <b>{option.label}</b>
+              <small>{option.description}</small>
+            </span>
+          </label>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function DiagnosticsProgress({ progress }: { readonly progress: WorkbenchDiagnosticProgress | undefined }) {
+  if (progress === undefined) return null
+  const percent = progress.totalSteps <= 0
+    ? 0
+    : Math.round((progress.completedSteps / progress.totalSteps) * 100)
+
+  return (
+    <div className="diagnostics-progress" role="status" aria-live="polite">
+      <div className="diagnostics-progress-copy">
+        <b>{progress.currentLabel}</b>
+        <span>{percent}%</span>
+      </div>
+      <div className="diagnostics-progress-track" aria-hidden="true">
+        <span style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  )
+}
+
 function DiagnosticsSummary({
   state,
   parseOk,
@@ -2497,6 +2631,11 @@ function diagnosticsStateNotice(
       return {
         kind: 'error',
         message: `诊断运行失败：${state.message}`,
+      }
+    case 'cancelled':
+      return {
+        kind: 'warning',
+        message: state.message,
       }
   }
 }
