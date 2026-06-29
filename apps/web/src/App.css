@@ -1668,7 +1668,7 @@ h3 {
   border-bottom: 1px solid var(--border);
   display: grid;
   gap: 18px;
-  grid-template-columns: minmax(280px, 1fr) minmax(280px, auto) minmax(180px, auto);
+  grid-template-columns: minmax(280px, 1fr) minmax(420px, auto);
   min-height: 82px;
   padding: 14px 24px;
   position: sticky;
@@ -1694,6 +1694,109 @@ h3 {
 
 .workbench-panel {
   min-height: calc(100vh - 126px);
+}
+
+.case-library-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.case-library-note,
+.case-library-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.copy-current-button {
+  justify-self: start;
+}
+
+.library-status {
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 9px 10px;
+}
+
+.library-status.info {
+  background: #173042;
+  border: 1px solid #5885a6;
+  color: #dcefff;
+}
+
+.library-status.success {
+  background: var(--safe-soft);
+  border: 1px solid #4d916c;
+  color: #dbf5e5;
+}
+
+.library-status.error {
+  background: var(--danger-soft);
+  border: 1px solid #9e5955;
+  color: #ffe0dd;
+}
+
+.case-library-group {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.case-library-group h3 {
+  color: var(--text);
+  margin: 0;
+}
+
+.case-library-list {
+  display: grid;
+  gap: 7px;
+}
+
+.case-library-item {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  min-height: 54px;
+  padding: 9px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.case-library-item:hover {
+  background: var(--surface-2);
+  border-color: var(--border-bright);
+}
+
+.case-library-item.selected {
+  background: #173042;
+  border-color: #75abd1;
+  box-shadow: inset 3px 0 0 #75abd1;
+}
+
+.case-library-item b {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.case-library-item span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.case-library-item.selected span {
+  color: #d4e9f8;
+}
+
+.danger-action {
+  border-color: #87514d;
+  color: #f3c1bd;
 }
 
 .draft-json-editor {
@@ -2576,6 +2679,26 @@ h3 {
   font-size: 13px;
   font-weight: 700;
   list-style-position: inside;
+}
+
+.workbench-debug-details summary {
+  color: #f0d9a2;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.workbench-debug-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.debug-json-label {
+  color: var(--muted);
+  display: grid;
+  font-size: 11px;
+  gap: 6px;
 }
 
 .rules-json-editor-body {

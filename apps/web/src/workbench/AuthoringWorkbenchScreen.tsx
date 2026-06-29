@@ -1,6 +1,6 @@
-import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, RotateCcw, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
@@ -41,6 +41,17 @@ import { DEFAULT_THEME_ASSET_MANIFEST } from '../theme/assetManifest'
 import { STATIC_DIALOGUE_SCENES } from '../vn/dialogue'
 import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
 import {
+  createBlankLocalCaseFromTemplate,
+  createBrowserLocalCaseStore,
+  createLocalCaseFromTemplate,
+  groupLocalCases,
+  publishLocalCase,
+  retractLocalCase,
+  saveLocalCaseDraft,
+  type WorkbenchLocalCaseRecord,
+  type WorkbenchLocalCaseState,
+} from './localCaseLibrary'
+import {
   beginWorkbenchDiagnostics,
   completeWorkbenchDiagnostics,
   createWorkbenchDraftFromPuzzle,
@@ -78,6 +89,10 @@ type DraftPatchStatus =
   | { readonly kind: 'applied'; readonly message: string }
   | { readonly kind: 'rejected'; readonly message: string; readonly issues: readonly string[] }
 
+type LibraryActionStatus =
+  | { readonly kind: 'idle' }
+  | { readonly kind: 'info' | 'success' | 'error'; readonly message: string }
+
 const METADATA_STATUSES = ['draft', 'validated', 'published', 'deprecated'] as const
 const RULE_BUILDER_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin', 'mirror', 'guest']
 const COMPARATOR_OPS: readonly Comparator['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
@@ -99,7 +114,11 @@ const RULE_CREATE_FORMS: readonly RuleBuilderCreateForm[] = [
 
 export default function AuthoringWorkbenchScreen() {
   const defaultCase = getWorkbenchCaseImportById(DEFAULT_CASE_ID).puzzle
+  const localCaseStore = useMemo(() => createBrowserLocalCaseStore(), [])
   const [selectedCaseId, setSelectedCaseId] = useState(DEFAULT_CASE_ID)
+  const [selectedLocalCaseId, setSelectedLocalCaseId] = useState<string | undefined>()
+  const [localCases, setLocalCases] = useState<readonly WorkbenchLocalCaseRecord[]>([])
+  const [libraryStatus, setLibraryStatus] = useState<LibraryActionStatus>({ kind: 'idle' })
   const [draft, setDraft] = useState<WorkbenchDraftState>(() => createWorkbenchDraftFromPuzzle(defaultCase))
   const [diagnosticsState, setDiagnosticsState] = useState<WorkbenchDiagnosticsState>(
     () => createWorkbenchDiagnosticsState(),
@@ -128,6 +147,10 @@ export default function AuthoringWorkbenchScreen() {
   const [metadataNotesText, setMetadataNotesText] = useState(defaultCase.metadata.notes ?? '')
   const [rulesJsonText, setRulesJsonText] = useState(() => createWorkbenchRulesJson(defaultCase))
   const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
+  const selectedLocalCase = selectedLocalCaseId === undefined
+    ? undefined
+    : localCases.find((record) => record.localId === selectedLocalCaseId)
+  const localGroups = useMemo(() => groupLocalCases(localCases), [localCases])
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
@@ -145,21 +168,64 @@ export default function AuthoringWorkbenchScreen() {
     : model.ruleSummaries.find((rule) => rule.id === selectedRuleId)
   const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
 
+  useEffect(() => {
+    let cancelled = false
+    localCaseStore.loadAll()
+      .then((records) => {
+        if (!cancelled) setLocalCases(records)
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setLibraryStatus({
+            kind: 'error',
+            message: error instanceof Error ? error.message : '本地案例库读取失败。',
+          })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [localCaseStore])
+
   function loadCase(caseId: string): void {
+    if (!confirmDiscardUnsavedChanges()) return
     const item = getWorkbenchCaseImportById(caseId)
+    setSelectedLocalCaseId(undefined)
     setSelectedCaseId(caseId)
-    setDraft(createWorkbenchDraftFromPuzzle(item.puzzle))
+    applyLoadedDraft(createWorkbenchDraftFromPuzzle(item.puzzle), item.puzzle)
+    setLibraryStatus({
+      kind: 'info',
+      message: '已载入内置模板；保存时会复制为本地草稿，不会改动仓库案例。',
+    })
+  }
+
+  function loadLocalCase(record: WorkbenchLocalCaseRecord): void {
+    if (!confirmDiscardUnsavedChanges()) return
+    const nextDraft = updateDraftJsonText(createWorkbenchDraftFromPuzzle(defaultCase), record.jsonText)
+    const puzzle = parsePuzzleJson(record.jsonText)
+    setSelectedLocalCaseId(record.localId)
+    setSelectedCaseId(record.localId)
+    applyLoadedDraft(nextDraft, puzzle)
+    setLibraryStatus({
+      kind: 'info',
+      message: `${record.state === 'published' ? '已发布' : '草稿'}案例已载入。`,
+    })
+  }
+
+  function applyLoadedDraft(nextDraft: WorkbenchDraftState, puzzle: PuzzleDefinition | undefined): void {
+    setDraft(nextDraft)
     setDiagnosticsState(createWorkbenchDiagnosticsState())
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
     setActiveKind('empty')
-    setBoardWidthText(String(item.puzzle.board.width))
-    setBoardHeightText(String(item.puzzle.board.height))
+    setBoardWidthText(puzzle === undefined ? '' : String(puzzle.board.width))
+    setBoardHeightText(puzzle === undefined ? '' : String(puzzle.board.height))
     setRuleTitleText('')
     setRuleFlavorText('')
-    syncMetadataEditor(item.puzzle)
-    setRulesJsonText(createWorkbenchRulesJson(item.puzzle))
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(item.puzzle))
+    syncMetadataEditor(puzzle)
+    setRulesJsonText(createWorkbenchRulesJson(puzzle))
+    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(puzzle))
     setPatchStatus({ kind: 'idle' })
     setRuleBuilderPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
@@ -169,7 +235,135 @@ export default function AuthoringWorkbenchScreen() {
   }
 
   function resetCurrentCase(): void {
+    if (selectedLocalCase !== undefined) {
+      loadLocalCase(selectedLocalCase)
+      return
+    }
+
     loadCase(selectedCaseId)
+  }
+
+  async function createNewLocalCase(): Promise<void> {
+    if (!confirmDiscardUnsavedChanges()) return
+    const record = createBlankLocalCaseFromTemplate(defaultCase, {
+      localId: createLocalCaseId(),
+    })
+    await localCaseStore.put(record)
+    await refreshLocalCases()
+    loadLocalCase(record)
+    setLibraryStatus({ kind: 'success', message: '新草稿已创建并保存在本地浏览器。' })
+  }
+
+  async function copySelectedCaseToDraft(): Promise<void> {
+    if (parsedPuzzle === undefined) {
+      setLibraryStatus({ kind: 'error', message: '当前案例无效，不能复制为本地草稿。' })
+      return
+    }
+
+    const record = createLocalCaseFromTemplate(parsedPuzzle, {
+      localId: createLocalCaseId(),
+      title: `${parsedPuzzle.caseName ?? parsedPuzzle.title} 副本`,
+    })
+    await localCaseStore.put(record)
+    await refreshLocalCases()
+    loadLocalCase(record)
+    setLibraryStatus({ kind: 'success', message: '已复制为本地草稿；内置模板保持不变。' })
+  }
+
+  async function saveCurrentCase(): Promise<void> {
+    if (parsedPuzzle === undefined) {
+      setLibraryStatus({ kind: 'error', message: '当前草稿还不能解析，暂时不能保存。' })
+      return
+    }
+
+    if (selectedLocalCase === undefined) {
+      const record = createLocalCaseFromTemplate(parsedPuzzle, {
+        localId: createLocalCaseId(),
+        title: parsedPuzzle.caseName ?? parsedPuzzle.title,
+      })
+      await localCaseStore.put(record)
+      await refreshLocalCases()
+      setSelectedLocalCaseId(record.localId)
+      setSelectedCaseId(record.localId)
+      setDraft(updateDraftJsonText(draft, record.jsonText))
+      setLibraryStatus({ kind: 'success', message: '内置模板已复制并保存为本地草稿。' })
+      return
+    }
+
+    const result = saveLocalCaseDraft(selectedLocalCase, draft)
+    if (!result.ok) {
+      setLibraryStatus({ kind: 'error', message: result.message })
+      return
+    }
+
+    await localCaseStore.put(result.record)
+    await refreshLocalCases()
+    setLibraryStatus({ kind: 'success', message: '本地案例已保存。' })
+  }
+
+  async function publishCurrentCase(): Promise<void> {
+    const record = await saveLocalCaseBeforeStateChange()
+    if (record === undefined) return
+
+    const published = publishLocalCase(record)
+    await localCaseStore.put(published)
+    await refreshLocalCases()
+    setLibraryStatus({ kind: 'success', message: '已移入本地“已发布”。这不会提交到仓库。' })
+  }
+
+  async function retractCurrentCase(): Promise<void> {
+    if (selectedLocalCase === undefined) {
+      setLibraryStatus({ kind: 'error', message: '内置模板不能撤回；请先复制成本地草稿。' })
+      return
+    }
+
+    const retracted = retractLocalCase(selectedLocalCase)
+    await localCaseStore.put(retracted)
+    await refreshLocalCases()
+    setLibraryStatus({ kind: 'success', message: '已撤回到本地草稿。' })
+  }
+
+  async function deleteCurrentCase(): Promise<void> {
+    if (selectedLocalCase === undefined) {
+      setLibraryStatus({ kind: 'error', message: '内置模板不能删除；只能复制或参考。' })
+      return
+    }
+
+    if (!globalThis.confirm(`删除本地案例“${selectedLocalCase.title}”？此操作只影响当前浏览器。`)) return
+    await localCaseStore.delete(selectedLocalCase.localId)
+    await refreshLocalCases()
+    setSelectedLocalCaseId(undefined)
+    loadCase(DEFAULT_CASE_ID)
+    setLibraryStatus({ kind: 'success', message: '本地案例已删除；仓库内置案例未受影响。' })
+  }
+
+  async function saveLocalCaseBeforeStateChange(): Promise<WorkbenchLocalCaseRecord | undefined> {
+    if (selectedLocalCase === undefined) {
+      await saveCurrentCase()
+      const records = await localCaseStore.loadAll()
+      const newest = records[0]
+      if (newest !== undefined) setLocalCases(records)
+      return newest
+    }
+
+    const result = saveLocalCaseDraft(selectedLocalCase, draft)
+    if (!result.ok) {
+      setLibraryStatus({ kind: 'error', message: result.message })
+      return undefined
+    }
+
+    return result.record
+  }
+
+  async function refreshLocalCases(): Promise<readonly WorkbenchLocalCaseRecord[]> {
+    const records = await localCaseStore.loadAll()
+    setLocalCases(records)
+    return records
+  }
+
+  function confirmDiscardUnsavedChanges(): boolean {
+    if (!draft.dirty) return true
+    return globalThis.confirm('当前草稿有未保存修改。继续切换会丢失这些修改，是否继续？')
   }
 
   function updateDraftText(jsonText: string): void {
@@ -594,51 +788,52 @@ export default function AuthoringWorkbenchScreen() {
           <div className="brand-mark">A</div>
           <div>
             <div className="brand">出题工作台 <span>maintainer</span></div>
-            <div className="case-name">{parsedPuzzle?.caseName ?? parsedPuzzle?.title ?? 'JSON draft'}</div>
+            <div className="case-name">{parsedPuzzle?.caseName ?? parsedPuzzle?.title ?? '未命名草稿'}</div>
           </div>
         </div>
-        <label className="case-picker">
-          导入
-          <select value={selectedCaseId} onChange={(event) => loadCase(event.target.value)}>
-            {model.caseOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {sourceLabel(option.source)} · {option.id} · 难度 {option.difficulty} · {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <div className="top-actions">
+          <button className="ghost-button" type="button" onClick={() => void createNewLocalCase()}>
+            <Plus size={16} aria-hidden="true" />
+            新建
+          </button>
+          <button className="primary-button" type="button" onClick={() => void saveCurrentCase()}>
+            <Save size={16} aria-hidden="true" />
+            保存
+          </button>
+          {selectedLocalCase?.state === 'published' ? (
+            <button className="ghost-button" type="button" onClick={() => void retractCurrentCase()}>
+              <RotateCcw size={16} aria-hidden="true" />
+              撤回
+            </button>
+          ) : (
+            <button className="ghost-button" type="button" onClick={() => void publishCurrentCase()}>
+              <Upload size={16} aria-hidden="true" />
+              发布
+            </button>
+          )}
           <button className="ghost-button" type="button" onClick={resetCurrentCase}>
             <RotateCcw size={16} aria-hidden="true" />
             重载
           </button>
-          <a
-            className="primary-button"
-            href={model.exported.ok ? draftDownloadHref(model.exported.jsonText) : undefined}
-            download={model.exportStatus.fileName}
-            aria-disabled={!model.exported.ok}
-          >
-            <FileDown size={16} aria-hidden="true" />
-            导出 JSON
-          </a>
+          <button className="ghost-button danger-action" type="button" onClick={() => void deleteCurrentCase()}>
+            <Trash2 size={16} aria-hidden="true" />
+            删除
+          </button>
         </div>
       </header>
 
       <main className="workbench-shell">
         <section className="panel workbench-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">Import</span>
-              <h2>草稿</h2>
-            </div>
-            <FolderOpen size={18} aria-hidden="true" />
-          </div>
-          <textarea
-            className="draft-json-editor"
-            spellCheck={false}
-            value={draft.jsonText}
-            onChange={(event) => updateDraftText(event.target.value)}
-            aria-label="Draft JSON"
+          <CaseLibraryPanel
+            builtInCases={model.caseOptions}
+            localDrafts={localGroups.draft}
+            localPublished={localGroups.published}
+            selectedBuiltInId={selectedLocalCaseId === undefined ? selectedCaseId : undefined}
+            selectedLocalId={selectedLocalCaseId}
+            status={libraryStatus}
+            onSelectBuiltIn={loadCase}
+            onSelectLocal={loadLocalCase}
+            onCopyCurrent={() => void copySelectedCaseToDraft()}
           />
         </section>
 
@@ -715,12 +910,11 @@ export default function AuthoringWorkbenchScreen() {
               {diagnosticsState.status === 'running' ? '诊断中' : '运行诊断'}
             </button>
           </div>
-          <WorkbenchStatus puzzle={parsedPuzzle} draft={draft} exportOk={model.exported.ok} />
-          <ImportExportSummary
-            selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
-            exportStatus={model.exportStatus}
+          <WorkbenchStatus
+            puzzle={parsedPuzzle}
+            draft={draft}
+            localState={selectedLocalCase?.state}
           />
-          <ThemeVNReviewSummary report={themeReview} />
           <DiagnosticsCapsEditor
             caps={diagnosticsCaps}
             disabled={diagnosticsState.status === 'running'}
@@ -780,26 +974,52 @@ export default function AuthoringWorkbenchScreen() {
             onNotesChange={setMetadataNotesText}
             onApply={applyMetadataPatch}
           />
-          <RulesJsonEditor
-            jsonText={rulesJsonText}
-            patchStatus={rulesPatchStatus}
-            canPatch={parsedPuzzle !== undefined}
-            onJsonTextChange={setRulesJsonText}
-            onReset={resetRulesEditor}
-            onApply={applyRulesPatch}
-          />
-          <ScopeCollectionsEditor
-            jsonText={scopeCollectionsText}
-            patchStatus={scopePatchStatus}
-            canPatch={parsedPuzzle !== undefined}
-            onJsonTextChange={setScopeCollectionsText}
-            onReset={resetScopeCollectionsEditor}
-            onApply={applyScopeCollectionsPatch}
-          />
-          <section className="workbench-section">
-            <h3>导出</h3>
-            <pre className="export-preview">{model.exported.ok ? model.exported.jsonText : 'JSON 当前无效'}</pre>
-          </section>
+          <details className="workbench-section workbench-debug-details">
+            <summary>开发者调试</summary>
+            <div className="workbench-debug-body">
+              <ImportExportSummary
+                selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
+                exportStatus={model.exportStatus}
+              />
+              <ThemeVNReviewSummary report={themeReview} />
+              <label className="debug-json-label">
+                草稿 JSON
+                <textarea
+                  className="draft-json-editor"
+                  spellCheck={false}
+                  value={draft.jsonText}
+                  onChange={(event) => updateDraftText(event.target.value)}
+                  aria-label="Draft JSON"
+                />
+              </label>
+              <RulesJsonEditor
+                jsonText={rulesJsonText}
+                patchStatus={rulesPatchStatus}
+                canPatch={parsedPuzzle !== undefined}
+                onJsonTextChange={setRulesJsonText}
+                onReset={resetRulesEditor}
+                onApply={applyRulesPatch}
+              />
+              <ScopeCollectionsEditor
+                jsonText={scopeCollectionsText}
+                patchStatus={scopePatchStatus}
+                canPatch={parsedPuzzle !== undefined}
+                onJsonTextChange={setScopeCollectionsText}
+                onReset={resetScopeCollectionsEditor}
+                onApply={applyScopeCollectionsPatch}
+              />
+              <a
+                className="small-button"
+                href={model.exported.ok ? draftDownloadHref(model.exported.jsonText) : undefined}
+                download={model.exportStatus.fileName}
+                aria-disabled={!model.exported.ok}
+              >
+                <FileDown size={16} aria-hidden="true" />
+                导出 JSON
+              </a>
+              <pre className="export-preview">{model.exported.ok ? model.exported.jsonText : 'JSON 当前无效'}</pre>
+            </div>
+          </details>
         </aside>
       </main>
     </div>
@@ -849,6 +1069,129 @@ function BoardSizeEditor({
         应用尺寸
       </button>
     </section>
+  )
+}
+
+function CaseLibraryPanel({
+  builtInCases,
+  localDrafts,
+  localPublished,
+  selectedBuiltInId,
+  selectedLocalId,
+  status,
+  onSelectBuiltIn,
+  onSelectLocal,
+  onCopyCurrent,
+}: {
+  readonly builtInCases: ReturnType<typeof createWorkbenchShellModel>['caseOptions']
+  readonly localDrafts: readonly WorkbenchLocalCaseRecord[]
+  readonly localPublished: readonly WorkbenchLocalCaseRecord[]
+  readonly selectedBuiltInId: string | undefined
+  readonly selectedLocalId: string | undefined
+  readonly status: LibraryActionStatus
+  readonly onSelectBuiltIn: (caseId: string) => void
+  readonly onSelectLocal: (record: WorkbenchLocalCaseRecord) => void
+  readonly onCopyCurrent: () => void
+}) {
+  const shippedTemplates = builtInCases.filter((item) => item.source === 'shipped')
+
+  return (
+    <div className="case-library-panel">
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">Library</span>
+          <h2>案例库</h2>
+        </div>
+        <FolderOpen size={18} aria-hidden="true" />
+      </div>
+      <p className="case-library-note">
+        本地案例只保存在当前浏览器；内置案例只能作为模板复制，不会被删除或改写。
+      </p>
+      <button className="small-button copy-current-button" type="button" onClick={onCopyCurrent}>
+        <Copy size={15} aria-hidden="true" />
+        复制当前为草稿
+      </button>
+      <LibraryStatusNotice status={status} />
+      <CaseLibraryGroup
+        title="草稿"
+        emptyText="还没有本地草稿。"
+        records={localDrafts}
+        selectedLocalId={selectedLocalId}
+        onSelectLocal={onSelectLocal}
+      />
+      <CaseLibraryGroup
+        title="已发布"
+        emptyText="还没有本地已发布案例。"
+        records={localPublished}
+        selectedLocalId={selectedLocalId}
+        onSelectLocal={onSelectLocal}
+      />
+      <section className="case-library-group">
+        <h3>内置模板</h3>
+        <div className="case-library-list">
+          {shippedTemplates.map((item) => (
+            <button
+              key={item.id}
+              className={`case-library-item ${selectedBuiltInId === item.id ? 'selected' : ''}`}
+              type="button"
+              onClick={() => onSelectBuiltIn(item.id)}
+              aria-pressed={selectedBuiltInId === item.id}
+            >
+              <b>{item.label}</b>
+              <span>难度 {item.difficulty} · 只读模板</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function CaseLibraryGroup({
+  title,
+  emptyText,
+  records,
+  selectedLocalId,
+  onSelectLocal,
+}: {
+  readonly title: string
+  readonly emptyText: string
+  readonly records: readonly WorkbenchLocalCaseRecord[]
+  readonly selectedLocalId: string | undefined
+  readonly onSelectLocal: (record: WorkbenchLocalCaseRecord) => void
+}) {
+  return (
+    <section className="case-library-group">
+      <h3>{title}</h3>
+      {records.length === 0 ? (
+        <p className="case-library-empty">{emptyText}</p>
+      ) : (
+        <div className="case-library-list">
+          {records.map((record) => (
+            <button
+              key={record.localId}
+              className={`case-library-item ${selectedLocalId === record.localId ? 'selected' : ''}`}
+              type="button"
+              onClick={() => onSelectLocal(record)}
+              aria-pressed={selectedLocalId === record.localId}
+            >
+              <b>{record.caseName ?? record.title}</b>
+              <span>{formatLocalCaseTime(record.updatedAt)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function LibraryStatusNotice({ status }: { readonly status: LibraryActionStatus }) {
+  if (status.kind === 'idle') return null
+
+  return (
+    <div className={`library-status ${status.kind}`}>
+      {status.message}
+    </div>
   )
 }
 
@@ -1841,6 +2184,31 @@ function parseBoardSize(widthText: string, heightText: string): BoardSize | unde
   return { width, height }
 }
 
+function createLocalCaseId(): string {
+  const randomPart = Math.random().toString(36).slice(2, 8)
+  return `local-${Date.now().toString(36)}-${randomPart}`
+}
+
+function parsePuzzleJson(jsonText: string): PuzzleDefinition | undefined {
+  try {
+    return JSON.parse(jsonText) as PuzzleDefinition
+  } catch {
+    return undefined
+  }
+}
+
+function formatLocalCaseTime(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '保存时间未知'
+
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function isMetadataDifficulty(value: number): value is PuzzleDefinition['metadata']['difficulty'] {
   return value === 1 || value === 2 || value === 3 || value === 4 || value === 5
 }
@@ -2155,29 +2523,33 @@ function diagnosticsStatusText(status: AuthoringDraftDiagnosticsReport['status']
 function sourceLabel(source: WorkbenchCaseSource): string {
   switch (source) {
     case 'shipped':
-      return '已发布'
+      return '内置模板'
     case 'experimental':
-      return '实验'
+      return '内置参考'
   }
 }
 
 function WorkbenchStatus({
   puzzle,
   draft,
-  exportOk,
+  localState,
 }: {
   readonly puzzle: PuzzleDefinition | undefined
   readonly draft: WorkbenchDraftState
-  readonly exportOk: boolean
+  readonly localState: WorkbenchLocalCaseState | undefined
 }) {
   return (
     <dl className="workbench-status-grid">
       <div>
-        <dt>草稿</dt>
+        <dt>修改</dt>
         <dd>{draft.dirty ? '已修改' : '未修改'}</dd>
       </div>
       <div>
-        <dt>Schema</dt>
+        <dt>草稿状态</dt>
+        <dd>{localState === undefined ? '内置模板' : localState === 'published' ? '已发布' : '草稿'}</dd>
+      </div>
+      <div>
+        <dt>结构检查</dt>
         <dd>{puzzle === undefined ? '失败' : '通过'}</dd>
       </div>
       <div>
@@ -2187,10 +2559,6 @@ function WorkbenchStatus({
       <div>
         <dt>规则数</dt>
         <dd>{puzzle?.rules.length ?? 0}</dd>
-      </div>
-      <div>
-        <dt>导出</dt>
-        <dd>{exportOk ? '可用' : '不可用'}</dd>
       </div>
     </dl>
   )
