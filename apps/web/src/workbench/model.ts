@@ -5,6 +5,7 @@ import {
   patchDraftAnchors,
   patchDraftBoardSize,
   patchDraftMetadata,
+  patchDraftNormalizedTargetCell,
   patchDraftRegions,
   patchDraftRulePresentation,
   patchDraftRules,
@@ -33,10 +34,12 @@ import {
 } from '@room-axioms/authoring/diagnostics'
 import {
   allCells,
+  normalizeLegacyCellKind,
   type AnchorDefinition,
   type BoardSize,
   type CellId,
   type CellKind,
+  type NormalizedCellState,
   type PuzzleDefinition,
   type RegionDefinition,
   type RuleDefinition,
@@ -58,6 +61,7 @@ export interface WorkbenchCaseOption {
 export interface WorkbenchBoardCell {
   readonly id: CellId
   readonly kind: CellKind
+  readonly normalized: NormalizedCellState
   readonly initiallyRevealed: boolean
   readonly guestTarget: boolean
 }
@@ -448,6 +452,14 @@ export function patchWorkbenchTargetCell(
   return patchDraftTargetCell(draft, cellId, kind)
 }
 
+export function patchWorkbenchNormalizedTargetCell(
+  draft: WorkbenchDraftState,
+  cellId: CellId,
+  cell: NormalizedCellState,
+): WorkbenchDraftPatchResult {
+  return patchDraftNormalizedTargetCell(draft, cellId, cell)
+}
+
 export function patchWorkbenchBoardSize(
   draft: WorkbenchDraftState,
   board: BoardSize,
@@ -598,6 +610,7 @@ function boardCells(puzzle: PuzzleDefinition): readonly WorkbenchBoardCell[] {
   return allCells(puzzle.board).map((id) => ({
     id,
     kind: puzzle.target[id],
+    normalized: normalizeLegacyCellKind(puzzle.target[id]),
     initiallyRevealed: revealed.has(id),
     guestTarget: puzzle.target[id] === 'guest',
   }))

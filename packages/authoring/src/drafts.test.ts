@@ -8,10 +8,12 @@ import {
   exportDraftJson,
   importJsonTextToDraftState,
   importPuzzleToDraftState,
+  normalizedDraftTargetCell,
   patchDraftAllowedKinds,
   patchDraftAnchors,
   patchDraftBoardSize,
   patchDraftMetadata,
+  patchDraftNormalizedTargetCell,
   patchDraftRecords,
   patchDraftRegions,
   patchDraftRulePresentation,
@@ -268,6 +270,49 @@ describe('workbench draft state', () => {
       ],
     })
     expect(invalidReveal.state).toBe(targetPatch.state)
+  })
+
+  it('patches normalized target cells through the legacy compatibility adapter', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const objectPatch = patchDraftNormalizedTargetCell(state, 'A1', {
+      target: false,
+      objects: ['bin'],
+    })
+    expect(objectPatch.ok).toBe(true)
+    if (!objectPatch.ok) throw new Error('Normalized object patch failed.')
+
+    const targetPatch = patchDraftNormalizedTargetCell(objectPatch.state, 'A2', {
+      target: true,
+      objects: [],
+    })
+    expect(targetPatch.ok).toBe(true)
+    if (!targetPatch.ok) throw new Error('Normalized target patch failed.')
+
+    expect(targetPatch.puzzle.target.A1).toBe('bin')
+    expect(targetPatch.puzzle.target.A2).toBe('guest')
+    expect(normalizedDraftTargetCell(targetPatch.puzzle, 'A1')).toEqual({
+      target: false,
+      objects: ['bin'],
+    })
+  })
+
+  it('rejects normalized target cells that Puzzle Schema v1 cannot represent', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const patch = patchDraftNormalizedTargetCell(state, 'A1', {
+      target: true,
+      objects: ['mirror'],
+    })
+
+    expect(patch).toMatchObject({
+      ok: false,
+      state,
+      issues: [
+        expect.objectContaining({
+          code: 'NORMALIZED_CELL_NOT_LEGACY_COMPATIBLE',
+          path: ['target', 'A1'],
+        }),
+      ],
+    })
   })
 
   it('patches board size by adding empty target cells without writing content files', () => {

@@ -30,6 +30,7 @@ import {
   patchWorkbenchRulesJson,
   patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchScopeCollectionsJson,
+  patchWorkbenchNormalizedTargetCell,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -189,6 +190,10 @@ describe('authoring workbench shell model', () => {
     expect(model.boardCells.find((cell) => cell.id === 'A1')).toMatchObject({
       id: 'A1',
       kind: 'guest',
+      normalized: {
+        target: true,
+        objects: [],
+      },
       guestTarget: true,
       initiallyRevealed: false,
     })
@@ -202,6 +207,28 @@ describe('authoring workbench shell model', () => {
         target: {
           A1: 'guest',
         },
+      },
+    })
+  })
+
+  it('patches normalized cell facts through the compatibility layer', () => {
+    const defaultCase = getCaseById(DEFAULT_CASE_ID)
+    const draft = createWorkbenchDraftFromPuzzle(defaultCase)
+    const patch = patchWorkbenchNormalizedTargetCell(draft, 'A1', {
+      target: false,
+      objects: ['bin'],
+    })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Normalized target patch failed.')
+
+    const model = createWorkbenchShellModel(workbenchCaseLibrary, DEFAULT_CASE_ID, patch.state)
+    expect(model.boardCells.find((cell) => cell.id === 'A1')).toMatchObject({
+      id: 'A1',
+      kind: 'bin',
+      normalized: {
+        target: false,
+        objects: ['bin'],
       },
     })
   })

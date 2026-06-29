@@ -1,9 +1,12 @@
 import {
   allCells,
+  denormalizeLegacyCellState,
+  normalizeLegacyCellKind,
   type AnchorDefinition,
   type BoardSize,
   type CellId,
   type CellKind,
+  type NormalizedCellState,
   type PuzzleDefinition,
   type RecordDefinition,
   type RegionDefinition,
@@ -158,6 +161,36 @@ export function patchDraftTargetCell(
       [cellId]: kind,
     },
   }))
+}
+
+export function patchDraftNormalizedTargetCell(
+  state: WorkbenchDraftState,
+  cellId: CellId,
+  cell: NormalizedCellState,
+): WorkbenchDraftPatchResult {
+  const legacyKind = denormalizeLegacyCellState(cell)
+  if (legacyKind === undefined) {
+    return {
+      ok: false,
+      state,
+      issues: [{
+        code: 'NORMALIZED_CELL_NOT_LEGACY_COMPATIBLE',
+        path: ['target', cellId],
+        message: 'This normalized cell cannot be represented by Puzzle Schema v1 target cells.',
+        context: { cellId, target: cell.target, objects: cell.objects },
+      }],
+    }
+  }
+
+  return patchDraftTargetCell(state, cellId, legacyKind)
+}
+
+export function normalizedDraftTargetCell(
+  puzzle: PuzzleDefinition,
+  cellId: CellId,
+): NormalizedCellState | undefined {
+  const kind = puzzle.target[cellId]
+  return kind === undefined ? undefined : normalizeLegacyCellKind(kind)
 }
 
 export function toggleDraftInitialReveal(
