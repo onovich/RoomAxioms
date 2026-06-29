@@ -24,14 +24,13 @@ Change from Phase 34 direction:
 
 ## Next Frontend Step
 
-The next execution phase is not decided yet.
+Decision updated on 2026-06-29:
 
-Open user decision:
-
-- Option A: repair/refine the current Phase 34 packaging implementation after visual review.
-- Option B: proceed to final sliced-art asset intake and polish.
-
-Until this is decided, do not auto-dispatch a new frontend phase.
+- Dispatch a new phase from the improved requirement list.
+- Do not proceed to final sliced-art intake yet.
+- First repair the current packaging enough that module sizes and positions roughly match the art sample.
+- Repair VN presentation so bust portraits and dialogue box directly overlay the scene instead of appearing in a separate window.
+- Use temporary bust assets from `images/samples` for this repair pass.
 
 ## Rule Semantics And Object Model
 
@@ -112,9 +111,6 @@ The planner/executor may continue to handle these without repeated user approval
 
 ## Pending Decision Before Next Dispatch
 
-Before dispatching the next phase, the user should decide:
+Phase 35 is now planned around rule/object authoring and VN overlay repair.
 
-1. repair/refine the current themed frontend after visual review; or
-2. proceed to final sliced-art asset intake and polish.
-
-If the user chooses a domain/object expansion phase instead, plan it separately because it affects schema, solver, proof, authoring editor, content format, and migration.
+Final sliced-art intake remains pending until after this repair pass.

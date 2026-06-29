@@ -48,14 +48,15 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 32 - Theme VN Runtime Foundation | Build the safe presentation foundation for the Unregistered Scene wrapper: asset manifest, placeholder-safe theme hooks, VN dialogue data/renderer, trigger integration, and secrecy tests without final art claims or mechanics changes | Phase 31 theme packaging follow-up | 24 rounds |
 | Phase 33 - VN UX Hardening And Asset Intake | Harden VN player UX with skip/replay/preferences/focus behavior and create a concrete asset intake plus private preview workflow for user-provided original art | Phase 32 theme runtime follow-up | 20 rounds |
 | Phase 34 - Unregistered Scene Frontend Adaptation | Refit the player-facing frontend around the approved `未登记现场 / UNREGISTERED SCENE` direction before final art slicing: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record panel, partner-review dock, manifest slots, responsive behavior, and secrecy scans | User/artist art-sample direction after Phase 33 | 28 rounds |
+| Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair | Upgrade the rule/object authoring model toward configurable objects and richer spatial predicates, make the workbench useful for manual puzzle design without raw JSON editing, remove generic hint UX, and repair the VN portrait/dialogue overlay using temporary bust art | User rule-grammar and VN direction after Phase 34 | 40 rounds |
 
 ## Current Execution State
 
 - Recently checked: Phase 34 - Unregistered Scene Frontend Adaptation, accepted, final commit `d8335be`.
-- Current executor result: Phase 34 complete; no active executor phase.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: idle, awaiting user visual review or final-art intake direction.
+- Current executor result: Phase 34 complete; Phase 35 is being dispatched for rule/object authoring and VN overlay repair.
+- Active guide: `docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md`.
+- Executor budget: 40 rounds.
+- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
 - Last completed final report: `docs/phase-34-unregistered-scene-frontend-adaptation-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -101,7 +102,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 33 result: accepted. VN preferences, replay, text speed, reduced motion, focus-return, reset-safe behavior, asset intake docs, manifest review fields, and private Theme/VN workbench review summary are complete. No final art, AI art, puzzle mechanics, or case content changed.
 - Phase 34 result: accepted. The normal player frontend now presents as `未登记现场 / UNREGISTERED SCENE` with themed vocabulary, scene layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans. No puzzle mechanics, schema/domain expansion, final art import, or case content changed.
 - Post-Phase 34 user decisions: current `未登记现场` terminology direction is accepted but still adjustable; generic hint functionality should be removed from the normal product direction; VN should cover partner rule-sensing plus success/failure, with semi-transparent always-present bust/dialogue overlay rather than a separate window; puzzle authoring should be user-led with fast validation tools rather than broad AI-generated puzzle batches; future rule semantics should migrate from hard-coded `empty | bottle | bin | mirror | guest` toward `empty / target / objects[]` with configurable object types, but only in a deliberate domain/schema expansion phase.
-- Next planning gate: wait for user visual review. If the themed frontend direction needs adjustment, route a focused Phase 34 repair. If it is accepted, plan final sliced-art intake/polish. If the user prioritizes object-model expansion, plan it as a separate mechanics/data-contract migration because it affects schema, solver, proof, editor, and content migration.
+- Planned Phase 35 direction: prioritize the user's manual puzzle authoring workflow by adding configurable object semantics, richer spatial rule forms, structured rule-builder controls, validation performance safeguards, generic hint removal, and VN overlay repair with temporary bust portraits.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -143,5 +144,5 @@ These are accepted as candidates, not active execution scope:
 - Theme VN runtime foundation budget: 24 rounds, covering Phase 32, completed.
 - VN UX hardening and asset intake budget: 20 rounds, covering Phase 33, completed.
 - Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
-- Next phase budget: pending user visual review and final-art intake decision.
+- Rule object model, editor grammar, and VN overlay repair budget: 40 rounds, covering Phase 35.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.

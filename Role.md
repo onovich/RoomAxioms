@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-28T22:47:30+08:00
+updated_at: 2026-06-29T00:30:00+08:00
 
 planner:
   role: architect
@@ -23,8 +23,8 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
+  active_goal_guide: docs/phase-35-rule-object-model-editor-vn-overlay-goal-mode-execution-guide.md
+  active_goal_phase: Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair
   last_planner_dispatch: 2026-06-28T21:36:30+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-34-unregistered-scene-frontend-adaptation-goal-mode-execution-guide.md
