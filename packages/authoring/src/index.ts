@@ -104,6 +104,20 @@ export {
   type RuleTextLocale,
 } from './ruleText.js'
 export {
+  compileRuleExpression,
+  generateRuleExpressionText,
+  type RuleExpression,
+  type RuleExpressionCompileBlockCode,
+  type RuleExpressionCompileContext,
+  type RuleExpressionCompileResult,
+  type RuleExpressionGeneratedText,
+  type RuleExpressionLocalRelation,
+  type RuleExpressionPredicate,
+  type RuleExpressionScope,
+  type RuleExpressionSelector,
+  type RuleExpressionSyntheticRegion,
+} from './ruleExpression.js'
+export {
   createEmptyThemePackageDraft,
   evaluateThemePackageDraft,
   REQUIRED_THEME_ASSET_KINDS,
