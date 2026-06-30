@@ -64,7 +64,19 @@ export interface AuthoringDraftDiagnosticsInput {
   readonly comparisonPuzzles?: readonly PuzzleDefinition[]
   readonly noveltyManifest?: NoveltyClaimManifest
   readonly caps?: Partial<AuthoringSolverCapsReport>
+  readonly checks?: readonly AuthoringDiagnosticCheckId[]
 }
+
+export type AuthoringDiagnosticCheckId =
+  | 'can-solve'
+  | 'unique-answer'
+  | 'no-guess'
+  | 'rule-contribution'
+  | 'degeneracy'
+  | 'clone-risk'
+  | 'difficulty'
+  | 'copy'
+  | 'performance'
 
 export interface AuthoringDraftDiagnosticsReport {
   readonly ok: boolean
@@ -125,11 +137,12 @@ export function evaluateDraftDiagnostics(
   const sourcePath = input.sourcePath ?? '<draft>'
   const resolvedPath = input.resolvedPath ?? sourcePath
   const caps = normalizeCaps(input.caps)
-  const result = validatePuzzleInput(input.draft, sourcePath, resolvedPath, caps)
+  const checks = normalizeChecks(input.checks)
+  const result = validatePuzzleInputForChecks(input.draft, sourcePath, resolvedPath, caps, checks)
   const puzzle = result.puzzle
-  const quality = puzzle === undefined ? undefined : evaluateDraftQuality(puzzle, caps)
-  const copyWarnings = puzzle === undefined ? [] : evaluateCopyWarnings(puzzle)
-  const cloneRisk = puzzle !== undefined && (input.comparisonPuzzles?.length ?? 0) > 0
+  const quality = shouldRunFullQuality(checks) && puzzle !== undefined ? evaluateDraftQuality(puzzle, caps) : undefined
+  const copyWarnings = checks.has('copy') && puzzle !== undefined ? evaluateCopyWarnings(puzzle) : []
+  const cloneRisk = checks.has('clone-risk') && puzzle !== undefined && (input.comparisonPuzzles?.length ?? 0) > 0
     ? evaluateAntiCloneReport([puzzle, ...(input.comparisonPuzzles ?? [])], {
         noveltyManifest: input.noveltyManifest,
         includeDegeneracy: true,
@@ -137,7 +150,8 @@ export function evaluateDraftDiagnostics(
     : undefined
   const capWarnings = capWarningsFor(result.validation)
   const status = diagnosticsStatus(result.validation, quality, copyWarnings, cloneRisk)
-  const groups = diagnosticsGroups({
+  const groups = selectedDiagnosticsGroups({
+    checks,
     puzzle,
     validation: result.validation,
     quality,
@@ -163,6 +177,37 @@ export function evaluateDraftDiagnostics(
   }
 }
 
+const ALL_DIAGNOSTIC_CHECKS: readonly AuthoringDiagnosticCheckId[] = [
+  'can-solve',
+  'unique-answer',
+  'no-guess',
+  'rule-contribution',
+  'degeneracy',
+  'clone-risk',
+  'difficulty',
+  'copy',
+  'performance',
+]
+
+function normalizeChecks(checks: readonly AuthoringDiagnosticCheckId[] | undefined): ReadonlySet<AuthoringDiagnosticCheckId> {
+  return new Set(checks ?? ALL_DIAGNOSTIC_CHECKS)
+}
+
+function shouldRunFullValidation(checks: ReadonlySet<AuthoringDiagnosticCheckId>): boolean {
+  return checks.has('unique-answer') ||
+    checks.has('no-guess') ||
+    checks.has('difficulty') ||
+    checks.has('rule-contribution')
+}
+
+function shouldRunCorrectnessValidation(checks: ReadonlySet<AuthoringDiagnosticCheckId>): boolean {
+  return checks.has('can-solve') || shouldRunFullValidation(checks)
+}
+
+function shouldRunFullQuality(checks: ReadonlySet<AuthoringDiagnosticCheckId>): boolean {
+  return checks.has('rule-contribution') && checks.has('degeneracy')
+}
+
 interface PuzzleValidationResult {
   readonly puzzle?: PuzzleDefinition
   readonly validation: AuthoringCaseValidationReport
@@ -173,6 +218,16 @@ export function validatePuzzleInput(
   sourcePath: string,
   resolvedPath: string,
   caps: AuthoringSolverCapsReport = DEFAULT_CAPS,
+): PuzzleValidationResult {
+  return validatePuzzleInputForChecks(input, sourcePath, resolvedPath, caps, normalizeChecks(undefined))
+}
+
+function validatePuzzleInputForChecks(
+  input: unknown,
+  sourcePath: string,
+  resolvedPath: string,
+  caps: AuthoringSolverCapsReport,
+  checks: ReadonlySet<AuthoringDiagnosticCheckId>,
 ): PuzzleValidationResult {
   const parsed = parsePuzzleDefinition(input)
   if (!parsed.ok || parsed.puzzle === undefined) {
@@ -189,6 +244,28 @@ export function validatePuzzleInput(
   }
 
   const puzzle = parsed.puzzle
+  if (!shouldRunCorrectnessValidation(checks)) {
+    return {
+      puzzle,
+      validation: {
+        puzzleId: puzzle.id,
+        sourcePath,
+        resolvedPath,
+        caps,
+        schema: {
+          ok: true,
+          issueCount: 0,
+          issues: [],
+        },
+        recommendation: 'ready-for-experimental-review',
+      },
+    }
+  }
+
+  if (!shouldRunFullValidation(checks)) {
+    return validatePuzzleCorrectnessOnly(puzzle, sourcePath, resolvedPath, caps)
+  }
+
   const solver = solverCaps(caps)
   const targetObservations = targetObservationsForCells(puzzle, allCells(puzzle.board))
   const initialObservations = targetObservationsForCells(puzzle, puzzle.initialReveals)
@@ -270,6 +347,76 @@ export function validatePuzzleInput(
             },
           }),
       difficultyReview,
+      recommendation,
+    },
+  }
+}
+
+function validatePuzzleCorrectnessOnly(
+  puzzle: PuzzleDefinition,
+  sourcePath: string,
+  resolvedPath: string,
+  caps: AuthoringSolverCapsReport,
+): PuzzleValidationResult {
+  const solver = solverCaps(caps)
+  const targetObservations = targetObservationsForCells(puzzle, allCells(puzzle.board))
+  const initialObservations = targetObservationsForCells(puzzle, puzzle.initialReveals)
+  const targetRules = isSatisfiable({ puzzle, observations: targetObservations }, [], solver)
+  const initialSatisfiability = isSatisfiable({ puzzle, observations: initialObservations }, [], solver)
+  const initialGuestLayouts = countGuestLayouts(
+    { puzzle, observations: initialObservations },
+    caps.candidateLayoutCap,
+    solver,
+  )
+  const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
+    ? findPossibleRecordSets({ puzzle, observations: initialObservations }, solver)
+    : undefined
+  const recommendation: AuthoringRecommendation = targetRules.stats.truncated ||
+    initialSatisfiability.stats.truncated ||
+    initialGuestLayouts.stats.truncated ||
+    initialGuestLayouts.greaterThan !== undefined ||
+    recordSets?.stats.truncated
+    ? 'raise-caps-or-simplify'
+    : !targetRules.satisfiable
+      ? 'repair-target-rules'
+      : !initialSatisfiability.satisfiable ||
+          (recordSets !== undefined && recordSets.possibleAssignments.length === 0)
+        ? 'repair-initial-satisfiability'
+        : 'ready-for-experimental-review'
+
+  return {
+    puzzle,
+    validation: {
+      puzzleId: puzzle.id,
+      sourcePath,
+      resolvedPath,
+      caps,
+      schema: {
+        ok: true,
+        issueCount: 0,
+        issues: [],
+      },
+      targetRules: {
+        satisfiesRules: targetRules.satisfiable && !targetRules.stats.truncated,
+        stats: statsReport(targetRules.stats),
+      },
+      initialSatisfiability: {
+        satisfiable: initialSatisfiability.satisfiable && !initialSatisfiability.stats.truncated,
+        stats: statsReport(initialSatisfiability.stats),
+      },
+      initialGuestLayouts: {
+        count: initialGuestLayouts.count,
+        ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
+        stats: statsReport(initialGuestLayouts.stats),
+      },
+      ...(recordSets === undefined
+        ? {}
+        : {
+            recordSets: {
+              possibleAssignments: recordSets.possibleAssignments,
+              stats: statsReport(recordSets.stats),
+            },
+          }),
       recommendation,
     },
   }
@@ -365,7 +512,8 @@ function evaluateDraftQuality(
   }
 }
 
-function diagnosticsGroups(input: {
+function selectedDiagnosticsGroups(input: {
+  readonly checks: ReadonlySet<AuthoringDiagnosticCheckId>
   readonly puzzle?: PuzzleDefinition
   readonly validation: AuthoringCaseValidationReport
   readonly quality?: AuthoringDraftQualityReport
@@ -373,16 +521,21 @@ function diagnosticsGroups(input: {
   readonly copyWarnings: readonly AuthoringCopyWarning[]
   readonly capWarnings: readonly string[]
 }): readonly AuthoringDiagnosticsGroup[] {
-  return [
-    blockingGroup(input.validation),
-    correctnessGroup(input.validation),
-    humanProofGroup(input.validation, input.puzzle),
-    qualityGroup(input.quality),
-    cloneRiskGroup(input.cloneRisk),
-    difficultyGroup(input.validation),
-    copyGroup(input.copyWarnings),
-    performanceGroup(input.capWarnings),
-  ]
+  const groups: AuthoringDiagnosticsGroup[] = [blockingGroup(input.validation)]
+
+  if (input.checks.has('can-solve')) groups.push(correctnessGroup(input.validation))
+  if (input.checks.has('unique-answer') || input.checks.has('no-guess')) {
+    groups.push(humanProofGroup(input.validation, input.puzzle))
+  }
+  if (input.checks.has('rule-contribution') || input.checks.has('degeneracy')) {
+    groups.push(qualityGroupForChecks(input.puzzle, input.quality, input.checks, input.validation.caps))
+  }
+  if (input.checks.has('clone-risk')) groups.push(cloneRiskGroup(input.cloneRisk))
+  if (input.checks.has('difficulty')) groups.push(difficultyGroup(input.validation))
+  if (input.checks.has('copy')) groups.push(copyGroup(input.copyWarnings))
+  if (input.checks.has('performance')) groups.push(performanceGroup(input.capWarnings))
+
+  return groups
 }
 
 function blockingGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
@@ -621,6 +774,50 @@ function qualityGroup(quality: AuthoringDraftQualityReport | undefined): Authori
       refs: quality.effectiveBoard.irrelevantCells,
     },
   ])
+}
+
+function qualityGroupForChecks(
+  puzzle: PuzzleDefinition | undefined,
+  quality: AuthoringDraftQualityReport | undefined,
+  checks: ReadonlySet<AuthoringDiagnosticCheckId>,
+  caps: AuthoringSolverCapsReport,
+): AuthoringDiagnosticsGroup {
+  if (puzzle === undefined) return skippedGroup('quality', 'Quality Gates', 'Draft must pass schema validation first.')
+  if (checks.has('rule-contribution') && checks.has('degeneracy') && quality !== undefined) {
+    return qualityGroup(quality)
+  }
+
+  const items: AuthoringDiagnosticsItem[] = []
+  if (checks.has('degeneracy')) {
+    const degeneracy = evaluateDegeneracyGates(puzzle)
+    items.push({
+      code: 'DEGENERACY',
+      severity: gateSeverity(degeneracy.status),
+      message: `Degeneracy gate: ${degeneracy.status}.`,
+      refs: degeneracy.results
+        .filter((result) => result.status !== 'pass')
+        .map((result) => result.ruleId),
+    })
+  }
+
+  if (checks.has('rule-contribution')) {
+    const ruleContribution = evaluateRuleContribution(puzzle, {
+      solver: solverCaps(caps),
+      candidateLayoutCap: caps.candidateLayoutCap,
+    })
+    items.push({
+      code: 'RULE_CONTRIBUTION',
+      severity: ruleContribution.status === 'pass' ? 'pass' : 'warning',
+      message: ruleContribution.status === 'pass'
+        ? 'No redundant rule contribution suspects.'
+        : 'One or more rules have no material contribution.',
+      refs: ruleContribution.results
+        .filter((result) => result.status === 'redundant')
+        .map((result) => result.ruleId),
+    })
+  }
+
+  return group('quality', 'Quality Gates', items)
 }
 
 function cloneRiskGroup(cloneRisk: AntiCloneReport | undefined): AuthoringDiagnosticsGroup {

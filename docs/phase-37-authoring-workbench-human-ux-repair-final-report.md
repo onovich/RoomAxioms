@@ -18,6 +18,8 @@ Post-acceptance repair update: user review revoked the earlier Phase 37 acceptan
 
 Information-architecture repair update: checker recheck found remaining normal-UI structure issues after `abdb635`. The latest repair keeps the visual/diagnostic fixes and additionally removes the global map-action toolbar, moves `新建地图` into the Library header, moves save/delete/reload/publish/retract into the Board header, moves title/difficulty into the top title area, removes the standalone `案件信息` / notes form, removes the long Library explanatory note, removes normal `Schema OK`, removes the normal `开发者调试` module, and removes the rule-list explanatory hint.
 
+Diagnostics performance repair update: user testing found that diagnostics could still sit at 0% for minutes even when only one lightweight option such as copy clarity was selected. The root cause was architectural: the workbench UI filtered the final display by selected options, but the worker always ran the full `evaluateWorkbenchDiagnostics` suite first. The latest repair passes selected diagnostic ids into the browser worker and authoring package, so lightweight checks such as copy clarity and degeneracy no longer trigger the full solver/proof/anti-clone pipeline. Heavy checks still run in the worker, while future solver-level optimization should follow the research-thread recommendation: frontier/component decomposition, cached materialized constraints, incremental proof prefixes, and separate fast/normal/full diagnostic tiers.
+
 ## Final Commits
 
 - `6f94651` docs: plan Phase 37 workbench repair
@@ -189,6 +191,11 @@ Focused validation:
   - Information-architecture focused rerun `pnpm --filter @room-axioms/web typecheck`: PASS.
   - Information-architecture focused rerun `pnpm --filter @room-axioms/web test src/workbench/AuthoringWorkbenchScreen.test.tsx src/workbench/asyncDiagnostics.test.ts src/workbench/workbenchContrast.test.js`: PASS, 3 files / 16 tests.
   - Information-architecture full `Validate.cmd`: PASS; lint PASS, typecheck PASS, tests PASS including authoring 13 files / 122 tests and web 25 files / 164 tests, build PASS.
+  - Diagnostics performance focused rerun `pnpm --filter @room-axioms/authoring typecheck`: PASS.
+  - Diagnostics performance focused rerun `pnpm --filter @room-axioms/authoring test -- src/diagnostics.test.ts src/diagnosticsEntry.test.ts`: PASS, authoring suite 13 files / 124 tests.
+  - Diagnostics performance focused rerun `pnpm --filter @room-axioms/web typecheck`: PASS.
+  - Diagnostics performance focused rerun `pnpm --filter @room-axioms/web test -- src/workbench/asyncDiagnostics.test.ts`: PASS, web suite 25 files / 165 tests.
+  - Diagnostics performance `git diff --check`: PASS.
 
 Smoke:
 

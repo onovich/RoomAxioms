@@ -77,6 +77,26 @@ describe('workbench async diagnostics', () => {
     ]))
   }, 30_000)
 
+  it('passes selected check ids to the injected diagnostics evaluator', async () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
+    const seenSelectedIds: string[][] = []
+    const result = await runSelectedWorkbenchDiagnostics({
+      draft,
+      selectedCaseId: 'case-004',
+      selectedIds: ['copy'],
+      caps: defaultWorkbenchDiagnosticsCaps(),
+      comparisonPuzzles: [],
+      signal: new AbortController().signal,
+      evaluate: (_draft, _selectedCaseId, _caps, _comparisonPuzzles, selectedIds) => {
+        seenSelectedIds.push([...selectedIds])
+        return syntheticReport()
+      },
+    })
+
+    expect(result.status).toBe('completed')
+    expect(seenSelectedIds).toEqual([['copy']])
+  })
+
   it('returns partial results when cancellation happens after the core report is available', async () => {
     const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
     const controller = new AbortController()
@@ -127,6 +147,7 @@ describe('workbench async diagnostics', () => {
     expect(workers).toHaveLength(1)
     expect(workers[0]?.postedMessage).toMatchObject({
       selectedCaseId: 'case-004',
+      selectedIds: DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
     })
 
     controller.abort()

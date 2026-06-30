@@ -1,4 +1,5 @@
 import type { PuzzleDefinition } from '@room-axioms/domain'
+import type { AuthoringDiagnosticCheckId } from '@room-axioms/authoring/diagnostics'
 import type { WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 
 import type { WorkbenchDiagnosticsCaps } from './model'
@@ -8,6 +9,7 @@ interface DiagnosticsWorkerRequest {
   readonly requestId: number
   readonly draft: WorkbenchDraftState
   readonly selectedCaseId: string
+  readonly selectedIds: readonly AuthoringDiagnosticCheckId[]
   readonly caps: WorkbenchDiagnosticsCaps
   readonly comparisonPuzzles: readonly PuzzleDefinition[]
 }
@@ -34,6 +36,7 @@ self.onmessage = (event: MessageEvent<DiagnosticsWorkerRequest>) => {
       request.selectedCaseId,
       request.caps,
       request.comparisonPuzzles,
+      request.selectedIds,
     )
     self.postMessage({
       requestId: request.requestId,

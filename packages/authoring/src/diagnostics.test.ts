@@ -105,6 +105,45 @@ describe('in-memory authoring diagnostics', () => {
     expect(groupStatus(report, 'human-proof')).toBe('skipped')
   })
 
+  it('runs copy-only diagnostics without solver-backed groups', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: readJson(scopeOverlapFixturePath),
+      checks: ['copy'],
+    })
+
+    expect(report.groups.map((group) => group.id)).toEqual([
+      'blocking-errors',
+      'copy',
+    ])
+    expect(report.validation).toMatchObject({
+      schema: {
+        ok: true,
+      },
+    })
+    expect(report.validation.targetRules).toBeUndefined()
+    expect(report.validation.initialSatisfiability).toBeUndefined()
+    expect(report.validation.initialGuestLayouts).toBeUndefined()
+    expect(report.validation.proof).toBeUndefined()
+    expect(report.quality).toBeUndefined()
+    expect(report.cloneRisk).toBeUndefined()
+  })
+
+  it('runs degeneracy-only diagnostics without rule-contribution or proof work', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: singletonRegionGiveawayCase(),
+      checks: ['degeneracy'],
+    })
+    const qualityItems = groupItems(report, 'quality').map((item) => item.code)
+
+    expect(report.groups.map((group) => group.id)).toEqual([
+      'blocking-errors',
+      'quality',
+    ])
+    expect(qualityItems).toEqual(['DEGENERACY'])
+    expect(report.validation.proof).toBeUndefined()
+    expect(report.quality).toBeUndefined()
+  })
+
   it('reports copy warnings for internal labels and highlight-dependent scope text', () => {
     const draft = JSON.parse(JSON.stringify(readJson(scopeOverlapFixturePath))) as {
       rules: Array<{ type: string; presentation: { title: string; flavor?: string } }>

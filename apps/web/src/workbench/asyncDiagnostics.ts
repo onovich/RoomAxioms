@@ -46,6 +46,7 @@ type EvaluateWorkbenchDiagnostics = (
   selectedCaseId: string,
   caps: WorkbenchDiagnosticsCaps,
   comparisonPuzzles: readonly PuzzleDefinition[],
+  selectedIds: readonly WorkbenchDiagnosticOptionId[],
 ) => AuthoringDraftDiagnosticsReport | undefined | Promise<AuthoringDraftDiagnosticsReport | undefined>
 
 type CoreDiagnosticsResult =
@@ -246,7 +247,13 @@ async function evaluateDiagnosticsCore(
   input: RunSelectedWorkbenchDiagnosticsInput,
 ): Promise<CoreDiagnosticsResult> {
   if (input.evaluate !== undefined) {
-    const report = await input.evaluate(input.draft, input.selectedCaseId, input.caps, input.comparisonPuzzles)
+    const report = await input.evaluate(
+      input.draft,
+      input.selectedCaseId,
+      input.caps,
+      input.comparisonPuzzles,
+      input.selectedIds,
+    )
     return input.signal.aborted ? { status: 'cancelled' } : { status: 'completed', report }
   }
 
@@ -256,6 +263,7 @@ async function evaluateDiagnosticsCore(
       input.selectedCaseId,
       input.caps,
       input.comparisonPuzzles,
+      input.selectedIds,
     )
     return input.signal.aborted ? { status: 'cancelled' } : { status: 'completed', report }
   }
@@ -318,6 +326,7 @@ function evaluateDiagnosticsInWorker(
       requestId,
       draft: input.draft,
       selectedCaseId: input.selectedCaseId,
+      selectedIds: input.selectedIds,
       caps: input.caps,
       comparisonPuzzles: input.comparisonPuzzles,
     })

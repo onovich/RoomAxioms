@@ -29,6 +29,7 @@ import {
 import {
   DEFAULT_CAPS,
   evaluateDraftDiagnostics,
+  type AuthoringDiagnosticCheckId,
   type AuthoringDiagnosticsGroup,
   type AuthoringDiagnosticsItem,
   type AuthoringDraftDiagnosticsInput,
@@ -208,6 +209,7 @@ export function evaluateWorkbenchDiagnostics(
   selectedCaseId: string,
   caps: WorkbenchDiagnosticsCaps = defaultWorkbenchDiagnosticsCaps(),
   comparisonPuzzles: readonly PuzzleDefinition[] = [],
+  checks?: readonly AuthoringDiagnosticCheckId[],
 ): AuthoringDraftDiagnosticsReport | undefined {
   const parsedDraft = parseDraftJsonValue(draft.jsonText)
   if (parsedDraft === undefined) return undefined
@@ -217,6 +219,7 @@ export function evaluateWorkbenchDiagnostics(
     sourcePath: `<workbench:${selectedCaseId}>`,
     caps,
     comparisonPuzzles,
+    checks,
   })
 }
 
