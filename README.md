@@ -39,13 +39,13 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 
 ## Current Project Status
 
-- Last completed check: Phase 36 - Authoring Workbench UX And Async Diagnostics, accepted
-- Current executor result: Phase 36 complete
-- Final report: `docs/phase-36-authoring-workbench-ux-async-diagnostics-final-report.md`
-- Active executor phase: Phase 37 - Authoring Workbench Human UX Repair
-- Guide: `docs/phase-37-authoring-workbench-human-ux-repair-goal-mode-execution-guide.md`
-- Active budget: 24 rounds
-- Current check status: Phase 36 accepted; Phase 37 dispatched for hands-on editor UX repair.
+- Last completed check: Phase 37 - Authoring Workbench Human UX Repair, accepted
+- Current executor result: Phase 37 complete
+- Final report: `docs/phase-37-authoring-workbench-human-ux-repair-final-report.md`
+- Active executor phase: none
+- Guide: none
+- Active budget: none
+- Current check status: Phase 37 accepted after repair; arbitrary object rule semantics remain a deliberate next-phase migration.
 - Result: Phase 23 added stricter degeneracy/difficulty gates, quarantined `case-019`, and produced `case-021` as a machine-valid high-tier candidate; Phase 24 user review later kept `case-021` but downgraded its player-facing difficulty to 3, reinforcing that deeper puzzles remain blocked under the current mechanics/content method.
 - Latest hotfix: Pages deployment now serves `case-021` online after relaxing CI-only heavy verification timeouts and release performance ceiling without weakening correctness checks.
 - Latest checkpoint: Phase 24 case-021 content repair is accepted at commit `24fa876`; the fixed five-cell region rule was removed, the ambiguous safe-area/bin wording was cleared, and a follow-up downgrade keeps `case-021` released as difficulty 3 rather than a 4+ candidate.
@@ -62,7 +62,8 @@ Room Axioms is a browser-first deduction game prototype: all mechanical rules ar
 - Latest phase result: Phase 34 adapted the normal player frontend toward `未登记现场 / UNREGISTERED SCENE`: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record log, partner-review VN dock, final-art manifest slots, responsive behavior, and secrecy scans are in place without changing puzzle mechanics.
 - Latest phase result: Phase 35 added object-model compatibility, normalized cell editing, structured workbench controls for the safe-to-compile requested rule forms, visible diagnostics for unsupported rule forms, VN scene overlay repair, temporary bust portraits, and generic hint removal without promoting cases or weakening validation.
 - Latest phase result: Phase 36 made the private workbench usable for manual puzzle authoring with a left case library, local draft/published cases, create/save/delete/publish/retract, simplified normal UI, contrast fixes, selectable diagnostics, async progress, cancellation, partial-result handling, and Minesweeper-methodology notes.
-- Next planned direction: Phase 37 repairs the editor from the user's hands-on feedback: readable contrast, better side alignment, explicit map action buttons, one case-name field, object dropdown/manager, one editable rule-card list, rule create/edit dialog, scope preview, and plain diagnostics copy.
+- Latest phase result: Phase 37 repaired the workbench after hands-on feedback: blue low-contrast workbench text was replaced with high-contrast local tokens, map actions are explicit buttons, case metadata is simplified, cell objects use a dropdown and manager, the Figure-3-style rule-card list is the single normal rule list, rule create/edit uses a dialog, scope preview is wired where materializable, and low-level diagnostics are hidden or renamed in plain language.
+- Next planned direction: focused object-model migration so arbitrary managed object types can be placed in cells and referenced by rules through domain/schema/solver/proof/diagnostics without legacy `CellKind` limitations.
 - Development plan: `docs/development-plan.md`
 
 ## Commands

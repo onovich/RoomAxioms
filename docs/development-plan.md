@@ -54,12 +54,12 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently checked: Phase 36 - Authoring Workbench UX And Async Diagnostics, accepted, final commit `12af152`.
-- Current executor result: Phase 36 complete; Phase 37 is being dispatched for human-facing editor UX repair.
-- Active guide: `docs/phase-37-authoring-workbench-human-ux-repair-goal-mode-execution-guide.md`.
-- Executor budget: 24 rounds.
-- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
-- Last completed final report: `docs/phase-36-authoring-workbench-ux-async-diagnostics-final-report.md`.
+- Recently checked: Phase 37 - Authoring Workbench Human UX Repair, accepted after repair, final commit `71547ab`.
+- Current executor result: Phase 37 complete.
+- Active guide: none.
+- Executor budget: none.
+- Executor status: idle; waiting for next planner decision.
+- Last completed final report: `docs/phase-37-authoring-workbench-human-ux-repair-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
 - Phase 13 experimental content: `content/experimental/phase-13/`; not promoted to shipped content because reviewed candidates did not preserve `LOCAL_SCOPE_DIFFERENCE` through minimization and proof gates.
@@ -109,6 +109,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 36 direction: improve the private workbench's day-to-day usability for manual puzzle design: local draft/published case library, direct case list, create/save/delete/publish/retract, simplified UI without import/debug panels, readable contrast, and selectable asynchronous diagnostics with progress/cancel.
 - Phase 36 result: accepted. The private workbench now has a left case library, local draft/published cases, create/save/delete/publish/retract, simplified normal UI, contrast repairs, selectable plain-language diagnostics, asynchronous progress/cancel/stale-response handling, and a methodology note tying Minesweeper generation ideas to modular validation/no-guess/difficulty checks without adding broad random generation.
 - Planned Phase 37 direction: apply the user's hands-on editor feedback by repairing contrast, aligning the workbench layout, exposing explicit map actions, simplifying case metadata, adding object dropdown/manager controls, consolidating to one editable rule-card list, moving rule creation/editing into a dialog, previewing rule scope on the board, and hiding internal diagnostic/schema/proof copy from normal authoring.
+- Phase 37 result: accepted after repair. The workbench now uses high-contrast local color tokens instead of low-contrast blue foregrounds, exposes explicit map actions, simplifies case metadata, provides object dropdown/manager controls, uses the Figure-3-style rule-card list as the single normal rule list, opens dialogs for rule creation/editing, previews rule scope where materializable, and hides or renames low-level diagnostic internals. Remaining blocker is out-of-scope semantics: arbitrary managed objects still require a domain/schema/solver/proof migration before they can fully participate in rules.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -152,5 +153,5 @@ These are accepted as candidates, not active execution scope:
 - Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
 - Rule object model, editor grammar, and VN overlay repair budget: 40 rounds, covering Phase 35, completed after repair.
 - Authoring workbench UX and async diagnostics budget: 32 rounds, covering Phase 36, completed.
-- Authoring workbench human UX repair budget: 24 rounds, covering Phase 37.
+- Authoring workbench human UX repair budget: 24 rounds, covering Phase 37, completed after repair.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
