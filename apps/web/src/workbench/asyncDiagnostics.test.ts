@@ -4,6 +4,7 @@ import type { AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/dia
 
 import { getCaseById } from '../content/cases'
 import {
+  ALL_WORKBENCH_DIAGNOSTIC_IDS,
   DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
   filterDiagnosticsReport,
   runSelectedWorkbenchDiagnostics,
@@ -34,6 +35,11 @@ describe('workbench async diagnostics', () => {
     ])
     expect(WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => `${option.label} ${option.description}`).join('\n'))
       .not.toMatch(/solver|CSP|proof DAG|candidateGuestLayouts|truncated/i)
+  })
+
+  it('keeps clone-risk as an opt-in slow check outside the default run', () => {
+    expect(DEFAULT_WORKBENCH_DIAGNOSTIC_IDS).not.toContain('clone-risk')
+    expect(ALL_WORKBENCH_DIAGNOSTIC_IDS).toContain('clone-risk')
   })
 
   it('filters a full diagnostics report to selected user checks', () => {

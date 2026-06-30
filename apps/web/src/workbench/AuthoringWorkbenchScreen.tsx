@@ -87,6 +87,7 @@ import {
   type WorkbenchRuleSummary,
 } from './model'
 import {
+  ALL_WORKBENCH_DIAGNOSTIC_IDS,
   DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
   runSelectedWorkbenchDiagnostics,
   WORKBENCH_DIAGNOSTIC_OPTIONS,
@@ -2383,12 +2384,12 @@ function DiagnosticOptionsPanel({
           type="button"
           disabled={disabled}
           onClick={() => onSelectionChange(
-            selectedIds.length === WORKBENCH_DIAGNOSTIC_OPTIONS.length
+            selectedIds.length === ALL_WORKBENCH_DIAGNOSTIC_IDS.length
               ? []
-              : DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+              : ALL_WORKBENCH_DIAGNOSTIC_IDS,
           )}
         >
-          {selectedIds.length === WORKBENCH_DIAGNOSTIC_OPTIONS.length ? '清空' : '全选'}
+          {selectedIds.length === ALL_WORKBENCH_DIAGNOSTIC_IDS.length ? '清空' : '全选'}
         </button>
       </div>
       <div className="diagnostic-option-list">

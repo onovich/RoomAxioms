@@ -102,7 +102,7 @@ export const WORKBENCH_DIAGNOSTIC_OPTIONS: readonly WorkbenchDiagnosticOption[] 
   {
     id: 'clone-risk',
     label: '有没有太像旧案例',
-    description: '对照内置案例和本地已发布案例，提示克隆或填充风险。',
+    description: '发布前慢检查：对照内置案例和本地已发布案例，提示克隆或填充风险。',
     groupIds: ['clone-risk'],
   },
   {
@@ -126,6 +126,11 @@ export const WORKBENCH_DIAGNOSTIC_OPTIONS: readonly WorkbenchDiagnosticOption[] 
 ]
 
 export const DEFAULT_WORKBENCH_DIAGNOSTIC_IDS: readonly WorkbenchDiagnosticOptionId[] =
+  WORKBENCH_DIAGNOSTIC_OPTIONS
+    .filter((option) => option.id !== 'clone-risk')
+    .map((option) => option.id)
+
+export const ALL_WORKBENCH_DIAGNOSTIC_IDS: readonly WorkbenchDiagnosticOptionId[] =
   WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => option.id)
 
 export async function runSelectedWorkbenchDiagnostics(

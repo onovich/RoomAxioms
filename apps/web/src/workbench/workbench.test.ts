@@ -652,6 +652,7 @@ describe('authoring workbench shell model', () => {
     ])
     expect(overview?.metrics.find((metric) => metric.id === 'proof')).toMatchObject({
       label: '不靠猜推理',
+      value: '通过',
     })
     expect(overview?.metrics.find((metric) => metric.id === 'difficulty')).toMatchObject({
       tone: 'warning',
@@ -660,6 +661,21 @@ describe('authoring workbench shell model', () => {
     expect(plainDetails).not.toContain('最终访客')
     expect(plainDetails).not.toContain('caps ')
     expect(plainDetails).not.toContain('节点 ')
+  }, 30_000)
+
+  it('makes skipped diagnostics explicit in the overview', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const diagnostics = evaluateWorkbenchDiagnostics(draft, DEFAULT_CASE_ID, defaultWorkbenchDiagnosticsCaps(), [], ['copy'])
+    const overview = createWorkbenchDiagnosticsOverview(diagnostics)
+
+    expect(overview?.metrics.find((metric) => metric.id === 'proof')).toMatchObject({
+      value: '未运行',
+      detail: '本次没有勾选不靠猜推理。',
+    })
+    expect(overview?.metrics.find((metric) => metric.id === 'clone-risk')).toMatchObject({
+      value: '未运行',
+      detail: '发布前慢检查，默认不运行；需要时在诊断设置里勾选。',
+    })
   }, 30_000)
 
   it('surfaces capped candidate counts and truncation warnings in the diagnostics overview', () => {

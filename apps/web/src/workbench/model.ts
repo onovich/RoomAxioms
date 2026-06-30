@@ -345,6 +345,8 @@ export function createWorkbenchDiagnosticsOverview(
   const quality = report.quality
   const copyWarningCount = report.copyWarnings.length
   const cloneStatus = report.cloneRisk?.status
+  const groupIds = new Set(report.groups.map((group) => group.id))
+  const groupWasRun = (id: AuthoringDiagnosticsGroup['id']): boolean => groupIds.has(id)
 
   return {
     metrics: [
@@ -359,7 +361,7 @@ export function createWorkbenchDiagnosticsOverview(
         id: 'candidate-layouts',
         label: '可能答案范围',
         value: initialLayouts === undefined
-          ? '未评估'
+          ? '未运行'
           : initialLayouts.greaterThan === undefined
             ? String(initialLayouts.count)
             : `>${initialLayouts.greaterThan}`,
@@ -371,7 +373,7 @@ export function createWorkbenchDiagnosticsOverview(
               ? 'pass'
               : 'fail',
         detail: initialLayouts === undefined
-          ? '草稿需要先通过结构检查。'
+          ? '本次没有勾选成立性检查。'
           : initialLayouts.stats.truncated || initialLayouts.greaterThan !== undefined
             ? '检查达到上限，结果只说明范围仍然偏大。'
             : '数量越小，说明规则和初始信息越能收束答案。',
@@ -379,43 +381,43 @@ export function createWorkbenchDiagnosticsOverview(
       {
         id: 'proof',
         label: '不靠猜推理',
-        value: proof === undefined ? '未评估' : `${proof.waveCount} 波 / ${proof.deductionCount} 步`,
+        value: proofOverviewValue(proof, groupWasRun('human-proof')),
         tone: proof === undefined
           ? 'info'
           : proof.noGuess && proof.humanExplainable && proof.guestLayoutUniqueAtEnd
             ? 'pass'
             : 'fail',
-        detail: proof === undefined
-          ? '草稿需要先通过结构检查。'
-          : proof.noGuess && proof.humanExplainable
-            ? `${proof.techniqueIds.length} 类推理材料参与。`
-            : '推理链还没有完整闭合。',
+        detail: proofOverviewDetail(proof, groupWasRun('human-proof')),
       },
       {
         id: 'quality',
         label: '质量门',
-        value: quality === undefined ? '未评估' : gateLabel(quality.degeneracy.status),
+        value: quality === undefined ? '未运行' : gateLabel(quality.degeneracy.status),
         tone: quality === undefined ? 'info' : gateTone(quality.degeneracy.status),
         detail: quality === undefined
-          ? '草稿需要先通过结构检查。'
+          ? '本次没有勾选质量门检查。'
           : `${quality.effectiveBoard.irrelevantCells.length} 个无效格；${quality.ruleContribution.results.filter((result) => result.status === 'redundant').length} 条冗余嫌疑`,
       },
       {
         id: 'clone-risk',
         label: '克隆风险',
-        value: cloneStatus === undefined ? '未比较' : cloneRiskLabel(cloneStatus),
+        value: cloneStatus === undefined
+          ? groupWasRun('clone-risk') ? '未比较' : '未运行'
+          : cloneRiskLabel(cloneStatus),
         tone: cloneStatus === undefined ? 'info' : cloneRiskTone(cloneStatus),
         detail: cloneStatus === undefined
-          ? '本次诊断未提供对照谜题。'
+          ? groupWasRun('clone-risk')
+            ? '没有可对照案例。'
+            : '发布前慢检查，默认不运行；需要时在诊断设置里勾选。'
           : `${report.cloneRisk?.hardFailureCount ?? 0} 个明显重复风险，${report.cloneRisk?.reviewerBlockingCount ?? 0} 个需要复核`,
       },
       {
         id: 'difficulty',
         label: '难度',
-        value: difficulty === undefined ? '未评估' : difficultyBucketLabel(difficulty.recommendedBucket),
+        value: difficulty === undefined ? '未运行' : difficultyBucketLabel(difficulty.recommendedBucket),
         tone: difficulty === undefined ? 'info' : 'warning',
         detail: difficulty === undefined
-          ? '草稿需要先通过结构检查。'
+          ? '本次没有勾选难度估计。'
           : `未校准；${difficulty.proofWaveCount} 波，${difficulty.deductionCount} 步，${difficulty.materialRuleFamilyCount} 个有效规则族`,
       },
       {
@@ -438,6 +440,36 @@ export function createWorkbenchDiagnosticsOverview(
     capWarnings: report.performance.capWarnings,
     techniqueIds: proof?.techniqueIds ?? [],
   }
+}
+
+type WorkbenchProofDiagnostics = NonNullable<AuthoringDraftDiagnosticsReport['validation']['proof']>
+
+function proofOverviewValue(
+  proof: WorkbenchProofDiagnostics | undefined,
+  wasRun: boolean,
+): string {
+  if (proof === undefined) return wasRun ? '未完成' : '未运行'
+  if (proof.noGuess && proof.humanExplainable && proof.guestLayoutUniqueAtEnd) return '通过'
+  if (!proof.noGuess) return '不通过：需要猜'
+  if (!proof.humanExplainable) return '不通过：解释缺口'
+  if (!proof.guestLayoutUniqueAtEnd) return '不通过：未唯一'
+  return '不通过'
+}
+
+function proofOverviewDetail(
+  proof: WorkbenchProofDiagnostics | undefined,
+  wasRun: boolean,
+): string {
+  if (proof === undefined) {
+    return wasRun
+      ? '已尝试检查，但没有得到可用的人类推理报告。'
+      : '本次没有勾选不靠猜推理。'
+  }
+
+  const techniqueCopy = proof.techniqueIds.length === 0
+    ? '没有推理材料参与'
+    : `${proof.techniqueIds.length} 类推理材料参与`
+  return `${proof.waveCount} 波 / ${proof.deductionCount} 步；${techniqueCopy}。`
 }
 
 export function createWorkbenchDiagnosticsGroupDetails(
