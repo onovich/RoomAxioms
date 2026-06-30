@@ -50,14 +50,15 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 | Phase 34 - Unregistered Scene Frontend Adaptation | Refit the player-facing frontend around the approved `未登记现场 / UNREGISTERED SCENE` direction before final art slicing: terminology, layout shell, CSS tokens, scene-map layers, rule-card mini diagrams, record panel, partner-review dock, manifest slots, responsive behavior, and secrecy scans | User/artist art-sample direction after Phase 33 | 28 rounds |
 | Phase 35 - Rule Object Model, Editor Grammar, And VN Overlay Repair | Upgrade the rule/object authoring model toward configurable objects and richer spatial predicates, make the workbench useful for manual puzzle design without raw JSON editing, remove generic hint UX, and repair the VN portrait/dialogue overlay using temporary bust art | User rule-grammar and VN direction after Phase 34 | 40 rounds |
 | Phase 36 - Authoring Workbench UX And Async Diagnostics | Turn the private workbench into a practical case manager for manual puzzle design: left case list, draft/published local library, create/save/delete/publish/retract, simplified UI, contrast repair, selectable async diagnostics with progress/cancel, and methodology notes from Minesweeper generation practices | User editor usability feedback after Phase 35 | 32 rounds |
+| Phase 37 - Authoring Workbench Human UX Repair | Repair the private workbench into a human-usable puzzle-design editor: readable contrast, better side alignment, explicit map actions, one case-name field, object dropdown/manager, one editable rule-card list, rule create/edit dialog, scope preview, and plain diagnostics copy | User hands-on editor feedback after Phase 36 | 24 rounds |
 
 ## Current Execution State
 
 - Recently checked: Phase 36 - Authoring Workbench UX And Async Diagnostics, accepted, final commit `12af152`.
-- Current executor result: Phase 36 complete.
-- Active guide: none.
-- Executor budget: none.
-- Executor status: idle; waiting for user workbench testing and next product decision before another `GoalNext` dispatch.
+- Current executor result: Phase 36 complete; Phase 37 is being dispatched for human-facing editor UX repair.
+- Active guide: `docs/phase-37-authoring-workbench-human-ux-repair-goal-mode-execution-guide.md`.
+- Executor budget: 24 rounds.
+- Executor status: active dispatch to `019ef271-256c-7be2-9663-e658e2378564`.
 - Last completed final report: `docs/phase-36-authoring-workbench-ux-async-diagnostics-final-report.md`.
 - Current player-facing selector: `case-004`, `case-011`, `case-013`, `case-015`, `case-012`, `case-014`, `case-017`, `case-018`, `case-020`, and `case-021`.
 - Phase 12 experimental content: `content/experimental/phase-12/phase-12-local-scope-difference-001.json`; not promoted to shipped content.
@@ -107,6 +108,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Phase 35 result: accepted after repair. Object-model adapters, normalized cell editing, rule-expression compile model, directional local scopes, structured workbench controls for safe requested rule forms, visible diagnostics for unsupported forms, VN scene overlay repair, temporary bust portraits, and generic hint removal are implemented and validate. Deferred high-level rule families need separate schema/proof support before UI authoring would be honest.
 - Planned Phase 36 direction: improve the private workbench's day-to-day usability for manual puzzle design: local draft/published case library, direct case list, create/save/delete/publish/retract, simplified UI without import/debug panels, readable contrast, and selectable asynchronous diagnostics with progress/cancel.
 - Phase 36 result: accepted. The private workbench now has a left case library, local draft/published cases, create/save/delete/publish/retract, simplified normal UI, contrast repairs, selectable plain-language diagnostics, asynchronous progress/cancel/stale-response handling, and a methodology note tying Minesweeper generation ideas to modular validation/no-guess/difficulty checks without adding broad random generation.
+- Planned Phase 37 direction: apply the user's hands-on editor feedback by repairing contrast, aligning the workbench layout, exposing explicit map actions, simplifying case metadata, adding object dropdown/manager controls, consolidating to one editable rule-card list, moving rule creation/editing into a dialog, previewing rule scope on the board, and hiding internal diagnostic/schema/proof copy from normal authoring.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
@@ -150,4 +152,5 @@ These are accepted as candidates, not active execution scope:
 - Unregistered Scene frontend adaptation budget: 28 rounds, covering Phase 34, completed.
 - Rule object model, editor grammar, and VN overlay repair budget: 40 rounds, covering Phase 35, completed after repair.
 - Authoring workbench UX and async diagnostics budget: 32 rounds, covering Phase 36, completed.
+- Authoring workbench human UX repair budget: 24 rounds, covering Phase 37.
 - Extra planner/checker budget: roughly 1-2 turns per phase, about 8-16 turns before MVP.
