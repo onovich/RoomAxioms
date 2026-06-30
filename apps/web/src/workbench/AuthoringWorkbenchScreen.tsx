@@ -20,19 +20,21 @@ import {
   updateRuleBuilderOverlapMode,
   updateRuleBuilderRegionId,
 } from '@room-axioms/authoring/rule-builder'
-import type {
-  BoardSize,
-  CellId,
-  CellKind,
-  Comparator,
-  CountComparison,
-  Direction,
-  LineCountRule,
-  LocalScopeKind,
-  PuzzleDefinition,
-  RegionDefinition,
-  StaticLineScope,
-  ScopeOverlapMode,
+import {
+  DEFAULT_OBJECT_TYPE_REGISTRY,
+  type BoardSize,
+  type CellId,
+  type CellKind,
+  type Comparator,
+  type CountComparison,
+  type Direction,
+  type LegacyObjectCellKind,
+  type LineCountRule,
+  type LocalScopeKind,
+  type PuzzleDefinition,
+  type RegionDefinition,
+  type StaticLineScope,
+  type ScopeOverlapMode,
 } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
@@ -100,6 +102,13 @@ type LibraryActionStatus =
   | { readonly kind: 'idle' }
   | { readonly kind: 'info' | 'success' | 'error'; readonly message: string }
 
+interface WorkbenchObjectType {
+  readonly id: string
+  readonly label: string
+  readonly legacyKind?: LegacyObjectCellKind
+  readonly custom: boolean
+}
+
 const RULE_BUILDER_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin', 'mirror', 'guest']
 const COMPARATOR_OPS: readonly Comparator['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
 const COMPARISON_OPS: readonly CountComparison['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
@@ -140,6 +149,9 @@ export default function AuthoringWorkbenchScreen() {
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
+  const [objectTypes, setObjectTypes] = useState<readonly WorkbenchObjectType[]>(() => createInitialObjectTypes())
+  const [objectManagerOpen, setObjectManagerOpen] = useState(false)
+  const [newObjectLabelText, setNewObjectLabelText] = useState('')
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [ruleBuilderPatchStatus, setRuleBuilderPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
@@ -175,6 +187,7 @@ export default function AuthoringWorkbenchScreen() {
     ? undefined
     : model.ruleSummaries.find((rule) => rule.id === selectedRuleId)
   const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
+  const displayKindLabel = (kind: CellKind): string => kindLabel(kind, objectTypes)
 
   useEffect(() => {
     let cancelled = false
@@ -485,6 +498,37 @@ export default function AuthoringWorkbenchScreen() {
     if (rule !== undefined) selectRule(rule)
   }
 
+  function renameWorkbenchObjectType(objectId: string, label: string): void {
+    setObjectTypes((current) => current.map((objectType) => (
+      objectType.id === objectId
+        ? { ...objectType, label }
+        : objectType
+    )))
+  }
+
+  function createCustomObjectType(): void {
+    const label = newObjectLabelText.trim()
+    if (label.length === 0) return
+    const id = createObjectTypeId(label, objectTypes)
+    setObjectTypes((current) => [
+      ...current,
+      {
+        id,
+        label,
+        custom: true,
+      },
+    ])
+    setNewObjectLabelText('')
+    setPatchStatus({
+      kind: 'applied',
+      message: `${label} 已加入物体清单；当前版本只作为备注，不能放入格子或规则。`,
+    })
+  }
+
+  function deleteCustomObjectType(objectId: string): void {
+    setObjectTypes((current) => current.filter((objectType) => objectType.id !== objectId || !objectType.custom))
+  }
+
   function applyRuleBuilderDraftsPatch(
     ruleDrafts: readonly RuleBuilderDraft[],
     message: string,
@@ -601,13 +645,13 @@ export default function AuthoringWorkbenchScreen() {
     if (!patch.ok) {
       setPatchStatus({
         kind: 'rejected',
-        message: `${selectedCellId} 不能改成${kindLabel(activeKind)}。`,
+        message: `${selectedCellId} 不能改成${kindLabel(activeKind, objectTypes)}。`,
         issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
       })
       return
     }
 
-    applySuccessfulPatch(patch.state, `${selectedCellId} 已改成${kindLabel(activeKind)}；完整诊断已标记为待重新运行。`)
+    applySuccessfulPatch(patch.state, `${selectedCellId} 已改成${kindLabel(activeKind, objectTypes)}；完整诊断已标记为待重新运行。`)
   }
 
   function toggleInitialRevealForSelectedCell(): void {
@@ -910,10 +954,10 @@ export default function AuthoringWorkbenchScreen() {
                   ].filter(Boolean).join(' ')}
                   onClick={() => selectBoardCell(cell)}
                   aria-pressed={selectedCellId === cell.id}
-                  aria-label={`${cell.id} ${kindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
+                  aria-label={`${cell.id} ${displayKindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
                 >
                   <span className="coord">{cell.id}</span>
-                  <b>{kindLabel(cell.kind)}</b>
+                  <b>{displayKindLabel(cell.kind)}</b>
                   {cell.initiallyRevealed ? <small>初始</small> : null}
                 </button>
               ))}
@@ -923,9 +967,18 @@ export default function AuthoringWorkbenchScreen() {
             selectedCell={selectedCell}
             activeKind={activeKind}
             kindOptions={kindOptions}
+            objectTypes={objectTypes}
+            objectManagerOpen={objectManagerOpen}
+            newObjectLabelText={newObjectLabelText}
             patchStatus={patchStatus}
             canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
             onKindChange={setActiveKind}
+            onManageObjects={() => setObjectManagerOpen(true)}
+            onCloseObjectManager={() => setObjectManagerOpen(false)}
+            onObjectLabelChange={renameWorkbenchObjectType}
+            onNewObjectLabelChange={setNewObjectLabelText}
+            onCreateObject={createCustomObjectType}
+            onDeleteObject={deleteCustomObjectType}
             onApply={applyTargetCellPatch}
             onToggleInitialReveal={toggleInitialRevealForSelectedCell}
           />
@@ -1234,18 +1287,36 @@ function CellFactEditor({
   selectedCell,
   activeKind,
   kindOptions,
+  objectTypes,
+  objectManagerOpen,
+  newObjectLabelText,
   patchStatus,
   canPatch,
   onKindChange,
+  onManageObjects,
+  onCloseObjectManager,
+  onObjectLabelChange,
+  onNewObjectLabelChange,
+  onCreateObject,
+  onDeleteObject,
   onApply,
   onToggleInitialReveal,
 }: {
   readonly selectedCell: WorkbenchBoardCell | undefined
   readonly activeKind: CellKind
   readonly kindOptions: readonly CellKind[]
+  readonly objectTypes: readonly WorkbenchObjectType[]
+  readonly objectManagerOpen: boolean
+  readonly newObjectLabelText: string
   readonly patchStatus: DraftPatchStatus
   readonly canPatch: boolean
   readonly onKindChange: (kind: CellKind) => void
+  readonly onManageObjects: () => void
+  readonly onCloseObjectManager: () => void
+  readonly onObjectLabelChange: (objectId: string, label: string) => void
+  readonly onNewObjectLabelChange: (value: string) => void
+  readonly onCreateObject: () => void
+  readonly onDeleteObject: (objectId: string) => void
   readonly onApply: () => void
   readonly onToggleInitialReveal: () => void
 }) {
@@ -1253,7 +1324,7 @@ function CellFactEditor({
     <section className="cell-editor" aria-label="目标格编辑">
       <div>
         <span className="eyebrow">Cell facts</span>
-        <h3>{selectedCell === undefined ? '选择一个格子' : `${selectedCell.id} · ${kindLabel(selectedCell.kind)}`}</h3>
+        <h3>{selectedCell === undefined ? '选择一个格子' : `${selectedCell.id} · ${kindLabel(selectedCell.kind, objectTypes)}`}</h3>
         <p>
           {selectedCell === undefined
             ? '点击棋盘格后可修改目标对象；修改只进入当前草稿。'
@@ -1264,35 +1335,116 @@ function CellFactEditor({
       </div>
       <div className="cell-editor-controls">
         <label>
-          对象
-          <input
-            type="checkbox"
-            checked={activeKind === 'guest'}
-            onChange={(event) => onKindChange(event.target.checked ? 'guest' : 'empty')}
+          格子内容
+          <select
+            value={activeKind}
             disabled={!canPatch}
-          />
+            onChange={(event) => {
+              if (event.target.value === '__manage__') {
+                onManageObjects()
+                return
+              }
+              onKindChange(event.target.value as CellKind)
+            }}
+          >
+            {kindOptions.map((kind) => (
+              <option key={kind} value={kind}>{kindLabel(kind, objectTypes)}</option>
+            ))}
+            <option value="__manage__">管理物体...</option>
+          </select>
         </label>
-        <div className="cell-object-toggles" aria-label="Objects">
-          {kindOptions.filter((kind) => kind !== 'empty' && kind !== 'guest').map((kind) => (
-            <label key={kind}>
-              {kindLabel(kind)}
-              <input
-                type="checkbox"
-                checked={activeKind === kind}
-                disabled={!canPatch || activeKind === 'guest'}
-                onChange={(event) => onKindChange(event.target.checked ? kind : 'empty')}
-              />
-            </label>
-          ))}
-        </div>
         <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
-          应用对象
+          应用内容
         </button>
         <button className="small-button" type="button" onClick={onToggleInitialReveal} disabled={!canPatch}>
           {selectedCell?.initiallyRevealed ? '取消初始' : '设为初始'}
         </button>
+        <button className="small-button" type="button" onClick={onManageObjects}>
+          管理物体
+        </button>
       </div>
+      {objectManagerOpen ? (
+        <ObjectManagerPanel
+          objectTypes={objectTypes}
+          newObjectLabelText={newObjectLabelText}
+          onObjectLabelChange={onObjectLabelChange}
+          onNewObjectLabelChange={onNewObjectLabelChange}
+          onCreateObject={onCreateObject}
+          onDeleteObject={onDeleteObject}
+          onClose={onCloseObjectManager}
+        />
+      ) : null}
       <PatchStatus status={patchStatus} />
+    </section>
+  )
+}
+
+function ObjectManagerPanel({
+  objectTypes,
+  newObjectLabelText,
+  onObjectLabelChange,
+  onNewObjectLabelChange,
+  onCreateObject,
+  onDeleteObject,
+  onClose,
+}: {
+  readonly objectTypes: readonly WorkbenchObjectType[]
+  readonly newObjectLabelText: string
+  readonly onObjectLabelChange: (objectId: string, label: string) => void
+  readonly onNewObjectLabelChange: (value: string) => void
+  readonly onCreateObject: () => void
+  readonly onDeleteObject: (objectId: string) => void
+  readonly onClose: () => void
+}) {
+  return (
+    <section className="object-manager" aria-label="物体管理">
+      <div className="object-manager-heading">
+        <div>
+          <h3>管理物体</h3>
+          <p>当前公开规则仍只支持酒瓶、垃圾桶、镜子；自定义物体会作为备注保留，不能用于格子或规则。</p>
+        </div>
+        <button className="small-button" type="button" onClick={onClose}>收起</button>
+      </div>
+      <div className="object-manager-list">
+        {objectTypes.map((objectType) => (
+          <article key={objectType.id} className="object-manager-row">
+            <label>
+              显示名称
+              <input
+                type="text"
+                value={objectType.label}
+                onChange={(event) => onObjectLabelChange(objectType.id, event.target.value)}
+              />
+            </label>
+            <span>{objectType.custom ? '仅备注' : '兼容规则'}</span>
+            <button
+              className="small-button"
+              type="button"
+              disabled={!objectType.custom}
+              onClick={() => onDeleteObject(objectType.id)}
+            >
+              删除
+            </button>
+            {objectType.custom ? null : (
+              <small>内置物体正在被现有 schema/solver/proof 使用，只能改显示名称，不能删除。</small>
+            )}
+          </article>
+        ))}
+      </div>
+      <div className="object-manager-create">
+        <label>
+          新物体名称
+          <input
+            type="text"
+            value={newObjectLabelText}
+            onChange={(event) => onNewObjectLabelChange(event.target.value)}
+            placeholder="仅作为作者备注"
+          />
+        </label>
+        <button className="small-button" type="button" onClick={onCreateObject}>
+          创建
+        </button>
+      </div>
     </section>
   )
 }
@@ -2178,6 +2330,32 @@ function createLocalCaseId(): string {
   return `local-${Date.now().toString(36)}-${randomPart}`
 }
 
+function createInitialObjectTypes(): readonly WorkbenchObjectType[] {
+  return DEFAULT_OBJECT_TYPE_REGISTRY.objectTypes.map((objectType) => ({
+    id: objectType.id,
+    label: objectType.label.zhHans,
+    ...(objectType.legacyKind === undefined ? {} : { legacyKind: objectType.legacyKind }),
+    custom: false,
+  }))
+}
+
+function createObjectTypeId(label: string, existingTypes: readonly WorkbenchObjectType[]): string {
+  const base = label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'custom-object'
+  const existing = new Set(existingTypes.map((objectType) => objectType.id))
+  let candidate = base
+  let suffix = 2
+  while (existing.has(candidate)) {
+    candidate = `${base}-${suffix}`
+    suffix += 1
+  }
+
+  return candidate
+}
+
 function parsePuzzleJson(jsonText: string): PuzzleDefinition | undefined {
   try {
     return JSON.parse(jsonText) as PuzzleDefinition
@@ -2706,18 +2884,19 @@ function draftDownloadHref(jsonText: string): string {
   return `data:application/json;charset=utf-8,${encodeURIComponent(jsonText)}`
 }
 
-function kindLabel(kind: CellKind): string {
+function kindLabel(kind: CellKind, objectTypes: readonly WorkbenchObjectType[] = createInitialObjectTypes()): string {
+  const objectType = objectTypes.find((candidate) => candidate.legacyKind === kind)
+  if (objectType !== undefined) return objectType.label
+
   switch (kind) {
     case 'empty':
       return '无访客'
-    case 'bottle':
-      return '酒瓶'
-    case 'bin':
-      return '垃圾桶'
-    case 'mirror':
-      return '镜子'
     case 'guest':
-      return '访客'
+      return '异常区域'
+    case 'bottle':
+    case 'bin':
+    case 'mirror':
+      return kind
   }
 }
 

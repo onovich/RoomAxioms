@@ -39,4 +39,13 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).not.toContain('>模型<')
     expect(html).not.toContain('>候选计数<')
   })
+
+  it('uses a cell object dropdown with an object-manager path', () => {
+    const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
+
+    expect(html).toContain('格子内容')
+    expect(html).toContain('管理物体')
+    expect(html).toContain('<option value="__manage__">管理物体...</option>')
+    expect(html).not.toContain('class="cell-object-toggles"')
+  })
 })

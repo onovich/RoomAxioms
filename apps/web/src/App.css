@@ -1966,7 +1966,7 @@ h3 {
   align-items: end;
   display: grid;
   gap: 9px;
-  grid-template-columns: minmax(120px, 1fr) auto auto;
+  grid-template-columns: minmax(160px, 1fr) auto auto auto;
 }
 
 .cell-editor-controls label {
@@ -1983,6 +1983,93 @@ h3 {
   color: var(--text);
   min-height: 34px;
   padding: 5px 8px;
+}
+
+.object-manager {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 10px;
+  grid-column: 1 / -1;
+  padding: 12px;
+}
+
+.object-manager-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.object-manager-heading h3 {
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.object-manager-heading p,
+.object-manager-row small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.object-manager-list {
+  display: grid;
+  gap: 8px;
+}
+
+.object-manager-row {
+  align-items: end;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(160px, 1fr) auto auto;
+  padding: 9px;
+}
+
+.object-manager-row label,
+.object-manager-create label {
+  color: var(--muted);
+  display: grid;
+  font-size: 11px;
+  gap: 5px;
+}
+
+.object-manager-row input,
+.object-manager-create input {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  min-height: 32px;
+  padding: 5px 7px;
+  width: 100%;
+}
+
+.object-manager-row span {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: #e3d4b5;
+  font-size: 10px;
+  padding: 4px 7px;
+}
+
+.object-manager-row small {
+  grid-column: 1 / -1;
+}
+
+.object-manager-create {
+  align-items: end;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(160px, 1fr) auto;
+  padding-top: 10px;
 }
 
 .patch-status {
