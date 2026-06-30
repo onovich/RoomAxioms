@@ -1,9 +1,9 @@
-import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
+import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
-import type { AuthoringDiagnosticsGroup, AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
+import type { AuthoringDiagnosticsGroup } from '@room-axioms/authoring/diagnostics'
 import {
   duplicateRuleBuilderDraft,
   moveRuleBuilderDraft,
@@ -947,6 +947,40 @@ export default function AuthoringWorkbenchScreen() {
         </div>
       </header>
 
+      <section className="workbench-diagnostics-strip" aria-label="诊断">
+        <WorkbenchStatus
+          puzzle={parsedPuzzle}
+          draft={draft}
+          localState={selectedLocalCase?.state}
+        />
+        <div className="diagnostics-strip-controls">
+          <button
+            className="small-button"
+            type="button"
+            onClick={runDiagnostics}
+          >
+            {diagnosticsState.status === 'running' ? '取消诊断' : '运行诊断'}
+          </button>
+          <details className="diagnostics-settings-popover">
+            <summary className="small-button">诊断设置</summary>
+            <div className="diagnostics-settings-body">
+              <DiagnosticsCapsEditor
+                caps={diagnosticsCaps}
+                disabled={diagnosticsState.status === 'running'}
+                onCapChange={updateDiagnosticsCap}
+              />
+              <DiagnosticOptionsPanel
+                selectedIds={selectedDiagnosticIds}
+                disabled={diagnosticsState.status === 'running'}
+                onSelectionChange={setSelectedDiagnosticIds}
+              />
+            </div>
+          </details>
+        </div>
+        <DiagnosticsProgress progress={diagnosticsProgress} />
+        <DiagnosticsCompactSummary state={diagnosticsState} parseOk={model.parse.ok} />
+      </section>
+
       <main className="workbench-shell">
         <section className="panel workbench-panel">
           <CaseLibraryPanel
@@ -985,7 +1019,10 @@ export default function AuthoringWorkbenchScreen() {
           ) : (
             <div
               className="workbench-board"
-              style={{ '--workbench-board-width': parsedPuzzle.board.width } as CSSProperties}
+              style={{
+                '--workbench-board-width': parsedPuzzle.board.width,
+                '--workbench-board-max-size': `${(parsedPuzzle.board.width * 74) + ((parsedPuzzle.board.width - 1) * 7)}px`,
+              } as CSSProperties}
             >
               {model.boardCells.map((cell) => (
                 <button
@@ -1030,37 +1067,13 @@ export default function AuthoringWorkbenchScreen() {
           />
         </section>
 
-        <aside className="panel workbench-panel">
+        <aside className="panel workbench-panel rule-editor-panel">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">Diagnostics</span>
-              <h2>检查</h2>
+              <span className="eyebrow">Rules</span>
+              <h2>规则编辑</h2>
             </div>
-            <button
-              className="small-button"
-              type="button"
-              onClick={runDiagnostics}
-            >
-              {diagnosticsState.status === 'running' ? '取消诊断' : '运行诊断'}
-            </button>
           </div>
-          <WorkbenchStatus
-            puzzle={parsedPuzzle}
-            draft={draft}
-            localState={selectedLocalCase?.state}
-          />
-          <DiagnosticsCapsEditor
-            caps={diagnosticsCaps}
-            disabled={diagnosticsState.status === 'running'}
-            onCapChange={updateDiagnosticsCap}
-          />
-          <DiagnosticOptionsPanel
-            selectedIds={selectedDiagnosticIds}
-            disabled={diagnosticsState.status === 'running'}
-            onSelectionChange={setSelectedDiagnosticIds}
-          />
-          <DiagnosticsProgress progress={diagnosticsProgress} />
-          <DiagnosticsSummary state={diagnosticsState} parseOk={model.parse.ok} />
           <RuleExpressionBuilder
             drafts={model.ruleBuilderDrafts}
             selectedRuleId={selectedRuleId}
@@ -1647,55 +1660,56 @@ function RuleExpressionBuilder({
                 {draft.support !== 'editable' ? (
                   <span className="rule-builder-support readonly">暂不能编辑这种定则</span>
                 ) : null}
+                <div className="rule-builder-actions" aria-label={`${draft.id} rule actions`}>
+                  <button
+                    type="button"
+                    title="编辑"
+                    aria-label={`Edit ${draft.id}`}
+                    disabled={draft.support !== 'editable'}
+                    onClick={() => onEditRule(draft.id)}
+                  >
+                    <Pencil size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="上移"
+                    aria-label={`Move ${draft.id} up`}
+                    disabled={index === 0}
+                    onClick={() => onMoveRule(draft.id, -1)}
+                  >
+                    <ArrowUp size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="下移"
+                    aria-label={`Move ${draft.id} down`}
+                    disabled={index === drafts.length - 1}
+                    onClick={() => onMoveRule(draft.id, 1)}
+                  >
+                    <ArrowDown size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="复制"
+                    aria-label={`Duplicate ${draft.id}`}
+                    onClick={() => onDuplicateRule(draft.id)}
+                  >
+                    <Copy size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    title="删除"
+                    aria-label={`Remove ${draft.id}`}
+                    onClick={() => onRemoveRule(draft.id)}
+                  >
+                    <Trash2 size={14} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
-              <div className="rule-builder-actions" aria-label={`${draft.id} rule actions`}>
-                <button
-                  type="button"
-                  title="编辑"
-                  aria-label={`Edit ${draft.id}`}
-                  disabled={draft.support !== 'editable'}
-                  onClick={() => onEditRule(draft.id)}
-                >
-                  编辑
-                </button>
-                <button
-                  type="button"
-                  title="上移"
-                  aria-label={`Move ${draft.id} up`}
-                  disabled={index === 0}
-                  onClick={() => onMoveRule(draft.id, -1)}
-                >
-                  <ArrowUp size={14} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  title="下移"
-                  aria-label={`Move ${draft.id} down`}
-                  disabled={index === drafts.length - 1}
-                  onClick={() => onMoveRule(draft.id, 1)}
-                >
-                  <ArrowDown size={14} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  title="复制"
-                  aria-label={`Duplicate ${draft.id}`}
-                  onClick={() => onDuplicateRule(draft.id)}
-                >
-                  <Copy size={14} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  title="删除"
-                  aria-label={`Remove ${draft.id}`}
-                  onClick={() => onRemoveRule(draft.id)}
-                >
-                  <Trash2 size={14} aria-hidden="true" />
-                </button>
+              <div className="rule-builder-copy-row">
+                <span className="rule-builder-family">{ruleBuilderFamilyLabel(draft.family)}</span>
+                <strong>{draft.generatedText.flavor}</strong>
               </div>
-              <span className="rule-builder-family">{ruleBuilderFamilyLabel(draft.family)}</span>
-              <strong>{draft.generatedText.title}</strong>
-              <p>{draft.generatedText.flavor}</p>
               {draft.generatedText.warnings.length === 0 ? null : (
                 <ul className="rule-builder-warnings">
                   {draft.generatedText.warnings.map((warning) => (
@@ -2771,7 +2785,7 @@ function DiagnosticsProgress({ progress }: { readonly progress: WorkbenchDiagnos
   )
 }
 
-function DiagnosticsSummary({
+function DiagnosticsCompactSummary({
   state,
   parseOk,
 }: {
@@ -2779,26 +2793,24 @@ function DiagnosticsSummary({
   readonly parseOk: boolean
 }) {
   const report = diagnosticsReportForState(state)
-  if (report === undefined) {
-    return (
-      <section className="workbench-section">
-        <h3>诊断</h3>
-        <DiagnosticsStateNotice state={state} parseOk={parseOk} />
-      </section>
-    )
-  }
 
   return (
-    <section className="workbench-section">
-      <h3>诊断 · {diagnosticsStatusText(report.status)}</h3>
+    <div className="diagnostics-compact-summary">
       <DiagnosticsStateNotice state={state} parseOk={parseOk} />
       <DiagnosticsOverview overview={createWorkbenchDiagnosticsOverview(report)} />
-      <div className="diagnostics-group-list">
-        {createWorkbenchDiagnosticsGroupDetails(report).map((group) => (
-          <DiagnosticsGroupDetailCard key={group.id} group={group} />
-        ))}
-      </div>
-    </section>
+      {report === undefined ? null : (
+        <details className="diagnostics-result-popover">
+          <summary className="small-button">诊断结果</summary>
+          <div className="diagnostics-result-body">
+            <div className="diagnostics-group-list">
+              {createWorkbenchDiagnosticsGroupDetails(report).map((group) => (
+                <DiagnosticsGroupDetailCard key={group.id} group={group} />
+              ))}
+            </div>
+          </div>
+        </details>
+      )}
+    </div>
   )
 }
 
@@ -2922,25 +2934,6 @@ function diagnosticsStateNotice(
   }
 }
 
-function diagnosticsStatusText(status: AuthoringDraftDiagnosticsReport['status']): string {
-  switch (status) {
-    case 'invalid-draft':
-      return '草稿无效'
-    case 'valid-unsatisfiable':
-      return '不可满足'
-    case 'valid-not-unique':
-      return '未唯一'
-    case 'valid-not-human-explainable':
-      return '证明不足'
-    case 'valid-degenerate':
-      return '退化'
-    case 'valid-review-needed':
-      return '需复核'
-    case 'valid-ready-for-private-review':
-      return '可进入私下复核'
-  }
-}
-
 function sourceLabel(source: WorkbenchCaseSource): string {
   switch (source) {
     case 'shipped':
@@ -3043,7 +3036,7 @@ function kindLabel(kind: CellKind, objectTypes: readonly WorkbenchObjectType[] =
 
   switch (kind) {
     case 'empty':
-      return '无访客'
+      return '空地'
     case 'guest':
       return '异常区域'
     case 'bottle':

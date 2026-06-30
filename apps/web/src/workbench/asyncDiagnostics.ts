@@ -4,6 +4,7 @@ import type { WorkbenchDiagnosticsCaps } from './model'
 import { evaluateWorkbenchDiagnostics } from './model'
 import type { WorkbenchDraftState } from '@room-axioms/authoring/drafts'
 import type { PuzzleDefinition } from '@room-axioms/domain'
+import type { DiagnosticsWorkerResponse } from './diagnosticsWorker'
 
 export type WorkbenchDiagnosticOptionId =
   | 'can-solve'
@@ -37,8 +38,24 @@ export interface RunSelectedWorkbenchDiagnosticsInput {
   readonly comparisonPuzzles: readonly PuzzleDefinition[]
   readonly signal: AbortSignal
   readonly onProgress?: (progress: WorkbenchDiagnosticProgress) => void
-  readonly evaluate?: typeof evaluateWorkbenchDiagnostics
+  readonly evaluate?: EvaluateWorkbenchDiagnostics
 }
+
+type EvaluateWorkbenchDiagnostics = (
+  draft: WorkbenchDraftState,
+  selectedCaseId: string,
+  caps: WorkbenchDiagnosticsCaps,
+  comparisonPuzzles: readonly PuzzleDefinition[],
+) => AuthoringDraftDiagnosticsReport | undefined | Promise<AuthoringDraftDiagnosticsReport | undefined>
+
+type CoreDiagnosticsResult =
+  | {
+      readonly status: 'completed'
+      readonly report: AuthoringDraftDiagnosticsReport | undefined
+    }
+  | {
+      readonly status: 'cancelled'
+    }
 
 export type RunSelectedWorkbenchDiagnosticsResult =
   | {
@@ -115,7 +132,6 @@ export async function runSelectedWorkbenchDiagnostics(
 ): Promise<RunSelectedWorkbenchDiagnosticsResult> {
   const selectedGroups = selectedGroupIds(input.selectedIds)
   const totalSteps = 2 + selectedGroups.length
-  const evaluate = input.evaluate ?? evaluateWorkbenchDiagnostics
   let completedSteps = 0
 
   input.onProgress?.({
@@ -131,7 +147,9 @@ export async function runSelectedWorkbenchDiagnostics(
     totalSteps,
     currentLabel: '运行已选择的核心检查',
   })
-  const fullReport = evaluate(input.draft, input.selectedCaseId, input.caps, input.comparisonPuzzles)
+  const coreResult = await evaluateDiagnosticsCore(input)
+  if (coreResult.status === 'cancelled') return { status: 'cancelled' }
+  const fullReport = coreResult.report
   completedSteps += 1
   await yieldToBrowser()
   if (input.signal.aborted) {
@@ -222,6 +240,88 @@ function diagnosticGroupLabel(groupId: AuthoringDiagnosticsGroupId): string {
     case 'performance':
       return '检查耗时和上限'
   }
+}
+
+async function evaluateDiagnosticsCore(
+  input: RunSelectedWorkbenchDiagnosticsInput,
+): Promise<CoreDiagnosticsResult> {
+  if (input.evaluate !== undefined) {
+    const report = await input.evaluate(input.draft, input.selectedCaseId, input.caps, input.comparisonPuzzles)
+    return input.signal.aborted ? { status: 'cancelled' } : { status: 'completed', report }
+  }
+
+  if (typeof Worker === 'undefined') {
+    const report = evaluateWorkbenchDiagnostics(
+      input.draft,
+      input.selectedCaseId,
+      input.caps,
+      input.comparisonPuzzles,
+    )
+    return input.signal.aborted ? { status: 'cancelled' } : { status: 'completed', report }
+  }
+
+  return evaluateDiagnosticsInWorker(input)
+}
+
+function evaluateDiagnosticsInWorker(
+  input: RunSelectedWorkbenchDiagnosticsInput,
+): Promise<CoreDiagnosticsResult> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./diagnosticsWorker.ts', import.meta.url), { type: 'module' })
+    const requestId = Date.now()
+    let settled = false
+
+    const cleanup = () => {
+      input.signal.removeEventListener('abort', onAbort)
+      worker.removeEventListener('message', onMessage)
+      worker.removeEventListener('error', onError)
+      worker.terminate()
+    }
+
+    const settle = (result: CoreDiagnosticsResult) => {
+      if (settled) return
+      settled = true
+      cleanup()
+      resolve(result)
+    }
+
+    function onAbort(): void {
+      settle({ status: 'cancelled' })
+    }
+
+    function onMessage(event: MessageEvent<DiagnosticsWorkerResponse>): void {
+      const response = event.data
+      if (response.requestId !== requestId) return
+      if (!response.ok) {
+        cleanup()
+        reject(new Error(response.message))
+        return
+      }
+      settle({ status: 'completed', report: response.report })
+    }
+
+    function onError(event: ErrorEvent): void {
+      cleanup()
+      reject(new Error(event.message || 'Diagnostics worker failed.'))
+    }
+
+    if (input.signal.aborted) {
+      worker.terminate()
+      resolve({ status: 'cancelled' })
+      return
+    }
+
+    input.signal.addEventListener('abort', onAbort, { once: true })
+    worker.addEventListener('message', onMessage)
+    worker.addEventListener('error', onError)
+    worker.postMessage({
+      requestId,
+      draft: input.draft,
+      selectedCaseId: input.selectedCaseId,
+      caps: input.caps,
+      comparisonPuzzles: input.comparisonPuzzles,
+    })
+  })
 }
 
 function yieldToBrowser(): Promise<void> {

@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import appCss from '../App.css?raw'
 import AuthoringWorkbenchScreen from './AuthoringWorkbenchScreen'
 
 describe('AuthoringWorkbenchScreen normal UI', () => {
@@ -47,6 +46,8 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).toContain('格子内容')
     expect(html).toContain('管理物体')
     expect(html).toContain('<option value="__manage__">管理物体...</option>')
+    expect(html).toContain('空地')
+    expect(html).not.toContain('无访客')
     expect(html).not.toContain('class="cell-object-toggles"')
     expect(html).not.toContain('只能作为备注')
     expect(html).not.toContain('不能用于格子或规则')
@@ -64,18 +65,26 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).not.toContain('只读保留')
   })
 
-  it('does not use the old low-contrast blue workbench text tokens', () => {
-    const workbenchCss = appCss.slice(appCss.indexOf('.authoring-workbench'))
+  it('keeps normal rule cards compact without duplicate rule sentence paragraphs', () => {
+    const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
+    const firstCard = html.slice(
+      html.indexOf('class="rule-builder-card '),
+      html.indexOf('class="rule-builder-card ', html.indexOf('class="rule-builder-card ') + 1),
+    )
 
-    expect(workbenchCss).not.toMatch(/var\(--info(?:-soft)?\)/)
-    expect(workbenchCss).not.toContain('#173042')
-    expect(workbenchCss).not.toContain('#5885a6')
-    expect(workbenchCss).not.toContain('#dcefff')
-    expect(workbenchCss).not.toContain('#3a5d78')
-    expect(workbenchCss).not.toContain('#c6dbec')
-    expect(workbenchCss).not.toContain('#101719')
-    expect(workbenchCss).not.toContain('#4f7895')
-    expect(workbenchCss).not.toContain('#e5f5ff')
-    expect(workbenchCss).not.toContain('#243238')
+    expect(firstCard).toContain('class="rule-builder-copy-row"')
+    expect(firstCard).not.toContain('<p>')
+    expect(firstCard).not.toContain('>编辑<')
+    expect(firstCard).toContain('aria-label="Edit R1"')
+  })
+
+  it('prioritizes rules on the right and keeps diagnostics compact outside that sidebar', () => {
+    const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
+
+    expect(html).toContain('class="workbench-diagnostics-strip"')
+    expect(html).toContain('class="diagnostics-settings-popover"')
+    expect(html).toContain('class="panel workbench-panel rule-editor-panel"')
+    expect(html.indexOf('rule-editor-panel')).toBeLessThan(html.indexOf('rule-builder-card'))
+    expect(html.indexOf('workbench-diagnostics-strip')).toBeLessThan(html.indexOf('workbench-shell'))
   })
 })

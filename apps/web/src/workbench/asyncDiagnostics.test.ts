@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { AuthoringDraftDiagnosticsReport } from '@room-axioms/authoring/diagnostics'
 
@@ -16,6 +16,10 @@ import {
 } from './model'
 
 describe('workbench async diagnostics', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('defines plain-language selectable checks without internal primary labels', () => {
     expect(WORKBENCH_DIAGNOSTIC_OPTIONS.map((option) => option.label)).toEqual([
       '能不能成立',
@@ -95,7 +99,65 @@ describe('workbench async diagnostics', () => {
     if (result.status !== 'cancelled') throw new Error('Expected cancelled diagnostics.')
     expect(result.report?.groups.length).toBeGreaterThan(0)
   })
+
+  it('runs browser diagnostics in a cancellable worker instead of a main-thread core block', async () => {
+    const workers: FakeDiagnosticsWorker[] = []
+    vi.stubGlobal('Worker', class extends FakeDiagnosticsWorker {
+      constructor(url: URL, options?: WorkerOptions) {
+        super(url, options)
+        workers.push(this)
+      }
+    })
+
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById('case-004'))
+    const controller = new AbortController()
+    const progressLabels: string[] = []
+    const resultPromise = runSelectedWorkbenchDiagnostics({
+      draft,
+      selectedCaseId: 'case-004',
+      selectedIds: DEFAULT_WORKBENCH_DIAGNOSTIC_IDS,
+      caps: defaultWorkbenchDiagnosticsCaps(),
+      comparisonPuzzles: [],
+      signal: controller.signal,
+      onProgress: (progress) => progressLabels.push(progress.currentLabel),
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(workers).toHaveLength(1)
+    expect(workers[0]?.postedMessage).toMatchObject({
+      selectedCaseId: 'case-004',
+    })
+
+    controller.abort()
+    const result = await resultPromise
+
+    expect(result.status).toBe('cancelled')
+    expect(workers[0]?.terminated).toBe(true)
+    expect(progressLabels.length).toBeGreaterThanOrEqual(2)
+  })
 })
+
+class FakeDiagnosticsWorker extends EventTarget {
+  readonly url: URL
+  readonly options: WorkerOptions | undefined
+  postedMessage: unknown
+  terminated = false
+
+  constructor(url: URL, options?: WorkerOptions) {
+    super()
+    this.url = url
+    this.options = options
+  }
+
+  postMessage(message: unknown): void {
+    this.postedMessage = message
+  }
+
+  terminate(): void {
+    this.terminated = true
+  }
+}
 
 function syntheticReport(): AuthoringDraftDiagnosticsReport {
   return {
