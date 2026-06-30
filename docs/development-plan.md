@@ -54,7 +54,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 
 ## Current Execution State
 
-- Recently checked: Phase 37 - Authoring Workbench Human UX Repair, accepted after repair, final commit `71547ab`.
+- Recently checked: Phase 37 - Authoring Workbench Human UX Repair, accepted after final information-architecture repair, final commit `2c72fc6`.
 - Current executor result: Phase 37 complete.
 - Active guide: none.
 - Executor budget: none.
@@ -109,7 +109,7 @@ Planner/checker rounds are not counted in the executor budgets below. Most phase
 - Planned Phase 36 direction: improve the private workbench's day-to-day usability for manual puzzle design: local draft/published case library, direct case list, create/save/delete/publish/retract, simplified UI without import/debug panels, readable contrast, and selectable asynchronous diagnostics with progress/cancel.
 - Phase 36 result: accepted. The private workbench now has a left case library, local draft/published cases, create/save/delete/publish/retract, simplified normal UI, contrast repairs, selectable plain-language diagnostics, asynchronous progress/cancel/stale-response handling, and a methodology note tying Minesweeper generation ideas to modular validation/no-guess/difficulty checks without adding broad random generation.
 - Planned Phase 37 direction: apply the user's hands-on editor feedback by repairing contrast, aligning the workbench layout, exposing explicit map actions, simplifying case metadata, adding object dropdown/manager controls, consolidating to one editable rule-card list, moving rule creation/editing into a dialog, previewing rule scope on the board, and hiding internal diagnostic/schema/proof copy from normal authoring.
-- Phase 37 result: accepted after repair. The workbench now uses high-contrast local color tokens instead of low-contrast blue foregrounds, exposes explicit map actions, simplifies case metadata, provides object dropdown/manager controls, uses the Figure-3-style rule-card list as the single normal rule list, opens dialogs for rule creation/editing, previews rule scope where materializable, and hides or renames low-level diagnostic internals. Remaining blocker is out-of-scope semantics: arbitrary managed objects still require a domain/schema/solver/proof migration before they can fully participate in rules.
+- Phase 37 result: accepted after final information-architecture repair. The workbench now uses high-contrast local color tokens instead of low-contrast blue foregrounds, runs diagnostics through a cancellable worker path, keeps diagnostics in a compact top strip, moves map actions into the Library/Board headers, moves case title/difficulty into the top title area, removes the old metadata/debug panels, provides object dropdown/manager controls, uses the Figure-3-style rule-card list as the single normal rule list, opens dialogs for rule creation/editing, previews rule scope where materializable, and hides or renames low-level diagnostic internals. Remaining blocker is out-of-scope semantics: arbitrary managed objects still require a domain/schema/solver/proof migration before they can fully participate in rules.
 - Dispatch target: executor thread `019ef271-256c-7be2-9663-e658e2378564` when the next phase is chosen.
 
 ## Candidate Future Directions
