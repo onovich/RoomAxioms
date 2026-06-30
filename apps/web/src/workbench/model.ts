@@ -354,7 +354,7 @@ export function createWorkbenchDiagnosticsOverview(
       },
       {
         id: 'candidate-layouts',
-        label: '候选布局',
+        label: '可能答案范围',
         value: initialLayouts === undefined
           ? '未评估'
           : initialLayouts.greaterThan === undefined
@@ -368,12 +368,14 @@ export function createWorkbenchDiagnosticsOverview(
               ? 'pass'
               : 'fail',
         detail: initialLayouts === undefined
-          ? '草稿需要先通过 schema。'
-          : `节点 ${initialLayouts.stats.nodeCount}，传播 ${initialLayouts.stats.propagationCount}`,
+          ? '草稿需要先通过结构检查。'
+          : initialLayouts.stats.truncated || initialLayouts.greaterThan !== undefined
+            ? '检查达到上限，结果只说明范围仍然偏大。'
+            : '数量越小，说明规则和初始信息越能收束答案。',
       },
       {
         id: 'proof',
-        label: '人类证明',
+        label: '不靠猜推理',
         value: proof === undefined ? '未评估' : `${proof.waveCount} 波 / ${proof.deductionCount} 步`,
         tone: proof === undefined
           ? 'info'
@@ -381,8 +383,10 @@ export function createWorkbenchDiagnosticsOverview(
             ? 'pass'
             : 'fail',
         detail: proof === undefined
-          ? '草稿需要先通过 schema。'
-          : `${proof.techniqueIds.length} 类技术；最终访客 ${proof.finalGuestCells?.join(', ') ?? '未定'}`,
+          ? '草稿需要先通过结构检查。'
+          : proof.noGuess && proof.humanExplainable
+            ? `${proof.techniqueIds.length} 类推理材料参与。`
+            : '推理链还没有完整闭合。',
       },
       {
         id: 'quality',
@@ -390,7 +394,7 @@ export function createWorkbenchDiagnosticsOverview(
         value: quality === undefined ? '未评估' : gateLabel(quality.degeneracy.status),
         tone: quality === undefined ? 'info' : gateTone(quality.degeneracy.status),
         detail: quality === undefined
-          ? '草稿需要先通过 schema。'
+          ? '草稿需要先通过结构检查。'
           : `${quality.effectiveBoard.irrelevantCells.length} 个无效格；${quality.ruleContribution.results.filter((result) => result.status === 'redundant').length} 条冗余嫌疑`,
       },
       {
@@ -400,7 +404,7 @@ export function createWorkbenchDiagnosticsOverview(
         tone: cloneStatus === undefined ? 'info' : cloneRiskTone(cloneStatus),
         detail: cloneStatus === undefined
           ? '本次诊断未提供对照谜题。'
-          : `${report.cloneRisk?.hardFailureCount ?? 0} 个硬失败，${report.cloneRisk?.reviewerBlockingCount ?? 0} 个复核阻断`,
+          : `${report.cloneRisk?.hardFailureCount ?? 0} 个明显重复风险，${report.cloneRisk?.reviewerBlockingCount ?? 0} 个需要复核`,
       },
       {
         id: 'difficulty',
@@ -408,7 +412,7 @@ export function createWorkbenchDiagnosticsOverview(
         value: difficulty === undefined ? '未评估' : difficultyBucketLabel(difficulty.recommendedBucket),
         tone: difficulty === undefined ? 'info' : 'warning',
         detail: difficulty === undefined
-          ? '草稿需要先通过 schema。'
+          ? '草稿需要先通过结构检查。'
           : `未校准；${difficulty.proofWaveCount} 波，${difficulty.deductionCount} 步，${difficulty.materialRuleFamilyCount} 个有效规则族`,
       },
       {
@@ -420,12 +424,12 @@ export function createWorkbenchDiagnosticsOverview(
       },
       {
         id: 'performance',
-        label: '上限/截断',
-        value: report.performance.truncated ? `${report.performance.capWarnings.length} 项` : '清晰',
+        label: '检查是否完整',
+        value: report.performance.truncated ? `${report.performance.capWarnings.length} 项受限` : '完整',
         tone: report.performance.truncated ? 'warning' : 'pass',
         detail: report.performance.truncated
-          ? report.performance.capWarnings.join(', ')
-          : `caps ${validation.caps.maxNodes}/${validation.caps.maxModels}/${validation.caps.maxGuestLayouts}`,
+          ? '有检查达到上限，请缩小范围或提高高级诊断范围。'
+          : '没有触发上限。',
       },
     ],
     capWarnings: report.performance.capWarnings,

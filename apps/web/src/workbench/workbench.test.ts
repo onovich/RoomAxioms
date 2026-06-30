@@ -651,11 +651,15 @@ describe('authoring workbench shell model', () => {
       'performance',
     ])
     expect(overview?.metrics.find((metric) => metric.id === 'proof')).toMatchObject({
-      label: '人类证明',
+      label: '不靠猜推理',
     })
     expect(overview?.metrics.find((metric) => metric.id === 'difficulty')).toMatchObject({
       tone: 'warning',
     })
+    const plainDetails = overview?.metrics.map((metric) => metric.detail ?? '').join('\n') ?? ''
+    expect(plainDetails).not.toContain('最终访客')
+    expect(plainDetails).not.toContain('caps ')
+    expect(plainDetails).not.toContain('节点 ')
   }, 30_000)
 
   it('surfaces capped candidate counts and truncation warnings in the diagnostics overview', () => {
@@ -688,9 +692,9 @@ describe('authoring workbench shell model', () => {
       tone: 'warning',
     })
     expect(overview?.metrics.find((metric) => metric.id === 'performance')).toMatchObject({
-      value: '2 项',
+      value: '2 项受限',
       tone: 'warning',
-      detail: 'initial-layout-count-truncated, initial-layout-count-capped',
+      detail: '有检查达到上限，请缩小范围或提高高级诊断范围。',
     })
     expect(overview?.capWarnings).toEqual(['initial-layout-count-truncated', 'initial-layout-count-capped'])
   }, 30_000)

@@ -2822,6 +2822,18 @@ h3 {
   line-height: 1.45;
 }
 
+.diagnostics-technical-details {
+  margin-top: 5px;
+}
+
+.diagnostics-technical-details summary {
+  color: #e3d4b5;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
 .diagnostics-refs {
   display: flex;
   flex-wrap: wrap;

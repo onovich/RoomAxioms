@@ -2817,22 +2817,25 @@ function DiagnosticsGroupDetailCard({
         {group.items.map((item) => (
           <li key={`${group.id}:${item.code}:${item.message}`} className={`diagnostics-item ${item.severity}`}>
             <div className="diagnostics-item-copy">
-              <strong>{item.code}</strong>
               <span>{item.message}</span>
             </div>
             {item.refs.length === 0 && item.hiddenRefCount === 0 ? null : (
-              <div className="diagnostics-refs" aria-label={`${item.code} refs`}>
-                {item.refs.map((ref) => (
-                  <code key={`${item.code}:${ref}`}>{ref}</code>
-                ))}
-                {item.hiddenRefCount === 0 ? null : <em>+{item.hiddenRefCount}</em>}
-              </div>
+              <details className="diagnostics-technical-details">
+                <summary>技术细节</summary>
+                <div className="diagnostics-refs" aria-label={`${item.code} refs`}>
+                  <code>{item.code}</code>
+                  {item.refs.map((ref) => (
+                    <code key={`${item.code}:${ref}`}>{ref}</code>
+                  ))}
+                  {item.hiddenRefCount === 0 ? null : <em>+{item.hiddenRefCount}</em>}
+                </div>
+              </details>
             )}
           </li>
         ))}
       </ul>
       {group.hiddenItemCount === 0 ? null : (
-        <p className="diagnostics-overflow">还有 {group.hiddenItemCount} 条诊断未显示；请导出 JSON 或运行 CLI 查看完整报告。</p>
+        <p className="diagnostics-overflow">还有 {group.hiddenItemCount} 条诊断未显示；可在开发者维护区查看完整结构。</p>
       )}
     </article>
   )
