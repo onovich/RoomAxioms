@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
+import appCss from '../App.css?raw'
 import AuthoringWorkbenchScreen from './AuthoringWorkbenchScreen'
 
 describe('AuthoringWorkbenchScreen normal UI', () => {
@@ -59,5 +60,22 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).toContain('class="rule-builder-card ')
     expect(html).not.toContain('class="workbench-rule-card')
     expect(html).not.toContain('Rule builder authoring coverage')
+    expect(html).not.toContain('结构化编辑')
+    expect(html).not.toContain('只读保留')
+  })
+
+  it('does not use the old low-contrast blue workbench text tokens', () => {
+    const workbenchCss = appCss.slice(appCss.indexOf('.authoring-workbench'))
+
+    expect(workbenchCss).not.toMatch(/var\(--info(?:-soft)?\)/)
+    expect(workbenchCss).not.toContain('#173042')
+    expect(workbenchCss).not.toContain('#5885a6')
+    expect(workbenchCss).not.toContain('#dcefff')
+    expect(workbenchCss).not.toContain('#3a5d78')
+    expect(workbenchCss).not.toContain('#c6dbec')
+    expect(workbenchCss).not.toContain('#101719')
+    expect(workbenchCss).not.toContain('#4f7895')
+    expect(workbenchCss).not.toContain('#e5f5ff')
+    expect(workbenchCss).not.toContain('#243238')
   })
 })

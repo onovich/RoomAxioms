@@ -10,6 +10,10 @@ Phase 37 repaired the private authoring workbench toward a human puzzle-design e
 
 No shipped puzzle content was promoted, removed, or changed. Normal player routes remain untouched.
 
+Checker repair update: the residual normal rule-card support labels `结构化编辑` and `只读保留` were removed from the rendered workbench UI. Editable rules no longer show a support badge, because the edit button already communicates that action. Unsupported legacy rules use the plain limitation copy `暂不能编辑这种定则`.
+
+Contrast repair update: the normal workbench CSS was re-audited after checker feedback. The workbench no longer uses the old blue `info` tokens or the known low-contrast blue foreground values on normal workbench surfaces.
+
 ## Final Commits
 
 - `6f94651` docs: plan Phase 37 workbench repair
@@ -18,6 +22,7 @@ No shipped puzzle content was promoted, removed, or changed. Normal player route
 - `9fe2525` feat: consolidate workbench rule editing
 - `cdd27f4` fix: simplify workbench diagnostics copy
 - final docs commit: this report update
+- final checker repair commit: this report update removes residual internal rule-card labels
 
 ## Layout And Contrast
 
@@ -25,6 +30,17 @@ No shipped puzzle content was promoted, removed, or changed. Normal player route
 - Side columns are fixed tool-width ranges and the board column gets the remaining space.
 - Case-library selected states, disabled buttons, and diagnostic details use higher-contrast colors instead of blue-on-gray surfaces.
 - The layout remains dense and tool-like.
+- Re-audited normal workbench surfaces include object labels in cells, case library notes/items/statuses, copy-as-draft status copy, selected/revealed cells, rule-card labels/actions/selected states, metadata and rule-edit labels, diagnostic status/progress/overview/groups/details, and legacy rule-card fallback styles.
+- Replaced workbench blue foreground/status usage with workbench-local tokens:
+  - `--workbench-ink: #f4efe3`
+  - `--workbench-muted: #c9c7bc`
+  - `--workbench-faint: #9da49f`
+  - `--workbench-note: #f0d9a2`
+  - `--workbench-note-soft: #332b1d`
+  - `--workbench-note-border: #9f7c3a`
+  - `--workbench-selected: #2f3324`
+  - `--workbench-selected-border: #b8c27a`
+- Removed normal workbench use of old low-contrast blue tokens and values including `var(--info)`, `var(--info-soft)`, `#173042`, `#5885a6`, `#dcefff`, `#3a5d78`, `#c6dbec`, `#101719`, `#4f7895`, `#e5f5ff`, and `#243238`.
 
 ## Map Actions
 
@@ -78,6 +94,10 @@ Recommended follow-up: a focused object-schema/rule-target migration phase that 
 - `新建规则` opens a dialog with supported templates.
 - Edit opens a dialog reusing the existing structured rule controls and rule-copy editor.
 - Unsupported legacy forms are described plainly and do not expose raw generated-region/schema/proof text in the normal list.
+- Editable rule cards do not show an internal support badge.
+- Unsupported rule cards use `暂不能编辑这种定则` instead of `只读保留`.
+- Focused tests assert the normal rendered workbench HTML does not contain `结构化编辑` or `只读保留`.
+- Focused tests assert the `.authoring-workbench` CSS section does not use the old low-contrast blue workbench tokens or known blue foreground/status colors.
 
 ## Rule Scope Preview
 
@@ -119,18 +139,26 @@ Focused validation:
 - `pnpm --filter @room-axioms/web test -- src/workbench/AuthoringWorkbenchScreen.test.tsx`: PASS
 - `pnpm --filter @room-axioms/web test -- src/workbench/workbench.test.ts src/workbench/AuthoringWorkbenchScreen.test.tsx`: PASS
 - `git diff --check`: PASS
+- Checker repair focused rerun `pnpm --filter @room-axioms/web test src/workbench/AuthoringWorkbenchScreen.test.tsx`: PASS, 1 file / 6 tests.
+- Checker repair full `Validate.cmd`: PASS; lint PASS, typecheck PASS, tests PASS including authoring 13 files / 122 tests and web 24 files / 158 tests, build PASS.
 
 Smoke:
 
 - `StartDevServer.cmd`: PASS
 - `Smoke.cmd`: PASS
 - `StopDevServer.cmd`: PASS
+- Checker repair smoke rerun after contrast repair:
+  - `StartDevServer.cmd`: PASS, local dev server responded at `http://127.0.0.1:5173/RoomAxioms/`.
+  - `Smoke.cmd`: PASS.
+  - `StopDevServer.cmd`: PASS.
 
 Browser automation:
 
 - Attempted Playwright DOM smoke against `http://127.0.0.1:5173/RoomAxioms/#authoring-workbench`.
 - Browser automation unavailable because the local Playwright browser executable is not installed.
 - Deterministic fallback used: React static DOM tests, project smoke HTTP checks, and boundary scans.
+- Checker repair browser/screenshot attempt after contrast repair also failed for the same local environment reason: Playwright reported the Chromium headless shell executable missing under `C:\Users\Administrator\AppData\Local\ms-playwright\chromium_headless_shell-1200\...`.
+- Deterministic contrast fallback is now stronger than before: the focused workbench test imports `App.css` as raw text and asserts the `.authoring-workbench` CSS section does not use the old low-contrast blue tokens or color values.
 
 ## Boundary Scans
 

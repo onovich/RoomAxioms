@@ -1644,9 +1644,9 @@ function RuleExpressionBuilder({
                 >
                   <b>{index + 1}. {draft.id}</b>
                 </button>
-                <span className={`rule-builder-support ${draft.support}`}>
-                  {draft.support === 'editable' ? '结构化编辑' : '只读保留'}
-                </span>
+                {draft.support !== 'editable' ? (
+                  <span className="rule-builder-support readonly">暂不能编辑这种定则</span>
+                ) : null}
               </div>
               <div className="rule-builder-actions" aria-label={`${draft.id} rule actions`}>
                 <button
