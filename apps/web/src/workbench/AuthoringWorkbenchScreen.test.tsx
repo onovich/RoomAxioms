@@ -47,5 +47,17 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).toContain('管理物体')
     expect(html).toContain('<option value="__manage__">管理物体...</option>')
     expect(html).not.toContain('class="cell-object-toggles"')
+    expect(html).not.toContain('只能作为备注')
+    expect(html).not.toContain('不能用于格子或规则')
+  })
+
+  it('uses the editable rule-card list as the only normal rule list', () => {
+    const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
+
+    expect(html).toContain('新建规则')
+    expect(html).toContain('aria-label="Edit R1"')
+    expect(html).toContain('class="rule-builder-card ')
+    expect(html).not.toContain('class="workbench-rule-card')
+    expect(html).not.toContain('Rule builder authoring coverage')
   })
 })

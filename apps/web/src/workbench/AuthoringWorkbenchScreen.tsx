@@ -22,17 +22,25 @@ import {
 } from '@room-axioms/authoring/rule-builder'
 import {
   DEFAULT_OBJECT_TYPE_REGISTRY,
+  allCells,
+  lineCells,
+  neighbors,
+  rayCells,
+  regionCells,
+  sortCellIds,
   type BoardSize,
   type CellId,
   type CellKind,
   type Comparator,
   type CountComparison,
+  type CountScopeRef,
   type Direction,
   type LegacyObjectCellKind,
   type LineCountRule,
   type LocalScopeKind,
   type PuzzleDefinition,
   type RegionDefinition,
+  type RuleDefinition,
   type StaticLineScope,
   type ScopeOverlapMode,
 } from '@room-axioms/domain'
@@ -102,6 +110,11 @@ type LibraryActionStatus =
   | { readonly kind: 'idle' }
   | { readonly kind: 'info' | 'success' | 'error'; readonly message: string }
 
+type RuleDialogState =
+  | { readonly kind: 'closed' }
+  | { readonly kind: 'create'; readonly form: RuleBuilderCreateForm }
+  | { readonly kind: 'edit'; readonly ruleId: string }
+
 interface WorkbenchObjectType {
   readonly id: string
   readonly label: string
@@ -148,6 +161,7 @@ export default function AuthoringWorkbenchScreen() {
   const [diagnosticsAbortController, setDiagnosticsAbortController] = useState<AbortController | undefined>()
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
+  const [ruleDialog, setRuleDialog] = useState<RuleDialogState>({ kind: 'closed' })
   const [activeKind, setActiveKind] = useState<CellKind>('empty')
   const [objectTypes, setObjectTypes] = useState<readonly WorkbenchObjectType[]>(() => createInitialObjectTypes())
   const [objectManagerOpen, setObjectManagerOpen] = useState(false)
@@ -186,6 +200,10 @@ export default function AuthoringWorkbenchScreen() {
   const selectedRule = selectedRuleId === undefined
     ? undefined
     : model.ruleSummaries.find((rule) => rule.id === selectedRuleId)
+  const selectedRuleScopeCellSet = useMemo(
+    () => new Set(selectedRuleScopeCells(parsedPuzzle, selectedRuleId)),
+    [parsedPuzzle, selectedRuleId],
+  )
   const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
   const displayKindLabel = (kind: CellKind): string => kindLabel(kind, objectTypes)
 
@@ -239,6 +257,7 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnosticsState(createWorkbenchDiagnosticsState())
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
+    setRuleDialog({ kind: 'closed' })
     setActiveKind('empty')
     setBoardWidthText(puzzle === undefined ? '' : String(puzzle.board.width))
     setBoardHeightText(puzzle === undefined ? '' : String(puzzle.board.height))
@@ -392,6 +411,7 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
+    setRuleDialog({ kind: 'closed' })
     setActiveKind('empty')
     setBoardWidthText('')
     setBoardHeightText('')
@@ -498,6 +518,31 @@ export default function AuthoringWorkbenchScreen() {
     if (rule !== undefined) selectRule(rule)
   }
 
+  function openCreateRuleDialog(): void {
+    setRuleDialog({ kind: 'create', form: RULE_CREATE_FORMS[0] })
+    setRuleBuilderPatchStatus({ kind: 'idle' })
+  }
+
+  function updateCreateRuleForm(form: RuleBuilderCreateForm): void {
+    setRuleDialog({ kind: 'create', form })
+  }
+
+  function openEditRuleDialog(ruleId: string): void {
+    selectRuleById(ruleId)
+    setRuleDialog({ kind: 'edit', ruleId })
+    setRuleBuilderPatchStatus({ kind: 'idle' })
+  }
+
+  function closeRuleDialog(): void {
+    setRuleDialog({ kind: 'closed' })
+  }
+
+  function createBuilderRuleFromDialog(): void {
+    if (ruleDialog.kind !== 'create') return
+    createBuilderRule(ruleDialog.form)
+    setRuleDialog({ kind: 'closed' })
+  }
+
   function renameWorkbenchObjectType(objectId: string, label: string): void {
     setObjectTypes((current) => current.map((objectType) => (
       objectType.id === objectId
@@ -521,7 +566,7 @@ export default function AuthoringWorkbenchScreen() {
     setNewObjectLabelText('')
     setPatchStatus({
       kind: 'applied',
-      message: `${label} 已加入物体清单；当前版本只作为备注，不能放入格子或规则。`,
+      message: `${label} 已加入规则对象库；后续规则编译会以对象定义为来源。`,
     })
   }
 
@@ -951,6 +996,7 @@ export default function AuthoringWorkbenchScreen() {
                     cell.initiallyRevealed ? 'revealed' : '',
                     cell.guestTarget ? 'guest-target' : '',
                     selectedCellId === cell.id ? 'selected' : '',
+                    selectedRuleScopeCellSet.has(cell.id) ? 'rule-scope-preview' : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => selectBoardCell(cell)}
                   aria-pressed={selectedCellId === cell.id}
@@ -1015,41 +1061,34 @@ export default function AuthoringWorkbenchScreen() {
           />
           <DiagnosticsProgress progress={diagnosticsProgress} />
           <DiagnosticsSummary state={diagnosticsState} parseOk={model.parse.ok} />
-          <section className="workbench-section">
-            <h3>规则</h3>
-            <div className="workbench-rule-list">
-              {model.ruleSummaries.map((rule) => (
-                <RuleSummary
-                  key={rule.id}
-                  rule={rule}
-                  selected={selectedRuleId === rule.id}
-                  onSelect={selectRule}
-                />
-              ))}
-            </div>
-          </section>
           <RuleExpressionBuilder
             drafts={model.ruleBuilderDrafts}
             selectedRuleId={selectedRuleId}
             patchStatus={ruleBuilderPatchStatus}
-            allowedKinds={parsedPuzzle?.allowedKinds ?? []}
-            regionOptions={parsedPuzzle?.regions ?? []}
             onSelectRuleId={selectRuleById}
+            onEditRule={openEditRuleDialog}
             onDuplicateRule={duplicateBuilderRule}
             onRemoveRule={removeBuilderRule}
             onMoveRule={moveBuilderRule}
-            onUpdateRule={updateBuilderRule}
-            onCreateRule={createBuilderRule}
+            onCreateRule={openCreateRuleDialog}
           />
-          <RuleCopyEditor
+          <RuleDialog
+            state={ruleDialog}
+            drafts={model.ruleBuilderDrafts}
             selectedRule={selectedRule}
             titleText={ruleTitleText}
             flavorText={ruleFlavorText}
-            patchStatus={rulePatchStatus}
-            canPatch={parsedPuzzle !== undefined && selectedRule !== undefined}
+            rulePatchStatus={rulePatchStatus}
+            ruleBuilderPatchStatus={ruleBuilderPatchStatus}
+            allowedKinds={parsedPuzzle?.allowedKinds ?? []}
+            regionOptions={parsedPuzzle?.regions ?? []}
+            onCreateFormChange={updateCreateRuleForm}
+            onCreate={createBuilderRuleFromDialog}
+            onUpdateRule={updateBuilderRule}
             onTitleChange={setRuleTitleText}
             onFlavorChange={setRuleFlavorText}
-            onApply={applyRulePresentationPatch}
+            onApplyPresentation={applyRulePresentationPatch}
+            onClose={closeRuleDialog}
           />
           <MetadataEditor
             titleText={metadataTitleText}
@@ -1401,7 +1440,7 @@ function ObjectManagerPanel({
       <div className="object-manager-heading">
         <div>
           <h3>管理物体</h3>
-          <p>当前公开规则仍只支持酒瓶、垃圾桶、镜子；自定义物体会作为备注保留，不能用于格子或规则。</p>
+          <p>这里维护的是规则对象库。物体应当可以被格子和规则共同引用；若某种对象暂时不能编译，诊断应明确指出兼容性缺口。</p>
         </div>
         <button className="small-button" type="button" onClick={onClose}>收起</button>
       </div>
@@ -1416,7 +1455,7 @@ function ObjectManagerPanel({
                 onChange={(event) => onObjectLabelChange(objectType.id, event.target.value)}
               />
             </label>
-            <span>{objectType.custom ? '仅备注' : '兼容规则'}</span>
+            <span>{objectType.custom ? '新物体' : '内置物体'}</span>
             <button
               className="small-button"
               type="button"
@@ -1426,7 +1465,7 @@ function ObjectManagerPanel({
               删除
             </button>
             {objectType.custom ? null : (
-              <small>内置物体正在被现有 schema/solver/proof 使用，只能改显示名称，不能删除。</small>
+              <small>内置物体正在被现有案例引用，可以改显示名称；删除需要先确认没有规则或格子使用它。</small>
             )}
           </article>
         ))}
@@ -1438,7 +1477,7 @@ function ObjectManagerPanel({
             type="text"
             value={newObjectLabelText}
             onChange={(event) => onNewObjectLabelChange(event.target.value)}
-            placeholder="仅作为作者备注"
+            placeholder="例如：钥匙、血迹、相机"
           />
         </label>
         <button className="small-button" type="button" onClick={onCreateObject}>
@@ -1551,76 +1590,26 @@ function overlapModeLabel(mode: ScopeOverlapMode): string {
   }
 }
 
-function RuleBuilderCoverage() {
-  const rows: readonly {
-    readonly label: string
-    readonly status: 'authorable' | 'blocked'
-    readonly detail: string
-  }[] = [
-    {
-      label: '全局、行、列、已有区域、四角、边缘、内侧数量',
-      status: 'authorable',
-      detail: '通过结构化控件创建；四角/边缘/内侧会先物化为 generated region，再交给 schema 校验。',
-    },
-    {
-      label: '局部上下左右/周围一圈/单方向邻格',
-      status: 'authorable',
-      detail: '支持存在、没有、恰好、至少、至多等数量谓词；目标和参照物都从 allowedKinds 选择。',
-    },
-    {
-      label: '视线正向/负向可见',
-      status: 'authorable',
-      detail: '通过 lineCount ray 表达；起点格和方向可编辑，至少 1 表示可见，恰好 0 表示不可见。',
-    },
-    {
-      label: 'all / 全部都是',
-      status: 'blocked',
-      detail: '当前 DSL 需要先安全展开为固定范围大小；控件阻塞该谓词，避免生成证明/求解器不一致的规则。',
-    },
-    {
-      label: '对象组、任意物件、距离、first-visible、任意两类对象相对关系',
-      status: 'blocked',
-      detail: '表达式模型可记录方向，但当前 schema/proof promotion gate 尚未完整支持，保留为一等阻塞说明。',
-    },
-  ]
-
-  return (
-    <div className="rule-builder-coverage" aria-label="Rule builder authoring coverage">
-      {rows.map((row) => (
-        <article key={row.label} className={`rule-builder-coverage-item ${row.status}`}>
-          <b>{row.label}</b>
-          <span>{row.status === 'authorable' ? '可结构化创建' : '已阻塞'}</span>
-          <p>{row.detail}</p>
-        </article>
-      ))}
-    </div>
-  )
-}
-
 function RuleExpressionBuilder({
   drafts,
   selectedRuleId,
   patchStatus,
-  allowedKinds,
-  regionOptions,
   onSelectRuleId,
+  onEditRule,
   onDuplicateRule,
   onRemoveRule,
   onMoveRule,
-  onUpdateRule,
   onCreateRule,
 }: {
   readonly drafts: readonly RuleBuilderDraft[]
   readonly selectedRuleId: string | undefined
   readonly patchStatus: DraftPatchStatus
-  readonly allowedKinds: readonly CellKind[]
-  readonly regionOptions: readonly RegionDefinition[]
   readonly onSelectRuleId: (ruleId: string) => void
+  readonly onEditRule: (ruleId: string) => void
   readonly onDuplicateRule: (ruleId: string) => void
   readonly onRemoveRule: (ruleId: string) => void
   readonly onMoveRule: (ruleId: string, direction: -1 | 1) => void
-  readonly onUpdateRule: (ruleId: string, updater: (draft: RuleBuilderDraft) => RuleBuilderDraft) => void
-  readonly onCreateRule: (form: RuleBuilderCreateForm) => void
+  readonly onCreateRule: () => void
 }) {
   const editableCount = drafts.filter((draft) => draft.support === 'editable').length
 
@@ -1628,30 +1617,15 @@ function RuleExpressionBuilder({
     <section className="workbench-section rule-expression-builder">
       <div className="rule-builder-heading">
         <div>
-          <h3>规则表达式</h3>
-          <p>从结构化控件生成中文说明；不可安全表达的形式会在这里显示阻塞原因，不要求作者手写规则 JSON。</p>
+          <h3>规则</h3>
+          <p>这一列就是当前地图的规则列表。选中规则会尽量在棋盘上预览它涉及的范围。</p>
         </div>
-        <span>{editableCount} / {drafts.length} editable</span>
+        <span>{editableCount} / {drafts.length} 可编辑</span>
       </div>
-      <div className="rule-builder-create">
-        <label>
-          新增规则
-          <select
-            defaultValue=""
-            onChange={(event) => {
-              if (event.target.value === '') return
-              onCreateRule(event.target.value as RuleBuilderCreateForm)
-              event.currentTarget.value = ''
-            }}
-          >
-            <option value="" disabled>选择结构化规则...</option>
-            {RULE_CREATE_FORMS.map((form) => (
-              <option key={form} value={form}>{ruleCreateFormLabel(form)}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <RuleBuilderCoverage />
+      <button className="primary-button rule-builder-new-button" type="button" onClick={onCreateRule}>
+        <Plus size={16} aria-hidden="true" />
+        新建规则
+      </button>
       {drafts.length === 0 ? (
         <p className="rule-builder-empty">当前草稿没有可显示的规则表达式。</p>
       ) : (
@@ -1675,6 +1649,15 @@ function RuleExpressionBuilder({
                 </span>
               </div>
               <div className="rule-builder-actions" aria-label={`${draft.id} rule actions`}>
+                <button
+                  type="button"
+                  title="编辑"
+                  aria-label={`Edit ${draft.id}`}
+                  disabled={draft.support !== 'editable'}
+                  onClick={() => onEditRule(draft.id)}
+                >
+                  编辑
+                </button>
                 <button
                   type="button"
                   title="上移"
@@ -1721,22 +1704,120 @@ function RuleExpressionBuilder({
                 </ul>
               )}
               {draft.unsupportedReason === undefined ? null : (
-                <small>{draft.unsupportedReason}</small>
+                <small>暂时不能用结构化控件编辑这种规则；请保留或删除。</small>
               )}
-              {draft.support === 'editable' && selectedRuleId === draft.id ? (
-                <RuleBuilderControls
-                  draft={draft}
-                  allowedKinds={allowedKinds}
-                  regionOptions={regionOptions}
-                  onUpdate={(updater) => onUpdateRule(draft.id, updater)}
-                />
-              ) : null}
             </div>
           ))}
         </div>
       )}
       <PatchStatus status={patchStatus} />
     </section>
+  )
+}
+
+function RuleDialog({
+  state,
+  drafts,
+  selectedRule,
+  titleText,
+  flavorText,
+  rulePatchStatus,
+  ruleBuilderPatchStatus,
+  allowedKinds,
+  regionOptions,
+  onCreateFormChange,
+  onCreate,
+  onUpdateRule,
+  onTitleChange,
+  onFlavorChange,
+  onApplyPresentation,
+  onClose,
+}: {
+  readonly state: RuleDialogState
+  readonly drafts: readonly RuleBuilderDraft[]
+  readonly selectedRule: WorkbenchRuleSummary | undefined
+  readonly titleText: string
+  readonly flavorText: string
+  readonly rulePatchStatus: DraftPatchStatus
+  readonly ruleBuilderPatchStatus: DraftPatchStatus
+  readonly allowedKinds: readonly CellKind[]
+  readonly regionOptions: readonly RegionDefinition[]
+  readonly onCreateFormChange: (form: RuleBuilderCreateForm) => void
+  readonly onCreate: () => void
+  readonly onUpdateRule: (ruleId: string, updater: (draft: RuleBuilderDraft) => RuleBuilderDraft) => void
+  readonly onTitleChange: (value: string) => void
+  readonly onFlavorChange: (value: string) => void
+  readonly onApplyPresentation: () => void
+  readonly onClose: () => void
+}) {
+  if (state.kind === 'closed') return null
+  const draft = state.kind === 'edit'
+    ? drafts.find((candidate) => candidate.id === state.ruleId)
+    : undefined
+
+  return (
+    <div className="rule-dialog-backdrop" role="presentation">
+      <section className="rule-dialog" role="dialog" aria-modal="true" aria-label={state.kind === 'create' ? '新建规则' : '编辑规则'}>
+        <div className="rule-dialog-heading">
+          <div>
+            <h3>{state.kind === 'create' ? '新建规则' : `编辑规则 ${state.ruleId}`}</h3>
+            <p>选择模板和参数后，工作台会生成可读规则句子；保存前仍会走 schema、求解和证明诊断。</p>
+          </div>
+          <button className="small-button" type="button" onClick={onClose}>关闭</button>
+        </div>
+        {state.kind === 'create' ? (
+          <div className="rule-dialog-body">
+            <label>
+              规则模板
+              <select
+                value={state.form}
+                onChange={(event) => onCreateFormChange(event.target.value as RuleBuilderCreateForm)}
+              >
+                {RULE_CREATE_FORMS.map((form) => (
+                  <option key={form} value={form}>{ruleCreateFormLabel(form)}</option>
+                ))}
+              </select>
+            </label>
+            <p className="rule-dialog-preview">将创建：{ruleCreateFormLabel(state.form)}。创建后可继续编辑对象、范围和数量。</p>
+            <div className="rule-dialog-actions">
+              <button className="primary-button" type="button" onClick={onCreate}>创建规则</button>
+              <button className="small-button" type="button" onClick={onClose}>取消</button>
+            </div>
+            <PatchStatus status={ruleBuilderPatchStatus} />
+          </div>
+        ) : draft === undefined ? (
+          <div className="rule-dialog-body">
+            <p className="rule-builder-empty">没有找到这条规则，请关闭后重新选择。</p>
+          </div>
+        ) : (
+          <div className="rule-dialog-body">
+            <strong>{draft.generatedText.title}</strong>
+            <p className="rule-dialog-preview">{draft.generatedText.flavor}</p>
+            {draft.support === 'editable' ? (
+              <RuleBuilderControls
+                draft={draft}
+                allowedKinds={allowedKinds}
+                regionOptions={regionOptions}
+                onUpdate={(updater) => onUpdateRule(draft.id, updater)}
+              />
+            ) : (
+              <p className="rule-builder-empty">暂时不能用结构化控件编辑这种规则；可以保留、复制或删除。</p>
+            )}
+            <RuleCopyEditor
+              selectedRule={selectedRule}
+              titleText={titleText}
+              flavorText={flavorText}
+              patchStatus={rulePatchStatus}
+              canPatch={selectedRule !== undefined}
+              onTitleChange={onTitleChange}
+              onFlavorChange={onFlavorChange}
+              onApply={onApplyPresentation}
+            />
+            <PatchStatus status={ruleBuilderPatchStatus} />
+          </div>
+        )}
+      </section>
+    </div>
   )
 }
 
@@ -2364,6 +2445,100 @@ function parsePuzzleJson(jsonText: string): PuzzleDefinition | undefined {
   }
 }
 
+function selectedRuleScopeCells(
+  puzzle: PuzzleDefinition | undefined,
+  ruleId: string | undefined,
+): readonly CellId[] {
+  if (puzzle === undefined || ruleId === undefined) return []
+  const rule = puzzle.rules.find((candidate) => candidate.id === ruleId)
+  if (rule === undefined) return []
+
+  return scopePreviewCellsForRule(rule, puzzle)
+}
+
+function scopePreviewCellsForRule(rule: RuleDefinition, puzzle: PuzzleDefinition): readonly CellId[] {
+  const cells = new Set<CellId>()
+
+  switch (rule.type) {
+    case 'globalCount':
+      return allCells(puzzle.board)
+    case 'forEachCount':
+      for (const [cellId, kind] of Object.entries(puzzle.target)) {
+        if (kind !== rule.subject) continue
+        cells.add(cellId)
+        for (const neighbor of neighbors(cellId, rule.scope.kind, puzzle.board)) cells.add(neighbor)
+      }
+      return sortCellIds(cells, puzzle.board)
+    case 'regionCount': {
+      const region = (puzzle.regions ?? []).find((candidate) => candidate.id === rule.regionId)
+      return region === undefined ? [] : regionCells(region, puzzle.board)
+    }
+    case 'lineCount':
+      return lineScopePreviewCells(rule.origin, rule.scope, puzzle)
+    case 'scopeOverlapCount':
+      return combineScopePreviewCells(rule.left, rule.right, rule.mode, puzzle)
+    case 'comparativeCount':
+      return sortCellIds([
+        ...countScopePreviewCells(rule.left, puzzle),
+        ...countScopePreviewCells(rule.right, puzzle),
+      ], puzzle.board)
+    case 'conditionalCount':
+      return sortCellIds([
+        ...countScopePreviewCells(rule.condition.scope, puzzle),
+        ...countScopePreviewCells(rule.then.scope, puzzle),
+      ], puzzle.board)
+    case 'anchorCount':
+    case 'recordSet':
+      return []
+  }
+}
+
+function countScopePreviewCells(scope: CountScopeRef, puzzle: PuzzleDefinition): readonly CellId[] {
+  switch (scope.kind) {
+    case 'global':
+      return allCells(puzzle.board)
+    case 'region': {
+      const region = (puzzle.regions ?? []).find((candidate) => candidate.id === scope.regionId)
+      return region === undefined ? [] : regionCells(region, puzzle.board)
+    }
+    case 'line':
+      return lineScopePreviewCells(scope.origin, scope.scope, puzzle)
+  }
+}
+
+function combineScopePreviewCells(
+  left: CountScopeRef,
+  right: CountScopeRef,
+  mode: ScopeOverlapMode,
+  puzzle: PuzzleDefinition,
+): readonly CellId[] {
+  const leftCells = new Set(countScopePreviewCells(left, puzzle))
+  const rightCells = new Set(countScopePreviewCells(right, puzzle))
+
+  switch (mode) {
+    case 'intersection':
+      return sortCellIds([...leftCells].filter((cellId) => rightCells.has(cellId)), puzzle.board)
+    case 'union':
+      return sortCellIds([...leftCells, ...rightCells], puzzle.board)
+    case 'leftOnly':
+      return sortCellIds([...leftCells].filter((cellId) => !rightCells.has(cellId)), puzzle.board)
+    case 'rightOnly':
+      return sortCellIds([...rightCells].filter((cellId) => !leftCells.has(cellId)), puzzle.board)
+  }
+}
+
+function lineScopePreviewCells(
+  origin: CellId | undefined,
+  scope: StaticLineScope | Extract<LineCountRule['scope'], { readonly kind: 'ray' }>,
+  puzzle: PuzzleDefinition,
+): readonly CellId[] {
+  if (scope.kind === 'ray') {
+    return origin === undefined ? [] : rayCells(origin, scope.direction, puzzle.board)
+  }
+
+  return lineCells(scope, puzzle.board)
+}
+
 function formatLocalCaseTime(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '保存时间未知'
@@ -2843,31 +3018,6 @@ function diagnosticsStatusLabel(status: AuthoringDiagnosticsGroup['status']): st
     case 'skipped':
       return '跳过'
   }
-}
-
-function RuleSummary({
-  rule,
-  selected,
-  onSelect,
-}: {
-  readonly rule: WorkbenchRuleSummary
-  readonly selected: boolean
-  readonly onSelect: (rule: WorkbenchRuleSummary) => void
-}) {
-  return (
-    <button
-      className={`workbench-rule-card ${selected ? 'selected' : ''}`}
-      type="button"
-      onClick={() => onSelect(rule)}
-      aria-pressed={selected}
-    >
-      <div>
-        <b>{rule.id} · {rule.title}</b>
-        <span>{ruleTypeLabel(rule.type)}</span>
-      </div>
-      {rule.flavor === undefined ? null : <p>{rule.flavor}</p>}
-    </button>
-  )
 }
 
 function IssueList({ issues }: { readonly issues: readonly string[] }) {

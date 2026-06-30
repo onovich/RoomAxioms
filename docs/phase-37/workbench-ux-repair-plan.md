@@ -15,7 +15,7 @@ Workspace: D:\WebProjects\RoomAxioms
 - Rule selection currently sets selected rule state, but the board does not preview the selected rule scope.
 - Metadata editing still exposes separate title and case-name fields, manual tags, and a status dropdown.
 - Cell editing still uses a target checkbox plus object checkboxes instead of a single object-type dropdown with a manager path.
-- Object definitions are implicit legacy kinds only; the UI needs an honest workbench object manager that allows local display-label changes and blocks unsafe deletion/unsupported custom semantics.
+- Object definitions are currently adapted through legacy kinds; the UI needs an honest workbench object manager that treats new entries as real rule-object definitions while surfacing any schema/solver/proof compile gap as a diagnostic instead of pretending custom objects are only notes.
 - Several visible labels still use developer terms such as Schema OK, diagnostics caps, nodes/models/candidate counts, JSON, and detailed diagnostics codes.
 
 ## Repair Order
@@ -32,7 +32,7 @@ Workspace: D:\WebProjects\RoomAxioms
    - replace selected-cell checkboxes with one object dropdown;
    - include a `管理物体` option;
    - add an object manager panel/dialog with list, create, rename, delete guardrails;
-   - keep legacy object compatibility honest.
+   - keep legacy object compatibility honest while preserving the product direction that rules should apply to any defined object.
 4. Rule editing:
    - remove the duplicate player-style rule summary list from normal UI;
    - keep the detailed edit-card list as the only rule list;
