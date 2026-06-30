@@ -1730,6 +1730,58 @@ h3 {
   z-index: 20;
 }
 
+.workbench-title-block {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.workbench-title-row,
+.workbench-title-editor {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workbench-title-row .case-name {
+  color: var(--workbench-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.difficulty-chip {
+  background: var(--workbench-note-soft);
+  border: 1px solid var(--workbench-note-border);
+  border-radius: 999px;
+  color: var(--workbench-note);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.workbench-title-editor input,
+.workbench-title-editor select {
+  background: var(--surface-0);
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  color: var(--workbench-ink);
+  min-height: 32px;
+  padding: 6px 8px;
+}
+
+.workbench-title-editor input {
+  min-width: min(360px, 52vw);
+}
+
+.top-status-area {
+  justify-self: end;
+  max-width: min(520px, 46vw);
+  min-width: 0;
+}
+
 .workbench-diagnostics-strip {
   align-items: start;
   background: rgba(13, 17, 17, 0.97);
@@ -1813,6 +1865,30 @@ h3 {
 .case-library-panel {
   display: grid;
   gap: 12px;
+}
+
+.case-library-actions,
+.board-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.case-library-actions .icon-button,
+.board-actions .icon-button,
+.workbench-title-row .icon-button,
+.workbench-title-editor .icon-button {
+  height: 32px;
+  min-height: 32px;
+  width: 32px;
+}
+
+.primary-icon-button {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #fff2c4;
 }
 
 .case-library-note,

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Copy, FileDown, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
+import { ArrowDown, ArrowUp, Copy, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -46,10 +46,7 @@ import {
 } from '@room-axioms/domain'
 
 import { DEFAULT_CASE_ID } from '../content/cases'
-import { createThemeAssetReviewReport, type ThemeAssetReviewReport } from '../theme/assetReview'
-import { DEFAULT_THEME_ASSET_MANIFEST } from '../theme/assetManifest'
-import { STATIC_DIALOGUE_SCENES } from '../vn/dialogue'
-import { getWorkbenchCaseImportById, workbenchCaseLibrary, type WorkbenchCaseSource } from './caseLibrary'
+import { getWorkbenchCaseImportById, workbenchCaseLibrary } from './caseLibrary'
 import {
   createBlankLocalCaseFromTemplate,
   createBrowserLocalCaseStore,
@@ -69,8 +66,6 @@ import {
   createWorkbenchDiagnosticsState,
   createWorkbenchDiagnosticsOverview,
   createWorkbenchDiagnosticsGroupDetails,
-  createWorkbenchRulesJson,
-  createWorkbenchScopeCollectionsJson,
   createWorkbenchShellModel,
   defaultWorkbenchDiagnosticsCaps,
   diagnosticsReportForState,
@@ -81,8 +76,6 @@ import {
   patchWorkbenchRuleBuilderCreateRule,
   patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchRulePresentation,
-  patchWorkbenchRulesJson,
-  patchWorkbenchScopeCollectionsJson,
   patchWorkbenchTargetCell,
   toggleWorkbenchInitialReveal,
   workbenchCellKindOptions,
@@ -169,8 +162,6 @@ export default function AuthoringWorkbenchScreen() {
   const [patchStatus, setPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [ruleBuilderPatchStatus, setRuleBuilderPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [rulePatchStatus, setRulePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
-  const [rulesPatchStatus, setRulesPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
-  const [scopePatchStatus, setScopePatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [metadataPatchStatus, setMetadataPatchStatus] = useState<DraftPatchStatus>({ kind: 'idle' })
   const [boardWidthText, setBoardWidthText] = useState(String(defaultCase.board.width))
   const [boardHeightText, setBoardHeightText] = useState(String(defaultCase.board.height))
@@ -178,9 +169,7 @@ export default function AuthoringWorkbenchScreen() {
   const [ruleFlavorText, setRuleFlavorText] = useState('')
   const [metadataTitleText, setMetadataTitleText] = useState(defaultCase.title)
   const [metadataDifficultyText, setMetadataDifficultyText] = useState(String(defaultCase.metadata.difficulty))
-  const [metadataNotesText, setMetadataNotesText] = useState(defaultCase.metadata.notes ?? '')
-  const [rulesJsonText, setRulesJsonText] = useState(() => createWorkbenchRulesJson(defaultCase))
-  const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
+  const [metadataEditorOpen, setMetadataEditorOpen] = useState(false)
   const selectedLocalCase = selectedLocalCaseId === undefined
     ? undefined
     : localCases.find((record) => record.localId === selectedLocalCaseId)
@@ -188,10 +177,6 @@ export default function AuthoringWorkbenchScreen() {
   const model = useMemo(
     () => createWorkbenchShellModel(workbenchCaseLibrary, selectedCaseId, draft),
     [draft, selectedCaseId],
-  )
-  const themeReview = useMemo(
-    () => createThemeAssetReviewReport(DEFAULT_THEME_ASSET_MANIFEST, STATIC_DIALOGUE_SCENES),
-    [],
   )
   const parsedPuzzle = model.parse.ok ? model.parse.puzzle : undefined
   const selectedCell = selectedCellId === undefined
@@ -264,13 +249,10 @@ export default function AuthoringWorkbenchScreen() {
     setRuleTitleText('')
     setRuleFlavorText('')
     syncMetadataEditor(puzzle)
-    setRulesJsonText(createWorkbenchRulesJson(puzzle))
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(puzzle))
+    setMetadataEditorOpen(false)
     setPatchStatus({ kind: 'idle' })
     setRuleBuilderPatchStatus({ kind: 'idle' })
     setRulePatchStatus({ kind: 'idle' })
-    setRulesPatchStatus({ kind: 'idle' })
-    setScopePatchStatus({ kind: 'idle' })
     setMetadataPatchStatus({ kind: 'idle' })
   }
 
@@ -404,28 +386,6 @@ export default function AuthoringWorkbenchScreen() {
   function confirmDiscardUnsavedChanges(): boolean {
     if (!draft.dirty) return true
     return globalThis.confirm('当前草稿有未保存修改。继续切换会丢失这些修改，是否继续？')
-  }
-
-  function updateDraftText(jsonText: string): void {
-    setDraft(updateDraftJsonText(draft, jsonText))
-    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
-    setSelectedCellId(undefined)
-    setSelectedRuleId(undefined)
-    setRuleDialog({ kind: 'closed' })
-    setActiveKind('empty')
-    setBoardWidthText('')
-    setBoardHeightText('')
-    setRuleTitleText('')
-    setRuleFlavorText('')
-    syncMetadataEditor(undefined)
-    setRulesJsonText('')
-    setScopeCollectionsText('')
-    setPatchStatus({ kind: 'idle' })
-    setRuleBuilderPatchStatus({ kind: 'idle' })
-    setRulePatchStatus({ kind: 'idle' })
-    setRulesPatchStatus({ kind: 'idle' })
-    setScopePatchStatus({ kind: 'idle' })
-    setMetadataPatchStatus({ kind: 'idle' })
   }
 
   function runDiagnostics(): void {
@@ -594,7 +554,6 @@ export default function AuthoringWorkbenchScreen() {
       : patch.puzzle.rules.find((rule) => rule.id === nextSelectedRuleId)
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
-    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
     setRuleBuilderPatchStatus({ kind: 'applied', message })
 
     if (nextRule === undefined) {
@@ -671,8 +630,6 @@ export default function AuthoringWorkbenchScreen() {
     const nextRule = patch.puzzle.rules[patch.puzzle.rules.length - 1]
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
-    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
     setSelectedRuleId(nextRule?.id)
     setRuleTitleText(nextRule?.presentation.title ?? '')
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
@@ -746,8 +703,6 @@ export default function AuthoringWorkbenchScreen() {
     }
     setBoardWidthText(String(patch.puzzle.board.width))
     setBoardHeightText(String(patch.puzzle.board.height))
-    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
     applySuccessfulPatch(patch.state, `棋盘尺寸已改为 ${board.width} × ${board.height}；完整诊断已标记为待重新运行。`)
   }
 
@@ -779,76 +734,9 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     setRuleTitleText(nextRule?.presentation.title ?? ruleTitleText)
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
-    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
     setRulePatchStatus({
       kind: 'applied',
       message: `${selectedRuleId} 的标题和说明已更新；完整诊断已标记为待重新运行。`,
-    })
-  }
-
-  function resetRulesEditor(): void {
-    setRulesJsonText(createWorkbenchRulesJson(parsedPuzzle))
-    setRulesPatchStatus({ kind: 'idle' })
-  }
-
-  function applyRulesPatch(): void {
-    const patch = patchWorkbenchRulesJson(draft, rulesJsonText)
-    if (!patch.ok) {
-      setRulesPatchStatus({
-        kind: 'rejected',
-        message: '规则结构 JSON 未应用。',
-        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
-      })
-      return
-    }
-
-    const nextSelectedRule = selectedRuleId === undefined
-      ? undefined
-      : patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
-    setDraft(patch.state)
-    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
-    setRulesJsonText(createWorkbenchRulesJson(patch.puzzle))
-    setRulesPatchStatus({
-      kind: 'applied',
-      message: '规则结构已更新；完整诊断已标记为待重新运行。',
-    })
-
-    if (selectedRuleId !== undefined && nextSelectedRule === undefined) {
-      setSelectedRuleId(undefined)
-      setRuleTitleText('')
-      setRuleFlavorText('')
-      setRulePatchStatus({ kind: 'idle' })
-      return
-    }
-
-    if (nextSelectedRule !== undefined) {
-      setRuleTitleText(nextSelectedRule.presentation.title)
-      setRuleFlavorText(nextSelectedRule.presentation.flavor ?? '')
-    }
-  }
-
-  function resetScopeCollectionsEditor(): void {
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(parsedPuzzle))
-    setScopePatchStatus({ kind: 'idle' })
-  }
-
-  function applyScopeCollectionsPatch(): void {
-    const patch = patchWorkbenchScopeCollectionsJson(draft, scopeCollectionsText)
-    if (!patch.ok) {
-      setScopePatchStatus({
-        kind: 'rejected',
-        message: '区域与参照物集合未应用。',
-        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
-      })
-      return
-    }
-
-    setDraft(patch.state)
-    setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
-    setScopeCollectionsText(createWorkbenchScopeCollectionsJson(patch.puzzle))
-    setScopePatchStatus({
-      kind: 'applied',
-      message: '区域与参照物集合已更新；完整诊断已标记为待重新运行。',
     })
   }
 
@@ -868,7 +756,7 @@ export default function AuthoringWorkbenchScreen() {
     if (syncedTitle.length === 0) {
       setMetadataPatchStatus({
         kind: 'rejected',
-        message: '案件信息未应用。',
+        message: '标题未应用。',
         issues: ['METADATA_TITLE_INPUT: 案件标题不能为空。'],
       })
       return
@@ -880,7 +768,7 @@ export default function AuthoringWorkbenchScreen() {
       difficulty,
       tags: parsed?.metadata.tags ?? ['workbench'],
       status: parsed?.metadata.status ?? 'draft',
-      notes: metadataNotesText.trim() === '' ? undefined : metadataNotesText,
+      notes: parsed?.metadata.notes,
     })
     if (!patch.ok) {
       setMetadataPatchStatus({
@@ -894,16 +782,16 @@ export default function AuthoringWorkbenchScreen() {
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
     syncMetadataEditor(patch.puzzle)
+    setMetadataEditorOpen(false)
     setMetadataPatchStatus({
       kind: 'applied',
-      message: '标题、难度、标签和备注已更新；完整诊断已标记为待重新运行。',
+      message: '标题和难度已更新；完整诊断已标记为待重新运行。',
     })
   }
 
   function syncMetadataEditor(puzzle: PuzzleDefinition | undefined): void {
     setMetadataTitleText(puzzle?.caseName ?? puzzle?.title ?? '')
     setMetadataDifficultyText(puzzle === undefined ? '' : String(puzzle.metadata.difficulty))
-    setMetadataNotesText(puzzle?.metadata.notes ?? '')
   }
 
   return (
@@ -911,39 +799,52 @@ export default function AuthoringWorkbenchScreen() {
       <header className="workbench-topbar">
         <div className="brand-block">
           <div className="brand-mark">A</div>
-          <div>
+          <div className="workbench-title-block">
             <div className="brand">出题工作台 <span>maintainer</span></div>
-            <div className="case-name">{parsedPuzzle?.caseName ?? parsedPuzzle?.title ?? '未命名草稿'}</div>
+            {metadataEditorOpen ? (
+              <div className="workbench-title-editor" aria-label="编辑案件标题和难度">
+                <input
+                  type="text"
+                  value={metadataTitleText}
+                  disabled={parsedPuzzle === undefined}
+                  onChange={(event) => setMetadataTitleText(event.target.value)}
+                  aria-label="案件标题"
+                />
+                <select
+                  value={metadataDifficultyText}
+                  disabled={parsedPuzzle === undefined}
+                  onChange={(event) => setMetadataDifficultyText(event.target.value)}
+                  aria-label="难度"
+                >
+                  {[1, 2, 3, 4, 5].map((difficulty) => (
+                    <option key={difficulty} value={difficulty}>难度 {difficulty}</option>
+                  ))}
+                </select>
+                <button className="icon-button" type="button" onClick={applyMetadataPatch} disabled={parsedPuzzle === undefined} title="保存标题和难度" aria-label="保存标题和难度">
+                  <Save size={15} aria-hidden="true" />
+                </button>
+                <button className="icon-button" type="button" onClick={() => {
+                  syncMetadataEditor(parsedPuzzle)
+                  setMetadataEditorOpen(false)
+                  setMetadataPatchStatus({ kind: 'idle' })
+                }} title="取消编辑" aria-label="取消编辑">
+                  <RotateCcw size={15} aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <div className="workbench-title-row">
+                <div className="case-name">{parsedPuzzle?.caseName ?? parsedPuzzle?.title ?? '未命名草稿'}</div>
+                <span className="difficulty-chip">难度 {parsedPuzzle?.metadata.difficulty ?? '-'}</span>
+                <button className="icon-button" type="button" onClick={() => setMetadataEditorOpen(true)} title="编辑标题和难度" aria-label="编辑标题和难度">
+                  <Pencil size={15} aria-hidden="true" />
+                </button>
+              </div>
+            )}
+            <PatchStatus status={metadataPatchStatus} />
           </div>
         </div>
-        <div className="top-actions">
-          <button className="ghost-button" type="button" onClick={() => void createNewLocalCase()}>
-            <Plus size={16} aria-hidden="true" />
-            新建地图
-          </button>
-          <button className="primary-button" type="button" onClick={() => void saveCurrentCase()}>
-            <Save size={16} aria-hidden="true" />
-            保存地图
-          </button>
-          {selectedLocalCase?.state === 'published' ? (
-            <button className="ghost-button" type="button" onClick={() => void retractCurrentCase()}>
-              <RotateCcw size={16} aria-hidden="true" />
-              撤回发布
-            </button>
-          ) : (
-            <button className="ghost-button" type="button" onClick={() => void publishCurrentCase()}>
-              <Upload size={16} aria-hidden="true" />
-              发布地图
-            </button>
-          )}
-          <button className="ghost-button" type="button" onClick={resetCurrentCase}>
-            <RotateCcw size={16} aria-hidden="true" />
-            重新加载
-          </button>
-          <button className="ghost-button danger-action" type="button" onClick={() => void deleteCurrentCase()}>
-            <Trash2 size={16} aria-hidden="true" />
-            删除地图
-          </button>
+        <div className="top-status-area">
+          <LibraryStatusNotice status={libraryStatus} />
         </div>
       </header>
 
@@ -989,9 +890,9 @@ export default function AuthoringWorkbenchScreen() {
             localPublished={localGroups.published}
             selectedBuiltInId={selectedLocalCaseId === undefined ? selectedCaseId : undefined}
             selectedLocalId={selectedLocalCaseId}
-            status={libraryStatus}
             onSelectBuiltIn={loadCase}
             onSelectLocal={loadLocalCase}
+            onCreateNew={() => void createNewLocalCase()}
             onCopyCurrent={() => void copySelectedCaseToDraft()}
           />
         </section>
@@ -1002,9 +903,27 @@ export default function AuthoringWorkbenchScreen() {
               <span className="eyebrow">Board</span>
               <h2>{parsedPuzzle === undefined ? '无有效棋盘' : `${parsedPuzzle.board.width} × ${parsedPuzzle.board.height}`}</h2>
             </div>
-            <span className={model.parse.ok ? 'mode-badge success-badge' : 'mode-badge error-badge'}>
-              {model.parse.ok ? 'Schema OK' : 'Schema Error'}
-            </span>
+            <div className="board-actions" aria-label="地图操作">
+              {!model.parse.ok ? <span className="mode-badge error-badge">Schema Error</span> : null}
+              <button className="icon-button primary-icon-button" type="button" onClick={() => void saveCurrentCase()} title="保存地图" aria-label="保存地图">
+                <Save size={15} aria-hidden="true" />
+              </button>
+              {selectedLocalCase?.state === 'published' ? (
+                <button className="icon-button" type="button" onClick={() => void retractCurrentCase()} title="撤回发布" aria-label="撤回发布">
+                  <RotateCcw size={15} aria-hidden="true" />
+                </button>
+              ) : (
+                <button className="icon-button" type="button" onClick={() => void publishCurrentCase()} title="发布地图" aria-label="发布地图">
+                  <Upload size={15} aria-hidden="true" />
+                </button>
+              )}
+              <button className="icon-button" type="button" onClick={resetCurrentCase} title="重新加载" aria-label="重新加载">
+                <RotateCcw size={15} aria-hidden="true" />
+              </button>
+              <button className="icon-button danger-action" type="button" onClick={() => void deleteCurrentCase()} title="删除地图" aria-label="删除地图">
+                <Trash2 size={15} aria-hidden="true" />
+              </button>
+            </div>
           </div>
           <BoardSizeEditor
             widthText={boardWidthText}
@@ -1103,63 +1022,6 @@ export default function AuthoringWorkbenchScreen() {
             onApplyPresentation={applyRulePresentationPatch}
             onClose={closeRuleDialog}
           />
-          <MetadataEditor
-            titleText={metadataTitleText}
-            difficultyText={metadataDifficultyText}
-            notesText={metadataNotesText}
-            patchStatus={metadataPatchStatus}
-            canPatch={parsedPuzzle !== undefined}
-            onTitleChange={setMetadataTitleText}
-            onDifficultyChange={setMetadataDifficultyText}
-            onNotesChange={setMetadataNotesText}
-            onApply={applyMetadataPatch}
-          />
-          <details className="workbench-section workbench-debug-details">
-            <summary>开发者调试</summary>
-            <div className="workbench-debug-body">
-              <ImportExportSummary
-                selectedOption={model.caseOptions.find((option) => option.id === selectedCaseId)}
-                exportStatus={model.exportStatus}
-              />
-              <ThemeVNReviewSummary report={themeReview} />
-              <label className="debug-json-label">
-                草稿 JSON
-                <textarea
-                  className="draft-json-editor"
-                  spellCheck={false}
-                  value={draft.jsonText}
-                  onChange={(event) => updateDraftText(event.target.value)}
-                  aria-label="Draft JSON"
-                />
-              </label>
-              <RulesJsonEditor
-                jsonText={rulesJsonText}
-                patchStatus={rulesPatchStatus}
-                canPatch={parsedPuzzle !== undefined}
-                onJsonTextChange={setRulesJsonText}
-                onReset={resetRulesEditor}
-                onApply={applyRulesPatch}
-              />
-              <ScopeCollectionsEditor
-                jsonText={scopeCollectionsText}
-                patchStatus={scopePatchStatus}
-                canPatch={parsedPuzzle !== undefined}
-                onJsonTextChange={setScopeCollectionsText}
-                onReset={resetScopeCollectionsEditor}
-                onApply={applyScopeCollectionsPatch}
-              />
-              <a
-                className="small-button"
-                href={model.exported.ok ? draftDownloadHref(model.exported.jsonText) : undefined}
-                download={model.exportStatus.fileName}
-                aria-disabled={!model.exported.ok}
-              >
-                <FileDown size={16} aria-hidden="true" />
-                下载当前草稿
-              </a>
-              <pre className="export-preview">{model.exported.ok ? model.exported.jsonText : 'JSON 当前无效'}</pre>
-            </div>
-          </details>
         </aside>
       </main>
     </div>
@@ -1218,9 +1080,9 @@ function CaseLibraryPanel({
   localPublished,
   selectedBuiltInId,
   selectedLocalId,
-  status,
   onSelectBuiltIn,
   onSelectLocal,
+  onCreateNew,
   onCopyCurrent,
 }: {
   readonly builtInCases: ReturnType<typeof createWorkbenchShellModel>['caseOptions']
@@ -1228,9 +1090,9 @@ function CaseLibraryPanel({
   readonly localPublished: readonly WorkbenchLocalCaseRecord[]
   readonly selectedBuiltInId: string | undefined
   readonly selectedLocalId: string | undefined
-  readonly status: LibraryActionStatus
   readonly onSelectBuiltIn: (caseId: string) => void
   readonly onSelectLocal: (record: WorkbenchLocalCaseRecord) => void
+  readonly onCreateNew: () => void
   readonly onCopyCurrent: () => void
 }) {
   const shippedTemplates = builtInCases.filter((item) => item.source === 'shipped')
@@ -1242,16 +1104,16 @@ function CaseLibraryPanel({
           <span className="eyebrow">Library</span>
           <h2>案例库</h2>
         </div>
-        <FolderOpen size={18} aria-hidden="true" />
+        <div className="case-library-actions">
+          <button className="icon-button" type="button" onClick={onCreateNew} title="新建地图" aria-label="新建地图">
+            <Plus size={15} aria-hidden="true" />
+          </button>
+          <button className="icon-button copy-current-button" type="button" onClick={onCopyCurrent} title="复制当前为草稿" aria-label="复制当前为草稿">
+            <Copy size={15} aria-hidden="true" />
+          </button>
+          <FolderOpen size={18} aria-hidden="true" />
+        </div>
       </div>
-      <p className="case-library-note">
-        本地案例只保存在当前浏览器；内置案例只能作为模板复制，不会被删除或改写。
-      </p>
-      <button className="small-button copy-current-button" type="button" onClick={onCopyCurrent}>
-        <Copy size={15} aria-hidden="true" />
-        复制当前为草稿
-      </button>
-      <LibraryStatusNotice status={status} />
       <CaseLibraryGroup
         title="草稿"
         emptyText="还没有本地草稿。"
@@ -1631,7 +1493,6 @@ function RuleExpressionBuilder({
       <div className="rule-builder-heading">
         <div>
           <h3>规则</h3>
-          <p>这一列就是当前地图的规则列表。选中规则会尽量在棋盘上预览它涉及的范围。</p>
         </div>
         <span>{editableCount} / {drafts.length} 可编辑</span>
       </div>
@@ -2267,150 +2128,6 @@ function RuleCopyEditor({
   )
 }
 
-function MetadataEditor({
-  titleText,
-  difficultyText,
-  notesText,
-  patchStatus,
-  canPatch,
-  onTitleChange,
-  onDifficultyChange,
-  onNotesChange,
-  onApply,
-}: {
-  readonly titleText: string
-  readonly difficultyText: string
-  readonly notesText: string
-  readonly patchStatus: DraftPatchStatus
-  readonly canPatch: boolean
-  readonly onTitleChange: (value: string) => void
-  readonly onDifficultyChange: (value: string) => void
-  readonly onNotesChange: (value: string) => void
-  readonly onApply: () => void
-}) {
-  return (
-    <section className="workbench-section metadata-editor">
-      <h3>案件信息</h3>
-      <label>
-        案件标题
-        <input
-          type="text"
-          value={titleText}
-          disabled={!canPatch}
-          onChange={(event) => onTitleChange(event.target.value)}
-          placeholder="给作者识别用；保存时同步为案件名"
-        />
-      </label>
-      <label>
-        难度
-        <select
-          value={difficultyText}
-          disabled={!canPatch}
-          onChange={(event) => onDifficultyChange(event.target.value)}
-        >
-          {[1, 2, 3, 4, 5].map((difficulty) => (
-            <option key={difficulty} value={difficulty}>{difficulty}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        备注
-        <textarea
-          value={notesText}
-          disabled={!canPatch}
-          onChange={(event) => onNotesChange(event.target.value)}
-          placeholder="记录作者判断、限制或不推广理由"
-        />
-      </label>
-      <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
-        应用案件信息
-      </button>
-      <PatchStatus status={patchStatus} />
-    </section>
-  )
-}
-
-function RulesJsonEditor({
-  jsonText,
-  patchStatus,
-  canPatch,
-  onJsonTextChange,
-  onReset,
-  onApply,
-}: {
-  readonly jsonText: string
-  readonly patchStatus: DraftPatchStatus
-  readonly canPatch: boolean
-  readonly onJsonTextChange: (value: string) => void
-  readonly onReset: () => void
-  readonly onApply: () => void
-}) {
-  return (
-    <details className="workbench-section rules-json-editor">
-      <summary>规则结构维护</summary>
-      <div className="rules-json-editor-body">
-      <h3>规则结构 JSON</h3>
-      <p>编辑完整 rules 数组；支持当前所有规则族。schema 会复验类型、引用和字段。</p>
-      <textarea
-        value={jsonText}
-        spellCheck={false}
-        disabled={!canPatch}
-        onChange={(event) => onJsonTextChange(event.target.value)}
-        aria-label="Rules JSON"
-      />
-      <div className="rules-editor-actions">
-        <button className="small-button" type="button" onClick={onReset} disabled={!canPatch}>
-          从草稿重载
-        </button>
-        <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
-          应用规则
-        </button>
-      </div>
-      <PatchStatus status={patchStatus} />
-      </div>
-    </details>
-  )
-}
-
-function ScopeCollectionsEditor({
-  jsonText,
-  patchStatus,
-  canPatch,
-  onJsonTextChange,
-  onReset,
-  onApply,
-}: {
-  readonly jsonText: string
-  readonly patchStatus: DraftPatchStatus
-  readonly canPatch: boolean
-  readonly onJsonTextChange: (value: string) => void
-  readonly onReset: () => void
-  readonly onApply: () => void
-}) {
-  return (
-    <section className="workbench-section scope-collections-editor">
-      <h3>范围集合维护</h3>
-      <p>编辑 regions 与 anchors 集合；规则引用是否仍然有效会由 schema 复验。</p>
-      <textarea
-        value={jsonText}
-        spellCheck={false}
-        disabled={!canPatch}
-        onChange={(event) => onJsonTextChange(event.target.value)}
-        aria-label="Regions and anchors JSON"
-      />
-      <div className="scope-editor-actions">
-        <button className="small-button" type="button" onClick={onReset} disabled={!canPatch}>
-          从草稿重载
-        </button>
-        <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
-          应用集合
-        </button>
-      </div>
-      <PatchStatus status={patchStatus} />
-    </section>
-  )
-}
-
 function parseBoardSize(widthText: string, heightText: string): BoardSize | undefined {
   const width = Number(widthText)
   const height = Number(heightText)
@@ -2567,78 +2284,6 @@ function formatLocalCaseTime(value: string): string {
 
 function isMetadataDifficulty(value: number): value is PuzzleDefinition['metadata']['difficulty'] {
   return value === 1 || value === 2 || value === 3 || value === 4 || value === 5
-}
-
-function ImportExportSummary({
-  selectedOption,
-  exportStatus,
-}: {
-  readonly selectedOption: ReturnType<typeof createWorkbenchShellModel>['caseOptions'][number] | undefined
-  readonly exportStatus: ReturnType<typeof createWorkbenchShellModel>['exportStatus']
-}) {
-  return (
-    <section className="workbench-section">
-      <h3>开发者来源记录</h3>
-      <dl className="import-export-grid">
-        <div>
-          <dt>来源</dt>
-          <dd>{selectedOption === undefined ? '未知' : sourceLabel(selectedOption.source)}</dd>
-        </div>
-        <div>
-          <dt>路径</dt>
-          <dd>{selectedOption?.sourcePath ?? '手写 JSON'}</dd>
-        </div>
-        <div>
-          <dt>文件名</dt>
-          <dd>{exportStatus.fileName}</dd>
-        </div>
-        <div>
-          <dt>状态</dt>
-          <dd>{exportStatus.issueCount > 0 ? `${exportStatus.message} (${exportStatus.issueCount})` : exportStatus.message}</dd>
-        </div>
-      </dl>
-    </section>
-  )
-}
-
-function ThemeVNReviewSummary({ report }: { readonly report: ThemeAssetReviewReport }) {
-  const issueCount = report.intakeIssues.length + report.manifestLeaks.length + report.dialogueLeaks.length
-
-  return (
-    <section className="workbench-section theme-vn-review">
-      <h3>Theme / VN private review</h3>
-      <dl className="import-export-grid">
-        <div>
-          <dt>Manifest</dt>
-          <dd>{report.manifestId}</dd>
-        </div>
-        <div>
-          <dt>Placeholders</dt>
-          <dd>{report.placeholderAssetIds.length}</dd>
-        </div>
-        <div>
-          <dt>Pending</dt>
-          <dd>{report.pendingApprovalAssetIds.length}</dd>
-        </div>
-        <div>
-          <dt>Approved</dt>
-          <dd>{report.approvedAssetIds.length}</dd>
-        </div>
-        <div>
-          <dt>Dialogue scenes</dt>
-          <dd>{report.dialogueCategories.length}</dd>
-        </div>
-        <div>
-          <dt>Review issues</dt>
-          <dd>{issueCount}</dd>
-        </div>
-      </dl>
-      <p>
-        Placeholder art is intentional until user-provided assets pass source,
-        license, dimension, and player-route safety review.
-      </p>
-    </section>
-  )
 }
 
 function DiagnosticsCapsEditor({
@@ -2934,15 +2579,6 @@ function diagnosticsStateNotice(
   }
 }
 
-function sourceLabel(source: WorkbenchCaseSource): string {
-  switch (source) {
-    case 'shipped':
-      return '内置模板'
-    case 'experimental':
-      return '内置参考'
-  }
-}
-
 function WorkbenchStatus({
   puzzle,
   draft,
@@ -3024,10 +2660,6 @@ function IssueList({ issues }: { readonly issues: readonly string[] }) {
       ))}
     </ul>
   )
-}
-
-function draftDownloadHref(jsonText: string): string {
-  return `data:application/json;charset=utf-8,${encodeURIComponent(jsonText)}`
 }
 
 function kindLabel(kind: CellKind, objectTypes: readonly WorkbenchObjectType[] = createInitialObjectTypes()): string {
