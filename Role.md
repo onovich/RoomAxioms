@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-30T03:31:20+08:00
+updated_at: 2026-06-30T11:41:56+08:00
 
 planner:
   role: architect
@@ -23,12 +23,12 @@ artist:
   evidence: current active artist direction thread in the same workspace.
 
 idempotency:
-  active_goal_guide: none
-  active_goal_phase: none
-  last_planner_dispatch: 2026-06-30T02:42:00+08:00
+  active_goal_guide: docs/phase-37-authoring-workbench-human-ux-repair-goal-mode-execution-guide.md
+  active_goal_phase: Phase 37 - Authoring Workbench Human UX Repair
+  last_planner_dispatch: 2026-06-30T11:41:56+08:00
   last_planner_dispatch_status: sent
-  last_planner_dispatch_guide: docs/phase-36-authoring-workbench-ux-async-diagnostics-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: 7048a67
+  last_planner_dispatch_guide: docs/phase-37-authoring-workbench-human-ux-repair-goal-mode-execution-guide.md
+  last_planner_dispatch_commit: c3f631e
   last_planner_dispatch_executor_thread_id: 019ef271-256c-7be2-9663-e658e2378564
   last_check_status: pass
   last_check_phase: Phase 36 - Authoring Workbench UX And Async Diagnostics
