@@ -322,6 +322,17 @@ h3 {
     transform 0.15s ease;
 }
 
+.ghost-button:disabled,
+.small-button:disabled,
+.icon-button:disabled,
+.primary-button:disabled {
+  background: #1a2020;
+  border-color: #46524f;
+  color: #aeb8b4;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 .ghost-button:hover,
 .small-button:hover,
 .icon-button:hover {
@@ -1685,11 +1696,12 @@ h3 {
 
 .workbench-shell {
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.2fr) minmax(320px, 0.9fr);
-  margin: 0 auto;
-  max-width: 1540px;
-  padding: 22px 24px 80px;
+  gap: 16px;
+  grid-template-columns: minmax(300px, 360px) minmax(560px, 1fr) minmax(320px, 380px);
+  margin: 0;
+  max-width: none;
+  padding: 18px 18px 80px;
+  width: 100%;
 }
 
 .workbench-panel {
@@ -1775,9 +1787,9 @@ h3 {
 }
 
 .case-library-item.selected {
-  background: #173042;
-  border-color: #75abd1;
-  box-shadow: inset 3px 0 0 #75abd1;
+  background: #253822;
+  border-color: #9dc47b;
+  box-shadow: inset 3px 0 0 #d7aa50;
 }
 
 .case-library-item b {
@@ -1791,7 +1803,7 @@ h3 {
 }
 
 .case-library-item.selected span {
-  color: #d4e9f8;
+  color: #e8dec6;
 }
 
 .danger-action {
@@ -2383,6 +2395,14 @@ h3 {
   gap: 9px;
 }
 
+.diagnostics-caps-editor summary {
+  color: #f0d9a2;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  list-style-position: inside;
+}
+
 .diagnostics-caps-editor p {
   color: var(--muted);
   font-size: 11px;
@@ -2868,7 +2888,7 @@ h3 {
   }
 
   .workbench-shell {
-    grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr) minmax(280px, 0.9fr);
+    grid-template-columns: minmax(280px, 330px) minmax(440px, 1fr) minmax(280px, 330px);
     padding-left: 14px;
     padding-right: 14px;
   }

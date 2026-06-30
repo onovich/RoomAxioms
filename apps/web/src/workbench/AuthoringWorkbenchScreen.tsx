@@ -100,7 +100,6 @@ type LibraryActionStatus =
   | { readonly kind: 'idle' }
   | { readonly kind: 'info' | 'success' | 'error'; readonly message: string }
 
-const METADATA_STATUSES = ['draft', 'validated', 'published', 'deprecated'] as const
 const RULE_BUILDER_KIND_OPTIONS: readonly CellKind[] = ['empty', 'bottle', 'bin', 'mirror', 'guest']
 const COMPARATOR_OPS: readonly Comparator['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
 const COMPARISON_OPS: readonly CountComparison['op'][] = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte']
@@ -152,10 +151,7 @@ export default function AuthoringWorkbenchScreen() {
   const [ruleTitleText, setRuleTitleText] = useState('')
   const [ruleFlavorText, setRuleFlavorText] = useState('')
   const [metadataTitleText, setMetadataTitleText] = useState(defaultCase.title)
-  const [metadataCaseNameText, setMetadataCaseNameText] = useState(defaultCase.caseName ?? '')
   const [metadataDifficultyText, setMetadataDifficultyText] = useState(String(defaultCase.metadata.difficulty))
-  const [metadataTagsText, setMetadataTagsText] = useState(defaultCase.metadata.tags.join(', '))
-  const [metadataStatusText, setMetadataStatusText] = useState<string>(defaultCase.metadata.status)
   const [metadataNotesText, setMetadataNotesText] = useState(defaultCase.metadata.notes ?? '')
   const [rulesJsonText, setRulesJsonText] = useState(() => createWorkbenchRulesJson(defaultCase))
   const [scopeCollectionsText, setScopeCollectionsText] = useState(() => createWorkbenchScopeCollectionsJson(defaultCase))
@@ -778,34 +774,23 @@ export default function AuthoringWorkbenchScreen() {
       return
     }
 
-    if (!isMetadataStatus(metadataStatusText)) {
+    const parsed = parsePuzzleJson(draft.jsonText)
+    const syncedTitle = metadataTitleText.trim()
+    if (syncedTitle.length === 0) {
       setMetadataPatchStatus({
         kind: 'rejected',
-        message: '状态未应用。',
-        issues: ['METADATA_STATUS_INPUT: 状态必须是 draft、validated、published 或 deprecated。'],
-      })
-      return
-    }
-
-    const tags = metadataTagsText
-      .split(/[\n,]/)
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-    if (tags.length === 0) {
-      setMetadataPatchStatus({
-        kind: 'rejected',
-        message: '标签未应用。',
-        issues: ['METADATA_TAGS_INPUT: 至少需要一个非空标签。'],
+        message: '案件信息未应用。',
+        issues: ['METADATA_TITLE_INPUT: 案件标题不能为空。'],
       })
       return
     }
 
     const patch = patchWorkbenchMetadata(draft, {
-      title: metadataTitleText,
-      caseName: metadataCaseNameText.trim() === '' ? undefined : metadataCaseNameText,
+      title: syncedTitle,
+      caseName: syncedTitle,
       difficulty,
-      tags,
-      status: metadataStatusText,
+      tags: parsed?.metadata.tags ?? ['workbench'],
+      status: parsed?.metadata.status ?? 'draft',
       notes: metadataNotesText.trim() === '' ? undefined : metadataNotesText,
     })
     if (!patch.ok) {
@@ -827,11 +812,8 @@ export default function AuthoringWorkbenchScreen() {
   }
 
   function syncMetadataEditor(puzzle: PuzzleDefinition | undefined): void {
-    setMetadataTitleText(puzzle?.title ?? '')
-    setMetadataCaseNameText(puzzle?.caseName ?? '')
+    setMetadataTitleText(puzzle?.caseName ?? puzzle?.title ?? '')
     setMetadataDifficultyText(puzzle === undefined ? '' : String(puzzle.metadata.difficulty))
-    setMetadataTagsText(puzzle?.metadata.tags.join(', ') ?? '')
-    setMetadataStatusText(puzzle?.metadata.status ?? 'draft')
     setMetadataNotesText(puzzle?.metadata.notes ?? '')
   }
 
@@ -848,30 +830,30 @@ export default function AuthoringWorkbenchScreen() {
         <div className="top-actions">
           <button className="ghost-button" type="button" onClick={() => void createNewLocalCase()}>
             <Plus size={16} aria-hidden="true" />
-            新建
+            新建地图
           </button>
           <button className="primary-button" type="button" onClick={() => void saveCurrentCase()}>
             <Save size={16} aria-hidden="true" />
-            保存
+            保存地图
           </button>
           {selectedLocalCase?.state === 'published' ? (
             <button className="ghost-button" type="button" onClick={() => void retractCurrentCase()}>
               <RotateCcw size={16} aria-hidden="true" />
-              撤回
+              撤回发布
             </button>
           ) : (
             <button className="ghost-button" type="button" onClick={() => void publishCurrentCase()}>
               <Upload size={16} aria-hidden="true" />
-              发布
+              发布地图
             </button>
           )}
           <button className="ghost-button" type="button" onClick={resetCurrentCase}>
             <RotateCcw size={16} aria-hidden="true" />
-            重载
+            重新加载
           </button>
           <button className="ghost-button danger-action" type="button" onClick={() => void deleteCurrentCase()}>
             <Trash2 size={16} aria-hidden="true" />
-            删除
+            删除地图
           </button>
         </div>
       </header>
@@ -1018,18 +1000,12 @@ export default function AuthoringWorkbenchScreen() {
           />
           <MetadataEditor
             titleText={metadataTitleText}
-            caseNameText={metadataCaseNameText}
             difficultyText={metadataDifficultyText}
-            tagsText={metadataTagsText}
-            statusText={metadataStatusText}
             notesText={metadataNotesText}
             patchStatus={metadataPatchStatus}
             canPatch={parsedPuzzle !== undefined}
             onTitleChange={setMetadataTitleText}
-            onCaseNameChange={setMetadataCaseNameText}
             onDifficultyChange={setMetadataDifficultyText}
-            onTagsChange={setMetadataTagsText}
-            onStatusChange={setMetadataStatusText}
             onNotesChange={setMetadataNotesText}
             onApply={applyMetadataPatch}
           />
@@ -2046,34 +2022,22 @@ function RuleCopyEditor({
 
 function MetadataEditor({
   titleText,
-  caseNameText,
   difficultyText,
-  tagsText,
-  statusText,
   notesText,
   patchStatus,
   canPatch,
   onTitleChange,
-  onCaseNameChange,
   onDifficultyChange,
-  onTagsChange,
-  onStatusChange,
   onNotesChange,
   onApply,
 }: {
   readonly titleText: string
-  readonly caseNameText: string
   readonly difficultyText: string
-  readonly tagsText: string
-  readonly statusText: string
   readonly notesText: string
   readonly patchStatus: DraftPatchStatus
   readonly canPatch: boolean
   readonly onTitleChange: (value: string) => void
-  readonly onCaseNameChange: (value: string) => void
   readonly onDifficultyChange: (value: string) => void
-  readonly onTagsChange: (value: string) => void
-  readonly onStatusChange: (value: string) => void
   readonly onNotesChange: (value: string) => void
   readonly onApply: () => void
 }) {
@@ -2081,60 +2045,26 @@ function MetadataEditor({
     <section className="workbench-section metadata-editor">
       <h3>案件信息</h3>
       <label>
-        标题
+        案件标题
         <input
           type="text"
           value={titleText}
           disabled={!canPatch}
           onChange={(event) => onTitleChange(event.target.value)}
-          placeholder="给作者和导出文件识别用的标题"
+          placeholder="给作者识别用；保存时同步为案件名"
         />
       </label>
       <label>
-        案件名
-        <input
-          type="text"
-          value={caseNameText}
+        难度
+        <select
+          value={difficultyText}
           disabled={!canPatch}
-          onChange={(event) => onCaseNameChange(event.target.value)}
-          placeholder="可留空；留空时使用标题"
-        />
-      </label>
-      <div className="metadata-editor-row">
-        <label>
-          难度
-          <select
-            value={difficultyText}
-            disabled={!canPatch}
-            onChange={(event) => onDifficultyChange(event.target.value)}
-          >
-            {[1, 2, 3, 4, 5].map((difficulty) => (
-              <option key={difficulty} value={difficulty}>{difficulty}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          状态
-          <select
-            value={statusText}
-            disabled={!canPatch}
-            onChange={(event) => onStatusChange(event.target.value)}
-          >
-            {METADATA_STATUSES.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <label>
-        标签
-        <input
-          type="text"
-          value={tagsText}
-          disabled={!canPatch}
-          onChange={(event) => onTagsChange(event.target.value)}
-          placeholder="用逗号分隔；不会写入玩家选择器"
-        />
+          onChange={(event) => onDifficultyChange(event.target.value)}
+        >
+          {[1, 2, 3, 4, 5].map((difficulty) => (
+            <option key={difficulty} value={difficulty}>{difficulty}</option>
+          ))}
+        </select>
       </label>
       <label>
         备注
@@ -2272,10 +2202,6 @@ function isMetadataDifficulty(value: number): value is PuzzleDefinition['metadat
   return value === 1 || value === 2 || value === 3 || value === 4 || value === 5
 }
 
-function isMetadataStatus(value: string): value is PuzzleDefinition['metadata']['status'] {
-  return METADATA_STATUSES.some((status) => status === value)
-}
-
 function ImportExportSummary({
   selectedOption,
   exportStatus,
@@ -2358,36 +2284,36 @@ function DiagnosticsCapsEditor({
   readonly onCapChange: (field: keyof WorkbenchDiagnosticsCaps, value: number) => void
 }) {
   return (
-    <section className="workbench-section diagnostics-caps-editor">
-      <h3>诊断上限</h3>
-      <p>这些上限只影响本次 workbench 诊断；如果结果出现截断，请提高上限或简化草稿后重跑。</p>
+    <details className="workbench-section diagnostics-caps-editor">
+      <summary>高级诊断范围</summary>
+      <p>通常不用改。只有诊断提示“检查不完整”时，再临时调高这些上限。</p>
       <div className="diagnostics-caps-grid">
         <DiagnosticsCapInput
-          label="节点"
+          label="求解器尝试次数"
           value={caps.maxNodes}
           disabled={disabled}
           onChange={(value) => onCapChange('maxNodes', value)}
         />
         <DiagnosticsCapInput
-          label="模型"
+          label="可能现场数量"
           value={caps.maxModels}
           disabled={disabled}
           onChange={(value) => onCapChange('maxModels', value)}
         />
         <DiagnosticsCapInput
-          label="访客布局"
+          label="可能异常区域分布"
           value={caps.maxGuestLayouts}
           disabled={disabled}
           onChange={(value) => onCapChange('maxGuestLayouts', value)}
         />
         <DiagnosticsCapInput
-          label="候选计数"
+          label="剩余候选答案"
           value={caps.candidateLayoutCap}
           disabled={disabled}
           onChange={(value) => onCapChange('candidateLayoutCap', value)}
         />
       </div>
-    </section>
+    </details>
   )
 }
 
