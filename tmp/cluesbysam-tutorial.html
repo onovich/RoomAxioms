@@ -1,0 +1,1088 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" sizes="120x120" href="/images/favicon-120x120.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/images/favicon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/images/favicon-167x167.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180.png" />
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/images/favicon-64x64.png" />
+  <link rel="shortcut icon" href="/images/favicon.ico" />
+  <link rel="stylesheet" href="common.css">
+
+  <meta property="og:title" content="Clues by Sam" />
+  <meta property="og:description" content="A logic puzzle where you deduce who is a criminal!" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light">
+  <meta name="robots" content="max-image-preview:large" />
+  <link rel="stylesheet" href="./assets/main-DnukmEbe.css">
+  <link rel="stylesheet" href="https://cluesbysam.com/s/assets/lite-yt-embed.css" />
+  <script src="https://cluesbysam.com/s/assets/lite-yt-embed.js"></script>
+  <script type="module" src="assets/main-DYVG9NfP.js"></script>
+  <title>Clues By Sam</title>
+  <script>
+    function callShare() {
+      window.share(true);
+    }
+
+    const THEMES = ["theme-default", "theme-acc-1"];
+
+    function convert(savedTheme) {
+      if (savedTheme == "theme-default") return { theme: 0, dark: true };
+      if (savedTheme == "theme-acc-1") return { theme: 1, dark: true };
+      else return { theme: 0, dark: true /*window.matchMedia('(prefers-color-scheme: dark)').matches*/ }; // Disable automatic once received enough feedback
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("Load")
+      const themePreference = convert(localStorage.getItem("theme"));
+      document.body.className = `${THEMES[themePreference.theme]} ${themePreference.dark ? "light" : "light"}`;
+    });
+
+
+    function toggleTheme() {
+      const currentTheme = document.body.classList.contains("theme-default")
+        ? "theme-default"
+        : "theme-acc-1";
+      const newTheme =
+        currentTheme === "theme-default" ? "theme-acc-1" : "theme-default";
+
+      document.body.classList.remove(currentTheme);
+      document.body.classList.add(newTheme);
+      localStorage.setItem("theme", newTheme);
+    }
+
+    
+  </script>
+
+  <script>
+    window.isTutorial = true;
+        window.mondayPuzzleHash = '1672035de719';
+        window.levelData = {
+  "width": 4,
+  "height": 5,
+  "identityClue": "One innocent completed the tutorial puzzle",
+  "name": "Tutorial #1 - The Basics",
+  "cards": [
+    {
+      "criminal": true,
+      "profession": "pilot",
+      "name": "alice",
+      "gender": "male",
+      "orig_hint": "number_of_traits_in_unit(unit(between,pair(0,12)),criminal,2)",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17
+        ]
+      ],
+      "hint": "I'm one of two criminals above #NAME:16. Also, keep #NAMES:3 clue in mind."
+    },
+    {
+      "criminal": false,
+      "profession": "teacher",
+      "name": "bob",
+      "gender": "male",
+      "orig_hint": "has_trait(13,criminal)",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15
+        ]
+      ],
+      "hint": "#NAME:13 is a criminal"
+    },
+    {
+      "criminal": true,
+      "profession": "teacher",
+      "name": "clyde",
+      "gender": "male",
+      "orig_hint": "all_traits_are_neighbors_in_unit(unit(col,3),innocent)",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16,
+          12,
+          6
+        ]
+      ],
+      "hint": "All innocents in my column are connected"
+    },
+    {
+      "criminal": true,
+      "profession": "judge",
+      "name": "dave",
+      "gender": "male",
+      "orig_hint": "only_unit_has_exactly_n_traits(unit(col,4),criminal,2)",
+      "paths": [
+        [
+          5,
+          9,
+          11
+        ]
+      ],
+      "hint": "My column is the only column with exactly 2 criminals"
+    },
+    {
+      "criminal": false,
+      "profession": "guard",
+      "name": "erica",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15
+        ]
+      ],
+      "hint": "As you see, also diagonals count as neighbors"
+    },
+    {
+      "criminal": false,
+      "profession": "pilot",
+      "name": "frank",
+      "gender": "male",
+      "orig_hint": "has_trait(9,innocent)",
+      "paths": [],
+      "hint": "#NAME:9 is innocent. She's the coder directly below me. Click on her!"
+    },
+    {
+      "criminal": true,
+      "profession": "pilot",
+      "name": "gabe",
+      "gender": "male",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16,
+          12
+        ]
+      ],
+      "orig_hint": "number_of_traits_in_unit(unit(profession,farmer),innocent,1)",
+      "hint": "One of the two farmers is innocent. But remember, you can't guess!"
+    },
+    {
+      "criminal": true,
+      "profession": "judge",
+      "name": "hilda",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11
+        ]
+      ],
+      "hint": "#NAME:3 and I are in the same column. The coders are in the same row."
+    },
+    {
+      "criminal": true,
+      "profession": "guard",
+      "name": "izzy",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16
+        ]
+      ],
+      "hint": "If you're stuck, try using the hint button below the grid"
+    },
+    {
+      "criminal": false,
+      "profession": "coder",
+      "name": "jane",
+      "gender": "female",
+      "orig_hint": "number_of_traits_in_unit(unit(profession,coder),innocent,3)",
+      "paths": [
+        [
+          5
+        ]
+      ],
+      "hint": "All of us 3 #PROFS:coder are innocent"
+    },
+    {
+      "criminal": false,
+      "profession": "coder",
+      "name": "kevin",
+      "gender": "male",
+      "paths": [
+        [
+          5,
+          9
+        ]
+      ],
+      "hint": "Everyone always speaks the truth, even criminals"
+    },
+    {
+      "criminal": false,
+      "profession": "coder",
+      "name": "leo",
+      "gender": "male",
+      "orig_hint": "number_of_traits_in_unit(unit(between,pair(3,7)),criminal,2)",
+      "paths": [
+        [
+          5,
+          9
+        ]
+      ],
+      "hint": "Both persons above me are criminal"
+    },
+    {
+      "criminal": false,
+      "profession": "guard",
+      "name": "maddy",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16
+        ]
+      ],
+      "orig_hint": "n_in_unit_have_trait_in_dir(unit(row,3),criminal,0,-1,2)",
+      "hint": "Two persons in row&nbsp;3 have a criminal directly above them"
+    },
+    {
+      "criminal": true,
+      "profession": "doctor",
+      "name": "neo",
+      "gender": "male",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1
+        ]
+      ],
+      "hint": "Since I'm a nice criminal, I'll give you a free hint: Remember #NAMES:3 clue."
+    },
+    {
+      "criminal": false,
+      "profession": "farmer",
+      "name": "olga",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16,
+          12,
+          6,
+          2
+        ]
+      ],
+      "hint": "All choices must be logical, and all logical choices are accepted!"
+    },
+    {
+      "criminal": false,
+      "profession": "guard",
+      "name": "pete",
+      "gender": "male",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3
+        ]
+      ],
+      "orig_hint": "number_of_traits_in_unit(unit(neighbor,0),innocent,3)",
+      "hint": "#NAME:0 has 3 innocent neighbors"
+    },
+    {
+      "criminal": true,
+      "profession": "guard",
+      "name": "quinn",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0
+        ]
+      ],
+      "orig_hint": "units_share_n_traits(unit(neighbor,5),unit(col,1),criminal,2)",
+      "hint": "Two criminals in column #C:1 neighbor #NAME:5"
+    },
+    {
+      "criminal": false,
+      "profession": "pilot",
+      "name": "ray",
+      "gender": "male",
+      "orig_hint": "units_share_n_traits(unit(profession,pilot),unit(edge,void),innocent,1)",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1
+        ]
+      ],
+      "hint": "I'm the only innocent #PROF:pilot on the edges. Therefore #NAME:0 must be..."
+    },
+    {
+      "criminal": true,
+      "profession": "farmer",
+      "name": "sue",
+      "gender": "female",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3,
+          15,
+          1,
+          17,
+          0,
+          16,
+          12,
+          6,
+          2
+        ]
+      ],
+      "hint": "What are you going to do, Sue me?"
+    },
+    {
+      "criminal": false,
+      "profession": "guard",
+      "name": "tom",
+      "gender": "male",
+      "referenceNameIndices": [15],
+      "hint": "Click on a clue repeatedly to see the referred name bounce",
+      "paths": [
+        [
+          5,
+          9,
+          11,
+          3
+        ]
+      ]
+    }
+  ],
+  "initial_reveals": [
+    5
+  ],
+  "seed": 250729213,
+  "supportsHints": true,
+  "hints": [
+    {
+      "flipped": [
+        5
+      ],
+      "clues": [
+        5
+      ],
+      "reveals": [
+        9
+      ]
+    },
+    {
+      "flipped": [
+        9,
+        5
+      ],
+      "clues": [
+        9
+      ],
+      "reveals": [
+        10,
+        11
+      ]
+    },
+    {
+      "flipped": [
+        5,
+        9,
+        10,
+        11
+      ],
+      "clues": [
+        11
+      ],
+      "reveals": [
+        3,
+        7
+      ]
+    },
+    {
+      "flipped": [
+        3,
+        5,
+        7,
+        9,
+        10,
+        11
+      ],
+      "clues": [
+        3
+      ],
+      "reveals": [
+        15,
+        19
+      ]
+    },
+    {
+      "flipped": [
+        3,
+        5,
+        7,
+        9,
+        10,
+        11,
+        15,
+        19
+      ],
+      "clues": [
+        15
+      ],
+      "reveals": [
+        1,
+        4
+      ]
+    },
+    {
+      "flipped": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        15,
+        19
+      ],
+      "clues": [
+        1
+      ],
+      "reveals": [
+        13
+      ]
+    },
+    {
+      "flipped": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        13,
+        15,
+        19
+      ],
+      "clues": [
+        3
+      ],
+      "reveals": [
+        17
+      ]
+    },
+    {
+      "flipped": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "clues": [
+        17
+      ],
+      "reveals": [
+        0
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "clues": [
+        3,
+        0
+      ],
+      "reveals": [
+        16
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10,
+        11,
+        13,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        16
+      ],
+      "reveals": [
+        8
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        0
+      ],
+      "reveals": [
+        12
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        12
+      ],
+      "reveals": [
+        6
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        3,
+        6
+      ],
+      "reveals": [
+        2
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        3,
+        2
+      ],
+      "reveals": [
+        18
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "clues": [
+        6
+      ],
+      "reveals": [
+        14
+      ]
+    },
+    {
+      "flipped": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19
+      ],
+      "clues": [
+        3
+      ],
+      "reveals": [
+        18
+      ]
+    }
+  ]
+}
+;    window.puzzleSaveId = "tutorial-1"
+    window.puzzleHelpId = "tutorial-1"
+    window.puzzleLogId = "tutorial-1"
+          window.puzzleStaticHelpId = "tutorial-1"
+              window.isContentTrusted = true;
+    </script>
+
+
+<body class="theme-default">
+  <div id="fontPreload" style="position:absolute; top:-9999px; font-family: 'MyRibeye';">
+    Loading...
+  </div>
+  <div id="fontPreload" style="position:absolute; top:-9999px; font-family: 'MyComicNeue';">
+    Loading...
+  </div>
+  <div id="root">
+    <div class="grid-placeholder"></div>
+  </div>
+      <div style="text-align:center">
+      <p><b>Tutorial #1 - The Basics</b></p>
+    </div>
+    <div class="tutorial-buttons">
+    <a href="https://cluesbysam.com/s/tutorial?puzzleId=tutorial-1"><button class="unknown">Tutorial #1</button></a>
+    <a href="https://cluesbysam.com/s/tutorial?puzzleId=tutorial-2"><button class="unknown">Tutorial #2</button></a>
+    <a href="https://cluesbysam.com/s/tutorial?puzzleId=tutorial-3"><button class="unknown">Tutorial #3</button></a>
+    <div style="flex-basis: 100%; height:0px; margin:0px; padding:0px;"></div>
+        <a href="https://cluesbysam.com/s/play?puzzleId=1672035de719"><button class="unknown">Monday's puzzle</button></a>
+        <a href="https://cluesbysam.com/"><button class="unknown">Today's puzzle</button></a>
+  </div>
+
+  <div style="
+        text-align: center;
+        max-width: 600px;
+        margin-left: 20px;
+        margin-right: 20px;
+      ">
+    <br />
+    <br />
+    <br />
+    <h3>How to play <span class="title">Clues by Sam</span></h3>
+    <ul class="instructions">
+      <li>
+        Your goal is to figure out
+        <b>who is criminal</b> and
+        <b>who is innocent.</b>
+      </li>
+      <li>
+        Based on what you know, tap on a suspect to choose if they are
+        innocent or criminal. They might reveal a new hint.
+      </li>
+      <li>
+        You cannot guess! Just like in real life, you can't convict someone
+        based on a 50/50 hunch. There is always a logical next choice, even
+        when you think there isn't!
+      </li>
+      <li>
+        If you're prevented from making something you believe is a logical choice, you missed something.
+        The puzzles are verified by foolproof algorithms, the puzzles are always 100% correct.
+      </li>
+    </ul>
+    <p>
+      You can also check one of the awesome YouTube tutorials below
+    </p>
+    <p>And that's it. Good luck!</p>
+
+    <div style="width:100%">
+      <div class="video"><lite-youtube style="background-image:url('https://cluesbysam.com/s/assets/yt-bg-ambie.webp');"
+          videoid="s2AgwtTNOpo"></lite-youtube></div>
+      <div class="video"><lite-youtube
+          style="background-image:url('https://cluesbysam.com/s/assets/yt-bg-thinky.webp');"
+          videoid="9zlrnopKNs0"></lite-youtube></div>
+    </div>
+
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+    <h3>Tips</h3>
+    <ul class="instructions">
+      <li>People are in alphabetical order by name.</li>
+      <li>
+        Tap the top right corner of each card to add a color tag.
+        This is useful for keeping track of deductions or trying out hypotheticals.
+        How will you use it?
+      </li>
+      <li>
+        Tap on revealed clues to dim them if you think it's no longer useful
+        to you. This is optional, but can help you keep track of which clues
+        are still relevant.
+      </li>
+      <li>
+        Referenced names and professions are highlighted a bit. Not much,
+        so it doesn't spoil all the fun of discovery. But a bit.
+      </li>
+      <li>
+        For clarifying details about the clue terminology in the puzzle, press the <b>Inspect</b> button and then a
+        revealed card.
+      </li>
+    </ul>
+
+    <h3>Clarifying details</h3>
+    <ul class="instructions">
+      <li><b>Everyone</b> is either a criminal or innocent.</li>
+      <li>
+        Professions don't make some innocent or criminal, unless a hint
+        suggest so. A cop is as criminal as an accountant until proven
+        otherwise.
+      </li>
+      <li>Everyone speaks the <b>truth</b>, even the criminals.</li>
+      <li>
+        <b>Neighbors</b> always include diagonal neigbors. One person can have
+        up to <b>8 neighbors.</b>
+      </li>
+      <li>
+        <b>In between (or sometimes just between)</b> means the persons between the two, not including the two.
+      </li>
+      <li>
+        <b>Connected</b> means a chain of orthogonal adjacency. For example
+        "all criminals in row 1 are connected" means there are no innocents
+        between any two criminals in that row. A group of one person is considered connected
+        <a href="https://en.wikipedia.org/wiki/Connectivity_(graph_theory)#Connected_vertices_and_graphs">(like in graph
+          theory)</a>,
+        so it doesn't mean there are at least two.
+      </li>
+      <li>
+        <b>Rows</b> go sideways and are numbered 1,2,3,4,5. <b>Columns</b> go
+        up and down and lettered A,B,C,D.
+      </li>
+      <li>
+        <b>Above/below</b> always means somewhere in the same column.
+      </li>
+      <li>
+        <b>To the left/right</b> always means somewhere in the same row (from your point of view, not the person's).
+      </li>
+      <li>
+        <b>Directly to the left/right/above/below</b> always means the
+        neighbor to the left/right/above/below.
+      </li>
+      <li>
+        <b>All</b> always means there's at least one. It doesn't necessarily
+        mean there's more than one.
+      </li>
+      <li>
+        <b>One of the innocents/criminals / one of several / one of multiple</b> always means there's at least two
+        innocents/criminals. This is slightly conflicting with "All innocents/criminals..." and I'm open for suggestions
+        how to improve the phrasing here!
+      </li>
+      <li>
+        <b>Common neighbors</b> means those who are neighbors of both persons.
+        It does not include the persons themselves.
+      </li>
+      <li>
+        <b>Share</b> means "have in common". For example, "Share an odd number of innocent neighbors" means "have an odd
+        number of common innocent neighbors".
+      </li>
+      <li>
+        <b>In total</b> always means the sum of all in the group(s). Two
+        criminal cops and cooks in total means there might be 1 cop and 1
+        cook, or 0 cops and 2 cooks, or 2 cops and 0 cooks.
+      </li>
+      <li><b>Corner</b> means the four corners.</li>
+      <li><b>Edge</b> means the 14 persons "surrounding" the board, including corners.</li>
+      <li><b>... the most</b> always means uniquely the most. If John has the most criminal neighbors, no one can have
+        as many criminal neighbors as John.</li>
+      <li>An even number means numbers divisible by two: 0, 2, 4, 6... and an odd number means everything else: 1, 3, 5,
+        7...</li>
+      <li>
+        <b>More</b> doesn't mean there needs to be any in the lesser group. For example "There are more innocents in row
+        A than row B" doesn't require there to be any innocents in row B.
+      </li>
+      <li>
+        Numbers are exact unless stated otherwise. "There are 2 criminal coders" means there's exactly 2 criminal
+        coders.
+      </li>
+      <li>
+          <b>Person</b> means anyone in the grid, including animals and other non-humans in some special puzzles.
+      </li>
+      <li>
+        "If A then B" does NOT mean the same as "If and only if A then B". Therefore it does NOT mean "If not A then not
+        B". But please note that, due to how logic works, it DOES mean "If not B then not A". (It's called the <a
+          href="https://en.wikipedia.org/wiki/Contraposition#Intuitive_explanation">contraposition</a>.)
+      </li>
+      <li>
+        <b>You never need to guess.</b> In fact, the game only allows you to
+        make logical choices.
+      </li>
+    </ul>
+
+    <h3>"Is this a logic error?"</h3>
+    <p>Since the game prevents you from guessing, it also prevents you from making mistakes. But if the game prevents
+      you from making a choice, how do you know if the mistake was yours or mine? Did you just find an error in the
+      puzzle?</p>
+    <p>The game's logic system makes sure the logic is sound, and there haven't been any errors with the current system
+      yet. It's a lot more likely that you might have pressed the wrong button or misread a clue. Please double check
+      your logic first.</p>
+    <p>If you really think you found an error in the logic, I suggest you post about it on reddit, for example on <a
+        href="https://reddit.com/r/CluesBySamHelp">r/CluesBySamHelp</a>, so others can help confirm.</p>
+    <h3>Stuck?</h3>
+    <p>
+      Don't feel bad, it's a difficult game! Try asking for help for example on <a href="https://bsky.app">Bluesky</a>
+      or <a href="https://www.reddit.com/r/CluesBySamHelp/">r/CluesBySamHelp</a>. You can also try <a
+        href="https://www.reddit.com/r/puzzles/">r/puzzles</a>, but only for archived puzzles or yesterday's puzzle,
+      since they don't allow questions about daily puzzles. Press the "Share scenario" button below to copy a link to
+      your current situation.
+      Others can continue from where you are when opening the game through the
+      link. Even on another day.
+    </p>
+    <button onclick="callShare()">Share scenario</button>
+    <br />
+    <br />
+    <p>
+      There is also a hint button available below the grid. It will first reveal the clues you should be looking at, and
+      the second press will reveal the persons you can identify.
+    </p>
+    <h3>Share your result</h3>
+    <p>
+      What would a daily puzzle be without sharing? In Clues by Sam you can share your result in a few different ways.
+      You can either:
+    </p>
+    <ul>
+      <li>Copy your result and paste it where ever you want.</li>
+      <li>Use text share. This might be easier for you than copying and pasting, especially on mobile.</li>
+      <li>Use image share. This will create a pretty image presenting your result. This is great for sharing on
+        Instagram and other image based media platforms</li>
+    </ul>
+    <p>Here's what the shared information means:</p>
+    <ul>
+      <li>The time shows how long it took for you to complete the puzzle. If the time is under 6 minutes, seconds will
+        also be shown.</li>
+      <li>🟩 means you correctly identified the person</li>
+      <li>🟨 means you made at least one mistake identifying the person</li>
+      <li>🟡 means you used a hint to identify the person</li>
+      <li>🟠 means you used a double hint to identify the person</li>
+    </ul>
+    <p>For the shared image the symbols look slightly different, but I hope you'll be able to figure them out.</p>
+
+    <h3>Issues?</h3>
+    Is there a problem with the puzzle? Or is the game
+    not working properly? Or anything else you'd like to discuss? Maybe you have
+    opinions about the font? Don't hesitate to reach out:
+    <b class="title"><a href="mailto:sam@cluesbysam.com">sam@cluesbysam.com</a></b>
+    <h3>More puzzles</h3>
+    <p>
+      If you're hungry for more, there are puzzle packs available for
+      purchase. Check out
+      <a href="https://cluesbysam.com/s/packs.html">this page</a> for more
+      details.
+    </p>
+    <p>You can also check the newsletter subscription below for some weekly bonus puzzles!</p>
+    <h3>Subscribe</h3>
+    <p>Subscribe for occasional news and <b>bonus puzzles</b>! Sometimes I also re-share previous puzzles with
+      subscribers.</p>
+
+    <div class="form-container">
+      <form action="https://adartis.fi/subscribe" method="POST">
+
+        <div class="form-group">
+          <label for="email">Email Address:</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <button type="submit">Subscribe</button>
+        </div>
+      </form>
+    </div>
+    <br />
+    <p>Thank you for playing!</p>
+    <p style="margin-bottom: 0px">For more puzzles:</p>
+    <a href="https://cluehound.com">Cluehound Puzzle Magazines</a>
+    <br />
+    <p style="margin-bottom: 0px">More free puzzle games with no ads:</p>
+    <a href="https://games-by-sam.com">Games by Sam</a>
+    <br />
+    <br />
+    <br />
+    <p>
+      <a href="https://adartis.fi">Ad&nbsp;Artis&nbsp;Oy</a> |
+      <a href="https://sudokugen.com">SudokuGen.com</a> |
+      <a href="https://cluehound.com">Cluehound</a> |
+      <a href="https://games-by-sam.com">Games&nbsp;by&nbsp;Sam</a> |
+        <a href="https://cluesbysam.com/s/terms-of-service.html">Terms&nbsp;of&nbsp;Service</a> |
+        <a href="https://cluesbysam.com/s/privacy-policy.html">Privacy&nbsp;Policy</a>
+    </p>
+    <p>© Ad Artis Oy 2026</p>
+    <br />
+</div>
+</body>
+
+</head>

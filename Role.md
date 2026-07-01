@@ -22,6 +22,12 @@ artist:
   title: 美术
   evidence: current active artist direction thread in the same workspace.
 
+frontend:
+  role: frontend_developer
+  thread_id: 019f1d5a-6fb8-7911-9400-87b59922c00a
+  title: 前端开发
+  evidence: current active frontend developer thread in the same workspace.
+
 editor:
   role: editor_developer
   thread_id: 019f1da7-d87b-7010-aacf-27a50529092f
