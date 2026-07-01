@@ -1,6 +1,6 @@
 # Phase 39 - Player Shell Visual Delta Report
 
-Status: Round 3 panel interaction fix draft
+Status: Round 4 VN overlay fix draft
 Date: 2026-07-02
 Routes:
 
@@ -101,6 +101,31 @@ Measured results at 1920x1080:
 | Submit frame after marks section | PASS |
 | Replacement character count | `0` |
 
+## Round 4 VN Overlay Measurements
+
+Round 4 focused on the persistent VN overlay as a frozen player-shell layer,
+without changing dialogue content or game state.
+
+Evidence screenshots:
+
+- `tmp/phase39-r4-vn-before-1920x1080.png`
+- `tmp/phase39-r4-vn-active-after-1920x1080.png`
+- `tmp/phase39-r4-vn-left-line-1920x1080.png`
+- `tmp/phase39-r4-vn-idle-pointer-1920x1080.png`
+
+Measured results at 1920x1080:
+
+| Check | Before | After |
+| --- | ---: | ---: |
+| VN stage width | `0px` | `1081px` |
+| Active dialogue x / width | `900.5px / 760px` | `360px / 1081px` |
+| Right portrait x / width | `1590.5px / 290px` | `1591px / 290px` |
+| Left portrait x / width | not active in first line | `60px / 290px` |
+| Idle dialogue pointer events | blocking box | `none` |
+| Idle close button pointer events | available | `auto` |
+| Element at idle dialogue center | dialogue box | `scene-player-canvas` |
+| Canvas aspect | `1.777778` | `1.777778` |
+
 ## Visual Delta
 
 ### P0
@@ -114,15 +139,13 @@ developer-only information on the normal player route.
 ### P1
 
 1. VN bottom layer has a large empty framed area behind the active dialogue box.
-   The prototype reads as one grounded bottom dialogue band; production currently
-   shows an unused rectangular frame plus a dialogue card shifted far to the
-   right. This is fixable without final art.
+   Round 4 resolved this by removing the focused outer-shell outline and giving
+   the nested VN stage its real player-shell slot width.
 
 2. Active VN composition lacks the balanced two-character stance from the
-   prototype. The initial scene shows only the right portrait; when only one
-   actor is active this can be acceptable, but the layout should still leave a
-   cleaner portrait/dialogue relationship and avoid the dialogue box feeling
-   detached from the main bottom band.
+   prototype. Round 4 improved this by turning the dialogue card into a grounded
+   bottom band and keeping left/right portraits outside the band edges. Final
+   composition should still be reviewed when final bust art arrives.
 
 3. Round 2 resolved the central board containment issue for current 3x3 through
    5x5 cases. The board now uses bounded per-board cell sizing so rows no longer
@@ -203,8 +226,25 @@ developer-only information on the normal player route.
 - No component data, game state, puzzle semantics, or VN dialogue content changed.
 - Editor/workbench and solver/proof/schema/domain surfaces were not touched.
 
+## Round 4 Debug Self-Check
+
+- Focused browser checks covered active first-line, active second-line, and idle
+  VN states.
+- The nested VN stage now occupies the full player-shell slot instead of
+  collapsing to zero width.
+- The active dialogue layer is a full-width bottom band inside the VN slot.
+- Idle dialogue body now allows click-through; the close button remains
+  clickable.
+
+## Round 4 Architecture Self-Check
+
+- The change is CSS-only and preserves the existing `VNDialogueOverlay` API.
+- Onboarding/tutorial, partner sense-rule, success/failure, and protagonist
+  dialogue data remain untouched.
+- The real player route remains driven by `useRoomAxiomsGame`.
+- Editor/workbench and solver/proof/schema/domain surfaces were not touched.
+
 ## Next
 
-Round 4 should address VN bottom-band composition, portrait/dialogue balance,
-idle transparency, and click/focus behavior while preserving the persistent
-overlay contract.
+Round 5 should audit theme asset slots and manifest readiness for final art
+intake without marking current temporary assets as final approved.

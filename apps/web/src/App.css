@@ -3793,7 +3793,9 @@ h3 {
 
 .scene-player-vn-slot .vn-backdrop {
   background: transparent;
+  display: block;
   inset: 0;
+  outline: none;
   position: absolute;
   z-index: 1;
 }
@@ -3810,7 +3812,7 @@ h3 {
   padding: 16px;
   position: absolute;
   transform: none;
-  width: 760px;
+  width: 100%;
 }
 
 .scene-player-vn-slot .vn-portrait {
@@ -3825,12 +3827,20 @@ h3 {
 }
 
 .scene-player-vn-slot .vn-portrait.right {
-  left: 690px;
-  right: auto;
+  left: auto;
+  right: -440px;
 }
 
 .scene-player-vn-slot .vn-backdrop.is-idle .vn-dialogue-actions {
   visibility: hidden;
+}
+
+.scene-player-vn-slot .vn-backdrop.is-idle .vn-dialogue-box {
+  pointer-events: none;
+}
+
+.scene-player-vn-slot .vn-backdrop.is-idle .vn-dialogue-header .icon-button {
+  pointer-events: auto;
 }
 
 .scene-player-mobile-tabs-slot {
