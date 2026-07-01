@@ -1,6 +1,6 @@
 # Phase 39 - Player Shell Visual Delta Report
 
-Status: Round 2 layout fix draft
+Status: Round 3 panel interaction fix draft
 Date: 2026-07-02
 Routes:
 
@@ -80,6 +80,27 @@ Measured results at 1920x1080:
 The evidence column production width is now `306px`, widened from the Round 1
 `260px` baseline.
 
+## Round 3 Panel Interaction Measurements
+
+Round 3 focused on rule and record panel density, internal scrolling, and focus
+visibility without changing player data or puzzle behavior.
+
+Evidence screenshots:
+
+- `tmp/phase39-r3-panel-scroll-focus-1920x1080.png`
+- `tmp/phase39-r3-evidence-scroll-stress-1920x1080.png`
+
+Measured results at 1920x1080:
+
+| Check | Result |
+| --- | --- |
+| Canvas aspect | `1920x1080`, aspect `1.777778` |
+| Rule list | `512px` client height, `672px` scroll height, internal scroll PASS |
+| Record log stress | `18` entries, `187px` client height, `955px` scroll height, internal scroll PASS |
+| Record log before marks section | PASS |
+| Submit frame after marks section | PASS |
+| Replacement character count | `0` |
+
 ## Visual Delta
 
 ### P0
@@ -112,8 +133,9 @@ developer-only information on the normal player route.
    but the immediate density issue is reduced without changing production data.
 
 5. Some panel interior spacing and divider rhythm differ from the prototype.
-   The current production shell is consistent and readable, but rule/record panel
-   whitespace can be tightened after the P1 board and VN fixes.
+   Round 3 tightened the rule/record panel scroll tracks, focus visibility, and
+   fixed submit-frame relationship. Remaining rhythm review should happen after
+   final art replaces the temporary paper/frame assets.
 
 ### P2
 
@@ -168,8 +190,21 @@ developer-only information on the normal player route.
 - No solver/proof/schema/domain semantics changed.
 - Editor/workbench surfaces were not touched.
 
+## Round 3 Debug Self-Check
+
+- Focused browser checks covered normal and stressed record-log states.
+- Rule and record lists now have stable internal scroll gutters and bottom
+  padding so content does not disappear beneath neighboring fixed sections.
+- The submit frame remains fixed after the marks section under a long record log.
+
+## Round 3 Architecture Self-Check
+
+- The change is CSS-only and affects the production player shell view layer.
+- No component data, game state, puzzle semantics, or VN dialogue content changed.
+- Editor/workbench and solver/proof/schema/domain surfaces were not touched.
+
 ## Next
 
-Round 3 should continue with P1 layout issues that do not depend on final art,
-especially the VN bottom-band composition, portrait/dialogue balance, and any
-remaining panel spacing rhythm that can be improved before final asset intake.
+Round 4 should address VN bottom-band composition, portrait/dialogue balance,
+idle transparency, and click/focus behavior while preserving the persistent
+overlay contract.
