@@ -1,7 +1,10 @@
 import type { RuleDefinition } from '@room-axioms/domain'
-import { rulePlainText } from '../../logic/scopeText'
+
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
+import { rulePlainText } from '../../logic/scopeText'
+import type { SceneRuleIconId } from '../../theme/sceneShellAssets'
 import { scenePanels } from '../../theme/vocabulary'
+import { SceneDivider, SceneNineSlicePanel, SceneRuleIcon } from './SceneFrame'
 
 interface RulePanelProps {
   readonly game: RoomAxiomsGame
@@ -9,33 +12,51 @@ interface RulePanelProps {
 
 export function RulePanel({ game }: RulePanelProps) {
   return (
-    <aside className="panel rules-panel scene-rules-panel" data-panel="rules" aria-labelledby="rulesHeading">
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">Scene Rules</span>
-          <h1 id="rulesHeading">{scenePanels.rules}</h1>
+    <aside
+      className="panel rules-panel scene-rules-panel scene-framed-panel"
+      data-panel="rules"
+      aria-labelledby="rulesHeading"
+    >
+      <SceneNineSlicePanel className="scene-rules-frame" variant="paper">
+        <div className="panel-heading scene-panel-heading">
+          <div>
+            <span className="eyebrow">Scene Rules</span>
+            <h1 id="rulesHeading">{scenePanels.rules}</h1>
+          </div>
         </div>
-      </div>
+        <SceneDivider className="scene-heading-divider" id="wide" />
 
-      <div className="rule-list">
-        {game.puzzle.rules.map((rule, index) => (
-          <button
-            className={`rule-card scene-rule-card${game.selectedRule === rule.id ? ' active' : ''}`}
-            type="button"
-            key={rule.id}
-            onClick={() => game.selectRule(rule.id)}
-          >
-            <span className="rule-index">{String(index + 1).padStart(2, '0')}</span>
-            <span className="rule-copy">
-              <b>{rulePlainText(rule)}</b>
-              <em>{rule.presentation.title}</em>
-            </span>
-            <RuleScopeMiniDiagram rule={rule} />
-          </button>
-        ))}
-      </div>
+        <div className="rule-list scene-rule-list">
+          {game.puzzle.rules.map((rule, index) => (
+            <button
+              className={`rule-card scene-rule-card${game.selectedRule === rule.id ? ' active' : ''}`}
+              type="button"
+              key={rule.id}
+              onClick={() => game.selectRule(rule.id)}
+            >
+              <span className="rule-index">{String(index + 1).padStart(2, '0')}</span>
+              <span className="rule-copy">
+                <b>{rulePlainText(rule)}</b>
+                <em>{rule.presentation.title}</em>
+              </span>
+              <SceneRuleIcon className="scene-rule-card-icon" id={ruleIconFor(rule)} />
+              <RuleScopeMiniDiagram rule={rule} />
+            </button>
+          ))}
+        </div>
+      </SceneNineSlicePanel>
     </aside>
   )
+}
+
+function ruleIconFor(rule: RuleDefinition): SceneRuleIconId {
+  if (rule.type === 'forEachCount' || rule.type === 'anchorCount') {
+    if (rule.scope.kind === 'adjacent') return 'adjacent'
+    if (rule.scope.kind === 'orthogonal') return 'orthogonal'
+  }
+
+  if (rule.type === 'globalCount' || rule.type === 'recordSet') return 'exactAlt'
+  return 'exact'
 }
 
 function RuleScopeMiniDiagram({ rule }: { readonly rule: RuleDefinition }) {
