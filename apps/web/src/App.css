@@ -3992,3 +3992,51 @@ h3 {
   position: relative;
   z-index: 2;
 }
+
+.scene-record-frame {
+  height: 100%;
+}
+
+.scene-record-frame .scene-nine-slice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 24px 22px;
+}
+
+.scene-record-frame .evidence-section {
+  min-height: 0;
+}
+
+.scene-record-frame .record-log-section {
+  flex: 1 1 220px;
+}
+
+.scene-record-frame .notes-section {
+  flex: 0 0 auto;
+}
+
+.scene-record-frame .evidence-log {
+  max-height: 182px;
+  overflow: auto;
+}
+
+.scene-submit-frame {
+  flex: none;
+  min-height: 116px;
+  --scene-frame-padding: 18px;
+}
+
+.scene-submit-frame .scene-nine-slice-content {
+  display: grid;
+  padding: 18px;
+}
+
+.scene-submit-frame .scene-submit-button {
+  background: transparent;
+  border: 0;
+  height: 100%;
+  margin: 0;
+  min-height: 68px;
+}

@@ -5,6 +5,7 @@ import {
 } from '../../logic/developerInspector'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 import { sceneCellLabels, sceneMarkLabels, scenePanels } from '../../theme/vocabulary'
+import { SceneDivider, SceneNineSlicePanel } from './SceneFrame'
 
 interface EvidencePanelProps {
   readonly game: RoomAxiomsGame
@@ -21,56 +22,84 @@ export function EvidencePanel({ game }: EvidencePanelProps) {
     .sort()
 
   return (
-    <aside className="panel evidence-panel scene-record-panel" data-panel="evidence" aria-labelledby="evidenceHeading">
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">Record Log</span>
-          <h2 id="evidenceHeading">{scenePanels.record}</h2>
-        </div>
-      </div>
-
-      <section className="evidence-section record-log-section">
-        <h3>已登记区域 ({game.actionLog.length})</h3>
-        <ol className="evidence-log">
-          {[...game.actionLog].reverse().map((entry) => (
-            <li className="evidence-item" key={`${entry.id}-${entry.order}`}>
-              <span className="evidence-coord">{entry.id}</span>
-              <span>
-                <b>{sceneCellLabels[entry.kind]}</b>
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="evidence-section notes-section">
-        <h3>{scenePanels.marks}</h3>
-        <div className="note-group">
-          <span className="note-symbol guest-note">
-            <Flag size={16} aria-hidden="true" />
-          </span>
+    <aside
+      className="panel evidence-panel scene-record-panel scene-framed-panel"
+      data-panel="evidence"
+      aria-labelledby="evidenceHeading"
+    >
+      <SceneNineSlicePanel className="scene-record-frame" variant="paper">
+        <div className="panel-heading scene-panel-heading">
           <div>
-            <b>{sceneMarkLabels.guest} ({anomalyMarks.length} / {game.targetGuestCount})</b>
-            <p>{anomalyMarks.length > 0 ? anomalyMarks.join('、') : '尚未标注'}</p>
+            <span className="eyebrow">Record Log</span>
+            <h2 id="evidenceHeading">{scenePanels.record}</h2>
           </div>
         </div>
-        <div className="note-group">
-          <span className="note-symbol safe-note">
-            <Circle size={16} aria-hidden="true" />
-          </span>
-          <div>
-            <b>{sceneMarkLabels.safe} ({safeMarks.length})</b>
-            <p>{safeMarks.length > 0 ? safeMarks.join('、') : '尚未标注'}</p>
-          </div>
-        </div>
-      </section>
+        <SceneDivider className="scene-heading-divider" id="side" />
 
-      {game.devMode ? <DeveloperPanel game={game} /> : null}
+        <section className="evidence-section record-log-section">
+          <h3>已登记区域 ({game.actionLog.length})</h3>
+          <ol className="evidence-log">
+            {[...game.actionLog].reverse().map((entry) => (
+              <li className="evidence-item" key={`${entry.id}-${entry.order}`}>
+                <span className="evidence-coord">{entry.id}</span>
+                <span>
+                  <b>{sceneCellLabels[entry.kind]}</b>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
 
-      <button className="primary-button submit-button scene-submit-button" type="button" onClick={game.submitConclusion}>
-        {scenePanels.submitSurvey}
-      </button>
+        <section className="evidence-section notes-section">
+          <h3>{scenePanels.marks}</h3>
+          <MarkGroup
+            countLabel={`${anomalyMarks.length} / ${game.targetGuestCount}`}
+            emptyLabel="尚未标注"
+            ids={anomalyMarks}
+            kind="guest"
+          />
+          <MarkGroup
+            countLabel={String(safeMarks.length)}
+            emptyLabel="尚未标注"
+            ids={safeMarks}
+            kind="safe"
+          />
+        </section>
+
+        {game.devMode ? <DeveloperPanel game={game} /> : null}
+
+        <SceneNineSlicePanel className="scene-submit-frame" variant="submit">
+          <button className="primary-button submit-button scene-submit-button" type="button" onClick={game.submitConclusion}>
+            {scenePanels.submitSurvey}
+          </button>
+        </SceneNineSlicePanel>
+      </SceneNineSlicePanel>
     </aside>
+  )
+}
+
+function MarkGroup({
+  countLabel,
+  emptyLabel,
+  ids,
+  kind,
+}: {
+  readonly countLabel: string
+  readonly emptyLabel: string
+  readonly ids: readonly string[]
+  readonly kind: 'guest' | 'safe'
+}) {
+  const Icon = kind === 'guest' ? Flag : Circle
+  return (
+    <div className="note-group">
+      <span className={`note-symbol ${kind === 'guest' ? 'guest-note' : 'safe-note'}`}>
+        <Icon size={16} aria-hidden="true" />
+      </span>
+      <div>
+        <b>{sceneMarkLabels[kind]} ({countLabel})</b>
+        <p>{ids.length > 0 ? ids.join('、') : emptyLabel}</p>
+      </div>
+    </div>
   )
 }
 
