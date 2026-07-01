@@ -17,6 +17,7 @@ import {
 export interface VNDialogueOverlayProps {
   readonly scene: DialogueScene
   readonly lineIndex: number
+  readonly idle?: boolean
   readonly manifest?: ThemeAssetManifest
   readonly preferences?: VNPreferences
   readonly onAdvance: () => void
@@ -27,6 +28,7 @@ export interface VNDialogueOverlayProps {
 export function VNDialogueOverlay({
   scene,
   lineIndex,
+  idle = false,
   manifest = DEFAULT_THEME_ASSET_MANIFEST,
   preferences = DEFAULT_VN_PREFERENCES,
   onAdvance,
@@ -54,12 +56,12 @@ export function VNDialogueOverlay({
   const isLastLine = nextIndex === null
 
   useEffect(() => {
-    dialogRef.current?.focus()
-  }, [lineIndex, scene.id])
+    if (!idle) dialogRef.current?.focus()
+  }, [idle, lineIndex, scene.id])
 
   useEffect(() => {
     let resetTimeoutId: number | undefined
-    if (revealDelayMs === 0) {
+    if (revealDelayMs === 0 || idle) {
       resetTimeoutId = window.setTimeout(() => setVisibleLength(lineText.length), 0)
       return () => {
         if (resetTimeoutId !== undefined) window.clearTimeout(resetTimeoutId)
@@ -87,12 +89,13 @@ export function VNDialogueOverlay({
       if (resetTimeoutId !== undefined) window.clearTimeout(resetTimeoutId)
       window.clearInterval(intervalId)
     }
-  }, [lineText, revealDelayMs])
+  }, [idle, lineText, revealDelayMs])
 
   if (line === null) return null
 
   const closeOrSkip = onSkip ?? onClose
   const advance = () => {
+    if (idle) return
     if (!textFullyVisible) {
       setVisibleLength(lineText.length)
       return
@@ -103,12 +106,13 @@ export function VNDialogueOverlay({
 
   return (
     <section
-      className="vn-backdrop"
+      className={`vn-backdrop${idle ? ' is-idle' : ''}`}
       role="region"
       aria-labelledby="vnDialogueTitle"
       tabIndex={-1}
       ref={dialogRef}
       onKeyDown={(event) => {
+        if (idle) return
         if (event.key === 'Escape') {
           event.preventDefault()
           onClose()
@@ -147,19 +151,20 @@ export function VNDialogueOverlay({
               <span className="eyebrow">{scene.title}</span>
               <h2 id="vnDialogueTitle">{line.speaker}</h2>
             </div>
-            <button className="icon-button" type="button" onClick={onClose} aria-label="关闭对话">
+            <button className="icon-button" type="button" onClick={onClose} aria-label={idle ? '隐藏待机对话层' : '关闭对话'}>
               <X size={19} aria-hidden="true" />
             </button>
           </div>
           <button
             className="vn-dialogue-text"
             type="button"
+            disabled={idle}
             onClick={advance}
-            aria-label={isLastLine ? '关闭对话' : '继续对话'}
+            aria-label={idle ? '待机对话' : isLastLine ? '关闭对话' : '继续对话'}
           >
             {visibleText}
           </button>
-          <div className="vn-dialogue-actions">
+          <div className="vn-dialogue-actions" aria-hidden={idle}>
             <span aria-live="polite">
               {lineIndex + 1} / {scene.lines.length}
             </span>

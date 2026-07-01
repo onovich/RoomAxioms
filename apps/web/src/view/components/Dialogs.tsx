@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { AlertTriangle, Check } from 'lucide-react'
+
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 import { VNDialogueOverlay } from '../../vn/VNDialogueOverlay'
 
@@ -7,16 +9,33 @@ interface DialogProps {
 }
 
 export function Dialogs({ game }: DialogProps) {
+  const [idleDialogue, setIdleDialogue] = useState<RoomAxiomsGame['dialogue']>(null)
+  const activeDialogue = game.dialogue ?? idleDialogue
+  const idle = game.dialogue === null && idleDialogue !== null
+
   return (
     <>
-      {game.dialogue ? (
+      {activeDialogue ? (
         <VNDialogueOverlay
-          scene={game.dialogue.scene}
-          lineIndex={game.dialogue.lineIndex}
+          scene={activeDialogue.scene}
+          lineIndex={activeDialogue.lineIndex}
+          idle={idle}
           preferences={game.vnPreferences}
           onAdvance={game.advanceDialogue}
-          onClose={game.closeDialogue}
-          onSkip={game.skipDialogue}
+          onClose={() => {
+            if (idle) setIdleDialogue(null)
+            else {
+              setIdleDialogue(activeDialogue)
+              game.closeDialogue()
+            }
+          }}
+          onSkip={() => {
+            if (idle) setIdleDialogue(null)
+            else {
+              setIdleDialogue(activeDialogue)
+              game.skipDialogue()
+            }
+          }}
         />
       ) : null}
       {game.dialogue === null && game.result ? <ResultDialog game={game} /> : null}

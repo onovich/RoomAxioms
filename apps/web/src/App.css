@@ -1520,6 +1520,10 @@ h3 {
   z-index: 60;
 }
 
+.vn-backdrop.is-idle {
+  opacity: 0.72;
+}
+
 .vn-stage {
   align-items: end;
   background: transparent;
@@ -1629,6 +1633,10 @@ h3 {
   padding: 14px;
   text-align: left;
   width: 100%;
+}
+
+.vn-dialogue-text:disabled {
+  cursor: default;
 }
 
 .vn-dialogue-text:hover,
@@ -3780,6 +3788,48 @@ h3 {
   top: 789px;
   width: 1081px;
   z-index: 5;
+}
+
+.scene-player-vn-slot .vn-backdrop {
+  background: transparent;
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.scene-player-vn-slot .vn-stage {
+  min-height: 100%;
+  width: 100%;
+}
+
+.scene-player-vn-slot .vn-dialogue-box {
+  bottom: 0;
+  left: 0;
+  max-width: none;
+  padding: 16px;
+  position: absolute;
+  transform: none;
+  width: 760px;
+}
+
+.scene-player-vn-slot .vn-portrait {
+  bottom: 0;
+  height: 360px;
+  max-width: none;
+  width: 290px;
+}
+
+.scene-player-vn-slot .vn-portrait.left {
+  left: -300px;
+}
+
+.scene-player-vn-slot .vn-portrait.right {
+  left: 690px;
+  right: auto;
+}
+
+.scene-player-vn-slot .vn-backdrop.is-idle .vn-dialogue-actions {
+  visibility: hidden;
 }
 
 .scene-player-mobile-tabs-slot {
