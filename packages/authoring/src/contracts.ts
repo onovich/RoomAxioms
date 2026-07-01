@@ -146,7 +146,7 @@ export interface AuthoringCaseValidationReport {
     readonly stats: AuthoringSolverStatsReport
   }
   readonly initialGuestLayoutExamples?: {
-    readonly layouts: readonly (readonly string[])[]
+    readonly layouts: readonly AuthoringGuestLayoutExample[]
     readonly shown: number
     readonly hasMore: boolean
     readonly stats: AuthoringSolverStatsReport
@@ -173,6 +173,17 @@ export interface AuthoringCaseValidationReport {
   }
   readonly difficultyReview?: AuthoringDifficultyReviewReport
   readonly recommendation: AuthoringRecommendation
+}
+
+export interface AuthoringGuestLayoutExample {
+  readonly guestCells: readonly string[]
+  readonly changedCells: readonly AuthoringGuestLayoutChangedCell[]
+}
+
+export interface AuthoringGuestLayoutChangedCell {
+  readonly cellId: string
+  readonly current: string
+  readonly alternative: string
 }
 
 export type AuthoringDifficultyReviewBucket =

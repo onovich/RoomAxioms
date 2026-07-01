@@ -2993,12 +2993,16 @@ h3 {
 
 .answer-examples-panel li {
   color: var(--workbench-ink);
+  display: grid;
+  gap: 3px;
   font-size: 11px;
   line-height: 1.45;
 }
 
-.answer-examples-panel li b {
-  margin-right: 8px;
+.answer-examples-panel li small {
+  color: var(--workbench-muted);
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .answer-examples-panel p {

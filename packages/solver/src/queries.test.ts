@@ -129,8 +129,9 @@ describe('guest-layout uniqueness and counting', () => {
       stats: { truncated: false },
     });
     expect(result.layouts).toHaveLength(2);
-    expect(new Set(result.layouts.map((layout) => layout.join('|'))).size).toBe(2);
-    expect(result.layouts.every((layout) => layout.length === 1)).toBe(true);
+    expect(new Set(result.layouts.map((layout) => layout.guestCells.join('|'))).size).toBe(2);
+    expect(result.layouts.every((layout) => layout.guestCells.length === 1)).toBe(true);
+    expect(result.layouts.every((layout) => layout.cells[layout.guestCells[0] ?? ''] === 'guest')).toBe(true);
   });
 
   it('honors maxGuestLayouts as an additional count budget', () => {

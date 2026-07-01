@@ -80,7 +80,7 @@ export function isGuestLayoutUnique(input: SolveInput, options: SolverOptions = 
 
   return {
     unique,
-    guestCells: unique ? summary.layouts[0] ?? null : null,
+    guestCells: unique ? summary.layouts[0]?.guestCells ?? null : null,
     stats: summary.stats,
   };
 }
@@ -150,7 +150,7 @@ export function findPossibleRecordSets(
 interface GuestLayoutSummary {
   readonly count: number;
   readonly greaterThan?: number;
-  readonly layouts: readonly (readonly string[])[];
+  readonly layouts: GuestLayoutPreviewResult['layouts'];
   readonly stats: SolveResult['stats'];
 }
 
@@ -166,7 +166,7 @@ function collectGuestLayouts(input: SolveInput, cap: number, options: SolverOpti
   const optionCap = options.maxGuestLayouts ?? cap;
   const effectiveCap = Math.max(0, Math.floor(Math.min(cap, optionCap)));
   const cells = allCells(input.puzzle.board);
-  const layouts = new Map<string, readonly string[]>();
+  const layouts = new Map<string, GuestLayoutPreviewResult['layouts'][number]>();
   let greaterThan: number | undefined;
   let stopped = false;
   let stats = zeroStats();
@@ -185,7 +185,10 @@ function collectGuestLayouts(input: SolveInput, cap: number, options: SolverOpti
           return false;
         }
 
-        layouts.set(key, guestCells);
+        layouts.set(key, {
+          guestCells,
+          cells: model.cells,
+        });
       }
 
       return true;

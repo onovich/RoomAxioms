@@ -2534,7 +2534,15 @@ function AnswerExamplesPanel({
         {overview.answerExamples.layouts.map((layout) => (
           <li key={layout.index}>
             <b>第 {layout.index} 套</b>
-            <span>{layout.anomalyCells.join('、')}</span>
+            <span>异常区域：{layout.anomalyCells.join('、')}</span>
+            {layout.changedCells.length === 0 ? null : (
+              <small>
+                和当前地图不同：{layout.changedCells.slice(0, 6).map((change) =>
+                  `${change.cellId} ${kindLabel(change.current)}→${kindLabel(change.alternative)}`,
+                ).join('；')}
+                {layout.changedCells.length > 6 ? `；还有 ${layout.changedCells.length - 6} 格` : ''}
+              </small>
+            )}
           </li>
         ))}
       </ol>

@@ -333,7 +333,7 @@ function validatePuzzleInputForChecks(
         stats: statsReport(initialGuestLayouts.stats),
       },
       initialGuestLayoutExamples: {
-        layouts: initialGuestLayoutExamples.layouts,
+        layouts: guestLayoutExamplesFor(puzzle, initialGuestLayoutExamples.layouts),
         shown: initialGuestLayoutExamples.layouts.length,
         hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
         stats: statsReport(initialGuestLayoutExamples.stats),
@@ -427,7 +427,7 @@ function validatePuzzleCorrectnessOnly(
         stats: statsReport(initialGuestLayouts.stats),
       },
       initialGuestLayoutExamples: {
-        layouts: initialGuestLayoutExamples.layouts,
+        layouts: guestLayoutExamplesFor(puzzle, initialGuestLayoutExamples.layouts),
         shown: initialGuestLayoutExamples.layouts.length,
         hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
         stats: statsReport(initialGuestLayoutExamples.stats),
@@ -1095,6 +1095,27 @@ function targetObservationsForCells(
   return cellIds.map((cellId) => ({
     cellId,
     kind: puzzle.target[cellId],
+  }))
+}
+
+function guestLayoutExamplesFor(
+  puzzle: PuzzleDefinition,
+  layouts: readonly {
+    readonly guestCells: readonly CellId[]
+    readonly cells: Readonly<Record<CellId, string>>
+  }[],
+): NonNullable<AuthoringCaseValidationReport['initialGuestLayoutExamples']>['layouts'] {
+  const boardCells = allCells(puzzle.board)
+
+  return layouts.map((layout) => ({
+    guestCells: layout.guestCells,
+    changedCells: boardCells
+      .filter((cellId) => puzzle.target[cellId] !== layout.cells[cellId])
+      .map((cellId) => ({
+        cellId,
+        current: puzzle.target[cellId],
+        alternative: layout.cells[cellId],
+      })),
   }))
 }
 

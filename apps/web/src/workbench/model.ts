@@ -168,6 +168,13 @@ export interface WorkbenchAnswerExamples {
 export interface WorkbenchAnswerExample {
   readonly index: number
   readonly anomalyCells: readonly CellId[]
+  readonly changedCells: readonly WorkbenchAnswerChangedCell[]
+}
+
+export interface WorkbenchAnswerChangedCell {
+  readonly cellId: CellId
+  readonly current: CellKind
+  readonly alternative: CellKind
 }
 
 export interface WorkbenchDiagnosticsItemDetail {
@@ -467,7 +474,12 @@ function answerExamplesForReport(
   return {
     layouts: examples.layouts.slice(0, 4).map((layout, index) => ({
       index: index + 1,
-      anomalyCells: layout,
+      anomalyCells: layout.guestCells,
+      changedCells: layout.changedCells.map((change) => ({
+        cellId: change.cellId,
+        current: change.current as CellKind,
+        alternative: change.alternative as CellKind,
+      })),
     })),
     hasMore: examples.hasMore || knownCount > examples.layouts.length,
   }

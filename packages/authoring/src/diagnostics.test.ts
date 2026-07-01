@@ -145,6 +145,10 @@ describe('in-memory authoring diagnostics', () => {
       stats: { truncated: false },
     })
     expect(report.validation.initialGuestLayoutExamples?.layouts).toHaveLength(4)
+    expect(report.validation.initialGuestLayoutExamples?.layouts[0]).toMatchObject({
+      guestCells: expect.any(Array),
+      changedCells: expect.any(Array),
+    })
   })
 
   it('runs degeneracy-only diagnostics without rule-contribution or proof work', () => {
