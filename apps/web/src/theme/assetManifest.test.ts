@@ -84,6 +84,8 @@ describe('theme asset manifest', () => {
       'dispatcher',
       'investigator-thinking',
       'dispatcher-sensing',
+      'figma-protagonist-bust',
+      'figma-assistant-bust',
     ])
     expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'sound')).toEqual([])
   })
@@ -109,6 +111,33 @@ describe('theme asset manifest', () => {
       'investigator',
       'dispatcher',
     ])
+  })
+
+  it('registers Phase 38 Figma shell slots as temporary player-safe assets', () => {
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'nineSliceFrame').map((asset) => asset.id)).toEqual([
+      'figma-panel-box-001',
+      'figma-submit-box-002',
+    ])
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'divider').map((asset) => asset.id)).toEqual([
+      'figma-divider-wide',
+      'figma-divider-side',
+      'figma-divider-short',
+    ])
+    expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'ruleIcon').map((asset) => asset.id)).toEqual([
+      'figma-rule-icon-exact',
+      'figma-rule-icon-exact-alt',
+      'figma-rule-icon-orthogonal',
+      'figma-rule-icon-adjacent',
+    ])
+
+    const frame = resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'nineSliceFrame', 'figma-panel-box-001')
+    expect(frame).toMatchObject({
+      status: 'userProvided',
+      placeholder: false,
+      final: false,
+    })
+    expect(frame.src).toContain('figma-puzzle-prototype/box-001-middle-stretch.png')
+    expect(frame.entry?.safeForPlayerRoute).toBe(true)
   })
 
   it('keeps the default placeholder manifest free of secrecy leaks', () => {

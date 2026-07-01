@@ -4,20 +4,35 @@ import { STATIC_DIALOGUE_SCENES } from '../vn/dialogue'
 import { DEFAULT_THEME_ASSET_MANIFEST, type ThemeAssetManifest } from './assetManifest'
 import { createThemeAssetReviewReport, validateThemeAssetIntake } from './assetReview'
 
+const DEFAULT_USER_PROVIDED_ASSET_IDS = [
+  'investigator',
+  'dispatcher',
+  'investigator-thinking',
+  'dispatcher-sensing',
+  'figma-panel-box-001',
+  'figma-submit-box-002',
+  'figma-divider-wide',
+  'figma-divider-side',
+  'figma-divider-short',
+  'figma-rule-icon-exact',
+  'figma-rule-icon-exact-alt',
+  'figma-rule-icon-orthogonal',
+  'figma-rule-icon-adjacent',
+  'figma-protagonist-bust',
+  'figma-assistant-bust',
+] as const
+
 describe('theme asset review workflow', () => {
   it('summarizes placeholder manifest status and dialogue triggers for private review', () => {
     const report = createThemeAssetReviewReport(DEFAULT_THEME_ASSET_MANIFEST, STATIC_DIALOGUE_SCENES)
 
     expect(report.manifestId).toBe('unregistered-scene-placeholder')
-    expect(report.statusCounts.placeholder).toBe(DEFAULT_THEME_ASSET_MANIFEST.assets.length - 4)
-    expect(report.statusCounts.userProvided).toBe(4)
+    expect(report.statusCounts.placeholder).toBe(
+      DEFAULT_THEME_ASSET_MANIFEST.assets.length - DEFAULT_USER_PROVIDED_ASSET_IDS.length,
+    )
+    expect(report.statusCounts.userProvided).toBe(DEFAULT_USER_PROVIDED_ASSET_IDS.length)
     expect(report.placeholderAssetIds).toContain('field-office')
-    expect(report.pendingApprovalAssetIds).toEqual([
-      'investigator',
-      'dispatcher',
-      'investigator-thinking',
-      'dispatcher-sensing',
-    ])
+    expect(report.pendingApprovalAssetIds).toEqual(DEFAULT_USER_PROVIDED_ASSET_IDS)
     expect(report.dialogueCategories).toContain('caseIntro')
     expect(report.dialogueLeaks).toEqual([])
     expect(report.manifestLeaks).toEqual([])

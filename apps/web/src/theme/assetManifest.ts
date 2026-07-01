@@ -1,3 +1,5 @@
+import { FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE } from './sceneShellAssets'
+
 export type ThemeAssetStatus = 'missing' | 'placeholder' | 'userProvided' | 'approved'
 
 export type ThemeAssetKind =
@@ -20,6 +22,9 @@ export type ThemeAssetKind =
   | 'expression'
   | 'background'
   | 'dialogueFrame'
+  | 'divider'
+  | 'nineSliceFrame'
+  | 'ruleIcon'
   | 'boardTheme'
   | 'cellIcon'
   | 'sound'
@@ -44,6 +49,9 @@ export const THEME_ASSET_KINDS = [
   'expression',
   'background',
   'dialogueFrame',
+  'divider',
+  'nineSliceFrame',
+  'ruleIcon',
   'boardTheme',
   'cellIcon',
   'sound',
@@ -198,6 +206,119 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Default dialogue frame placeholder',
     },
     {
+      id: 'figma-panel-box-001',
+      kind: 'nineSliceFrame',
+      status: 'userProvided',
+      label: 'Temporary Figma paper panel nine-slice frame',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}box-001-middle-stretch.png`,
+      alt: 'Temporary paper panel frame sample',
+      notes: 'Temporary Figma frame slot. Not final approved art.',
+      source: {
+        label: 'Figma temporary puzzle UI asset',
+        license: 'Temporary user-provided project reference; not approved final art.',
+        owner: 'Project owner',
+      },
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-submit-box-002',
+      kind: 'nineSliceFrame',
+      status: 'userProvided',
+      label: 'Temporary Figma submit panel nine-slice frame',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}box-002-middle-stretch.png`,
+      alt: 'Temporary submit panel frame sample',
+      notes: 'Temporary Figma frame slot. Not final approved art.',
+      source: {
+        label: 'Figma temporary puzzle UI asset',
+        license: 'Temporary user-provided project reference; not approved final art.',
+        owner: 'Project owner',
+      },
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-divider-wide',
+      kind: 'divider',
+      status: 'userProvided',
+      label: 'Temporary Figma wide divider',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-wide.svg`,
+      notes: 'Temporary divider slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-divider-side',
+      kind: 'divider',
+      status: 'userProvided',
+      label: 'Temporary Figma side divider',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-side.svg`,
+      notes: 'Temporary divider slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-divider-short',
+      kind: 'divider',
+      status: 'userProvided',
+      label: 'Temporary Figma short divider',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-short.svg`,
+      notes: 'Temporary divider slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-rule-icon-exact',
+      kind: 'ruleIcon',
+      status: 'userProvided',
+      label: 'Temporary Figma exact-count rule icon',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-exact-icon.svg`,
+      notes: 'Temporary rule icon slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-rule-icon-exact-alt',
+      kind: 'ruleIcon',
+      status: 'userProvided',
+      label: 'Temporary Figma exact-count alternate rule icon',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-exact-icon-alt.svg`,
+      notes: 'Temporary rule icon slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-rule-icon-orthogonal',
+      kind: 'ruleIcon',
+      status: 'userProvided',
+      label: 'Temporary Figma orthogonal-scope rule icon',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-orthogonal-icon.svg`,
+      notes: 'Temporary rule icon slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-rule-icon-adjacent',
+      kind: 'ruleIcon',
+      status: 'userProvided',
+      label: 'Temporary Figma adjacent-scope rule icon',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-adjacent-icon.svg`,
+      notes: 'Temporary rule icon slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-protagonist-bust',
+      kind: 'portrait',
+      status: 'userProvided',
+      label: 'Temporary Figma protagonist bust',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}protagonist-portrait.png`,
+      alt: 'Temporary protagonist bust portrait',
+      notes: 'Temporary Figma character slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
+      id: 'figma-assistant-bust',
+      kind: 'portrait',
+      status: 'userProvided',
+      label: 'Temporary Figma assistant bust',
+      src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}assistant-portrait.png`,
+      alt: 'Temporary assistant bust portrait',
+      notes: 'Temporary Figma character slot. Not final approved art.',
+      safeForPlayerRoute: true,
+    },
+    {
       id: 'brand-mark',
       kind: 'logoMark',
       status: 'placeholder',
@@ -341,6 +462,9 @@ const PLACEHOLDER_LABELS = {
   expression: 'Missing expression placeholder',
   background: 'Missing background placeholder',
   dialogueFrame: 'Missing dialogue frame placeholder',
+  divider: 'Missing divider placeholder',
+  nineSliceFrame: 'Missing nine-slice frame placeholder',
+  ruleIcon: 'Missing rule icon placeholder',
   boardTheme: 'Current board visual fallback',
   cellIcon: 'Current cell icon fallback',
   sound: 'Silent sound placeholder',
