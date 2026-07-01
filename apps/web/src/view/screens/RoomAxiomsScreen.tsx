@@ -5,6 +5,7 @@ import { BoardPanel } from '../components/BoardPanel'
 import { Dialogs } from '../components/Dialogs'
 import { EvidencePanel } from '../components/EvidencePanel'
 import { MobileTabs } from '../components/MobileTabs'
+import { PlayerShell } from '../components/PlayerShell'
 import { RulePanel } from '../components/RulePanel'
 import { TopBar } from '../components/TopBar'
 import type { PuzzleDefinition } from '@room-axioms/domain'
@@ -34,21 +35,24 @@ function RoomAxiomsCaseView({
 }) {
   const game = useRoomAxiomsGame(puzzle)
 
+  const topbar = (
+    <TopBar
+      game={game}
+      cases={caseSummaries}
+      selectedCaseId={selectedCaseId}
+      onSelectCase={onSelectCase}
+    />
+  )
+
   return (
-    <div className="room-axioms-app scene-shell" data-mobile-panel={game.mobilePanel}>
-      <TopBar
-        game={game}
-        cases={caseSummaries}
-        selectedCaseId={selectedCaseId}
-        onSelectCase={onSelectCase}
-      />
-      <main className="app-shell scene-workstation">
-        <RulePanel game={game} />
-        <BoardPanel game={game} />
-        <EvidencePanel game={game} />
-      </main>
-      <MobileTabs game={game} />
-      <Dialogs game={game} />
-    </div>
+    <PlayerShell
+      board={<BoardPanel game={game} />}
+      dialogs={<Dialogs game={game} />}
+      evidence={<EvidencePanel game={game} />}
+      mobilePanel={game.mobilePanel}
+      mobileTabs={<MobileTabs game={game} />}
+      rules={<RulePanel game={game} />}
+      topbar={topbar}
+    />
   )
 }

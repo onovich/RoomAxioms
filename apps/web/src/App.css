@@ -3692,3 +3692,130 @@ h3 {
     animation-duration: 0.001ms !important;
   }
 }
+
+.scene-player-root {
+  background:
+    linear-gradient(90deg, rgba(244, 236, 220, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(244, 236, 220, 0.07) 1px, transparent 1px),
+    #101317;
+  background-size: 32px 32px;
+  display: grid;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 0;
+  place-items: center;
+}
+
+.scene-player-viewport {
+  overflow: visible;
+  position: relative;
+}
+
+.scene-player-canvas {
+  background:
+    linear-gradient(90deg, rgba(13, 37, 68, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(13, 37, 68, 0.045) 1px, transparent 1px),
+    var(--scene-paper);
+  background-size: 28px 28px;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.32);
+  color: var(--scene-ink);
+  height: 1080px;
+  isolation: isolate;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  transform-origin: 0 0;
+  width: 1920px;
+}
+
+.scene-player-canvas::before {
+  background:
+    radial-gradient(circle at 18% 9%, rgba(255, 255, 255, 0.34), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 38%);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.scene-player-topbar-slot {
+  height: 84px;
+  left: 32px;
+  position: absolute;
+  top: 22px;
+  width: 1863px;
+  z-index: 4;
+}
+
+.scene-player-workstation {
+  display: grid;
+  gap: 21px;
+  grid-template-columns: 423px 1134px 260px;
+  height: 664px;
+  left: 32px;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 114px;
+  width: 1863px;
+  z-index: 2;
+}
+
+.scene-player-rules-slot,
+.scene-player-board-slot,
+.scene-player-evidence-slot {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.scene-player-vn-slot {
+  height: 276px;
+  left: 360px;
+  pointer-events: none;
+  position: absolute;
+  top: 789px;
+  width: 1081px;
+  z-index: 5;
+}
+
+.scene-player-vn-slot > * {
+  pointer-events: auto;
+}
+
+.scene-player-mobile-tabs-slot {
+  display: none;
+}
+
+.scene-player-topbar-slot .topbar {
+  height: 84px;
+  margin: 0;
+  min-height: 84px;
+  padding: 10px 18px;
+  position: relative;
+  top: auto;
+}
+
+.scene-player-root .scene-player-rules-slot > [data-panel='rules'],
+.scene-player-root .scene-player-evidence-slot > [data-panel='evidence'] {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.scene-player-root .scene-player-board-slot > [data-panel='board'] {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.scene-player-root .scene-map-stage {
+  flex: 1;
+  min-height: 0;
+}
