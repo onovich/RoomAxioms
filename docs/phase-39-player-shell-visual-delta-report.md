@@ -1,6 +1,6 @@
 # Phase 39 - Player Shell Visual Delta Report
 
-Status: Round 5 asset intake readiness draft
+Status: Round 6 secrecy and accessibility regression draft
 Date: 2026-07-02
 Routes:
 
@@ -152,6 +152,32 @@ Current asset review gate:
 | Dialogue leaks | expected none |
 | Manifest leaks | expected none |
 
+## Round 6 Player Secrecy And Accessibility Regression
+
+Round 6 ran a browser-level ordinary player route scan after the visual and
+asset-intake changes.
+
+Evidence screenshot:
+
+- `tmp/phase39-r6-player-secrecy-keyboard-1920x1080.png`
+
+Measured results at 1920x1080:
+
+| Check | Result |
+| --- | --- |
+| Canvas aspect | `1920x1080`, aspect `1.777778` |
+| Forbidden player DOM/text hits | none |
+| Ordinary Hint / partner review product entry hits | none |
+| Replacement character count | `0` |
+| Developer panel count | `0` |
+| Target/dev spoiler class count | `0` |
+| Grid roles | `1` grid, `16` gridcells |
+| Toolbar roles | `1` toolbar |
+| Keyboard arrow navigation | focused `A1`, ArrowRight moved focus to `B1` |
+| Idle VN dialogue body pointer events | `none` |
+| Idle VN close button pointer events | `auto` |
+| Element at idle dialogue center | `scene-player-canvas` |
+
 ## Visual Delta
 
 ### P0
@@ -284,7 +310,21 @@ developer-only information on the normal player route.
 - No current asset was marked final approved.
 - No editor/workbench, solver/proof/schema/domain, puzzle, or VN data changed.
 
+## Round 6 Debug Self-Check
+
+- Browser scan covered ordinary player route secrecy terms, dev-only panels,
+  target spoiler classes, ordinary Hint entry absence, keyboard navigation, and
+  idle VN click-through behavior.
+- Existing test coverage also includes `PlayerSurfaceSecrecy`, `TopBar`,
+  `VNDialogueOverlay`, `dialogue`, `assetManifest`, and `assetReview` contracts.
+
+## Round 6 Architecture Self-Check
+
+- Documentation-only round; no production code changed.
+- The real player route remains driven by existing production state and data.
+- Editor/workbench and solver/proof/schema/domain surfaces were not touched.
+
 ## Next
 
-Round 6 should run focused manifest/checklist validation and then continue with
-player secrecy, Hint, dev gating, and accessibility regression checks.
+Round 7 should run local smoke/final viewport evidence, then prepare the final
+Phase 39 report and checker handoff.
