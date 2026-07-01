@@ -2968,6 +2968,45 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+.answer-examples-panel {
+  background: #161b1b;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  grid-column: 1 / -1;
+  padding: 8px 10px;
+}
+
+.answer-examples-panel summary {
+  color: #f0d9a2;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.answer-examples-panel ol {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.answer-examples-panel li {
+  color: var(--workbench-ink);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.answer-examples-panel li b {
+  margin-right: 8px;
+}
+
+.answer-examples-panel p {
+  color: var(--workbench-muted);
+  font-size: 10px;
+  margin: 8px 0 0;
+}
+
 .diagnostics-group {
   background: var(--surface-0);
   border: 1px solid var(--border);

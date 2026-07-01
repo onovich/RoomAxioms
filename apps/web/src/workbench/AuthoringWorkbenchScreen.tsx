@@ -2515,7 +2515,31 @@ function DiagnosticsOverview({
           {metric.detail === undefined ? null : <small>{metric.detail}</small>}
         </article>
       ))}
+      <AnswerExamplesPanel overview={overview} />
     </div>
+  )
+}
+
+function AnswerExamplesPanel({
+  overview,
+}: {
+  readonly overview: WorkbenchDiagnosticsOverview
+}) {
+  if (overview.answerExamples === undefined) return null
+
+  return (
+    <details className="answer-examples-panel">
+      <summary>查看前 {overview.answerExamples.layouts.length} 套可能答案</summary>
+      <ol>
+        {overview.answerExamples.layouts.map((layout) => (
+          <li key={layout.index}>
+            <b>第 {layout.index} 套</b>
+            <span>{layout.anomalyCells.join('、')}</span>
+          </li>
+        ))}
+      </ol>
+      {overview.answerExamples.hasMore ? <p>还有更多可能答案未展示。</p> : null}
+    </details>
   )
 }
 

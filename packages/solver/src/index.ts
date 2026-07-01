@@ -7,11 +7,13 @@ export {
   findPossibleRecordSets,
   isGuestLayoutUnique,
   isSatisfiable,
+  previewGuestLayouts,
 } from './queries.js';
 
 export type {
   ForcedCellResult,
   GuestLayoutCountResult,
+  GuestLayoutPreviewResult,
   RecordSetPossibility,
   RecordSetPossibilityResult,
   SolveInput,

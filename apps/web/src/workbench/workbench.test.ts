@@ -657,6 +657,10 @@ describe('authoring workbench shell model', () => {
     expect(overview?.metrics.find((metric) => metric.id === 'difficulty')).toMatchObject({
       tone: 'warning',
     })
+    expect(overview?.answerExamples).toMatchObject({
+      hasMore: true,
+    })
+    expect(overview?.answerExamples?.layouts).toHaveLength(4)
     const plainDetails = overview?.metrics.map((metric) => metric.detail ?? '').join('\n') ?? ''
     expect(plainDetails).not.toContain('最终访客')
     expect(plainDetails).not.toContain('caps ')

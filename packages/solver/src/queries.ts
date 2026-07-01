@@ -3,6 +3,7 @@ import { allCells } from '@room-axioms/domain';
 import type {
   ForcedCellResult,
   GuestLayoutCountResult,
+  GuestLayoutPreviewResult,
   RecordSetPossibility,
   RecordSetPossibilityResult,
   SolveInput,
@@ -94,6 +95,21 @@ export function countGuestLayouts(
   return {
     count: summary.count,
     ...(summary.greaterThan === undefined ? {} : { greaterThan: summary.greaterThan }),
+    stats: summary.stats,
+  };
+}
+
+export function previewGuestLayouts(
+  input: SolveInput,
+  cap: number,
+  options: SolverOptions = {},
+): GuestLayoutPreviewResult {
+  const summary = collectGuestLayouts(input, cap, options);
+
+  return {
+    count: summary.count,
+    ...(summary.greaterThan === undefined ? {} : { greaterThan: summary.greaterThan }),
+    layouts: summary.layouts,
     stats: summary.stats,
   };
 }

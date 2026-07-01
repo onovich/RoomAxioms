@@ -5,6 +5,7 @@ import {
   countGuestLayouts,
   findPossibleRecordSets,
   isSatisfiable,
+  previewGuestLayouts,
   type SolverStats,
 } from '@room-axioms/solver'
 
@@ -276,6 +277,11 @@ function validatePuzzleInputForChecks(
     caps.candidateLayoutCap,
     solver,
   )
+  const initialGuestLayoutExamples = previewGuestLayouts(
+    { puzzle, observations: initialObservations },
+    4,
+    solver,
+  )
   const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
     ? findPossibleRecordSets({ puzzle, observations: initialObservations }, solver)
     : undefined
@@ -326,6 +332,12 @@ function validatePuzzleInputForChecks(
         ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
         stats: statsReport(initialGuestLayouts.stats),
       },
+      initialGuestLayoutExamples: {
+        layouts: initialGuestLayoutExamples.layouts,
+        shown: initialGuestLayoutExamples.layouts.length,
+        hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
+        stats: statsReport(initialGuestLayoutExamples.stats),
+      },
       proof: {
         noGuess: proof.noGuess,
         humanExplainable: proof.humanExplainable,
@@ -368,6 +380,11 @@ function validatePuzzleCorrectnessOnly(
     caps.candidateLayoutCap,
     solver,
   )
+  const initialGuestLayoutExamples = previewGuestLayouts(
+    { puzzle, observations: initialObservations },
+    4,
+    solver,
+  )
   const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
     ? findPossibleRecordSets({ puzzle, observations: initialObservations }, solver)
     : undefined
@@ -408,6 +425,12 @@ function validatePuzzleCorrectnessOnly(
         count: initialGuestLayouts.count,
         ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
         stats: statsReport(initialGuestLayouts.stats),
+      },
+      initialGuestLayoutExamples: {
+        layouts: initialGuestLayoutExamples.layouts,
+        shown: initialGuestLayoutExamples.layouts.length,
+        hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
+        stats: statsReport(initialGuestLayoutExamples.stats),
       },
       ...(recordSets === undefined
         ? {}

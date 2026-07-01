@@ -49,6 +49,13 @@ export interface GuestLayoutCountResult {
   readonly stats: SolverStats;
 }
 
+export interface GuestLayoutPreviewResult {
+  readonly count: number;
+  readonly greaterThan?: number;
+  readonly layouts: readonly (readonly CellId[])[];
+  readonly stats: SolverStats;
+}
+
 export interface RecordSetPossibility {
   readonly assignmentId: string;
   readonly falseRecordIds: readonly string[];

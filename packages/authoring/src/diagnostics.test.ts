@@ -22,6 +22,10 @@ const phase29OverlapTrialPath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../../../content/experimental/phase-29/p29-overlap-frontier-ledger-trial.json',
 )
+const case004Path = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../content/cases/case-004.json',
+)
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8')) as unknown
@@ -126,6 +130,21 @@ describe('in-memory authoring diagnostics', () => {
     expect(report.validation.proof).toBeUndefined()
     expect(report.quality).toBeUndefined()
     expect(report.cloneRisk).toBeUndefined()
+  })
+
+  it('includes capped answer examples for non-unique opening layouts', () => {
+    const report = evaluateDraftDiagnostics({
+      draft: readJson(case004Path),
+      checks: ['can-solve'],
+    })
+
+    expect(report.validation.initialGuestLayouts?.count).toBeGreaterThan(1)
+    expect(report.validation.initialGuestLayoutExamples).toMatchObject({
+      shown: 4,
+      hasMore: true,
+      stats: { truncated: false },
+    })
+    expect(report.validation.initialGuestLayoutExamples?.layouts).toHaveLength(4)
   })
 
   it('runs degeneracy-only diagnostics without rule-contribution or proof work', () => {

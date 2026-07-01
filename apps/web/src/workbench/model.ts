@@ -157,6 +157,17 @@ export interface WorkbenchDiagnosticsOverview {
   readonly metrics: readonly WorkbenchDiagnosticsOverviewMetric[]
   readonly capWarnings: readonly string[]
   readonly techniqueIds: readonly string[]
+  readonly answerExamples?: WorkbenchAnswerExamples
+}
+
+export interface WorkbenchAnswerExamples {
+  readonly layouts: readonly WorkbenchAnswerExample[]
+  readonly hasMore: boolean
+}
+
+export interface WorkbenchAnswerExample {
+  readonly index: number
+  readonly anomalyCells: readonly CellId[]
 }
 
 export interface WorkbenchDiagnosticsItemDetail {
@@ -347,6 +358,7 @@ export function createWorkbenchDiagnosticsOverview(
   const cloneStatus = report.cloneRisk?.status
   const groupIds = new Set(report.groups.map((group) => group.id))
   const groupWasRun = (id: AuthoringDiagnosticsGroup['id']): boolean => groupIds.has(id)
+  const answerExamples = answerExamplesForReport(report)
 
   return {
     metrics: [
@@ -439,6 +451,25 @@ export function createWorkbenchDiagnosticsOverview(
     ],
     capWarnings: report.performance.capWarnings,
     techniqueIds: proof?.techniqueIds ?? [],
+    ...(answerExamples === undefined ? {} : { answerExamples }),
+  }
+}
+
+function answerExamplesForReport(
+  report: AuthoringDraftDiagnosticsReport,
+): WorkbenchAnswerExamples | undefined {
+  const initialLayouts = report.validation.initialGuestLayouts
+  const examples = report.validation.initialGuestLayoutExamples
+  if (initialLayouts === undefined || examples === undefined) return undefined
+  const knownCount = initialLayouts.greaterThan ?? initialLayouts.count
+  if (knownCount <= 1 || examples.layouts.length <= 1) return undefined
+
+  return {
+    layouts: examples.layouts.slice(0, 4).map((layout, index) => ({
+      index: index + 1,
+      anomalyCells: layout,
+    })),
+    hasMore: examples.hasMore || knownCount > examples.layouts.length,
   }
 }
 

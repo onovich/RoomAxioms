@@ -145,6 +145,12 @@ export interface AuthoringCaseValidationReport {
     readonly greaterThan?: number
     readonly stats: AuthoringSolverStatsReport
   }
+  readonly initialGuestLayoutExamples?: {
+    readonly layouts: readonly (readonly string[])[]
+    readonly shown: number
+    readonly hasMore: boolean
+    readonly stats: AuthoringSolverStatsReport
+  }
   readonly proof?: {
     readonly noGuess: boolean
     readonly humanExplainable: boolean

@@ -2,7 +2,14 @@ import { enumerateModels } from '@room-axioms/oracle';
 import { describe, expect, it } from 'vitest';
 import type { CellKind, Comparator, Observation, PuzzleDefinition, RuleDefinition } from '@room-axioms/domain';
 
-import { countGuestLayouts, findForcedCells, findPossibleRecordSets, isGuestLayoutUnique, isSatisfiable } from './queries.js';
+import {
+  countGuestLayouts,
+  findForcedCells,
+  findPossibleRecordSets,
+  isGuestLayoutUnique,
+  isSatisfiable,
+  previewGuestLayouts,
+} from './queries.js';
 
 describe('forced-cell queries', () => {
   it('finds forced safe cells when a guest is already observed', () => {
@@ -111,6 +118,19 @@ describe('guest-layout uniqueness and counting', () => {
       greaterThan: 2,
       stats: { truncated: false },
     });
+  });
+
+  it('previews capped guest layouts for authoring counterexamples', () => {
+    const result = previewGuestLayouts({ puzzle: oneGuestPuzzle() }, 2);
+
+    expect(result).toMatchObject({
+      count: 2,
+      greaterThan: 2,
+      stats: { truncated: false },
+    });
+    expect(result.layouts).toHaveLength(2);
+    expect(new Set(result.layouts.map((layout) => layout.join('|'))).size).toBe(2);
+    expect(result.layouts.every((layout) => layout.length === 1)).toBe(true);
   });
 
   it('honors maxGuestLayouts as an additional count budget', () => {
