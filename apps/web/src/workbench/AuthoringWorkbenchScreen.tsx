@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Copy, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Copy, Eraser, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
+import type { CSSProperties, DragEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { updateDraftJsonText, type WorkbenchDraftState } from '@room-axioms/authoring/drafts'
@@ -70,6 +70,7 @@ import {
   defaultWorkbenchDiagnosticsCaps,
   diagnosticsReportForState,
   failWorkbenchDiagnostics,
+  isWorkbenchCellKind,
   markWorkbenchDiagnosticsStale,
   patchWorkbenchBoardSize,
   patchWorkbenchMetadata,
@@ -77,8 +78,9 @@ import {
   patchWorkbenchRuleBuilderDrafts,
   patchWorkbenchRulePresentation,
   patchWorkbenchTargetCell,
+  patchWorkbenchTargetCells,
   toggleWorkbenchInitialReveal,
-  workbenchCellKindOptions,
+  workbenchCellContentOptions,
   type WorkbenchBoardCell,
   type WorkbenchDiagnosticsGroupDetail,
   type WorkbenchDiagnosticsOverview,
@@ -155,9 +157,10 @@ export default function AuthoringWorkbenchScreen() {
   const [diagnosticsAbortController, setDiagnosticsAbortController] = useState<AbortController | undefined>()
   const [boardPageIndex, setBoardPageIndex] = useState(0)
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
+  const [draggingCellId, setDraggingCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [ruleDialog, setRuleDialog] = useState<RuleDialogState>({ kind: 'closed' })
-  const [activeKind, setActiveKind] = useState<CellKind>('empty')
+  const [activeKind, setActiveKind] = useState<string>('empty')
   const [objectTypes, setObjectTypes] = useState<readonly WorkbenchObjectType[]>(() => createInitialObjectTypes())
   const [objectManagerOpen, setObjectManagerOpen] = useState(false)
   const [newObjectLabelText, setNewObjectLabelText] = useState('')
@@ -197,7 +200,7 @@ export default function AuthoringWorkbenchScreen() {
   const boardPageCount = 1 + (answerExamples?.layouts.length ?? 0)
   const visibleBoardPageIndex = Math.min(boardPageIndex, Math.max(0, boardPageCount - 1))
   const activeAnswerExample = visibleBoardPageIndex === 0 ? undefined : answerExamples?.layouts[visibleBoardPageIndex - 1]
-  const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
+  const kindOptions = workbenchCellContentOptions(parsedPuzzle, activeKind, objectTypes)
   const displayKindLabel = (kind: CellKind): string => kindLabel(kind, objectTypes)
 
   useEffect(() => {
@@ -250,6 +253,7 @@ export default function AuthoringWorkbenchScreen() {
     setDiagnosticsState(createWorkbenchDiagnosticsState())
     setBoardPageIndex(0)
     setSelectedCellId(undefined)
+    setDraggingCellId(undefined)
     setSelectedRuleId(undefined)
     setRuleDialog({ kind: 'closed' })
     setActiveKind('empty')
@@ -542,6 +546,7 @@ export default function AuthoringWorkbenchScreen() {
 
   function deleteCustomObjectType(objectId: string): void {
     setObjectTypes((current) => current.filter((objectType) => objectType.id !== objectId || !objectType.custom))
+    setActiveKind((current) => current === objectId ? 'empty' : current)
   }
 
   function applyRuleBuilderDraftsPatch(
@@ -655,6 +660,17 @@ export default function AuthoringWorkbenchScreen() {
   function applyTargetCellPatch(): void {
     if (selectedCellId === undefined) return
 
+    if (!isWorkbenchCellKind(activeKind)) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${selectedCellId} 暂时不能改成${kindLabel(activeKind, objectTypes)}。`,
+        issues: [
+          'OBJECT_SCHEMA_COMPATIBILITY: 当前 Puzzle Schema v1 只能保存空地、异常区域和内置物体；自定义物体会保留在物体管理列表中，等待对象模型迁移后才能写入格子。',
+        ],
+      })
+      return
+    }
+
     const patch = patchWorkbenchTargetCell(draft, selectedCellId, activeKind)
     if (!patch.ok) {
       setPatchStatus({
@@ -666,6 +682,89 @@ export default function AuthoringWorkbenchScreen() {
     }
 
     applySuccessfulPatch(patch.state, `${selectedCellId} 已改成${kindLabel(activeKind, objectTypes)}；完整诊断已标记为待重新运行。`)
+  }
+
+  function resetSelectedCell(): void {
+    if (selectedCellId === undefined) return
+
+    const patch = patchWorkbenchTargetCell(draft, selectedCellId, 'empty')
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${selectedCellId} 未能重置为空地。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setActiveKind('empty')
+    applySuccessfulPatch(patch.state, `${selectedCellId} 已重置为空地；完整诊断已标记为待重新运行。`)
+  }
+
+  function resetAllCells(): void {
+    if (parsedPuzzle === undefined) return
+
+    const emptyCells = Object.fromEntries(
+      allCells(parsedPuzzle.board).map((cellId) => [cellId, 'empty']),
+    ) as Record<CellId, CellKind>
+    const patch = patchWorkbenchTargetCells(draft, emptyCells)
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: '整张地图未能重置为空地。',
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setActiveKind('empty')
+    applySuccessfulPatch(patch.state, '整张地图已重置为空地；完整诊断已标记为待重新运行。')
+  }
+
+  function beginCellDrag(event: DragEvent<HTMLButtonElement>, cellId: CellId): void {
+    setDraggingCellId(cellId)
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', cellId)
+  }
+
+  function allowCellDrop(event: DragEvent<HTMLButtonElement>): void {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+  }
+
+  function dropCell(event: DragEvent<HTMLButtonElement>, targetCellId: CellId): void {
+    event.preventDefault()
+    const sourceCellId = draggingCellId ?? event.dataTransfer.getData('text/plain')
+    setDraggingCellId(undefined)
+    if (sourceCellId === '' || sourceCellId === targetCellId) return
+
+    swapTargetCells(sourceCellId, targetCellId)
+  }
+
+  function swapTargetCells(sourceCellId: CellId, targetCellId: CellId): void {
+    const sourceCell = model.boardCells.find((cell) => cell.id === sourceCellId)
+    const targetCell = model.boardCells.find((cell) => cell.id === targetCellId)
+    if (sourceCell === undefined || targetCell === undefined) return
+
+    const patch = patchWorkbenchTargetCells(draft, {
+      [sourceCellId]: targetCell.kind,
+      [targetCellId]: sourceCell.kind,
+    })
+    if (!patch.ok) {
+      setPatchStatus({
+        kind: 'rejected',
+        message: `${sourceCellId} 和 ${targetCellId} 未能交换。`,
+        issues: patch.issues.map((issue) => `${issue.code}: ${issue.message}`),
+      })
+      return
+    }
+
+    setSelectedCellId(targetCellId)
+    setActiveKind(sourceCell.kind)
+    applySuccessfulPatch(
+      patch.state,
+      `${sourceCellId} 的${kindLabel(sourceCell.kind, objectTypes)}已放到 ${targetCellId}；完整诊断已标记为待重新运行。`,
+    )
   }
 
   function toggleInitialRevealForSelectedCell(): void {
@@ -964,6 +1063,16 @@ export default function AuthoringWorkbenchScreen() {
               <button className="icon-button" type="button" onClick={resetCurrentCase} title="重新加载" aria-label="重新加载">
                 <RotateCcw size={15} aria-hidden="true" />
               </button>
+              <button
+                className="icon-button danger-action"
+                type="button"
+                onClick={resetAllCells}
+                disabled={parsedPuzzle === undefined}
+                title="重置全部"
+                aria-label="重置全部"
+              >
+                <Eraser size={15} aria-hidden="true" />
+              </button>
               <button className="icon-button danger-action" type="button" onClick={() => void deleteCurrentCase()} title="删除地图" aria-label="删除地图">
                 <Trash2 size={15} aria-hidden="true" />
               </button>
@@ -999,9 +1108,15 @@ export default function AuthoringWorkbenchScreen() {
                         cell.initiallyRevealed ? 'revealed' : '',
                         cell.guestTarget ? 'guest-target' : '',
                         selectedCellId === cell.id ? 'selected' : '',
+                        draggingCellId === cell.id ? 'dragging' : '',
                         selectedRuleScopeCellSet.has(cell.id) ? 'rule-scope-preview' : '',
                       ].filter(Boolean).join(' ')}
                       onClick={() => selectBoardCell(cell)}
+                      draggable
+                      onDragStart={(event) => beginCellDrag(event, cell.id)}
+                      onDragOver={allowCellDrop}
+                      onDrop={(event) => dropCell(event, cell.id)}
+                      onDragEnd={() => setDraggingCellId(undefined)}
                       aria-pressed={selectedCellId === cell.id}
                       aria-label={`${cell.id} ${displayKindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
                     >
@@ -1039,13 +1154,14 @@ export default function AuthoringWorkbenchScreen() {
               patchStatus={patchStatus}
               canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
               onKindChange={setActiveKind}
-              onManageObjects={() => setObjectManagerOpen(true)}
+              onManageObjects={() => setObjectManagerOpen((current) => !current)}
               onCloseObjectManager={() => setObjectManagerOpen(false)}
               onObjectLabelChange={renameWorkbenchObjectType}
               onNewObjectLabelChange={setNewObjectLabelText}
               onCreateObject={createCustomObjectType}
               onDeleteObject={deleteCustomObjectType}
               onApply={applyTargetCellPatch}
+              onReset={resetSelectedCell}
               onToggleInitialReveal={toggleInitialRevealForSelectedCell}
             />
           ) : (
@@ -1283,17 +1399,18 @@ function CellFactEditor({
   onCreateObject,
   onDeleteObject,
   onApply,
+  onReset,
   onToggleInitialReveal,
 }: {
   readonly selectedCell: WorkbenchBoardCell | undefined
-  readonly activeKind: CellKind
-  readonly kindOptions: readonly CellKind[]
+  readonly activeKind: string
+  readonly kindOptions: readonly string[]
   readonly objectTypes: readonly WorkbenchObjectType[]
   readonly objectManagerOpen: boolean
   readonly newObjectLabelText: string
   readonly patchStatus: DraftPatchStatus
   readonly canPatch: boolean
-  readonly onKindChange: (kind: CellKind) => void
+  readonly onKindChange: (kind: string) => void
   readonly onManageObjects: () => void
   readonly onCloseObjectManager: () => void
   readonly onObjectLabelChange: (objectId: string, label: string) => void
@@ -1301,6 +1418,7 @@ function CellFactEditor({
   readonly onCreateObject: () => void
   readonly onDeleteObject: (objectId: string) => void
   readonly onApply: () => void
+  readonly onReset: () => void
   readonly onToggleInitialReveal: () => void
 }) {
   return (
@@ -1322,18 +1440,11 @@ function CellFactEditor({
           <select
             value={activeKind}
             disabled={!canPatch}
-            onChange={(event) => {
-              if (event.target.value === '__manage__') {
-                onManageObjects()
-                return
-              }
-              onKindChange(event.target.value as CellKind)
-            }}
+            onChange={(event) => onKindChange(event.target.value)}
           >
             {kindOptions.map((kind) => (
               <option key={kind} value={kind}>{kindLabel(kind, objectTypes)}</option>
             ))}
-            <option value="__manage__">管理物体...</option>
           </select>
         </label>
         <button className="small-button" type="button" onClick={onApply} disabled={!canPatch}>
@@ -1342,8 +1453,17 @@ function CellFactEditor({
         <button className="small-button" type="button" onClick={onToggleInitialReveal} disabled={!canPatch}>
           {selectedCell?.initiallyRevealed ? '取消初始' : '设为初始'}
         </button>
-        <button className="small-button" type="button" onClick={onManageObjects}>
-          管理物体
+        <button className="small-button" type="button" onClick={onReset} disabled={!canPatch}>
+          重置
+        </button>
+        <button
+          className="small-button"
+          type="button"
+          onClick={onManageObjects}
+          aria-controls="workbench-object-manager"
+          aria-expanded={objectManagerOpen}
+        >
+          {objectManagerOpen ? '收起物体' : '管理物体'}
         </button>
       </div>
       {objectManagerOpen ? (
@@ -1380,7 +1500,7 @@ function ObjectManagerPanel({
   readonly onClose: () => void
 }) {
   return (
-    <section className="object-manager" aria-label="物体管理">
+    <section id="workbench-object-manager" className="object-manager" aria-label="物体管理">
       <div className="object-manager-heading">
         <div>
           <h3>管理物体</h3>
@@ -2731,8 +2851,8 @@ function IssueList({ issues }: { readonly issues: readonly string[] }) {
   )
 }
 
-function kindLabel(kind: CellKind, objectTypes: readonly WorkbenchObjectType[] = createInitialObjectTypes()): string {
-  const objectType = objectTypes.find((candidate) => candidate.legacyKind === kind)
+function kindLabel(kind: string, objectTypes: readonly WorkbenchObjectType[] = createInitialObjectTypes()): string {
+  const objectType = objectTypes.find((candidate) => candidate.legacyKind === kind || candidate.id === kind)
   if (objectType !== undefined) return objectType.label
 
   switch (kind) {
@@ -2743,6 +2863,8 @@ function kindLabel(kind: CellKind, objectTypes: readonly WorkbenchObjectType[] =
     case 'bottle':
     case 'bin':
     case 'mirror':
+      return kind
+    default:
       return kind
   }
 }

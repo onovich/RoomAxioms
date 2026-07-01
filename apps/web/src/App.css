@@ -2128,6 +2128,12 @@ h3 {
   box-shadow: 0 0 0 3px rgba(215, 170, 80, 0.28);
 }
 
+.workbench-cell.dragging {
+  border-color: #9dc47b;
+  opacity: 0.62;
+  transform: scale(0.97);
+}
+
 .workbench-cell.rule-scope-preview {
   border-color: #9dc47b;
   box-shadow: 0 0 0 3px rgba(157, 196, 123, 0.32);
@@ -2201,7 +2207,7 @@ h3 {
   align-items: end;
   display: grid;
   gap: 9px;
-  grid-template-columns: minmax(160px, 1fr) repeat(3, minmax(88px, auto));
+  grid-template-columns: minmax(160px, 1fr) repeat(4, minmax(72px, auto));
 }
 
 .cell-editor-controls label {

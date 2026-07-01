@@ -2,7 +2,7 @@
 
 workspace: D:\WebProjects\RoomAxioms
 created_at: 2026-06-23T11:08:34.9576459+08:00
-updated_at: 2026-06-30T18:03:26+08:00
+updated_at: 2026-07-01T20:31:54.7078103+08:00
 
 planner:
   role: architect
@@ -21,6 +21,12 @@ artist:
   thread_id: 019ef839-6004-7ec0-b8a3-2890d24a178e
   title: 美术
   evidence: current active artist direction thread in the same workspace.
+
+editor:
+  role: editor_developer
+  thread_id: 019f1da7-d87b-7010-aacf-27a50529092f
+  title: 编辑器开发者
+  evidence: current active editor developer thread in the same workspace.
 
 idempotency:
   active_goal_guide: none

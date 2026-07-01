@@ -33,7 +33,9 @@ import {
   patchWorkbenchScopeCollectionsJson,
   patchWorkbenchNormalizedTargetCell,
   patchWorkbenchTargetCell,
+  patchWorkbenchTargetCells,
   toggleWorkbenchInitialReveal,
+  workbenchCellContentOptions,
   workbenchCellKindOptions,
 } from './model'
 import { AUTHORING_WORKBENCH_HASH, shouldShowAuthoringWorkbench } from './route'
@@ -258,6 +260,17 @@ describe('authoring workbench shell model', () => {
     expect(workbenchCellKindOptions(undefined, undefined)).toEqual(['empty', 'bottle', 'bin', 'mirror', 'guest'])
   })
 
+  it('adds custom object definitions to the cell content dropdown without widening legacy built-ins', () => {
+    const experimental = getWorkbenchCaseImportById('phase-24-comparative-balance-001').puzzle
+
+    expect(workbenchCellContentOptions(experimental, undefined, [
+      { id: 'bottle', legacyKind: 'bottle', custom: false },
+      { id: 'key', custom: true },
+    ])).toEqual(['empty', 'guest', 'key'])
+    expect(workbenchCellContentOptions(experimental, 'key', [])).toEqual(['empty', 'guest', 'key'])
+    expect(workbenchCellContentOptions(experimental, undefined, [])).toEqual(['empty', 'guest'])
+  })
+
   it('resizes the draft board while keeping the exported draft schema-valid', () => {
     const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
     const patch = patchWorkbenchBoardSize(draft, { width: 5, height: 4 })
@@ -282,6 +295,19 @@ describe('authoring workbench shell model', () => {
         },
       },
     })
+  })
+
+  it('patches multiple target cells atomically for reset-all and drag-swap actions', () => {
+    const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
+    const patch = patchWorkbenchTargetCells(draft, {
+      A1: 'bottle',
+      D2: 'mirror',
+    })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Multi-cell target patch failed.')
+    expect(patch.puzzle.target.A1).toBe('bottle')
+    expect(patch.puzzle.target.D2).toBe('mirror')
   })
 
   it('toggles initial reveals through the same schema-validated draft path', () => {

@@ -24,6 +24,7 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(boardHeading).toContain('aria-label="保存地图"')
     expect(boardHeading).toContain('aria-label="发布地图"')
     expect(boardHeading).toContain('aria-label="重新加载"')
+    expect(boardHeading).toContain('aria-label="重置全部"')
     expect(boardHeading).toContain('aria-label="删除地图"')
     expect(html).not.toContain('class="top-actions"')
     expect(html).not.toContain('本地案例只保存在当前浏览器')
@@ -63,12 +64,14 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html).not.toContain('访客布局')
   })
 
-  it('uses a cell object dropdown with an object-manager path', () => {
+  it('uses a cell object dropdown with reset and a separate object-manager button', () => {
     const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
 
     expect(html).toContain('格子内容')
     expect(html).toContain('管理物体')
-    expect(html).toContain('<option value="__manage__">管理物体...</option>')
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).toContain('>重置</button>')
+    expect(html).not.toContain('<option value="__manage__">管理物体...</option>')
     expect(html).toContain('空地')
     expect(html).not.toContain('无访客')
     expect(html).not.toContain('class="cell-object-toggles"')
@@ -116,6 +119,7 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
 
     expect(html).toContain('class="board-page-controls"')
+    expect(html).toContain('draggable="true"')
     expect(html).toContain('aria-label="上一页终局可能解"')
     expect(html).toContain('aria-label="下一页终局可能解"')
     expect(html).toContain('>原版<')

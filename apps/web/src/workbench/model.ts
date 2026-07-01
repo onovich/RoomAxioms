@@ -10,6 +10,7 @@ import {
   patchDraftRulePresentation,
   patchDraftRules,
   patchDraftTargetCell,
+  patchDraftTargetCells,
   parseDraftJson,
   toggleDraftInitialReveal,
   type PatchDraftRulePresentationInput,
@@ -67,6 +68,12 @@ export interface WorkbenchBoardCell {
   readonly normalized: NormalizedCellState
   readonly initiallyRevealed: boolean
   readonly guestTarget: boolean
+}
+
+export interface WorkbenchCellContentObjectType {
+  readonly id: string
+  readonly legacyKind?: CellKind
+  readonly custom: boolean
 }
 
 export interface WorkbenchRuleSummary {
@@ -628,6 +635,13 @@ export function patchWorkbenchTargetCell(
   return patchDraftTargetCell(draft, cellId, kind)
 }
 
+export function patchWorkbenchTargetCells(
+  draft: WorkbenchDraftState,
+  cells: Readonly<Record<CellId, CellKind>>,
+): WorkbenchDraftPatchResult {
+  return patchDraftTargetCells(draft, cells)
+}
+
 export function patchWorkbenchNormalizedTargetCell(
   draft: WorkbenchDraftState,
   cellId: CellId,
@@ -761,6 +775,34 @@ export function workbenchCellKindOptions(
   if (currentKind !== undefined) available.add(currentKind)
 
   return WORKBENCH_CELL_KIND_OPTIONS.filter((kind) => available.has(kind))
+}
+
+export function workbenchCellContentOptions(
+  puzzle: PuzzleDefinition | undefined,
+  currentContentId: string | undefined,
+  objectTypes: readonly WorkbenchCellContentObjectType[],
+): readonly string[] {
+  const legacyCurrentKind = isWorkbenchCellKind(currentContentId) ? currentContentId : undefined
+  const options: string[] = [...workbenchCellKindOptions(puzzle, legacyCurrentKind)]
+  const seen = new Set(options)
+
+  for (const objectType of objectTypes) {
+    if (!objectType.custom) continue
+    const contentId = objectType.legacyKind ?? objectType.id
+    if (seen.has(contentId)) continue
+    options.push(contentId)
+    seen.add(contentId)
+  }
+
+  if (currentContentId !== undefined && !seen.has(currentContentId)) {
+    options.push(currentContentId)
+  }
+
+  return options
+}
+
+export function isWorkbenchCellKind(value: string | undefined): value is CellKind {
+  return WORKBENCH_CELL_KIND_OPTIONS.includes(value as CellKind)
 }
 
 function caseOption(item: WorkbenchCaseImport): WorkbenchCaseOption {

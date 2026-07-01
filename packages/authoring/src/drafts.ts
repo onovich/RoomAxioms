@@ -163,6 +163,19 @@ export function patchDraftTargetCell(
   }))
 }
 
+export function patchDraftTargetCells(
+  state: WorkbenchDraftState,
+  cells: Readonly<Record<CellId, CellKind>>,
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => ({
+    ...puzzle,
+    target: {
+      ...puzzle.target,
+      ...cells,
+    },
+  }))
+}
+
 export function patchDraftNormalizedTargetCell(
   state: WorkbenchDraftState,
   cellId: CellId,

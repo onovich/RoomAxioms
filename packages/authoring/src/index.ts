@@ -73,6 +73,7 @@ export {
   patchDraftRulePresentation,
   patchDraftRules,
   patchDraftTargetCell,
+  patchDraftTargetCells,
   parseDraftJson,
   selectDraftCell,
   selectDraftRule,
