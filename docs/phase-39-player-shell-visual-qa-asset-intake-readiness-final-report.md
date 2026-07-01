@@ -2,9 +2,9 @@
 
 Status: READY_FOR_CHECK
 Implementation commit: `f285e64df221c2cadd45c606bdc0a2789cfb0654`
-Final report commit: pending
+Final report introduced in: `5a9f3764068030bc5863b50c14aa0e31db1774ed`
 Push: `origin/main`
-Pages: latest observed final-report predecessor run pending at report creation; previous run `28551401847` PASS
+Pages: final status to be checked after the report metadata commit; previous run `28551401847` PASS
 
 ## Summary
 
@@ -109,8 +109,8 @@ Additional browser checks:
   final art intake, but no current asset is final approved.
 - The fixed 1920x1080 player shell scales proportionally on small screens; it
   remains inspectable by zooming but is not a separate mobile-native layout.
-- Pages status should be rechecked after the final report commit completes its
-  GitHub Pages run.
+- Pages status should be rechecked after the report metadata commit completes
+  its GitHub Pages run.
 
 ## Next
 
