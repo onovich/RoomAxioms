@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import {
   PLAYER_DESIGN_HEIGHT,
   PLAYER_DESIGN_WIDTH,
-  calculatePlayerCanvasScale,
+  calculatePlayerCanvasViewport,
 } from './PlayerShellGeometry'
 
 interface PlayerShellProps {
@@ -26,13 +26,13 @@ export function PlayerShell({
   rules,
   topbar,
 }: PlayerShellProps) {
-  const scale = usePlayerCanvasScale()
+  const canvasViewport = usePlayerCanvasViewport()
   const viewportStyle = {
-    height: `${PLAYER_DESIGN_HEIGHT * scale}px`,
-    width: `${PLAYER_DESIGN_WIDTH * scale}px`,
+    height: `${canvasViewport.height}px`,
+    width: `${canvasViewport.width}px`,
   } as CSSProperties
   const canvasStyle = {
-    transform: `scale(${scale})`,
+    transform: `scale(${canvasViewport.scale})`,
   } as CSSProperties
 
   return (
@@ -41,6 +41,7 @@ export function PlayerShell({
       data-design-height={PLAYER_DESIGN_HEIGHT}
       data-design-width={PLAYER_DESIGN_WIDTH}
       data-mobile-panel={mobilePanel}
+      data-player-scale={canvasViewport.scale.toFixed(6)}
       data-player-shell="fixed-16-9"
     >
       <div className="scene-player-viewport" style={viewportStyle}>
@@ -59,22 +60,22 @@ export function PlayerShell({
   )
 }
 
-function usePlayerCanvasScale(): number {
-  const [scale, setScale] = useState(() => (
+function usePlayerCanvasViewport() {
+  const [canvasViewport, setCanvasViewport] = useState(() => (
     typeof window === 'undefined'
-      ? 1
-      : calculatePlayerCanvasScale(window.innerWidth, window.innerHeight)
+      ? calculatePlayerCanvasViewport(PLAYER_DESIGN_WIDTH, PLAYER_DESIGN_HEIGHT)
+      : calculatePlayerCanvasViewport(window.innerWidth, window.innerHeight)
   ))
 
   useEffect(() => {
-    const updateScale = () => {
-      setScale(calculatePlayerCanvasScale(window.innerWidth, window.innerHeight))
+    const updateCanvasViewport = () => {
+      setCanvasViewport(calculatePlayerCanvasViewport(window.innerWidth, window.innerHeight))
     }
 
-    updateScale()
-    window.addEventListener('resize', updateScale)
-    return () => window.removeEventListener('resize', updateScale)
+    updateCanvasViewport()
+    window.addEventListener('resize', updateCanvasViewport)
+    return () => window.removeEventListener('resize', updateCanvasViewport)
   }, [])
 
-  return scale
+  return canvasViewport
 }
