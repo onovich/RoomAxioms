@@ -108,6 +108,17 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     expect(html.indexOf('workbench-diagnostics-strip')).toBeLessThan(html.indexOf('workbench-shell'))
   })
 
+  it('uses board pagination instead of a separate answer-list entry', () => {
+    const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
+
+    expect(html).toContain('class="board-page-controls"')
+    expect(html).toContain('aria-label="上一页可能现场"')
+    expect(html).toContain('aria-label="下一页可能现场"')
+    expect(html).toContain('>原版<')
+    expect(html).not.toContain('查看前')
+    expect(html).not.toContain('class="answer-examples-panel"')
+  })
+
   it('removes normal developer debug and schema success surfaces', () => {
     const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
 

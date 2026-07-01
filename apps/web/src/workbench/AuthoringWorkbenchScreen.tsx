@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Copy, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Copy, FolderOpen, Pencil, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -153,6 +153,7 @@ export default function AuthoringWorkbenchScreen() {
   )
   const [diagnosticsProgress, setDiagnosticsProgress] = useState<WorkbenchDiagnosticProgress | undefined>()
   const [diagnosticsAbortController, setDiagnosticsAbortController] = useState<AbortController | undefined>()
+  const [boardPageIndex, setBoardPageIndex] = useState(0)
   const [selectedCellId, setSelectedCellId] = useState<CellId | undefined>()
   const [selectedRuleId, setSelectedRuleId] = useState<string | undefined>()
   const [ruleDialog, setRuleDialog] = useState<RuleDialogState>({ kind: 'closed' })
@@ -190,6 +191,12 @@ export default function AuthoringWorkbenchScreen() {
     () => new Set(selectedRuleScopeCells(parsedPuzzle, selectedRuleId)),
     [parsedPuzzle, selectedRuleId],
   )
+  const diagnosticsReport = diagnosticsReportForState(diagnosticsState)
+  const diagnosticsOverview = createWorkbenchDiagnosticsOverview(diagnosticsReport)
+  const answerExamples = diagnosticsOverview?.answerExamples
+  const boardPageCount = 1 + (answerExamples?.layouts.length ?? 0)
+  const visibleBoardPageIndex = Math.min(boardPageIndex, Math.max(0, boardPageCount - 1))
+  const activeAnswerExample = visibleBoardPageIndex === 0 ? undefined : answerExamples?.layouts[visibleBoardPageIndex - 1]
   const kindOptions = workbenchCellKindOptions(parsedPuzzle, selectedCell?.kind ?? activeKind)
   const displayKindLabel = (kind: CellKind): string => kindLabel(kind, objectTypes)
 
@@ -241,6 +248,7 @@ export default function AuthoringWorkbenchScreen() {
   function applyLoadedDraft(nextDraft: WorkbenchDraftState, puzzle: PuzzleDefinition | undefined): void {
     setDraft(nextDraft)
     setDiagnosticsState(createWorkbenchDiagnosticsState())
+    setBoardPageIndex(0)
     setSelectedCellId(undefined)
     setSelectedRuleId(undefined)
     setRuleDialog({ kind: 'closed' })
@@ -459,6 +467,7 @@ export default function AuthoringWorkbenchScreen() {
       current,
       'Diagnostics caps changed. Re-run diagnostics before trusting these results.',
     ))
+    setBoardPageIndex(0)
   }
 
   function selectBoardCell(cell: WorkbenchBoardCell): void {
@@ -555,6 +564,7 @@ export default function AuthoringWorkbenchScreen() {
       : patch.puzzle.rules.find((rule) => rule.id === nextSelectedRuleId)
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setBoardPageIndex(0)
     setRuleBuilderPatchStatus({ kind: 'applied', message })
 
     if (nextRule === undefined) {
@@ -631,6 +641,7 @@ export default function AuthoringWorkbenchScreen() {
     const nextRule = patch.puzzle.rules[patch.puzzle.rules.length - 1]
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setBoardPageIndex(0)
     setSelectedRuleId(nextRule?.id)
     setRuleTitleText(nextRule?.presentation.title ?? '')
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
@@ -710,6 +721,7 @@ export default function AuthoringWorkbenchScreen() {
   function applySuccessfulPatch(nextDraft: WorkbenchDraftState, message: string): void {
     setDraft(nextDraft)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setBoardPageIndex(0)
     setPatchStatus({ kind: 'applied', message })
   }
 
@@ -733,6 +745,7 @@ export default function AuthoringWorkbenchScreen() {
     const nextRule = patch.puzzle.rules.find((rule) => rule.id === selectedRuleId)
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setBoardPageIndex(0)
     setRuleTitleText(nextRule?.presentation.title ?? ruleTitleText)
     setRuleFlavorText(nextRule?.presentation.flavor ?? '')
     setRulePatchStatus({
@@ -782,6 +795,7 @@ export default function AuthoringWorkbenchScreen() {
 
     setDraft(patch.state)
     setDiagnosticsState((current) => markWorkbenchDiagnosticsStale(current))
+    setBoardPageIndex(0)
     syncMetadataEditor(patch.puzzle)
     setMetadataEditorOpen(false)
     setMetadataPatchStatus({
@@ -902,7 +916,36 @@ export default function AuthoringWorkbenchScreen() {
           <div className="board-heading">
             <div>
               <span className="eyebrow">Board</span>
-              <h2>{parsedPuzzle === undefined ? '无有效棋盘' : `${parsedPuzzle.board.width} × ${parsedPuzzle.board.height}`}</h2>
+              <h2>
+                {parsedPuzzle === undefined
+                  ? '无有效棋盘'
+                  : visibleBoardPageIndex === 0
+                    ? `${parsedPuzzle.board.width} × ${parsedPuzzle.board.height}`
+                    : `可能现场 ${visibleBoardPageIndex} / ${boardPageCount - 1}`}
+              </h2>
+            </div>
+            <div className="board-page-controls" aria-label="可能现场翻页">
+              <button
+                className="icon-button"
+                type="button"
+                disabled={visibleBoardPageIndex <= 0}
+                onClick={() => setBoardPageIndex((current) => Math.max(0, current - 1))}
+                title="上一页"
+                aria-label="上一页可能现场"
+              >
+                <ArrowLeft size={15} aria-hidden="true" />
+              </button>
+              <span>{visibleBoardPageIndex === 0 ? '原版' : `可能 ${visibleBoardPageIndex}`}</span>
+              <button
+                className="icon-button"
+                type="button"
+                disabled={visibleBoardPageIndex >= boardPageCount - 1}
+                onClick={() => setBoardPageIndex((current) => Math.min(boardPageCount - 1, current + 1))}
+                title="下一页"
+                aria-label="下一页可能现场"
+              >
+                <ArrowRight size={15} aria-hidden="true" />
+              </button>
             </div>
             <div className="board-actions" aria-label="地图操作">
               {!model.parse.ok ? <span className="mode-badge error-badge">Schema Error</span> : null}
@@ -926,65 +969,90 @@ export default function AuthoringWorkbenchScreen() {
               </button>
             </div>
           </div>
-          <BoardSizeEditor
-            widthText={boardWidthText}
-            heightText={boardHeightText}
-            disabled={parsedPuzzle === undefined}
-            onWidthChange={setBoardWidthText}
-            onHeightChange={setBoardHeightText}
-            onApply={applyBoardSizePatch}
-          />
+          {activeAnswerExample === undefined ? (
+            <BoardSizeEditor
+              widthText={boardWidthText}
+              heightText={boardHeightText}
+              disabled={parsedPuzzle === undefined}
+              onWidthChange={setBoardWidthText}
+              onHeightChange={setBoardHeightText}
+              onApply={applyBoardSizePatch}
+            />
+          ) : null}
           {parsedPuzzle === undefined ? (
             <IssueList issues={model.parse.issues.map((issue) => `${issue.code}: ${issue.message}`)} />
           ) : (
             <div
-              className="workbench-board"
+              className={`workbench-board ${activeAnswerExample === undefined ? '' : 'readonly-board'}`}
               style={{
                 '--workbench-board-width': parsedPuzzle.board.width,
                 '--workbench-board-max-size': `${(parsedPuzzle.board.width * 74) + ((parsedPuzzle.board.width - 1) * 7)}px`,
               } as CSSProperties}
             >
-              {model.boardCells.map((cell) => (
-                <button
-                  type="button"
-                  key={cell.id}
-                  className={[
-                    'workbench-cell',
-                    cell.initiallyRevealed ? 'revealed' : '',
-                    cell.guestTarget ? 'guest-target' : '',
-                    selectedCellId === cell.id ? 'selected' : '',
-                    selectedRuleScopeCellSet.has(cell.id) ? 'rule-scope-preview' : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => selectBoardCell(cell)}
-                  aria-pressed={selectedCellId === cell.id}
-                  aria-label={`${cell.id} ${displayKindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
-                >
-                  <span className="coord">{cell.id}</span>
-                  <b>{displayKindLabel(cell.kind)}</b>
-                  {cell.initiallyRevealed ? <small>初始</small> : null}
-                </button>
-              ))}
+              {activeAnswerExample === undefined
+                ? model.boardCells.map((cell) => (
+                    <button
+                      type="button"
+                      key={cell.id}
+                      className={[
+                        'workbench-cell',
+                        cell.initiallyRevealed ? 'revealed' : '',
+                        cell.guestTarget ? 'guest-target' : '',
+                        selectedCellId === cell.id ? 'selected' : '',
+                        selectedRuleScopeCellSet.has(cell.id) ? 'rule-scope-preview' : '',
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => selectBoardCell(cell)}
+                      aria-pressed={selectedCellId === cell.id}
+                      aria-label={`${cell.id} ${displayKindLabel(cell.kind)}${cell.initiallyRevealed ? '，初始揭示' : ''}`}
+                    >
+                      <span className="coord">{cell.id}</span>
+                      <b>{displayKindLabel(cell.kind)}</b>
+                      {cell.initiallyRevealed ? <small>初始</small> : null}
+                    </button>
+                  ))
+                : activeAnswerExample.cells.map((cell) => (
+                    <div
+                      key={`${activeAnswerExample.index}:${cell.cellId}`}
+                      className={[
+                        'workbench-cell',
+                        'readonly-cell',
+                        cell.kind === 'guest' ? 'guest-target' : '',
+                        cell.changed ? 'changed-answer-cell' : '',
+                      ].filter(Boolean).join(' ')}
+                      aria-label={`${cell.cellId} ${displayKindLabel(cell.kind)}，可能现场只读`}
+                    >
+                      <span className="coord">{cell.cellId}</span>
+                      <b>{displayKindLabel(cell.kind)}</b>
+                      {cell.changed ? <small>不同</small> : null}
+                    </div>
+                  ))}
             </div>
           )}
-          <CellFactEditor
-            selectedCell={selectedCell}
-            activeKind={activeKind}
-            kindOptions={kindOptions}
-            objectTypes={objectTypes}
-            objectManagerOpen={objectManagerOpen}
-            newObjectLabelText={newObjectLabelText}
-            patchStatus={patchStatus}
-            canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
-            onKindChange={setActiveKind}
-            onManageObjects={() => setObjectManagerOpen(true)}
-            onCloseObjectManager={() => setObjectManagerOpen(false)}
-            onObjectLabelChange={renameWorkbenchObjectType}
-            onNewObjectLabelChange={setNewObjectLabelText}
-            onCreateObject={createCustomObjectType}
-            onDeleteObject={deleteCustomObjectType}
-            onApply={applyTargetCellPatch}
-            onToggleInitialReveal={toggleInitialRevealForSelectedCell}
-          />
+          {activeAnswerExample === undefined ? (
+            <CellFactEditor
+              selectedCell={selectedCell}
+              activeKind={activeKind}
+              kindOptions={kindOptions}
+              objectTypes={objectTypes}
+              objectManagerOpen={objectManagerOpen}
+              newObjectLabelText={newObjectLabelText}
+              patchStatus={patchStatus}
+              canPatch={parsedPuzzle !== undefined && selectedCell !== undefined}
+              onKindChange={setActiveKind}
+              onManageObjects={() => setObjectManagerOpen(true)}
+              onCloseObjectManager={() => setObjectManagerOpen(false)}
+              onObjectLabelChange={renameWorkbenchObjectType}
+              onNewObjectLabelChange={setNewObjectLabelText}
+              onCreateObject={createCustomObjectType}
+              onDeleteObject={deleteCustomObjectType}
+              onApply={applyTargetCellPatch}
+              onToggleInitialReveal={toggleInitialRevealForSelectedCell}
+            />
+          ) : (
+            <div className="answer-board-note">
+              正在查看只读可能现场。返回“原版”后可继续编辑。
+            </div>
+          )}
         </section>
 
         <aside className="panel workbench-panel rule-editor-panel">
@@ -2515,54 +2583,7 @@ function DiagnosticsOverview({
           {metric.detail === undefined ? null : <small>{metric.detail}</small>}
         </article>
       ))}
-      <AnswerExamplesPanel overview={overview} />
     </div>
-  )
-}
-
-function AnswerExamplesPanel({
-  overview,
-}: {
-  readonly overview: WorkbenchDiagnosticsOverview
-}) {
-  const examples = overview.answerExamples
-  if (examples === undefined) return null
-
-  return (
-    <details className="answer-examples-panel">
-      <summary>查看前 {examples.layouts.length} 套可能答案</summary>
-      <ol>
-        {examples.layouts.map((layout) => (
-          <li key={layout.index}>
-            <b>第 {layout.index} 套</b>
-            <div
-              className="answer-example-grid"
-              style={{ gridTemplateColumns: `repeat(${examples.board.width}, minmax(0, 1fr))` }}
-              aria-label={`第 ${layout.index} 套可能答案摆放图`}
-            >
-              {layout.cells.map((cell) => (
-                <span
-                  key={`${layout.index}:${cell.cellId}`}
-                  className={`answer-example-cell ${cell.kind === 'guest' ? 'anomaly' : ''} ${cell.changed ? 'changed' : ''}`}
-                >
-                  <em>{cell.cellId}</em>
-                  <strong>{kindLabel(cell.kind)}</strong>
-                </span>
-              ))}
-            </div>
-            {layout.changedCells.length === 0 ? null : (
-              <small>
-                和当前地图不同：{layout.changedCells.slice(0, 6).map((change) =>
-                  `${change.cellId} ${kindLabel(change.current)}→${kindLabel(change.alternative)}`,
-                ).join('；')}
-                {layout.changedCells.length > 6 ? `；还有 ${layout.changedCells.length - 6} 格` : ''}
-              </small>
-            )}
-          </li>
-        ))}
-      </ol>
-      {examples.hasMore ? <p>还有更多可能答案未展示。</p> : null}
-    </details>
   )
 }
 
