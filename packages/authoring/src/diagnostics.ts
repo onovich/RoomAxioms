@@ -16,6 +16,8 @@ import type {
   AuthoringDifficultyReviewBucket,
   AuthoringDifficultyReviewReport,
   AuthoringDifficultyThresholdReport,
+  AuthoringInteractiveTerminalStatus,
+  AuthoringInteractiveTraceReport,
   AuthoringRecommendation,
   AuthoringSchemaIssueReport,
   AuthoringSolverCapsReport,
@@ -277,15 +279,17 @@ function validatePuzzleInputForChecks(
     caps.candidateLayoutCap,
     solver,
   )
-  const initialGuestLayoutExamples = previewGuestLayouts(
-    { puzzle, observations: initialObservations },
-    4,
-    solver,
-  )
   const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
     ? findPossibleRecordSets({ puzzle, observations: initialObservations }, solver)
     : undefined
   const proof = verifyNoGuess(puzzle, { solver })
+  const interactiveTrace = interactiveTraceForProof(puzzle, initialObservations, proof)
+  const terminalGuestLayoutExamples = terminalGuestLayoutExamplesFor(
+    puzzle,
+    interactiveTrace,
+    proof,
+    solver,
+  )
   const proofStats = proof.waves.reduce(
     (current, wave) => combineStats(current, wave.solverStats),
     zeroStats(),
@@ -332,12 +336,6 @@ function validatePuzzleInputForChecks(
         ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
         stats: statsReport(initialGuestLayouts.stats),
       },
-      initialGuestLayoutExamples: {
-        layouts: guestLayoutExamplesFor(puzzle, initialGuestLayoutExamples.layouts),
-        shown: initialGuestLayoutExamples.layouts.length,
-        hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
-        stats: statsReport(initialGuestLayoutExamples.stats),
-      },
       proof: {
         noGuess: proof.noGuess,
         humanExplainable: proof.humanExplainable,
@@ -350,6 +348,8 @@ function validatePuzzleInputForChecks(
         techniqueIds: proof.metrics.techniqueIds,
         stats: statsReport(proofStats),
       },
+      interactiveTrace,
+      ...(terminalGuestLayoutExamples === undefined ? {} : { terminalGuestLayoutExamples }),
       ...(recordSets === undefined
         ? {}
         : {
@@ -378,11 +378,6 @@ function validatePuzzleCorrectnessOnly(
   const initialGuestLayouts = countGuestLayouts(
     { puzzle, observations: initialObservations },
     caps.candidateLayoutCap,
-    solver,
-  )
-  const initialGuestLayoutExamples = previewGuestLayouts(
-    { puzzle, observations: initialObservations },
-    4,
     solver,
   )
   const recordSets = puzzle.rules.some((rule) => rule.type === 'recordSet')
@@ -425,12 +420,6 @@ function validatePuzzleCorrectnessOnly(
         count: initialGuestLayouts.count,
         ...(initialGuestLayouts.greaterThan === undefined ? {} : { greaterThan: initialGuestLayouts.greaterThan }),
         stats: statsReport(initialGuestLayouts.stats),
-      },
-      initialGuestLayoutExamples: {
-        layouts: guestLayoutExamplesFor(puzzle, initialGuestLayoutExamples.layouts),
-        shown: initialGuestLayoutExamples.layouts.length,
-        hasMore: initialGuestLayoutExamples.greaterThan !== undefined,
-        stats: statsReport(initialGuestLayoutExamples.stats),
       },
       ...(recordSets === undefined
         ? {}
@@ -574,40 +563,40 @@ function blockingGroup(validation: AuthoringCaseValidationReport): AuthoringDiag
   return group('blocking-errors', 'Blocking Errors', [{
     code: 'SCHEMA_VALID',
     severity: 'pass',
-    message: 'Draft parses as Puzzle Schema v1 and passed semantic validation.',
+    message: '草稿结构有效。',
   }])
 }
 
 function correctnessGroup(validation: AuthoringCaseValidationReport): AuthoringDiagnosticsGroup {
-  if (!validation.schema.ok) return skippedGroup('correctness', 'Correctness', 'Draft must pass schema validation first.')
+  if (!validation.schema.ok) return skippedGroup('correctness', 'Correctness', '需要先修好草稿结构。')
 
   const items: AuthoringDiagnosticsItem[] = []
   items.push({
     code: 'TARGET_RULES',
     severity: validation.targetRules?.satisfiesRules ? 'pass' : 'fail',
     message: validation.targetRules?.satisfiesRules
-      ? 'Target satisfies the public rules.'
-      : 'Target does not satisfy the public rules or the check was truncated.',
+      ? '目标摆放符合当前定则。'
+      : '目标摆放不符合当前定则，或检查达到上限。',
   })
   items.push({
     code: 'INITIAL_SATISFIABILITY',
     severity: validation.initialSatisfiability?.satisfiable ? 'pass' : 'fail',
     message: validation.initialSatisfiability?.satisfiable
-      ? 'Initial observations are satisfiable.'
-      : 'Initial observations are unsatisfiable or the check was truncated.',
+      ? '初始已揭示物证没有矛盾。'
+      : '初始已揭示物证互相矛盾，或检查达到上限。',
   })
   items.push({
-    code: 'INITIAL_GUEST_LAYOUTS',
+    code: 'OPENING_AMBIGUITY',
     severity: validation.initialGuestLayouts?.greaterThan === undefined ? 'info' : 'warning',
     message: validation.initialGuestLayouts?.greaterThan === undefined
-      ? `Initial guest-layout count: ${validation.initialGuestLayouts?.count ?? 0}.`
-      : `Initial guest-layout count exceeded cap ${validation.initialGuestLayouts.greaterThan}.`,
+      ? `开局规则能收束到 ${validation.initialGuestLayouts?.count ?? 0} 种异常分布；这不是最终唯一性结论。`
+      : `开局异常分布超过 ${validation.initialGuestLayouts.greaterThan} 种；这不是最终唯一性结论。`,
   })
   if (validation.recordSets !== undefined) {
     items.push({
       code: 'RECORD_SETS',
       severity: validation.recordSets.possibleAssignments.length > 0 ? 'pass' : 'fail',
-      message: `Record-set possible assignments: ${validation.recordSets.possibleAssignments.length}.`,
+      message: `污染定则有 ${validation.recordSets.possibleAssignments.length} 种可行解释。`,
     })
   }
 
@@ -618,12 +607,12 @@ function humanProofGroup(
   validation: AuthoringCaseValidationReport,
   puzzle: PuzzleDefinition | undefined,
 ): AuthoringDiagnosticsGroup {
-  if (!validation.schema.ok) return skippedGroup('human-proof', 'Human Proof', 'Draft must pass schema validation first.')
+  if (!validation.schema.ok) return skippedGroup('human-proof', 'Human Proof', '需要先修好草稿结构。')
   if (validation.proof === undefined) {
     return group('human-proof', 'Human Proof', [{
       code: 'PROOF_MISSING',
       severity: 'fail',
-      message: 'No proof report was produced.',
+      message: '没有生成调查流程报告。',
     }])
   }
 
@@ -631,26 +620,26 @@ function humanProofGroup(
     {
       code: 'NO_GUESS',
       severity: validation.proof.noGuess ? 'pass' : 'fail',
-      message: validation.proof.noGuess ? 'No-guess verifier passed.' : 'No-guess verifier failed.',
+      message: validation.proof.noGuess ? '不靠猜推理：通过。' : '不靠猜推理：不通过。',
     },
     {
       code: 'HUMAN_EXPLAINABLE',
       severity: validation.proof.humanExplainable ? 'pass' : 'fail',
       message: validation.proof.humanExplainable
-        ? 'Proof uses approved human-readable techniques.'
-        : 'Proof has explanation gaps or unsupported techniques.',
+        ? '推理步骤可以用当前定则解释。'
+        : '有些推理步骤目前无法用当前定则解释。',
     },
     {
       code: 'FINAL_UNIQUENESS',
       severity: validation.proof.guestLayoutUniqueAtEnd ? 'pass' : 'fail',
       message: validation.proof.guestLayoutUniqueAtEnd
-        ? `Final guest cells: ${validation.proof.finalGuestCells?.join(', ') ?? '(none reported)'}.`
-        : 'Final guest layout is not unique.',
+        ? `最终结论唯一：${validation.proof.finalGuestCells?.join('、') ?? '无异常区域'}。`
+        : '玩家翻开所有可确认安全格后，最终仍有多解。',
     },
     {
       code: 'PROOF_METRICS',
       severity: 'info',
-      message: `${validation.proof.waveCount} wave(s), ${validation.proof.deductionCount} deduction(s).`,
+      message: `${validation.proof.waveCount} 波推理，${validation.proof.deductionCount} 个推理步骤。`,
       refs: validation.proof.techniqueIds,
     },
     ...proofIssueDiagnosticItems(validation.proof, puzzle),
@@ -668,7 +657,7 @@ function proofIssueDiagnosticItems(
   const items: AuthoringDiagnosticsItem[] = [{
     code: 'PROOF_ISSUE_CODES',
     severity: 'info',
-    message: `Proof verifier issue code(s): ${issueCodes.join(', ')}.`,
+    message: `调查流程停在：${issueCodes.join(', ')}。`,
     refs: issueCodes,
   }]
 
@@ -676,7 +665,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_FINAL_UNIQUENESS_BLOCKER',
       severity: 'fail',
-      message: 'Final guest layout remains non-unique after the current human-proof waves.',
+      message: '玩家翻开所有可确认安全格后，仍无法得到唯一结论。',
       refs: issueCodes,
     })
   }
@@ -685,7 +674,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_EXPLANATION_GAP',
       severity: 'fail',
-      message: 'Solver found forced cells that the approved human-proof templates did not explain.',
+      message: '有些必然结论还缺少可读的定则解释。',
       refs: ['EXPLANATION_GAP'],
     })
   }
@@ -694,7 +683,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_GUESS_POINT',
       severity: 'fail',
-      message: 'The proof reached a state where no valid human deduction can advance the puzzle.',
+      message: '流程走到需要猜测的位置，当前定则无法继续推进。',
       refs: ['GUESS_POINT'],
     })
   }
@@ -703,7 +692,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_NON_PROGRESS',
       severity: 'fail',
-      message: 'The proof repeated a state or exhausted proof waves before reaching uniqueness.',
+      message: '推理流程没有继续推进，且尚未得到唯一结论。',
       refs: ['NON_PROGRESS'],
     })
   }
@@ -712,7 +701,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_INVALID_DEDUCTION',
       severity: 'fail',
-      message: 'At least one human deduction was not solver-backed.',
+      message: '至少一个推理步骤没有被求解器证明有效。',
       refs: ['INVALID_DEDUCTION'],
     })
   }
@@ -721,7 +710,7 @@ function proofIssueDiagnosticItems(
     items.push({
       code: 'PROOF_SOLVER_TRUNCATED',
       severity: 'fail',
-      message: 'A solver cap truncated proof verification; raise caps or simplify before judging the draft.',
+      message: '检查达到上限；需要调高上限或简化草稿后再判断。',
       refs: ['SOLVER_TRUNCATED'],
     })
   }
@@ -1098,13 +1087,102 @@ function targetObservationsForCells(
   }))
 }
 
+function interactiveTraceForProof(
+  puzzle: PuzzleDefinition,
+  initialObservations: readonly Observation[],
+  proof: VerificationReport,
+): AuthoringInteractiveTraceReport {
+  let observations = uniqueObservations(puzzle, initialObservations)
+  const waves: AuthoringInteractiveTraceReport['waves'][number][] = []
+
+  for (const wave of proof.waves) {
+    waves.push({
+      index: wave.index,
+      deductionCount: wave.deductions.length,
+      revealed: observationReports(wave.revealed),
+      confirmedGuestCells: wave.confirmedGuests,
+    })
+
+    if (wave.issues.length > 0) break
+    observations = uniqueObservations(puzzle, [
+      ...observations,
+      ...wave.revealed,
+      ...wave.confirmedGuests.map((cellId) => ({ cellId, kind: 'guest' as const })),
+    ])
+  }
+
+  return {
+    terminalStatus: interactiveTerminalStatus(proof),
+    finalObservations: observationReports(observations),
+    waves,
+  }
+}
+
+function interactiveTerminalStatus(proof: VerificationReport): AuthoringInteractiveTerminalStatus {
+  if (proof.guestLayoutUniqueAtEnd) return 'unique'
+  if (proof.issues.some((issue) => issue.code === 'SOLVER_TRUNCATED')) return 'truncated'
+  if (proof.issues.some((issue) => issue.code === 'GUESS_POINT')) return 'guess-needed'
+  if (proof.issues.some((issue) => issue.code === 'TARGET_VIOLATES_RULE' || issue.code === 'CONTRADICTION')) {
+    return 'invalid'
+  }
+
+  return 'ambiguous'
+}
+
+function terminalGuestLayoutExamplesFor(
+  puzzle: PuzzleDefinition,
+  trace: AuthoringInteractiveTraceReport,
+  proof: VerificationReport,
+  solver: ReturnType<typeof solverCaps>,
+): AuthoringCaseValidationReport['terminalGuestLayoutExamples'] | undefined {
+  if (proof.guestLayoutUniqueAtEnd) return undefined
+  if (trace.terminalStatus === 'invalid' || trace.terminalStatus === 'truncated') return undefined
+
+  const preview = previewGuestLayouts({
+    puzzle,
+    observations: trace.finalObservations.map((observation) => ({
+      cellId: observation.cellId as CellId,
+      kind: observation.kind as Observation['kind'],
+    })),
+  }, 4, solver)
+  if (preview.layouts.length <= 1 && preview.greaterThan === undefined) return undefined
+
+  return {
+    layouts: guestLayoutExamplesFor(puzzle, preview.layouts),
+    shown: preview.layouts.length,
+    hasMore: preview.greaterThan !== undefined,
+    stats: statsReport(preview.stats),
+  }
+}
+
+function uniqueObservations(
+  puzzle: PuzzleDefinition,
+  observations: readonly Observation[],
+): readonly Observation[] {
+  const byCell = new Map<CellId, Observation>()
+  for (const observation of observations) byCell.set(observation.cellId, observation)
+
+  return allCells(puzzle.board)
+    .map((cellId) => byCell.get(cellId))
+    .filter((observation): observation is Observation => observation !== undefined)
+}
+
+function observationReports(
+  observations: readonly Observation[],
+): readonly { readonly cellId: string; readonly kind: string }[] {
+  return observations.map((observation) => ({
+    cellId: observation.cellId,
+    kind: observation.kind,
+  }))
+}
+
 function guestLayoutExamplesFor(
   puzzle: PuzzleDefinition,
   layouts: readonly {
     readonly guestCells: readonly CellId[]
     readonly cells: Readonly<Record<CellId, string>>
   }[],
-): NonNullable<AuthoringCaseValidationReport['initialGuestLayoutExamples']>['layouts'] {
+): NonNullable<AuthoringCaseValidationReport['terminalGuestLayoutExamples']>['layouts'] {
   const boardCells = allCells(puzzle.board)
 
   return layouts.map((layout) => ({

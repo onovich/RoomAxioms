@@ -193,7 +193,7 @@ export default function AuthoringWorkbenchScreen() {
   )
   const diagnosticsReport = diagnosticsReportForState(diagnosticsState)
   const diagnosticsOverview = createWorkbenchDiagnosticsOverview(diagnosticsReport)
-  const answerExamples = diagnosticsOverview?.answerExamples
+  const answerExamples = diagnosticsOverview?.terminalAnswerExamples
   const boardPageCount = 1 + (answerExamples?.layouts.length ?? 0)
   const visibleBoardPageIndex = Math.min(boardPageIndex, Math.max(0, boardPageCount - 1))
   const activeAnswerExample = visibleBoardPageIndex === 0 ? undefined : answerExamples?.layouts[visibleBoardPageIndex - 1]
@@ -921,28 +921,28 @@ export default function AuthoringWorkbenchScreen() {
                   ? '无有效棋盘'
                   : visibleBoardPageIndex === 0
                     ? `${parsedPuzzle.board.width} × ${parsedPuzzle.board.height}`
-                    : `可能现场 ${visibleBoardPageIndex} / ${boardPageCount - 1}`}
+                    : `终局可能解 ${visibleBoardPageIndex} / ${boardPageCount - 1}`}
               </h2>
             </div>
-            <div className="board-page-controls" aria-label="可能现场翻页">
+            <div className="board-page-controls" aria-label="终局可能解翻页">
               <button
                 className="icon-button"
                 type="button"
                 disabled={visibleBoardPageIndex <= 0}
                 onClick={() => setBoardPageIndex((current) => Math.max(0, current - 1))}
                 title="上一页"
-                aria-label="上一页可能现场"
+                aria-label="上一页终局可能解"
               >
                 <ArrowLeft size={15} aria-hidden="true" />
               </button>
-              <span>{visibleBoardPageIndex === 0 ? '原版' : `可能 ${visibleBoardPageIndex}`}</span>
+              <span>{visibleBoardPageIndex === 0 ? '原版' : `终局解 ${visibleBoardPageIndex}`}</span>
               <button
                 className="icon-button"
                 type="button"
                 disabled={visibleBoardPageIndex >= boardPageCount - 1}
                 onClick={() => setBoardPageIndex((current) => Math.min(boardPageCount - 1, current + 1))}
                 title="下一页"
-                aria-label="下一页可能现场"
+                aria-label="下一页终局可能解"
               >
                 <ArrowRight size={15} aria-hidden="true" />
               </button>
@@ -1019,7 +1019,7 @@ export default function AuthoringWorkbenchScreen() {
                         cell.kind === 'guest' ? 'guest-target' : '',
                         cell.changed ? 'changed-answer-cell' : '',
                       ].filter(Boolean).join(' ')}
-                      aria-label={`${cell.cellId} ${displayKindLabel(cell.kind)}，可能现场只读`}
+                      aria-label={`${cell.cellId} ${displayKindLabel(cell.kind)}，终局可能解只读`}
                     >
                       <span className="coord">{cell.cellId}</span>
                       <b>{displayKindLabel(cell.kind)}</b>
@@ -1050,7 +1050,7 @@ export default function AuthoringWorkbenchScreen() {
             />
           ) : (
             <div className="answer-board-note">
-              正在查看只读可能现场。返回“原版”后可继续编辑。
+              正在查看只读终局可能解。返回“原版”后可继续编辑。
             </div>
           )}
         </section>
@@ -2376,19 +2376,19 @@ function DiagnosticsCapsEditor({
           onChange={(value) => onCapChange('maxNodes', value)}
         />
         <DiagnosticsCapInput
-          label="可能现场数量"
+          label="搜索现场数量"
           value={caps.maxModels}
           disabled={disabled}
           onChange={(value) => onCapChange('maxModels', value)}
         />
         <DiagnosticsCapInput
-          label="可能异常区域分布"
+          label="终局解法数量"
           value={caps.maxGuestLayouts}
           disabled={disabled}
           onChange={(value) => onCapChange('maxGuestLayouts', value)}
         />
         <DiagnosticsCapInput
-          label="剩余候选答案"
+          label="搜索分布数量"
           value={caps.candidateLayoutCap}
           disabled={disabled}
           onChange={(value) => onCapChange('candidateLayoutCap', value)}

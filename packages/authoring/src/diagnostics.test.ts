@@ -132,25 +132,33 @@ describe('in-memory authoring diagnostics', () => {
     expect(report.cloneRisk).toBeUndefined()
   })
 
-  it('includes capped answer examples for non-unique opening layouts', () => {
+  it('includes terminal answer examples only after interactive proof remains ambiguous', () => {
+    const source = readJson(case004Path) as { rules: unknown[] }
+    const draft = {
+      ...source,
+      rules: source.rules.slice(0, 2),
+    }
     const report = evaluateDraftDiagnostics({
-      draft: readJson(case004Path),
-      checks: ['can-solve'],
+      draft,
+      checks: ['no-guess'],
     })
 
-    expect(report.validation.initialGuestLayouts?.count).toBeGreaterThan(1)
-    expect(report.validation.initialGuestLayoutExamples).toMatchObject({
+    expect(report.validation.schema.ok).toBe(true)
+    expect(report.validation.interactiveTrace).toMatchObject({
+      terminalStatus: 'guess-needed',
+    })
+    expect(report.validation.terminalGuestLayoutExamples).toMatchObject({
       shown: 4,
       hasMore: true,
       stats: { truncated: false },
     })
-    expect(report.validation.initialGuestLayoutExamples?.layouts).toHaveLength(4)
-    expect(report.validation.initialGuestLayoutExamples?.layouts[0]).toMatchObject({
+    expect(report.validation.terminalGuestLayoutExamples?.layouts).toHaveLength(4)
+    expect(report.validation.terminalGuestLayoutExamples?.layouts[0]).toMatchObject({
       guestCells: expect.any(Array),
       cells: expect.any(Object),
       changedCells: expect.any(Array),
     })
-    expect(Object.keys(report.validation.initialGuestLayoutExamples?.layouts[0]?.cells ?? {})).toHaveLength(16)
+    expect(Object.keys(report.validation.terminalGuestLayoutExamples?.layouts[0]?.cells ?? {})).toHaveLength(16)
   })
 
   it('runs degeneracy-only diagnostics without rule-contribution or proof work', () => {

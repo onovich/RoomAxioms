@@ -157,7 +157,7 @@ export interface WorkbenchDiagnosticsOverview {
   readonly metrics: readonly WorkbenchDiagnosticsOverviewMetric[]
   readonly capWarnings: readonly string[]
   readonly techniqueIds: readonly string[]
-  readonly answerExamples?: WorkbenchAnswerExamples
+  readonly terminalAnswerExamples?: WorkbenchAnswerExamples
 }
 
 export interface WorkbenchAnswerExamples {
@@ -366,14 +366,13 @@ export function createWorkbenchDiagnosticsOverview(
 
   const validation = report.validation
   const proof = validation.proof
-  const initialLayouts = validation.initialGuestLayouts
   const difficulty = validation.difficultyReview
   const quality = report.quality
   const copyWarningCount = report.copyWarnings.length
   const cloneStatus = report.cloneRisk?.status
   const groupIds = new Set(report.groups.map((group) => group.id))
   const groupWasRun = (id: AuthoringDiagnosticsGroup['id']): boolean => groupIds.has(id)
-  const answerExamples = answerExamplesForReport(report)
+  const terminalAnswerExamples = terminalAnswerExamplesForReport(report)
 
   return {
     metrics: [
@@ -385,25 +384,11 @@ export function createWorkbenchDiagnosticsOverview(
         detail: statusLabel(report.status),
       },
       {
-        id: 'candidate-layouts',
-        label: '可能答案范围',
-        value: initialLayouts === undefined
-          ? '未运行'
-          : initialLayouts.greaterThan === undefined
-            ? String(initialLayouts.count)
-            : `>${initialLayouts.greaterThan}`,
-        tone: initialLayouts === undefined
-          ? 'info'
-          : initialLayouts.stats.truncated || initialLayouts.greaterThan !== undefined
-            ? 'warning'
-            : initialLayouts.count > 0
-              ? 'pass'
-              : 'fail',
-        detail: initialLayouts === undefined
-          ? '本次没有勾选成立性检查。'
-          : initialLayouts.stats.truncated || initialLayouts.greaterThan !== undefined
-            ? '检查达到上限，结果只说明范围仍然偏大。'
-            : '数量越小，说明规则和初始信息越能收束答案。',
+        id: 'final-result',
+        label: '最终结论',
+        value: finalResultValue(validation.interactiveTrace?.terminalStatus, proof, groupWasRun('human-proof')),
+        tone: finalResultTone(validation.interactiveTrace?.terminalStatus, proof, groupWasRun('human-proof')),
+        detail: finalResultDetail(validation.interactiveTrace, terminalAnswerExamples, groupWasRun('human-proof')),
       },
       {
         id: 'proof',
@@ -466,19 +451,17 @@ export function createWorkbenchDiagnosticsOverview(
     ],
     capWarnings: report.performance.capWarnings,
     techniqueIds: proof?.techniqueIds ?? [],
-    ...(answerExamples === undefined ? {} : { answerExamples }),
+    ...(terminalAnswerExamples === undefined ? {} : { terminalAnswerExamples }),
   }
 }
 
-function answerExamplesForReport(
+function terminalAnswerExamplesForReport(
   report: AuthoringDraftDiagnosticsReport,
 ): WorkbenchAnswerExamples | undefined {
-  const initialLayouts = report.validation.initialGuestLayouts
-  const examples = report.validation.initialGuestLayoutExamples
+  const examples = report.validation.terminalGuestLayoutExamples
   const puzzle = report.puzzle
-  if (initialLayouts === undefined || examples === undefined || puzzle === undefined) return undefined
-  const knownCount = initialLayouts.greaterThan ?? initialLayouts.count
-  if (knownCount <= 1 || examples.layouts.length <= 1) return undefined
+  if (examples === undefined || puzzle === undefined) return undefined
+  if (examples.layouts.length <= 1 && !examples.hasMore) return undefined
 
   return {
     board: puzzle.board,
@@ -496,11 +479,83 @@ function answerExamplesForReport(
         alternative: change.alternative as CellKind,
       })),
     })),
-    hasMore: examples.hasMore || knownCount > examples.layouts.length,
+    hasMore: examples.hasMore,
   }
 }
 
 type WorkbenchProofDiagnostics = NonNullable<AuthoringDraftDiagnosticsReport['validation']['proof']>
+type WorkbenchInteractiveTrace = NonNullable<AuthoringDraftDiagnosticsReport['validation']['interactiveTrace']>
+
+function finalResultValue(
+  terminalStatus: WorkbenchInteractiveTrace['terminalStatus'] | undefined,
+  proof: WorkbenchProofDiagnostics | undefined,
+  wasRun: boolean,
+): string {
+  if (proof === undefined || terminalStatus === undefined) return wasRun ? '未完成' : '未运行'
+  switch (terminalStatus) {
+    case 'unique':
+      return '唯一'
+    case 'ambiguous':
+      return '仍有多解'
+    case 'guess-needed':
+      return '需要猜测'
+    case 'truncated':
+      return '超出上限'
+    case 'invalid':
+      return '规则有问题'
+  }
+}
+
+function finalResultTone(
+  terminalStatus: WorkbenchInteractiveTrace['terminalStatus'] | undefined,
+  proof: WorkbenchProofDiagnostics | undefined,
+  wasRun: boolean,
+): WorkbenchDiagnosticsOverviewTone {
+  if (proof === undefined || terminalStatus === undefined) return wasRun ? 'warning' : 'info'
+  if (terminalStatus === 'unique') return 'pass'
+  if (terminalStatus === 'truncated') return 'warning'
+
+  return 'fail'
+}
+
+function finalResultDetail(
+  trace: WorkbenchInteractiveTrace | undefined,
+  terminalAnswerExamples: WorkbenchAnswerExamples | undefined,
+  wasRun: boolean,
+): string {
+  if (trace === undefined) {
+    return wasRun
+      ? '已尝试检查，但没有得到可用的调查流程报告。'
+      : '本次没有勾选唯一性或不靠猜推理。'
+  }
+
+  const revealedCount = trace.waves.reduce((count, wave) => count + wave.revealed.length, 0)
+  const confirmedCount = trace.waves.reduce((count, wave) => count + wave.confirmedGuestCells.length, 0)
+  const firstReveal = trace.waves.flatMap((wave) => wave.revealed).slice(0, 3)
+  const revealCopy = firstReveal.length === 0
+    ? '没有新增调查'
+    : `本轮新增调查：${firstReveal.map((observation) => `${observation.cellId} 是${diagnosticKindLabel(observation.kind as CellKind)}`).join('、')}`
+  const ambiguityCopy = terminalAnswerExamples === undefined
+    ? ''
+    : `；可翻页查看 ${terminalAnswerExamples.layouts.length} 个终局可能解`
+
+  return `${trace.waves.length} 波；新增调查 ${revealedCount} 格，确认异常 ${confirmedCount} 格。${revealCopy}${ambiguityCopy}。`
+}
+
+function diagnosticKindLabel(kind: CellKind): string {
+  switch (kind) {
+    case 'empty':
+      return '空地'
+    case 'guest':
+      return '异常区域'
+    case 'bottle':
+      return '酒瓶'
+    case 'bin':
+      return '垃圾桶'
+    case 'mirror':
+      return '镜子'
+  }
+}
 
 function proofOverviewValue(
   proof: WorkbenchProofDiagnostics | undefined,

@@ -145,12 +145,6 @@ export interface AuthoringCaseValidationReport {
     readonly greaterThan?: number
     readonly stats: AuthoringSolverStatsReport
   }
-  readonly initialGuestLayoutExamples?: {
-    readonly layouts: readonly AuthoringGuestLayoutExample[]
-    readonly shown: number
-    readonly hasMore: boolean
-    readonly stats: AuthoringSolverStatsReport
-  }
   readonly proof?: {
     readonly noGuess: boolean
     readonly humanExplainable: boolean
@@ -163,6 +157,13 @@ export interface AuthoringCaseValidationReport {
     readonly techniqueIds: readonly string[]
     readonly stats: AuthoringSolverStatsReport
   }
+  readonly interactiveTrace?: AuthoringInteractiveTraceReport
+  readonly terminalGuestLayoutExamples?: {
+    readonly layouts: readonly AuthoringGuestLayoutExample[]
+    readonly shown: number
+    readonly hasMore: boolean
+    readonly stats: AuthoringSolverStatsReport
+  }
   readonly recordSets?: {
     readonly possibleAssignments: readonly {
       readonly assignmentId: string
@@ -173,6 +174,31 @@ export interface AuthoringCaseValidationReport {
   }
   readonly difficultyReview?: AuthoringDifficultyReviewReport
   readonly recommendation: AuthoringRecommendation
+}
+
+export type AuthoringInteractiveTerminalStatus =
+  | 'unique'
+  | 'ambiguous'
+  | 'guess-needed'
+  | 'truncated'
+  | 'invalid'
+
+export interface AuthoringInteractiveTraceReport {
+  readonly terminalStatus: AuthoringInteractiveTerminalStatus
+  readonly finalObservations: readonly AuthoringObservationReport[]
+  readonly waves: readonly AuthoringInteractiveTraceWave[]
+}
+
+export interface AuthoringInteractiveTraceWave {
+  readonly index: number
+  readonly deductionCount: number
+  readonly revealed: readonly AuthoringObservationReport[]
+  readonly confirmedGuestCells: readonly string[]
+}
+
+export interface AuthoringObservationReport {
+  readonly cellId: string
+  readonly kind: string
 }
 
 export interface AuthoringGuestLayoutExample {

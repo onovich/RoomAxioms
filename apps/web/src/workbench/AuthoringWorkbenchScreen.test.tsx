@@ -53,10 +53,14 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
 
     expect(html).toContain('高级诊断范围')
     expect(html).toContain('求解器尝试次数')
-    expect(html).toContain('可能现场数量')
+    expect(html).toContain('搜索现场数量')
+    expect(html).toContain('终局解法数量')
+    expect(html).toContain('搜索分布数量')
     expect(html).not.toContain('>节点<')
     expect(html).not.toContain('>模型<')
     expect(html).not.toContain('>候选计数<')
+    expect(html).not.toContain('可能答案范围')
+    expect(html).not.toContain('访客布局')
   })
 
   it('uses a cell object dropdown with an object-manager path', () => {
@@ -112,10 +116,12 @@ describe('AuthoringWorkbenchScreen normal UI', () => {
     const html = renderToStaticMarkup(<AuthoringWorkbenchScreen />)
 
     expect(html).toContain('class="board-page-controls"')
-    expect(html).toContain('aria-label="上一页可能现场"')
-    expect(html).toContain('aria-label="下一页可能现场"')
+    expect(html).toContain('aria-label="上一页终局可能解"')
+    expect(html).toContain('aria-label="下一页终局可能解"')
     expect(html).toContain('>原版<')
     expect(html).not.toContain('查看前')
+    expect(html).not.toContain('开局可能现场')
+    expect(html).not.toContain('可能答案')
     expect(html).not.toContain('class="answer-examples-panel"')
   })
 

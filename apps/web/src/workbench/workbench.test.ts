@@ -642,7 +642,7 @@ describe('authoring workbench shell model', () => {
 
     expect(overview?.metrics.map((metric) => metric.id)).toEqual([
       'recommendation',
-      'candidate-layouts',
+      'final-result',
       'proof',
       'quality',
       'clone-risk',
@@ -654,18 +654,98 @@ describe('authoring workbench shell model', () => {
       label: '不靠猜推理',
       value: '通过',
     })
+    expect(overview?.metrics.find((metric) => metric.id === 'final-result')).toMatchObject({
+      label: '最终结论',
+      value: '唯一',
+      tone: 'pass',
+    })
     expect(overview?.metrics.find((metric) => metric.id === 'difficulty')).toMatchObject({
       tone: 'warning',
     })
-    expect(overview?.answerExamples).toMatchObject({
-      hasMore: true,
-    })
-    expect(overview?.answerExamples?.layouts).toHaveLength(4)
+    expect(overview?.terminalAnswerExamples).toBeUndefined()
     const plainDetails = overview?.metrics.map((metric) => metric.detail ?? '').join('\n') ?? ''
     expect(plainDetails).not.toContain('最终访客')
+    expect(plainDetails).not.toContain('可能答案范围')
     expect(plainDetails).not.toContain('caps ')
     expect(plainDetails).not.toContain('节点 ')
   }, 30_000)
+
+  it('only exposes board answer pages for terminal ambiguity after interactive reveals', () => {
+    const puzzle = getCaseById(DEFAULT_CASE_ID)
+    const diagnostics: AuthoringDraftDiagnosticsReport = {
+      ok: false,
+      status: 'valid-not-unique',
+      puzzle,
+      puzzleId: puzzle.id,
+      validation: {
+        puzzleId: puzzle.id,
+        sourcePath: '<test>',
+        resolvedPath: '<test>',
+        caps: defaultWorkbenchDiagnosticsCaps(),
+        schema: { ok: true, issueCount: 0, issues: [] },
+        proof: {
+          noGuess: false,
+          humanExplainable: false,
+          targetSatisfiesRules: true,
+          guestLayoutUniqueAtEnd: false,
+          finalGuestCells: null,
+          issueCodes: ['GUESS_POINT'],
+          waveCount: 2,
+          deductionCount: 5,
+          techniqueIds: [],
+          stats: { nodeCount: 1, propagationCount: 1, truncated: false },
+        },
+        interactiveTrace: {
+          terminalStatus: 'guess-needed',
+          finalObservations: [
+            { cellId: 'A1', kind: 'bottle' },
+            { cellId: 'B1', kind: 'bin' },
+          ],
+          waves: [{
+            index: 0,
+            deductionCount: 2,
+            revealed: [{ cellId: 'B1', kind: 'bin' }],
+            confirmedGuestCells: [],
+          }],
+        },
+        terminalGuestLayoutExamples: {
+          layouts: [
+            {
+              guestCells: ['B4', 'D4'],
+              cells: puzzle.target,
+              changedCells: [],
+            },
+            {
+              guestCells: ['C4', 'D4'],
+              cells: { ...puzzle.target, B4: 'empty', C4: 'guest' },
+              changedCells: [
+                { cellId: 'B4', current: 'guest', alternative: 'empty' },
+                { cellId: 'C4', current: 'empty', alternative: 'guest' },
+              ],
+            },
+          ],
+          shown: 2,
+          hasMore: false,
+          stats: { nodeCount: 1, propagationCount: 1, truncated: false },
+        },
+        recommendation: 'repair-proof',
+      },
+      copyWarnings: [],
+      groups: [],
+      performance: { truncated: false, capWarnings: [] },
+    }
+    const overview = createWorkbenchDiagnosticsOverview(diagnostics)
+
+    expect(overview?.metrics.find((metric) => metric.id === 'final-result')).toMatchObject({
+      value: '需要猜测',
+      tone: 'fail',
+    })
+    expect(overview?.terminalAnswerExamples?.layouts).toHaveLength(2)
+    expect(overview?.terminalAnswerExamples?.layouts[1]?.cells.find((cell) => cell.cellId === 'C4')).toMatchObject({
+      kind: 'guest',
+      changed: true,
+    })
+  })
 
   it('makes skipped diagnostics explicit in the overview', () => {
     const draft = createWorkbenchDraftFromPuzzle(getCaseById(DEFAULT_CASE_ID))
@@ -707,10 +787,7 @@ describe('authoring workbench shell model', () => {
     }
     const overview = createWorkbenchDiagnosticsOverview(cappedDiagnostics)
 
-    expect(overview?.metrics.find((metric) => metric.id === 'candidate-layouts')).toMatchObject({
-      value: '>100',
-      tone: 'warning',
-    })
+    expect(overview?.metrics.find((metric) => metric.id === 'final-result')?.label).toBe('最终结论')
     expect(overview?.metrics.find((metric) => metric.id === 'performance')).toMatchObject({
       value: '2 项受限',
       tone: 'warning',
