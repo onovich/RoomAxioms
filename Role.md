@@ -40,7 +40,7 @@ idempotency:
   last_planner_dispatch: 2026-07-02T05:19:13+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-39-player-shell-visual-qa-asset-intake-readiness-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: 622889c
   last_planner_dispatch_executor_thread_id: 019f1d5a-6fb8-7911-9400-87b59922c00a
   last_check_status: pass
   last_check_phase: Phase 38 - Figma Player Shell Integration
