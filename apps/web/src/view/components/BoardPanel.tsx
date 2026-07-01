@@ -21,9 +21,14 @@ interface BoardPanelProps {
 
 export function BoardPanel({ game }: BoardPanelProps) {
   const columns = columnsForWidth(game.puzzle.board.width)
+  const boardVisualSize = boardCellSizeFor(game.puzzle.board)
   const boardStyle = {
     '--board-width': String(game.puzzle.board.width),
     '--board-height': String(game.puzzle.board.height),
+    '--board-cell-max': boardVisualSize,
+    '--board-cell-min': boardVisualSize,
+    '--board-coordinate-size': '30px',
+    '--board-gap': '6px',
   } as CSSProperties
 
   return (
@@ -74,6 +79,14 @@ export function BoardPanel({ game }: BoardPanelProps) {
       </SceneNineSlicePanel>
     </section>
   )
+}
+
+function boardCellSizeFor(board: BoardSize): string {
+  const longestSide = Math.max(board.width, board.height)
+  if (longestSide <= 3) return '88px'
+  if (longestSide === 4) return '68px'
+  if (longestSide === 5) return '54px'
+  return '50px'
 }
 
 function BoardRow({

@@ -1,6 +1,6 @@
 # Phase 39 - Player Shell Visual Delta Report
 
-Status: Round 1 baseline draft
+Status: Round 2 layout fix draft
 Date: 2026-07-02
 Routes:
 
@@ -58,6 +58,28 @@ Production route checks:
 - Target spoiler classes: absent.
 - Production DOM overflow samples outside the 1920x1080 canvas: none.
 
+## Round 2 Focused Board Measurements
+
+Round 2 added focused browser checks for representative 3x3, 4x4, and 5x5
+production cases after the non-art layout adjustments.
+
+Evidence screenshots:
+
+- `tmp/phase39-r2-board-contained-case-004-1920x1080.png`
+- `tmp/phase39-r2-board-contained-case-011-1920x1080.png`
+- `tmp/phase39-r2-board-contained-case-021-1920x1080.png`
+
+Measured results at 1920x1080:
+
+| Case | Board | Grid size | Cell size | Grid inside stage | Caption inside stage | Clipped cells |
+| --- | --- | ---: | ---: | --- | --- | --- |
+| `case-004` | 4x4 | 326x326 | 68x68 | PASS | PASS | none |
+| `case-011` | 3x3 | 312x312 | 88x88 | PASS | PASS | none |
+| `case-021` | 5x5 | 330x330 | 54x54 | PASS | PASS | none |
+
+The evidence column production width is now `306px`, widened from the Round 1
+`260px` baseline.
+
 ## Visual Delta
 
 ### P0
@@ -81,14 +103,13 @@ developer-only information on the normal player route.
    cleaner portrait/dialogue relationship and avoid the dialogue box feeling
    detached from the main bottom band.
 
-3. The central scene map has excess empty grid acreage while the playable 4x4
-   interaction grid remains compact. This is not a data issue, but the map should
-   make better use of the available panel for current 3x3 through 5x5 cases
-   without changing cell ids or puzzle semantics.
+3. Round 2 resolved the central board containment issue for current 3x3 through
+   5x5 cases. The board now uses bounded per-board cell sizing so rows no longer
+   clip into the action row, while preserving real cell ids and puzzle semantics.
 
-4. The evidence column is visually dense and narrow. It is functionally correct,
-   but the record list, marks block, and submit frame need a little more breathing
-   room or better internal hierarchy.
+4. Round 2 improved the evidence column breathing room by widening the panel.
+   The record list, marks block, and submit frame still need final-art review,
+   but the immediate density issue is reduced without changing production data.
 
 5. Some panel interior spacing and divider rhythm differ from the prototype.
    The current production shell is consistent and readable, but rule/record panel
@@ -132,8 +153,23 @@ developer-only information on the normal player route.
 - The prototype remains a visual reference only.
 - Editor/workbench and solver/proof/schema/domain surfaces were not touched.
 
+## Round 2 Debug Self-Check
+
+- Focused browser checks covered representative 3x3, 4x4, and 5x5 production
+  cases.
+- No board cells clipped or overlapped the action row after the adjustment.
+- The fixed 1920x1080 canvas and 16:9 proportional scaling contract remains
+  unchanged.
+
+## Round 2 Architecture Self-Check
+
+- Board sizing remains a view-layer adjustment in the production player shell.
+- The real player route remains driven by `useRoomAxiomsGame`.
+- No solver/proof/schema/domain semantics changed.
+- Editor/workbench surfaces were not touched.
+
 ## Next
 
-Round 2 should address P1 layout issues that do not depend on final art,
-especially central board use of space, panel breathing room, and any clipping or
-overflow found during the next focused browser smoke.
+Round 3 should continue with P1 layout issues that do not depend on final art,
+especially the VN bottom-band composition, portrait/dialogue balance, and any
+remaining panel spacing rhythm that can be improved before final asset intake.

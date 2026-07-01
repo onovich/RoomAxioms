@@ -559,8 +559,9 @@ h3 {
   --board-cell-max: 94px;
   --board-cell-min: 74px;
   --board-coordinate-size: 34px;
+  --board-gap: 7px;
   display: grid;
-  gap: 7px;
+  gap: var(--board-gap);
   grid-template-columns: var(--board-coordinate-size) repeat(var(--board-width), minmax(var(--board-cell-min), var(--board-cell-max)));
   grid-template-rows: var(--board-coordinate-size) repeat(var(--board-height), minmax(var(--board-cell-min), var(--board-cell-max)));
 }
@@ -3760,7 +3761,7 @@ h3 {
 .scene-player-workstation {
   display: grid;
   gap: 21px;
-  grid-template-columns: 423px 1134px 260px;
+  grid-template-columns: 405px 1110px 306px;
   height: 664px;
   left: 32px;
   margin: 0;
