@@ -102,6 +102,12 @@ export interface ResolvedThemeAsset {
   readonly entry?: ThemeAssetEntry
 }
 
+const TEMPORARY_FIGMA_ASSET_SOURCE: ThemeAssetSource = {
+  label: 'Figma temporary puzzle UI asset',
+  license: 'Temporary user-provided project reference; not approved final art.',
+  owner: 'Project owner',
+}
+
 export interface ThemeAssetManifestLeak {
   readonly assetId: string
   readonly kind: ThemeAssetKind
@@ -213,11 +219,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}box-001-middle-stretch.png`,
       alt: 'Temporary paper panel frame sample',
       notes: 'Temporary Figma frame slot. Not final approved art.',
-      source: {
-        label: 'Figma temporary puzzle UI asset',
-        license: 'Temporary user-provided project reference; not approved final art.',
-        owner: 'Project owner',
-      },
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 903, height: 594, aspectRatio: '301:198' },
       safeForPlayerRoute: true,
     },
     {
@@ -228,11 +231,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}box-002-middle-stretch.png`,
       alt: 'Temporary submit panel frame sample',
       notes: 'Temporary Figma frame slot. Not final approved art.',
-      source: {
-        label: 'Figma temporary puzzle UI asset',
-        license: 'Temporary user-provided project reference; not approved final art.',
-        owner: 'Project owner',
-      },
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 900, height: 594, aspectRatio: '50:33' },
       safeForPlayerRoute: true,
     },
     {
@@ -242,6 +242,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma wide divider',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-wide.svg`,
       notes: 'Temporary divider slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 369, height: 2, aspectRatio: '369:2' },
       safeForPlayerRoute: true,
     },
     {
@@ -251,6 +253,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma side divider',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-side.svg`,
       notes: 'Temporary divider slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 214, height: 2, aspectRatio: '107:1' },
       safeForPlayerRoute: true,
     },
     {
@@ -260,6 +264,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma short divider',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}divider-short.svg`,
       notes: 'Temporary divider slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 52, height: 2, aspectRatio: '26:1' },
       safeForPlayerRoute: true,
     },
     {
@@ -269,6 +275,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma exact-count rule icon',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-exact-icon.svg`,
       notes: 'Temporary rule icon slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 26.5, height: 27, aspectRatio: '26.5:27' },
       safeForPlayerRoute: true,
     },
     {
@@ -278,6 +286,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma exact-count alternate rule icon',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-exact-icon-alt.svg`,
       notes: 'Temporary rule icon slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 26.5, height: 27, aspectRatio: '26.5:27' },
       safeForPlayerRoute: true,
     },
     {
@@ -287,6 +297,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma orthogonal-scope rule icon',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-orthogonal-icon.svg`,
       notes: 'Temporary rule icon slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 40, height: 40, aspectRatio: '1:1' },
       safeForPlayerRoute: true,
     },
     {
@@ -296,6 +308,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       label: 'Temporary Figma adjacent-scope rule icon',
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}rule-adjacent-icon.svg`,
       notes: 'Temporary rule icon slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 40, height: 40, aspectRatio: '1:1' },
       safeForPlayerRoute: true,
     },
     {
@@ -306,6 +320,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}protagonist-portrait.png`,
       alt: 'Temporary protagonist bust portrait',
       notes: 'Temporary Figma character slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 1086, height: 1448, aspectRatio: '543:724' },
       safeForPlayerRoute: true,
     },
     {
@@ -316,6 +332,8 @@ export const DEFAULT_THEME_ASSET_MANIFEST: ThemeAssetManifest = {
       src: `${FIGMA_PUZZLE_PROTOTYPE_ASSET_BASE}assistant-portrait.png`,
       alt: 'Temporary assistant bust portrait',
       notes: 'Temporary Figma character slot. Not final approved art.',
+      source: TEMPORARY_FIGMA_ASSET_SOURCE,
+      dimensions: { width: 1086, height: 1448, aspectRatio: '543:724' },
       safeForPlayerRoute: true,
     },
     {

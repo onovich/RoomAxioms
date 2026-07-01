@@ -1,6 +1,6 @@
 # Phase 39 - Player Shell Visual Delta Report
 
-Status: Round 4 VN overlay fix draft
+Status: Round 5 asset intake readiness draft
 Date: 2026-07-02
 Routes:
 
@@ -126,6 +126,32 @@ Measured results at 1920x1080:
 | Element at idle dialogue center | dialogue box | `scene-player-canvas` |
 | Canvas aspect | `1.777778` | `1.777778` |
 
+## Round 5 Asset Intake Audit
+
+Round 5 audited the theme manifest and final art replacement path.
+
+Outputs:
+
+- `docs/phase-39-final-art-asset-intake-checklist.md`
+
+Manifest readiness changes:
+
+- Added source/license/dimension metadata for Phase 38 Figma shell assets that
+  were already registered as `userProvided`.
+- Kept all current temporary assets non-final; no asset was upgraded to
+  `approved`.
+- Added an explicit default-manifest intake gate to the asset review tests.
+
+Current asset review gate:
+
+| Check | Result |
+| --- | --- |
+| Manifest id | `unregistered-scene-placeholder` |
+| Approved asset ids | none |
+| Default manifest intake issues | expected none |
+| Dialogue leaks | expected none |
+| Manifest leaks | expected none |
+
 ## Visual Delta
 
 ### P0
@@ -244,7 +270,21 @@ developer-only information on the normal player route.
 - The real player route remains driven by `useRoomAxiomsGame`.
 - Editor/workbench and solver/proof/schema/domain surfaces were not touched.
 
+## Round 5 Debug Self-Check
+
+- The final-art checklist covers manifest slot key, current path, expected final
+  filename, recommended size or ratio, nine-slice eligibility, transparency,
+  leak risk, and replacement validation.
+- Figma shell manifest entries now have provenance and dimensions for intake
+  validation while remaining `userProvided`.
+
+## Round 5 Architecture Self-Check
+
+- Asset metadata changed only in the player theme manifest.
+- No current asset was marked final approved.
+- No editor/workbench, solver/proof/schema/domain, puzzle, or VN data changed.
+
 ## Next
 
-Round 5 should audit theme asset slots and manifest readiness for final art
-intake without marking current temporary assets as final approved.
+Round 6 should run focused manifest/checklist validation and then continue with
+player secrecy, Hint, dev gating, and accessibility regression checks.

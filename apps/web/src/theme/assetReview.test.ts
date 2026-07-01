@@ -36,6 +36,8 @@ describe('theme asset review workflow', () => {
     expect(report.dialogueCategories).toContain('caseIntro')
     expect(report.dialogueLeaks).toEqual([])
     expect(report.manifestLeaks).toEqual([])
+    expect(report.intakeIssues).toEqual([])
+    expect(report.approvedAssetIds).toEqual([])
   })
 
   it('requires source, license, dimensions, src, and approval for player-route assets', () => {
