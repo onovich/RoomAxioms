@@ -546,7 +546,6 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
       if (key === 'f') setTool('guest')
       if (key === 's') setTool('safe')
       if (key === 'i') setTool('inspect')
-      if (key === 'h') requestHint()
       if (key === 'escape') {
         setHint(null)
         setResult(null)
@@ -557,7 +556,7 @@ export function useRoomAxiomsGame(puzzle: PuzzleDefinition): RoomAxiomsGame {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [closeDialogue, requestHint])
+  }, [closeDialogue])
 
   return {
     puzzle,

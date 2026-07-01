@@ -3819,3 +3819,96 @@ h3 {
   flex: 1;
   min-height: 0;
 }
+
+.scene-player-topbar-slot .scene-file-topbar {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 380px minmax(480px, 1fr) 260px 490px;
+}
+
+.scene-title-block {
+  min-width: 0;
+}
+
+.scene-case-dossier {
+  align-items: center;
+  background: rgba(255, 250, 239, 0.72);
+  border: 1px solid var(--scene-line);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  height: 64px;
+  min-width: 0;
+  padding: 8px 14px;
+}
+
+.scene-file-label {
+  color: var(--scene-ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  max-width: 42px;
+}
+
+.scene-case-number {
+  color: var(--scene-ink);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.scene-case-divider {
+  background: var(--scene-line);
+  height: 48px;
+  width: 1px;
+}
+
+.scene-case-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.scene-case-copy .case-name {
+  color: var(--scene-ink);
+  font-size: 18px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-case-copy .case-picker {
+  justify-self: start;
+}
+
+.scene-file-topbar .scene-progress {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scene-file-topbar .scene-progress > div {
+  background: rgba(255, 250, 239, 0.72);
+  border: 1px solid var(--scene-line);
+  min-width: 0;
+}
+
+.scene-file-topbar .scene-actions {
+  flex-wrap: nowrap;
+}
+
+.scene-file-topbar .vn-preferences {
+  flex-wrap: nowrap;
+}
+
+.scene-settings-label {
+  align-items: center;
+  color: var(--scene-ink-soft);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 6px;
+  min-height: 38px;
+  white-space: nowrap;
+}

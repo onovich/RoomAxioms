@@ -1,4 +1,5 @@
-import { Lightbulb, MessageSquareText, Play, RotateCcw } from 'lucide-react'
+import { MessageSquareText, Play, RotateCcw, Settings } from 'lucide-react'
+
 import type { CaseSummary, CaseTier } from '../../content/cases'
 import type { RoomAxiomsGame } from '../../hooks/useRoomAxiomsGame'
 import {
@@ -20,10 +21,12 @@ interface TopBarProps {
 export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProps) {
   const anomalyMarks = [...game.marks.values()].filter((mark) => mark === 'guest').length
   const caseGroups = groupCasesByTier(cases)
+  const caseDisplayName = displayCaseName(game.puzzle.caseName ?? game.puzzle.title)
+  const caseNumber = caseNumberFor(game.puzzle.id)
 
   return (
-    <header className="topbar scene-topbar">
-      <div className="brand-block scene-brand">
+    <header className="topbar scene-topbar scene-file-topbar">
+      <div className="brand-block scene-brand scene-title-block">
         <div className="brand-mark" aria-hidden="true">
           US
         </div>
@@ -32,37 +35,47 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
             {SCENE_TITLE} <span>{SCENE_TITLE_EN}</span>
           </div>
           <div className="department-line">{SCENE_DEPARTMENT} / {SCENE_DEPARTMENT_EN}</div>
-          <div className="case-meta">
-            <div className="case-name">{game.puzzle.caseName}</div>
-            <label className="case-picker scene-case-file">
-              <span>案卷</span>
-              <select
-                value={selectedCaseId}
-                onChange={(event) => onSelectCase(event.target.value)}
-                aria-label="选择案卷"
-              >
-                {caseGroups.map((group) => (
-                  <optgroup label={group.label} key={group.tier}>
-                    {group.cases.map((caseItem) => (
-                      <option value={caseItem.id} key={caseItem.id}>
-                        {caseItem.caseName}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-          </div>
         </div>
       </div>
 
+      <section className="scene-case-dossier" aria-label="案件档案">
+        <span className="scene-file-label">案件档案</span>
+        <strong className="scene-case-number">{caseNumber}</strong>
+        <span className="scene-case-divider" aria-hidden="true" />
+        <div className="scene-case-copy">
+          <span className="case-name">{caseDisplayName}</span>
+          <label className="case-picker scene-case-file">
+            <span>案卷</span>
+            <select
+              value={selectedCaseId}
+              onChange={(event) => onSelectCase(event.target.value)}
+              aria-label="选择案卷"
+            >
+              {caseGroups.map((group) => (
+                <optgroup label={group.label} key={group.tier}>
+                  {group.cases.map((caseItem) => (
+                    <option value={caseItem.id} key={caseItem.id}>
+                      {caseItem.caseName}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
+
       <div className="top-stats scene-progress" aria-label="现场调查进度">
-        <ProgressStat label="异常标注" value={`${anomalyMarks} / ${game.targetGuestCount}`} />
-        <ProgressStat label="勘察进度" value={`${game.revealed.size} / ${game.cells.length}`} />
+        <ProgressStat label="已标记异常" value={`${anomalyMarks} / ${game.targetGuestCount}`} />
+        <ProgressStat label="已检查" value={`${game.revealed.size} / ${game.cells.length}`} />
       </div>
 
       <div className="top-actions scene-actions">
         <div className="vn-preferences" aria-label="VN dialogue controls">
+          <span className="scene-settings-label">
+            <Settings size={16} aria-hidden="true" />
+            设置
+          </span>
           <button
             className="ghost-button"
             type="button"
@@ -103,10 +116,6 @@ export function TopBar({ game, cases, selectedCaseId, onSelectCase }: TopBarProp
             <span>减动画</span>
           </label>
         </div>
-        <button className="ghost-button" type="button" onClick={game.requestHint}>
-          <Lightbulb size={17} aria-hidden="true" />
-          <span>{scenePanels.partnerReview}</span>
-        </button>
         <button className="icon-button" type="button" onClick={game.reset} aria-label={scenePanels.resetSurvey}>
           <RotateCcw size={20} aria-hidden="true" />
         </button>
@@ -133,6 +142,15 @@ function groupCasesByTier(cases: readonly CaseSummary[]): readonly {
     label: CASE_TIER_LABELS[tier],
     cases: cases.filter((caseItem) => caseItem.tier === tier),
   })).filter((group) => group.cases.length > 0)
+}
+
+function caseNumberFor(caseId: string): string {
+  const match = /(\d+)$/.exec(caseId)
+  return match === null ? '--' : match[1].padStart(2, '0').slice(-2)
+}
+
+function displayCaseName(caseName: string): string {
+  return caseName.replace(/^案卷\s*\d+\s*[·.]\s*/, '')
 }
 
 function ProgressStat({ label, value }: { readonly label: string; readonly value: string | number }) {
