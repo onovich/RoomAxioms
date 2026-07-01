@@ -2525,16 +2525,31 @@ function AnswerExamplesPanel({
 }: {
   readonly overview: WorkbenchDiagnosticsOverview
 }) {
-  if (overview.answerExamples === undefined) return null
+  const examples = overview.answerExamples
+  if (examples === undefined) return null
 
   return (
     <details className="answer-examples-panel">
-      <summary>查看前 {overview.answerExamples.layouts.length} 套可能答案</summary>
+      <summary>查看前 {examples.layouts.length} 套可能答案</summary>
       <ol>
-        {overview.answerExamples.layouts.map((layout) => (
+        {examples.layouts.map((layout) => (
           <li key={layout.index}>
             <b>第 {layout.index} 套</b>
-            <span>异常区域：{layout.anomalyCells.join('、')}</span>
+            <div
+              className="answer-example-grid"
+              style={{ gridTemplateColumns: `repeat(${examples.board.width}, minmax(0, 1fr))` }}
+              aria-label={`第 ${layout.index} 套可能答案摆放图`}
+            >
+              {layout.cells.map((cell) => (
+                <span
+                  key={`${layout.index}:${cell.cellId}`}
+                  className={`answer-example-cell ${cell.kind === 'guest' ? 'anomaly' : ''} ${cell.changed ? 'changed' : ''}`}
+                >
+                  <em>{cell.cellId}</em>
+                  <strong>{kindLabel(cell.kind)}</strong>
+                </span>
+              ))}
+            </div>
             {layout.changedCells.length === 0 ? null : (
               <small>
                 和当前地图不同：{layout.changedCells.slice(0, 6).map((change) =>
@@ -2546,7 +2561,7 @@ function AnswerExamplesPanel({
           </li>
         ))}
       </ol>
-      {overview.answerExamples.hasMore ? <p>还有更多可能答案未展示。</p> : null}
+      {examples.hasMore ? <p>还有更多可能答案未展示。</p> : null}
     </details>
   )
 }

@@ -177,6 +177,7 @@ export interface AuthoringCaseValidationReport {
 
 export interface AuthoringGuestLayoutExample {
   readonly guestCells: readonly string[]
+  readonly cells: Readonly<Record<string, string>>
   readonly changedCells: readonly AuthoringGuestLayoutChangedCell[]
 }
 

@@ -1109,6 +1109,7 @@ function guestLayoutExamplesFor(
 
   return layouts.map((layout) => ({
     guestCells: layout.guestCells,
+    cells: layout.cells,
     changedCells: boardCells
       .filter((cellId) => puzzle.target[cellId] !== layout.cells[cellId])
       .map((cellId) => ({
