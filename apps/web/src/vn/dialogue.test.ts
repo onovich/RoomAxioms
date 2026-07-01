@@ -60,6 +60,51 @@ describe('VN dialogue scene contracts', () => {
     expect(REQUIRED_DIALOGUE_CATEGORIES).toHaveLength(7)
   })
 
+  it('assigns protagonist and assistant portrait slots for VN event coverage', () => {
+    const linesByCategory = new Map(
+      STATIC_DIALOGUE_SCENES.map((scene) => [scene.category, scene.lines]),
+    )
+
+    expect(linesByCategory.get('caseIntro')?.map((line) => [line.portraitId, line.portraitSlot])).toEqual([
+      ['dispatcher', 'right'],
+      ['investigator-thinking', 'left'],
+    ])
+    expect(linesByCategory.get('firstRuleSelect')?.[0]).toMatchObject({
+      portraitId: 'dispatcher-sensing',
+      portraitSlot: 'right',
+    })
+    expect(linesByCategory.get('firstSafeInspect')?.[0]).toMatchObject({
+      portraitId: 'investigator',
+      portraitSlot: 'left',
+    })
+    expect(linesByCategory.get('firstAnomalyMark')?.[0]).toMatchObject({
+      portraitId: 'dispatcher-sensing',
+      portraitSlot: 'right',
+    })
+    expect(linesByCategory.get('failure')?.[0]).toMatchObject({
+      portraitId: 'dispatcher',
+      portraitSlot: 'right',
+    })
+    expect(linesByCategory.get('success')?.[0]).toMatchObject({
+      portraitId: 'investigator',
+      portraitSlot: 'left',
+    })
+  })
+
+  it('keeps partner sense-rule dialogue on the assistant sensing portrait slot', () => {
+    const scene = createHintDialogueScene({
+      title: '数量已经足够',
+      conclusion: '下一步可以继续调查。',
+      premises: ['只使用已经公开的信息。'],
+      reasoning: '这一段只作为搭档感应定则包装。',
+    })
+
+    expect(scene).not.toBeNull()
+    expect(scene?.category).toBe('hint')
+    expect(scene?.lines.every((line) => line.portraitId === 'dispatcher-sensing')).toBe(true)
+    expect(scene?.lines.every((line) => line.portraitSlot === 'right')).toBe(true)
+  })
+
   it('keeps static dialogue free of target, candidate, forced, solver, proof, and coordinate leaks', () => {
     expect(findDialogueSceneLeaks(STATIC_DIALOGUE_SCENES)).toEqual([])
   })
@@ -95,4 +140,3 @@ describe('VN dialogue scene contracts', () => {
     ])
   })
 })
-
