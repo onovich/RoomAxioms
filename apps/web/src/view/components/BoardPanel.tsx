@@ -13,6 +13,7 @@ import {
 } from '../../theme/vocabulary'
 import type { Tool } from '../types'
 import { ObjectIcon } from './ObjectIcon'
+import { SceneDivider, SceneNineSlicePanel } from './SceneFrame'
 
 interface BoardPanelProps {
   readonly game: RoomAxiomsGame
@@ -26,48 +27,51 @@ export function BoardPanel({ game }: BoardPanelProps) {
   } as CSSProperties
 
   return (
-    <section className="board-panel scene-map-panel" data-panel="board" aria-labelledby="boardHeading">
-      <div className="board-heading">
-        <div>
-          <span className="eyebrow">Scene Map</span>
-          <h2 id="boardHeading">{scenePanels.map}</h2>
+    <section className="board-panel scene-map-panel scene-framed-panel" data-panel="board" aria-labelledby="boardHeading">
+      <SceneNineSlicePanel className="scene-map-frame" variant="paper">
+        <div className="board-heading scene-panel-heading">
+          <div>
+            <span className="eyebrow">Scene Map</span>
+            <h2 id="boardHeading">{scenePanels.map}</h2>
+          </div>
+          <div className="mode-badge">{sceneToolLabels[game.tool]}</div>
         </div>
-        <div className="mode-badge">{sceneToolLabels[game.tool]}</div>
-      </div>
+        <SceneDivider className="scene-heading-divider" id="wide" />
 
-      <div className="board-stage scene-map-stage">
-        <div className="scene-map-floorplan" aria-hidden="true" />
-        <div
-          className="board-coordinates scene-map-grid"
-          role="grid"
-          aria-label={`${game.puzzle.board.width} by ${game.puzzle.board.height} scene map`}
-          aria-rowcount={game.puzzle.board.height}
-          aria-colcount={game.puzzle.board.width}
-          style={boardStyle}
-        >
-          <div className="coordinate-label" role="presentation" aria-hidden="true" />
-          {columns.map((column) => (
-            <div className="coordinate-label" key={column} role="presentation" aria-hidden="true">
-              {column}
-            </div>
-          ))}
-          {Array.from({ length: game.puzzle.board.height }, (_, row) => (
-            <BoardRow game={game} columns={columns} row={row + 1} key={row} />
-          ))}
+        <div className="board-stage scene-map-stage">
+          <div className="scene-map-floorplan" aria-hidden="true" />
+          <div
+            className="board-coordinates scene-map-grid"
+            role="grid"
+            aria-label={`${game.puzzle.board.width} by ${game.puzzle.board.height} scene map`}
+            aria-rowcount={game.puzzle.board.height}
+            aria-colcount={game.puzzle.board.width}
+            style={boardStyle}
+          >
+            <div className="coordinate-label" role="presentation" aria-hidden="true" />
+            {columns.map((column) => (
+              <div className="coordinate-label" key={column} role="presentation" aria-hidden="true">
+                {column}
+              </div>
+            ))}
+            {Array.from({ length: game.puzzle.board.height }, (_, row) => (
+              <BoardRow game={game} columns={columns} row={row + 1} key={row} />
+            ))}
+          </div>
+          <div className="board-caption">{captionFor(game)}</div>
         </div>
-        <div className="board-caption">{captionFor(game)}</div>
-      </div>
 
-      <div className="tool-row" role="toolbar" aria-label="现场勘察工具">
-        <ToolButton tool="inspect" active={game.tool === 'inspect'} onClick={() => game.setTool('inspect')} />
-        <ToolButton tool="guest" active={game.tool === 'guest'} onClick={() => game.setTool('guest')} />
-        <ToolButton tool="safe" active={game.tool === 'safe'} onClick={() => game.setTool('safe')} />
-      </div>
+        <div className="tool-row" role="toolbar" aria-label="现场勘察工具">
+          <ToolButton tool="inspect" active={game.tool === 'inspect'} onClick={() => game.setTool('inspect')} />
+          <ToolButton tool="guest" active={game.tool === 'guest'} onClick={() => game.setTool('guest')} />
+          <ToolButton tool="safe" active={game.tool === 'safe'} onClick={() => game.setTool('safe')} />
+        </div>
 
-      <div className={`status-strip ${game.status.kind}`} role="status" aria-live="polite">
-        <span className="status-dot" />
-        <span>{game.status.text}</span>
-      </div>
+        <div className={`status-strip ${game.status.kind}`} role="status" aria-live="polite">
+          <span className="status-dot" />
+          <span>{game.status.text}</span>
+        </div>
+      </SceneNineSlicePanel>
     </section>
   )
 }

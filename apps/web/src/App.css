@@ -3957,3 +3957,38 @@ h3 {
   justify-self: end;
   width: 34px;
 }
+
+.scene-map-frame {
+  height: 100%;
+}
+
+.scene-map-frame .scene-nine-slice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 24px 26px;
+}
+
+.scene-player-root .scene-map-panel {
+  padding: 0;
+}
+
+.scene-player-root .scene-map-stage {
+  border-radius: 0;
+  padding: 12px 16px;
+}
+
+.scene-player-root .scene-map-grid {
+  margin: 0 auto;
+}
+
+.scene-player-root .board-caption {
+  pointer-events: none;
+}
+
+.scene-map-frame .tool-row {
+  flex: none;
+  position: relative;
+  z-index: 2;
+}
