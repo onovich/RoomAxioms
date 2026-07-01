@@ -84,6 +84,11 @@ export interface PatchDraftRulePresentationInput {
   readonly flavor?: string
 }
 
+export interface PatchDraftCellFactsInput {
+  readonly target?: Readonly<Record<CellId, CellKind>>
+  readonly initialReveals?: readonly CellId[]
+}
+
 export function createEmptyWorkbenchDraftState(): WorkbenchDraftState {
   return {
     jsonText: '',
@@ -167,13 +172,35 @@ export function patchDraftTargetCells(
   state: WorkbenchDraftState,
   cells: Readonly<Record<CellId, CellKind>>,
 ): WorkbenchDraftPatchResult {
-  return patchValidPuzzle(state, (puzzle) => ({
-    ...puzzle,
-    target: {
-      ...puzzle.target,
-      ...cells,
-    },
-  }))
+  return patchDraftCellFacts(state, { target: cells })
+}
+
+export function patchDraftCellFacts(
+  state: WorkbenchDraftState,
+  input: PatchDraftCellFactsInput,
+): WorkbenchDraftPatchResult {
+  return patchValidPuzzle(state, (puzzle) => {
+    const initialRevealSet = input.initialReveals === undefined
+      ? undefined
+      : new Set<CellId>(input.initialReveals)
+
+    return {
+      ...puzzle,
+      ...(input.target === undefined
+        ? {}
+        : {
+            target: {
+              ...puzzle.target,
+              ...input.target,
+            },
+          }),
+      ...(initialRevealSet === undefined
+        ? {}
+        : {
+            initialReveals: allCells(puzzle.board).filter((candidate) => initialRevealSet.has(candidate)),
+          }),
+    }
+  })
 }
 
 export function patchDraftNormalizedTargetCell(

@@ -12,6 +12,7 @@ import {
   patchDraftAllowedKinds,
   patchDraftAnchors,
   patchDraftBoardSize,
+  patchDraftCellFacts,
   patchDraftMetadata,
   patchDraftNormalizedTargetCell,
   patchDraftRecords,
@@ -270,6 +271,23 @@ describe('workbench draft state', () => {
       ],
     })
     expect(invalidReveal.state).toBe(targetPatch.state)
+  })
+
+  it('patches target cells and initial reveals in one schema-checked update', () => {
+    const state = importJsonTextToDraftState(fixtureText)
+    const patch = patchDraftCellFacts(state, {
+      target: {
+        A1: 'empty',
+        B1: 'bottle',
+      },
+      initialReveals: ['B1'],
+    })
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Cell facts patch failed.')
+    expect(patch.puzzle.target.A1).toBe('empty')
+    expect(patch.puzzle.target.B1).toBe('bottle')
+    expect(patch.puzzle.initialReveals).toEqual(['B1'])
   })
 
   it('patches normalized target cells through the legacy compatibility adapter', () => {

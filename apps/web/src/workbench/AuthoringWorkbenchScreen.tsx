@@ -79,6 +79,7 @@ import {
   patchWorkbenchRulePresentation,
   patchWorkbenchTargetCell,
   patchWorkbenchTargetCells,
+  swapWorkbenchCellFacts,
   toggleWorkbenchInitialReveal,
   workbenchCellContentOptions,
   type WorkbenchBoardCell,
@@ -744,12 +745,9 @@ export default function AuthoringWorkbenchScreen() {
   function swapTargetCells(sourceCellId: CellId, targetCellId: CellId): void {
     const sourceCell = model.boardCells.find((cell) => cell.id === sourceCellId)
     const targetCell = model.boardCells.find((cell) => cell.id === targetCellId)
-    if (sourceCell === undefined || targetCell === undefined) return
+    if (sourceCell === undefined || targetCell === undefined || parsedPuzzle === undefined) return
 
-    const patch = patchWorkbenchTargetCells(draft, {
-      [sourceCellId]: targetCell.kind,
-      [targetCellId]: sourceCell.kind,
-    })
+    const patch = swapWorkbenchCellFacts(draft, parsedPuzzle, sourceCellId, targetCellId)
     if (!patch.ok) {
       setPatchStatus({
         kind: 'rejected',

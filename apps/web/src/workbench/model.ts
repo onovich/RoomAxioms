@@ -2,6 +2,7 @@ import {
   exportDraftJson,
   formatDraftJson,
   importPuzzleToDraftState,
+  patchDraftCellFacts,
   patchDraftAnchors,
   patchDraftBoardSize,
   patchDraftMetadata,
@@ -13,6 +14,7 @@ import {
   patchDraftTargetCells,
   parseDraftJson,
   toggleDraftInitialReveal,
+  type PatchDraftCellFactsInput,
   type PatchDraftRulePresentationInput,
   type PatchDraftMetadataInput,
   type WorkbenchDraftExportResult,
@@ -642,6 +644,28 @@ export function patchWorkbenchTargetCells(
   return patchDraftTargetCells(draft, cells)
 }
 
+export function patchWorkbenchCellFacts(
+  draft: WorkbenchDraftState,
+  input: PatchDraftCellFactsInput,
+): WorkbenchDraftPatchResult {
+  return patchDraftCellFacts(draft, input)
+}
+
+export function swapWorkbenchCellFacts(
+  draft: WorkbenchDraftState,
+  puzzle: PuzzleDefinition,
+  sourceCellId: CellId,
+  targetCellId: CellId,
+): WorkbenchDraftPatchResult {
+  return patchWorkbenchCellFacts(draft, {
+    target: {
+      [sourceCellId]: puzzle.target[targetCellId],
+      [targetCellId]: puzzle.target[sourceCellId],
+    },
+    initialReveals: swapInitialRevealCells(puzzle, sourceCellId, targetCellId),
+  })
+}
+
 export function patchWorkbenchNormalizedTargetCell(
   draft: WorkbenchDraftState,
   cellId: CellId,
@@ -803,6 +827,27 @@ export function workbenchCellContentOptions(
 
 export function isWorkbenchCellKind(value: string | undefined): value is CellKind {
   return WORKBENCH_CELL_KIND_OPTIONS.includes(value as CellKind)
+}
+
+function swapInitialRevealCells(
+  puzzle: PuzzleDefinition,
+  sourceCellId: CellId,
+  targetCellId: CellId,
+): readonly CellId[] {
+  const revealed = new Set<CellId>(puzzle.initialReveals)
+  const sourceRevealed = revealed.has(sourceCellId)
+  const targetRevealed = revealed.has(targetCellId)
+  if (sourceRevealed === targetRevealed) return puzzle.initialReveals
+
+  if (sourceRevealed) {
+    revealed.delete(sourceCellId)
+    revealed.add(targetCellId)
+  } else {
+    revealed.add(sourceCellId)
+    revealed.delete(targetCellId)
+  }
+
+  return allCells(puzzle.board).filter((cellId) => revealed.has(cellId))
 }
 
 function caseOption(item: WorkbenchCaseImport): WorkbenchCaseOption {

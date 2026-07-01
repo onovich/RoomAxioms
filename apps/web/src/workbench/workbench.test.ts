@@ -34,6 +34,7 @@ import {
   patchWorkbenchNormalizedTargetCell,
   patchWorkbenchTargetCell,
   patchWorkbenchTargetCells,
+  swapWorkbenchCellFacts,
   toggleWorkbenchInitialReveal,
   workbenchCellContentOptions,
   workbenchCellKindOptions,
@@ -308,6 +309,20 @@ describe('authoring workbench shell model', () => {
     if (!patch.ok) throw new Error('Multi-cell target patch failed.')
     expect(patch.puzzle.target.A1).toBe('bottle')
     expect(patch.puzzle.target.D2).toBe('mirror')
+  })
+
+  it('swaps initial reveal flags with target content for drag-swap actions', () => {
+    const puzzle = getCaseById(DEFAULT_CASE_ID)
+    const draft = createWorkbenchDraftFromPuzzle(puzzle)
+    const patch = swapWorkbenchCellFacts(draft, puzzle, 'B1', 'D2')
+
+    expect(patch.ok).toBe(true)
+    if (!patch.ok) throw new Error('Cell fact swap failed.')
+    expect(patch.puzzle.target.B1).toBe('empty')
+    expect(patch.puzzle.target.D2).toBe('bottle')
+    expect(patch.puzzle.initialReveals).not.toContain('B1')
+    expect(patch.puzzle.initialReveals).toContain('D2')
+    expect(patch.puzzle.initialReveals).toEqual(['A2', 'C2', 'D2'])
   })
 
   it('toggles initial reveals through the same schema-validated draft path', () => {
