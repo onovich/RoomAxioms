@@ -40,7 +40,7 @@ idempotency:
   last_planner_dispatch: 2026-07-02T11:35:58+08:00
   last_planner_dispatch_status: sent
   last_planner_dispatch_guide: docs/phase-40-final-art-first-pass-intake-preview-goal-mode-execution-guide.md
-  last_planner_dispatch_commit: pending
+  last_planner_dispatch_commit: cd58d4a
   last_planner_dispatch_executor_thread_id: 019f1d5a-6fb8-7911-9400-87b59922c00a
   last_check_status: pass
   last_check_phase: Phase 39 - Player Shell Visual QA And Asset Intake Readiness
