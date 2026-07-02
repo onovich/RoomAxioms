@@ -1609,6 +1609,14 @@ h3 {
   z-index: 2;
 }
 
+.vn-dialogue-box[data-frame-placeholder="false"] {
+  background:
+    var(--vn-dialogue-frame-image) center / 100% 100% no-repeat,
+    linear-gradient(180deg, rgba(253, 250, 239, 0.54), rgba(239, 230, 205, 0.58)),
+    var(--scene-paper);
+  border-color: transparent;
+}
+
 .vn-dialogue-header,
 .vn-dialogue-actions {
   align-items: center;
@@ -1677,6 +1685,14 @@ h3 {
   transform: translateX(-50%);
   width: 100%;
   z-index: 45;
+}
+
+.vn-dock[data-frame-placeholder="false"] {
+  background:
+    var(--vn-dialogue-frame-image) center / 100% 100% no-repeat,
+    linear-gradient(135deg, rgba(250, 244, 226, 0.56), rgba(235, 225, 199, 0.58)),
+    var(--scene-paper);
+  border-color: transparent;
 }
 
 .vn-dock-portrait {

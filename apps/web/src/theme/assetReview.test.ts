@@ -4,7 +4,14 @@ import { STATIC_DIALOGUE_SCENES } from '../vn/dialogue'
 import { DEFAULT_THEME_ASSET_MANIFEST, type ThemeAssetManifest } from './assetManifest'
 import { createThemeAssetReviewReport, validateThemeAssetIntake } from './assetReview'
 
-const DEFAULT_USER_PROVIDED_ASSET_IDS = [
+const DEFAULT_USER_PROVIDED_ASSET_IDS = [] as const
+
+const DEFAULT_APPROVED_ASSET_IDS = [
+  'investigator',
+  'dispatcher',
+  'investigator-thinking',
+  'dispatcher-sensing',
+  'dialogue-default',
   'figma-panel-box-001',
   'figma-submit-box-002',
   'figma-divider-wide',
@@ -16,13 +23,6 @@ const DEFAULT_USER_PROVIDED_ASSET_IDS = [
   'figma-rule-icon-adjacent',
   'figma-protagonist-bust',
   'figma-assistant-bust',
-] as const
-
-const DEFAULT_APPROVED_ASSET_IDS = [
-  'investigator',
-  'dispatcher',
-  'investigator-thinking',
-  'dispatcher-sensing',
 ] as const
 
 describe('theme asset review workflow', () => {

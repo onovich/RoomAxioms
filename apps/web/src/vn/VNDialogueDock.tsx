@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { X } from 'lucide-react'
 
 import {
@@ -47,6 +47,9 @@ export function VNDialogueDock({
     ? null
     : resolveThemeAsset(manifest, 'portrait', line.portraitId)
   const frame = resolveThemeAsset(manifest, 'dialogueFrame', 'dialogue-default')
+  const frameStyle = frame.src === undefined
+    ? undefined
+    : ({ '--vn-dialogue-frame-image': `url("${frame.src}")` } as CSSProperties)
 
   useEffect(() => {
     let resetTimeoutId: number | undefined
@@ -98,6 +101,7 @@ export function VNDialogueDock({
       aria-labelledby="vnDockTitle"
       data-frame-status={frame.status}
       data-frame-placeholder={frame.placeholder}
+      style={frameStyle}
     >
       <div className="vn-dock-portrait" aria-hidden="true">
         {portrait?.src === undefined ? <span>{portrait?.alt ?? portrait?.label ?? line.speaker}</span> : <img src={portrait.src} alt="" />}

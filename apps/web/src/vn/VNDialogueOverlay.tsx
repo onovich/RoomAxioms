@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { X } from 'lucide-react'
 
 import {
@@ -52,6 +52,9 @@ export function VNDialogueOverlay({
     ? null
     : resolveThemeAsset(manifest, 'expression', line.expressionId)
   const frame = resolveThemeAsset(manifest, 'dialogueFrame', 'dialogue-default')
+  const frameStyle = frame.src === undefined
+    ? undefined
+    : ({ '--vn-dialogue-frame-image': `url("${frame.src}")` } as CSSProperties)
   const nextIndex = nextDialogueLineIndex(scene, lineIndex)
   const isLastLine = nextIndex === null
 
@@ -145,7 +148,11 @@ export function VNDialogueOverlay({
           />
         )}
 
-        <article className="vn-dialogue-box" data-frame-placeholder={frame.placeholder}>
+        <article
+          className="vn-dialogue-box"
+          data-frame-placeholder={frame.placeholder}
+          style={frameStyle}
+        >
           <div className="vn-dialogue-header">
             <div>
               <span className="eyebrow">{scene.title}</span>

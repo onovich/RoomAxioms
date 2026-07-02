@@ -32,6 +32,8 @@ describe('VN dialogue dock', () => {
     expect(html).toContain('调度员')
     expect(html).toContain('可以解释的一步')
     expect(html).toContain('theme/final/portraits/assistant-sensing.png')
+    expect(html).toContain('theme/final/dialogue/dialogue-default.png')
+    expect(html).toContain('data-frame-placeholder="false"')
     expect(html).toContain('1 / 4')
   })
 })

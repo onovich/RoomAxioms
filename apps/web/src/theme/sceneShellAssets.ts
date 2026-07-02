@@ -27,8 +27,8 @@ export interface SceneNineSliceFrame {
 }
 
 export const SCENE_NINE_SLICE_FRAMES = {
-  paper: createNineSliceFrame('paper', 'Temporary Figma paper panel frame', 'box-001'),
-  submit: createNineSliceFrame('submit', 'Temporary Figma submit panel frame', 'box-002'),
+  paper: createNineSliceFrame('paper', 'Final Figma paper panel frame', 'box-001'),
+  submit: createNineSliceFrame('submit', 'Final Figma submit panel frame', 'box-002'),
 } as const satisfies Record<SceneNineSliceFrameId, SceneNineSliceFrame>
 
 export const SCENE_DIVIDERS = {

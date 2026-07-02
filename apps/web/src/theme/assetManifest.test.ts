@@ -113,7 +113,7 @@ describe('theme asset manifest', () => {
     ])
   })
 
-  it('registers Phase 38 Figma shell slots as temporary player-safe assets', () => {
+  it('registers Phase 40 approved Figma shell slots as player-safe assets', () => {
     expect(assetEntriesByKind(DEFAULT_THEME_ASSET_MANIFEST, 'nineSliceFrame').map((asset) => asset.id)).toEqual([
       'figma-panel-box-001',
       'figma-submit-box-002',
@@ -132,12 +132,20 @@ describe('theme asset manifest', () => {
 
     const frame = resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'nineSliceFrame', 'figma-panel-box-001')
     expect(frame).toMatchObject({
-      status: 'userProvided',
+      status: 'approved',
       placeholder: false,
-      final: false,
+      final: true,
     })
     expect(frame.src).toContain('figma-puzzle-prototype/box-001-middle-stretch.png')
     expect(frame.entry?.safeForPlayerRoute).toBe(true)
+
+    const dialogueFrame = resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'dialogueFrame', 'dialogue-default')
+    expect(dialogueFrame).toMatchObject({
+      status: 'approved',
+      placeholder: false,
+      final: true,
+    })
+    expect(dialogueFrame.src).toContain('theme/final/dialogue/dialogue-default.png')
   })
 
   it('keeps the default placeholder manifest free of secrecy leaks', () => {

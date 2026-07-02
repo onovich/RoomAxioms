@@ -38,6 +38,8 @@ describe('VN dialogue overlay', () => {
     expect(html).toContain('1 / 2')
     expect(html).toContain('Field office placeholder background')
     expect(html).toContain('theme/final/portraits/assistant-normal.png')
+    expect(html).toContain('theme/final/dialogue/dialogue-default.png')
+    expect(html).toContain('data-frame-placeholder="false"')
   })
 
   it('renders approved asset URLs when the manifest supplies them', () => {
