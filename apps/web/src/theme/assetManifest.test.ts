@@ -11,20 +11,20 @@ import {
 } from './assetManifest'
 
 describe('theme asset manifest', () => {
-  it('resolves manifest entries without marking placeholders as final art', () => {
+  it('resolves approved final portrait entries without marking placeholders as final art', () => {
     const portrait = resolveThemeAsset(DEFAULT_THEME_ASSET_MANIFEST, 'portrait', 'investigator')
 
     expect(portrait).toMatchObject({
       requestedId: 'investigator',
       kind: 'portrait',
-      status: 'userProvided',
+      status: 'approved',
       placeholder: false,
-      final: false,
+      final: true,
     })
     expect(isPlaceholderLikeThemeAsset(portrait)).toBe(false)
-    expect(isFinalThemeAsset(portrait)).toBe(false)
-    expect(portrait.src).toContain('theme/portraits/phase-35/investigator-normal.png')
-    expect(portrait.entry?.notes).toContain('Not final approved art')
+    expect(isFinalThemeAsset(portrait)).toBe(true)
+    expect(portrait.src).toContain('theme/final/portraits/protagonist-normal.png')
+    expect(portrait.entry?.notes).toContain('Figma node 52:75')
   })
 
   it('returns a safe missing placeholder for absent assets', () => {

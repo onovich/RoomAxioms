@@ -19,7 +19,7 @@ describe('VN dialogue overlay', () => {
     expect(nextDialogueLineIndex(scene, 1)).toBeNull()
   })
 
-  it('renders speaker, text, progress, and placeholder assets', () => {
+  it('renders speaker, text, progress, placeholder background, and final portrait assets', () => {
     const scene = STATIC_DIALOGUE_SCENES[0]
     const html = renderToStaticMarkup(
       <VNDialogueOverlay
@@ -37,7 +37,7 @@ describe('VN dialogue overlay', () => {
     expect(html).toContain('档案已打开')
     expect(html).toContain('1 / 2')
     expect(html).toContain('Field office placeholder background')
-    expect(html).toContain('theme/portraits/phase-35/dispatcher-normal.png')
+    expect(html).toContain('theme/final/portraits/assistant-normal.png')
   })
 
   it('renders approved asset URLs when the manifest supplies them', () => {

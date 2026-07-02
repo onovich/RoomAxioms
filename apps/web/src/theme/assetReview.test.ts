@@ -5,10 +5,6 @@ import { DEFAULT_THEME_ASSET_MANIFEST, type ThemeAssetManifest } from './assetMa
 import { createThemeAssetReviewReport, validateThemeAssetIntake } from './assetReview'
 
 const DEFAULT_USER_PROVIDED_ASSET_IDS = [
-  'investigator',
-  'dispatcher',
-  'investigator-thinking',
-  'dispatcher-sensing',
   'figma-panel-box-001',
   'figma-submit-box-002',
   'figma-divider-wide',
@@ -22,22 +18,32 @@ const DEFAULT_USER_PROVIDED_ASSET_IDS = [
   'figma-assistant-bust',
 ] as const
 
+const DEFAULT_APPROVED_ASSET_IDS = [
+  'investigator',
+  'dispatcher',
+  'investigator-thinking',
+  'dispatcher-sensing',
+] as const
+
 describe('theme asset review workflow', () => {
   it('summarizes placeholder manifest status and dialogue triggers for private review', () => {
     const report = createThemeAssetReviewReport(DEFAULT_THEME_ASSET_MANIFEST, STATIC_DIALOGUE_SCENES)
 
     expect(report.manifestId).toBe('unregistered-scene-placeholder')
     expect(report.statusCounts.placeholder).toBe(
-      DEFAULT_THEME_ASSET_MANIFEST.assets.length - DEFAULT_USER_PROVIDED_ASSET_IDS.length,
+      DEFAULT_THEME_ASSET_MANIFEST.assets.length
+        - DEFAULT_USER_PROVIDED_ASSET_IDS.length
+        - DEFAULT_APPROVED_ASSET_IDS.length,
     )
     expect(report.statusCounts.userProvided).toBe(DEFAULT_USER_PROVIDED_ASSET_IDS.length)
+    expect(report.statusCounts.approved).toBe(DEFAULT_APPROVED_ASSET_IDS.length)
     expect(report.placeholderAssetIds).toContain('field-office')
     expect(report.pendingApprovalAssetIds).toEqual(DEFAULT_USER_PROVIDED_ASSET_IDS)
     expect(report.dialogueCategories).toContain('caseIntro')
     expect(report.dialogueLeaks).toEqual([])
     expect(report.manifestLeaks).toEqual([])
     expect(report.intakeIssues).toEqual([])
-    expect(report.approvedAssetIds).toEqual([])
+    expect(report.approvedAssetIds).toEqual(DEFAULT_APPROVED_ASSET_IDS)
   })
 
   it('requires source, license, dimensions, src, and approval for player-route assets', () => {
